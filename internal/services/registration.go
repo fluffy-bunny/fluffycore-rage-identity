@@ -2,7 +2,7 @@ package services
 
 import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	services_sutil "github.com/fluffy-bunny/fluffycore-starterkit/internal/services/util"
+	services_sutil "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/util"
 )
 
 // put all services you want shared between the echo and grpc servers here

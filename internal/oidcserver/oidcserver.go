@@ -1,12 +1,13 @@
-package myechoserver
+package oidcserver
 
 import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_config "github.com/fluffy-bunny/fluffycore-starterkit/internal/contracts/config"
-	services "github.com/fluffy-bunny/fluffycore-starterkit/internal/services"
-	services_handlers_healthz "github.com/fluffy-bunny/fluffycore-starterkit/internal/services/echo/handlers/healthz"
-	services_handlers_home "github.com/fluffy-bunny/fluffycore-starterkit/internal/services/echo/handlers/home"
-	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-starterkit/internal/services/echo/handlers/swagger"
+	contracts_config "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/config"
+	services "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services"
+	services_handlers_discovery "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/discovery"
+	services_handlers_healthz "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/healthz"
+	services_handlers_home "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/home"
+	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/swagger"
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
 	contracts_startup "github.com/fluffy-bunny/fluffycore/echo/contracts/startup"
 	services_startup "github.com/fluffy-bunny/fluffycore/echo/services/startup"
@@ -72,6 +73,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_healthz.AddScopedIHandler(builder)
 	services_handlers_home.AddScopedIHandler(builder)
 	services_handlers_swagger.AddScopedIHandler(builder)
+	services_handlers_discovery.AddScopedIHandler(builder)
 }
 func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 	// i.e. e.Static("/css", "./css")

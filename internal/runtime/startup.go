@@ -8,15 +8,15 @@ import (
 	"os"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	internal_auth "github.com/fluffy-bunny/fluffycore-starterkit/internal/auth"
-	contracts_config "github.com/fluffy-bunny/fluffycore-starterkit/internal/contracts/config"
-	myechoserver "github.com/fluffy-bunny/fluffycore-starterkit/internal/myechoserver"
-	services "github.com/fluffy-bunny/fluffycore-starterkit/internal/services"
-	services_greeter "github.com/fluffy-bunny/fluffycore-starterkit/internal/services/greeter"
-	services_health "github.com/fluffy-bunny/fluffycore-starterkit/internal/services/health"
-	services_mystream "github.com/fluffy-bunny/fluffycore-starterkit/internal/services/mystream"
-	services_somedisposable "github.com/fluffy-bunny/fluffycore-starterkit/internal/services/somedisposable"
-	internal_version "github.com/fluffy-bunny/fluffycore-starterkit/internal/version"
+	internal_auth "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/auth"
+	contracts_config "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/config"
+	oidcserver "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/oidcserver"
+	services "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services"
+	services_greeter "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/greeter"
+	services_health "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/health"
+	services_mystream "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/mystream"
+	services_somedisposable "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/somedisposable"
+	internal_version "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/version"
 	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
 	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
 	fluffycore_contracts_middleware "github.com/fluffy-bunny/fluffycore/contracts/middleware"
@@ -50,8 +50,8 @@ type (
 		mockOAuth2Server       *mocks_oauth2_echo.MockOAuth2Service
 		mockOAuth2ServerFuture async.Future[fluffycore_async.AsyncResponse]
 		ddProfiler             fluffycore_contracts_ddprofiler.IDataDogProfiler
-		myEchoServerFuture     async.Future[fluffycore_async.AsyncResponse]
-		myEchoServerRuntime    *core_echo_runtime.Runtime
+		oidcserverFuture       async.Future[fluffycore_async.AsyncResponse]
+		oidcserverRuntime      *core_echo_runtime.Runtime
 	}
 )
 
@@ -157,8 +157,8 @@ func (s *startup) OnPreServerStartup(ctx context.Context) error {
 	s.mockOAuth2Server = mocks_oauth2_echo.NewOAuth2TestServer(&mocks_contracts_oauth2.MockOAuth2Config{
 		Clients: clients,
 	})
-	s.myEchoServerRuntime = core_echo_runtime.New(myechoserver.NewStartup())
-	s.myEchoServerFuture = fluffycore_async.ExecuteWithPromiseAsync(func(promise async.Promise[fluffycore_async.AsyncResponse]) {
+	s.oidcserverRuntime = core_echo_runtime.New(oidcserver.NewStartup())
+	s.oidcserverFuture = fluffycore_async.ExecuteWithPromiseAsync(func(promise async.Promise[fluffycore_async.AsyncResponse]) {
 		var err error
 		defer func() {
 			promise.Success(&fluffycore_async.AsyncResponse{
@@ -167,7 +167,7 @@ func (s *startup) OnPreServerStartup(ctx context.Context) error {
 			})
 		}()
 		log.Info().Msg("echoServer starting up")
-		err = s.myEchoServerRuntime.Run()
+		err = s.oidcserverRuntime.Run()
 		if err != nil {
 			log.Error().Err(err).Msg("failed to start server")
 		}
@@ -203,10 +203,10 @@ func (s *startup) OnPreServerShutdown(ctx context.Context) {
 	s.mockOAuth2ServerFuture.Join()
 	log.Info().Msg("mockOAuth2Server shutdown complete")
 
-	log.Info().Msg("myEchoServerRuntime shutting down")
-	s.myEchoServerRuntime.Stop()
-	s.myEchoServerFuture.Join()
-	log.Info().Msg("myEchoServerRuntime shutdown complete")
+	log.Info().Msg("oidcserverRuntime shutting down")
+	s.oidcserverRuntime.Stop()
+	s.oidcserverFuture.Join()
+	log.Info().Msg("oidcserverRuntime shutdown complete")
 
 	log.Info().Msg("Stopping Datadog Tracer and Profiler")
 	s.ddProfiler.Stop(ctx)

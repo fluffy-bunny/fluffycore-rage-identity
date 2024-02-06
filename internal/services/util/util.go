@@ -4,7 +4,7 @@ import (
 	"context"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_util "github.com/fluffy-bunny/fluffycore-starterkit/internal/contracts/util"
+	contracts_util "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/util"
 )
 
 type (

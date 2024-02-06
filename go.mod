@@ -1,4 +1,4 @@
-module github.com/fluffy-bunny/fluffycore-starterkit
+module github.com/fluffy-bunny/fluffycore-hanko-oidc
 
 go 1.21.6
 
