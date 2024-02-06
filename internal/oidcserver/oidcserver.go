@@ -7,6 +7,7 @@ import (
 	services_handlers_discovery "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/discovery"
 	services_handlers_healthz "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/healthz"
 	services_handlers_home "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/home"
+	services_handlers_jwks "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/jwks"
 	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/swagger"
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
 	contracts_startup "github.com/fluffy-bunny/fluffycore/echo/contracts/startup"
@@ -74,6 +75,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_home.AddScopedIHandler(builder)
 	services_handlers_swagger.AddScopedIHandler(builder)
 	services_handlers_discovery.AddScopedIHandler(builder)
+	services_handlers_jwks.AddScopedIHandler(builder)
 }
 func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 	// i.e. e.Static("/css", "./css")

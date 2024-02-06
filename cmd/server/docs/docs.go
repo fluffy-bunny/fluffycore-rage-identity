@@ -26,7 +26,7 @@ const docTemplate = `{
     "paths": {
         "/": {
             "get": {
-                "description": "get the status of server.",
+                "description": "get the home page.",
                 "consumes": [
                     "*/*"
                 ],
@@ -36,7 +36,30 @@ const docTemplate = `{
                 "tags": [
                     "root"
                 ],
-                "summary": "Show the status of server.",
+                "summary": "get the home page.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/.well-known/jwks": {
+            "get": {
+                "description": "get the public keys of the server.",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the public keys of the server.",
                 "responses": {
                     "200": {
                         "description": "OK",

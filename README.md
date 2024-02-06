@@ -48,7 +48,7 @@ curl --location 'http://localhost:50053/oauth/token' --header 'Content-Type: app
 ## Docker Build
 
 ```bash
- docker build --file .\build\Dockerfile . --tag fluffycore.starterkit:latest
+ docker build --file .\build\Dockerfile . --tag fluffycore.hanko.oidc:latest
  ```
 
 ## Health check  

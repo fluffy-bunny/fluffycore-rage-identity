@@ -17,7 +17,7 @@ paths:
     get:
       consumes:
       - '*/*'
-      description: get the status of server.
+      description: get the home page.
       produces:
       - application/json
       responses:
@@ -25,7 +25,22 @@ paths:
           description: OK
           schema:
             type: string
-      summary: Show the status of server.
+      summary: get the home page.
+      tags:
+      - root
+  /.well-known/jwks:
+    get:
+      consumes:
+      - '*/*'
+      description: get the public keys of the server.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: get the public keys of the server.
       tags:
       - root
   /.well-known/openid-configuration:
