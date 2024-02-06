@@ -1,0 +1,20 @@
+version: 2
+updates:
+- package-ecosystem: github-actions
+  directory: /
+  labels:
+    - dependencies
+  open-pull-requests-limit: 99
+  schedule:
+    interval: daily
+  commit-message:
+    prefix: "fix: "  # Prefix all commit messages with "fix: "
+- package-ecosystem: gomod
+  directory: "/"
+  labels:
+    - dependencies
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 99
+  commit-message:
+    prefix: "fix: "  # Prefix all commit messages with "fix: "

@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  starterkit:
+    container_name: starterkit
+    extends:
+      file: ./docker-compose-common.yml
+      service: micro
+    image: fluffycore.starterkit:latest
+    ports:
+      - "50051:50051"
+      - "50052:50052"
+      - "50053:50053"
+      - "9044:9044"
+    environment:
+      APPLICATION_NAME: "starterkit"
+      APPLICATION_ENVIRONMENT: "DOCKER"
+      LOG_LEVEL": "debug"
+      PRETTY_LOG: "true"
+      PORT: "50051"
+      GRPC_GATEWAY_ENABLED: "true"
+      REST_PORT: "50052"
+      OAUTH2_PORT: "50053"
+      CUSTOM_STRING: "In Flames"
+      SOME_SECRET: "1234567890"
+      ENABLE_GRPC_SERVER_REFLECTION: "true"
+      JWT_VALIDATORS__ISSUERS: "http://starterkit:50053"
+      JWT_VALIDATORS__JWKS_URLS: "http://starterkit:50053/.well-known/jwks"
+      CONFIG_FILES__CLIENT_PATH: "/config/clients.json"
+    volumes:
+      - ./config/clients.json:/config/clients.json
+    entrypoint: ["/app/server", "serve"]
+
+  whoami:
+    container_name: whoami
+    extends:
+      file: ./docker-compose-common.yml
+      service: micro
+    image: containous/whoami
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      starterkit:
+        condition: service_healthy

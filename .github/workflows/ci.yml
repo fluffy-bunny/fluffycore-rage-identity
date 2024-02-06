@@ -1,0 +1,135 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: CI
+
+on:
+  push:
+    branches: [ '**' ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.vscode/**'
+      - '.github/dependabot.yml'
+      - '.env'
+      - 'docker-compose.yml'
+      - 'docker/**'
+  pull_request:
+    paths-ignore:
+      - '**.md'
+    branches: [ main ]
+
+env:
+  BINARY: 'server'
+  GO_VERSION: '1.21'
+  BUILD_PATH: './cmd/server'
+  IMAGE_NAME: 'ghstahl/fluffycore.starterkit'
+  BASE_VERSION: '1.0.0'    
+jobs:
+
+  pre_flight:
+    runs-on: ubuntu-latest
+    
+    outputs:
+      new_tag: ${{ steps.tag_version.outputs.new_tag }}
+      changelog : ${{ steps.tag_version.outputs.changelog }}
+    steps:
+    - name: Establish tags and versions
+      id: tag_version
+      uses: mathieudutour/github-tag-action@v6.1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [pre_flight]
+    steps:
+    - name: Echo Tags
+      run: |
+       echo new_tag: ${{needs.pre_flight.outputs.new_tag}} 
+       echo changelog: ${{needs.pre_flight.outputs.changelog}}
+
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: "^${{ env.GO_VERSION }}"
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Test
+      run: go test -v ./...
+
+
+  # Create and post docker image
+  build-docker-push-image:
+    runs-on: ubuntu-latest
+    needs: [ pre_flight, build ]
+
+    steps:
+      - name: Echo Tags
+        run: |
+          echo new_tag: ${{needs.pre_flight.outputs.new_tag}} 
+          echo changelog: ${{needs.pre_flight.outputs.changelog}}
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+
+
+      - name: Inspect builder
+        run: |
+          echo "Name:      ${{ steps.buildx.outputs.name }}"
+          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
+          echo "Status:    ${{ steps.buildx.outputs.status }}"
+          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
+          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
+
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3 
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Establish Versioning, Tags, and Labels
+        id: vtl
+        uses: mapped/action-vtl@latest
+        with:
+          baseVersion: ${{ env.BASE_VERSION }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          dockerImage: ${{ env.IMAGE_NAME }}
+
+      - name: Build and push Base
+        id: docker_build
+        uses: docker/build-push-action@v5
+        env:
+          version: ${{ steps.vtl.outputs.ver_semVerNoMeta }}
+          date: ${{ steps.vtl.outputs.ver_created }}
+          commit: ${{ github.sha }}
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          file: ./build/Dockerfile
+          push: ${{ steps.vtl.outputs.docker_push }}
+          tags: ${{ steps.vtl.outputs.docker_tags }}
+          labels: ${{ steps.vtl.outputs.oci_labels }}
+          build-args: |
+            version
+            date
+            commit
+  
+      - name: Image digest docker_build
+        run: echo ${{ steps.docker_build.outputs.digest }}
