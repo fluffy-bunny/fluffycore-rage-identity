@@ -1,4 +1,4 @@
-package home
+package error
 
 import (
 	"net/http"
@@ -16,7 +16,6 @@ import (
 type (
 	service struct {
 		services_echo_handlers_base.BaseHandler
-
 		someUtil contracts_util.ISomeUtil
 	}
 )
@@ -44,7 +43,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 		[]contracts_handler.HTTPVERB{
 			contracts_handler.GET,
 		},
-		wellknown_echo.HomePath,
+		wellknown_echo.ErrorPath,
 	)
 
 }
@@ -54,13 +53,13 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 // HealthCheck godoc
-// @Summary get the home page.
-// @Description get the home page.
+// @Summary get the error page.
+// @Description get the error page.
 // @Tags root
 // @Accept */*
 // @Produce json
 // @Success 200 {object} string
-// @Router / [get]
+// @Router /error [get]
 func (s *service) Do(c echo.Context) error {
-	return s.Render(c, http.StatusOK, "views/home/index", map[string]interface{}{})
+	return s.Render(c, http.StatusOK, "views/error/index", map[string]interface{}{})
 }

@@ -58,6 +58,36 @@ paths:
       summary: Show the status of server.
       tags:
       - root
+  /about:
+    get:
+      consumes:
+      - '*/*'
+      description: get the about page.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: get the about page.
+      tags:
+      - root
+  /error:
+    get:
+      consumes:
+      - '*/*'
+      description: get the error page.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: get the error page.
+      tags:
+      - root
   /healthz:
     get:
       consumes:

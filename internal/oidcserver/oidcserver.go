@@ -4,12 +4,14 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/config"
 	services "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services"
+	services_handlers_about "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/about"
 	services_handlers_authorization_endpoint "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/authorization_endpoint"
 	services_handlers_discovery_endpoint "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/discovery_endpoint"
+	services_handlers_error "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/error"
 	services_handlers_healthz "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/healthz"
 	services_handlers_home "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/home"
-	services_handlers_login "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/login"
 	services_handlers_jwks_endpoint "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/jwks_endpoint"
+	services_handlers_login "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/login"
 	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/swagger"
 	services_handlers_token_endpoint "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/token_endpoint"
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
@@ -76,6 +78,8 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	// add your handlers here
 	services_handlers_healthz.AddScopedIHandler(builder)
 	services_handlers_home.AddScopedIHandler(builder)
+	services_handlers_about.AddScopedIHandler(builder)
+	services_handlers_error.AddScopedIHandler(builder)
 	services_handlers_login.AddScopedIHandler(builder)
 	services_handlers_swagger.AddScopedIHandler(builder)
 	services_handlers_discovery_endpoint.AddScopedIHandler(builder)
