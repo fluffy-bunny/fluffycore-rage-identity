@@ -9,6 +9,6 @@ const (
 	WellKnownOpenIDCOnfiguationPath = "/.well-known/openid-configuration"
 	WellKnownJWKS                   = "/.well-known/jwks"
 	OAuth2TokenEndpointPath         = "/token"
-	OAuth2AuthorizationEndpointPath = "/o/oauth2/v2/auth"
+	OIDCAuthorizationEndpointPath   = "/oidc/v1/auth"
 	UserInfoPath                    = "/v1/userinfo"
 )

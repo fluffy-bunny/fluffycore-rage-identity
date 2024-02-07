@@ -73,12 +73,32 @@ paths:
       summary: Show the status of server.
       tags:
       - root
-  /o/oauth2/v2/auth:
+  /login:
+    get:
+      consumes:
+      - '*/*'
+      description: get the home page.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: get the home page.
+      tags:
+      - root
+  /oidc/v1/auth:
     get:
       consumes:
       - '*/*'
       description: get the home page.
       parameters:
+      - description: client_id requested
+        in: query
+        name: client_id
+        required: true
+        type: string
       - description: response_type requested
         in: query
         name: response_type
@@ -108,7 +128,8 @@ paths:
         in: query
         name: code_challenge
         type: string
-      - description: PKCE challenge method
+      - default: '"S256"'
+        description: PKCE challenge method
         in: query
         name: code_challenge_method
         type: string
@@ -119,8 +140,6 @@ paths:
           description: OK
           schema:
             type: string
-      security:
-      - BasicAuth: []
       summary: get the home page.
       tags:
       - root

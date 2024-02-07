@@ -1,5 +1,8 @@
 package authorization_endpoint
 
+/*
+reference: https://developers.onelogin.com/openid-connect/api/authorization-code
+*/
 import (
 	"net/http"
 	"time"
@@ -49,7 +52,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 		[]contracts_handler.HTTPVERB{
 			contracts_handler.GET,
 		},
-		wellknown_echo.OAuth2AuthorizationEndpointPath,
+		wellknown_echo.OIDCAuthorizationEndpointPath,
 	)
 
 }
@@ -66,7 +69,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Tags root
 // @Accept */*
 // @Produce json
-// @Security BasicAuth
+// @Param       client_id    			query     string  true  "client_id requested"
 // @Param       response_type    		query     string  true  "response_type requested"
 // @Param       scope            		query     string  true  "scope requested" default("openid profile email")
 // @Param       state            		query     string  true  "state requested"
@@ -75,7 +78,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Param       code_challenge   		query     string  false  "PKCE challenge code"
 // @Param       code_challenge_method 	query     string  false  "PKCE challenge method" default("S256")
 // @Success 200 {object} string
-// @Router /o/oauth2/v2/auth [get]
+// @Router /oidc/v1/auth [get]
 func (s *service) Do(c echo.Context) error {
 	r := c.Request()
 	ctx := r.Context()

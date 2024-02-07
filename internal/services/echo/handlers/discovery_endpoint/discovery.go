@@ -62,7 +62,7 @@ func (s *service) Do(c echo.Context) error {
 		TokenEndpoint:         rootPath + wellknown_echo.OAuth2TokenEndpointPath,
 		JwksURI:               rootPath + wellknown_echo.WellKnownJWKS,
 		UserinfoEndpoint:      rootPath + wellknown_echo.UserInfoPath,
-		AuthorizationEndpoint: rootPath + wellknown_echo.OAuth2AuthorizationEndpointPath,
+		AuthorizationEndpoint: rootPath + wellknown_echo.OIDCAuthorizationEndpointPath,
 		//	RevocationEndpoint:    rootPath + wellknown.OAuth2RevokePath,
 		//	IntrospectionEndpoint: rootPath + wellknown.OAuth2IntrospectPath,
 		GrantTypesSupported: []string{

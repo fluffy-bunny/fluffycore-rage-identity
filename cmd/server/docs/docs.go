@@ -116,13 +116,31 @@ const docTemplate = `{
                 }
             }
         },
-        "/o/oauth2/v2/auth": {
+        "/login": {
             "get": {
-                "security": [
-                    {
-                        "BasicAuth": []
-                    }
+                "description": "get the home page.",
+                "consumes": [
+                    "*/*"
                 ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the home page.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/oidc/v1/auth": {
+            "get": {
                 "description": "get the home page.",
                 "consumes": [
                     "*/*"
@@ -135,6 +153,13 @@ const docTemplate = `{
                 ],
                 "summary": "get the home page.",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "client_id requested",
+                        "name": "client_id",
+                        "in": "query",
+                        "required": true
+                    },
                     {
                         "type": "string",
                         "description": "response_type requested",
@@ -178,6 +203,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "default": "\"S256\"",
                         "description": "PKCE challenge method",
                         "name": "code_challenge_method",
                         "in": "query"
