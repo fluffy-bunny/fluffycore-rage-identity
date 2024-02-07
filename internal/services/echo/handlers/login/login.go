@@ -1,4 +1,4 @@
-package discovery
+package login
 
 import (
 	"net/http"
@@ -7,8 +7,8 @@ import (
 	contracts_util "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/util"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/wellknown/echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
-	mocks_oauth2 "github.com/fluffy-bunny/fluffycore/mocks/oauth2"
 	echo "github.com/labstack/echo/v4"
+	zerolog "github.com/rs/zerolog"
 )
 
 type (
@@ -21,17 +21,7 @@ var stemService = (*service)(nil)
 
 func init() {
 	var _ contracts_handler.IHandler = stemService
-
-	signingKey, _ = mocks_oauth2.LoadSigningKey()
-	jwksKeys = &mocks_oauth2.JWKSKeys{
-		Keys: []mocks_oauth2.PublicJwk{
-			signingKey.PublicJwk,
-		},
-	}
 }
-
-var signingKey *mocks_oauth2.SigningKey
-var jwksKeys *mocks_oauth2.JWKSKeys
 
 func (s *service) Ctor(someUtil contracts_util.ISomeUtil) (*service, error) {
 	return &service{
@@ -46,7 +36,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 		[]contracts_handler.HTTPVERB{
 			contracts_handler.GET,
 		},
-		wellknown_echo.WellKnownJWKS,
+		wellknown_echo.LoginPath,
 	)
 
 }
@@ -55,14 +45,34 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
 
+type LoginRequest struct {
+	Code string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
+}
+
 // HealthCheck godoc
-// @Summary get the public keys of the server.
-// @Description get the public keys of the server.
+// @Summary get the home page.
+// @Description get the home page.
 // @Tags root
 // @Accept */*
 // @Produce json
 // @Success 200 {object} string
-// @Router /.well-known/jwks [get]
+// @Router /login [get]
 func (s *service) Do(c echo.Context) error {
-	return c.JSONPretty(http.StatusOK, jwksKeys, "  ")
+
+	r := c.Request()
+	ctx := r.Context()
+	log := zerolog.Ctx(ctx).With().Logger()
+	model := &LoginRequest{}
+	if err := c.Bind(model); err != nil {
+		return err
+	}
+	log.Info().Interface("model", model).Msg("model")
+
+	c.SetCookie(&http.Cookie{
+		Name:   "_code",
+		Value:  model.Code,
+		Path:   "/",
+		Secure: true,
+	})
+	return c.Render(http.StatusOK, "views/login/index", map[string]interface{}{})
 }

@@ -1,4 +1,4 @@
-package discovery
+package discovery_endpoint
 
 import (
 	"net/http"
@@ -59,10 +59,10 @@ func (s *service) Do(c echo.Context) error {
 
 	discovery := models.DiscoveryDocument{
 		Issuer:                rootPath + "/",
-		TokenEndpoint:         rootPath + wellknown_echo.OAuth2TokenPath,
+		TokenEndpoint:         rootPath + wellknown_echo.OAuth2TokenEndpointPath,
 		JwksURI:               rootPath + wellknown_echo.WellKnownJWKS,
 		UserinfoEndpoint:      rootPath + wellknown_echo.UserInfoPath,
-		AuthorizationEndpoint: rootPath + wellknown_echo.OAuth2AuthorizationPath,
+		AuthorizationEndpoint: rootPath + wellknown_echo.OAuth2AuthorizationEndpointPath,
 		//	RevocationEndpoint:    rootPath + wellknown.OAuth2RevokePath,
 		//	IntrospectionEndpoint: rootPath + wellknown.OAuth2IntrospectPath,
 		GrantTypesSupported: []string{

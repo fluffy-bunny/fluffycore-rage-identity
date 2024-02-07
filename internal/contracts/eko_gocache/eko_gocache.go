@@ -1,0 +1,11 @@
+package eko_cache
+
+import (
+	fluffycore_contracts_eko_gocache "github.com/fluffy-bunny/fluffycore/contracts/eko_gocache"
+)
+
+type (
+	IOIDCFlowCache interface {
+		fluffycore_contracts_eko_gocache.IGoCache
+	}
+)

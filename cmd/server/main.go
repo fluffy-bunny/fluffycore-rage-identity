@@ -27,6 +27,8 @@ import (
 
 // @host localhost:9044
 // @BasePath /
+// @securityDefinitions.basic BasicAuth
+
 func main() {
 	processDirectory, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {

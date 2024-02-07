@@ -1,12 +1,18 @@
 package services
 
 import (
+	"reflect"
+
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	services_sutil "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/util"
+	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/eko_gocache"
+	services_util "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/util"
+	fluffycore_services_eko_gocache_go_cache "github.com/fluffy-bunny/fluffycore/services/eko_gocache/go_cache"
 )
 
 // put all services you want shared between the echo and grpc servers here
 // NOTE: they are NOT the same instance, but they are the same type in context of the server.
 func ConfigureServices(builder di.ContainerBuilder) {
-	services_sutil.AddSingletonISomeUtil(builder)
+	services_util.AddSingletonISomeUtil(builder)
+	fluffycore_services_eko_gocache_go_cache.AddISingletonInMemoryCache(builder, reflect.TypeOf((*contracts_eko_gocache.IOIDCFlowCache)(nil)))
+
 }
