@@ -7,6 +7,8 @@ import (
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/eko_gocache"
 	services_util "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/util"
 	fluffycore_services_eko_gocache_go_cache "github.com/fluffy-bunny/fluffycore/services/eko_gocache/go_cache"
+	services_oidcflowstore "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/oidcflowstore"
+
 )
 
 // put all services you want shared between the echo and grpc servers here
@@ -14,5 +16,5 @@ import (
 func ConfigureServices(builder di.ContainerBuilder) {
 	services_util.AddSingletonISomeUtil(builder)
 	fluffycore_services_eko_gocache_go_cache.AddISingletonInMemoryCache(builder, reflect.TypeOf((*contracts_eko_gocache.IOIDCFlowCache)(nil)))
-
+	services_oidcflowstore.AddSingletonIOIDCFlowCache(builder)
 }

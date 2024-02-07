@@ -1,4 +1,4 @@
-package somedisposable
+package util
 
 import (
 	"context"

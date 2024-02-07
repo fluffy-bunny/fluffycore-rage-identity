@@ -108,6 +108,12 @@ paths:
       consumes:
       - '*/*'
       description: get the home page.
+      parameters:
+      - description: code
+        in: query
+        name: code
+        required: true
+        type: string
       produces:
       - application/json
       responses:

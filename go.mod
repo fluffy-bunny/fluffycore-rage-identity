@@ -7,6 +7,7 @@ go 1.21.6
 //replace github.com/fluffy-bunny/viperEx => ../ViperEx
 
 require (
+	github.com/ahmetb/go-linq/v3 v3.2.0
 	github.com/eko/gocache/lib/v4 v4.1.5
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.1
 	github.com/fluffy-bunny/fluffycore v1.0.61
@@ -36,7 +37,6 @@ require (
 	github.com/DataDog/sketches-go v1.4.2 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
-	github.com/ahmetb/go-linq/v3 v3.2.0 // indirect
 	github.com/auth0/go-jwt-middleware/v2 v2.2.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect

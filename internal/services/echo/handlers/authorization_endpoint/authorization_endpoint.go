@@ -5,14 +5,11 @@ reference: https://developers.onelogin.com/openid-connect/api/authorization-code
 */
 import (
 	"net/http"
-	"time"
 
-	store "github.com/eko/gocache/lib/v4/store"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/eko_gocache"
 	contracts_util "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/util"
 	models "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/models"
-	clientauthorization "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/middleware/clientauthorization"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/wellknown/echo"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -25,7 +22,7 @@ type (
 	service struct {
 		someUtil          contracts_util.ISomeUtil
 		scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache
-		oidcFlowCache     contracts_eko_gocache.IOIDCFlowCache
+		oidcFlowStore     contracts_eko_gocache.IOIDCFlowStore
 	}
 )
 
@@ -36,12 +33,12 @@ func init() {
 }
 
 func (s *service) Ctor(scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
-	oidcFlowCache contracts_eko_gocache.IOIDCFlowCache,
+	oidcFlowStore contracts_eko_gocache.IOIDCFlowStore,
 	someUtil contracts_util.ISomeUtil) (*service, error) {
 	return &service{
 		someUtil:          someUtil,
 		scopedMemoryCache: scopedMemoryCache,
-		oidcFlowCache:     oidcFlowCache,
+		oidcFlowStore:     oidcFlowStore,
 	}, nil
 }
 
@@ -59,7 +56,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 
 func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{
-		clientauthorization.AuthenticateOAuth2Client(),
+		//clientauthorization.AuthenticateOAuth2Client(),
 	}
 }
 
@@ -91,13 +88,17 @@ func (s *service) Do(c echo.Context) error {
 	// does the client have the permissions to do this?
 	code := xid.New().String()
 	// store the model in the cache.  Redis in production.
-	err := s.oidcFlowCache.Set(ctx, code, model, store.WithExpiration(30*time.Minute))
+	authorizationFinal := &models.AuthorizationFinal{
+		Request: model,
+	}
+
+	err := s.oidcFlowStore.StoreAuthorizationFinal(ctx, code, authorizationFinal)
 	if err != nil {
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")
 	}
 
-	mm, err := s.oidcFlowCache.Get(ctx, code)
+	mm, err := s.oidcFlowStore.GetAuthorizationFinal(ctx, code)
 	if err != nil {
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")

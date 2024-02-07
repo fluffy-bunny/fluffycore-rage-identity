@@ -175,6 +175,15 @@ const docTemplate = `{
                     "root"
                 ],
                 "summary": "get the home page.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "code",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
