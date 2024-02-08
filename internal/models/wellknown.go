@@ -11,3 +11,36 @@ const (
 	OAuth2GrantType_TokenExchange     = "urn:ietf:params:oauth:grant-type:token-exchange"
 	OAUTH2GrantType_AuthorizationCode = "authorization_code"
 )
+
+const (
+	ACRPassword = "urn:hanko:loa:1fa:pwd"
+	ACR2FA      = "urn:hanko:loa:2fa"
+	ACRIdp      = "urn:hanko:loa:idp:{idp}"
+)
+const (
+	AMRPassword = "pwd"
+	AMR2FA      = "mfa"
+	AMRIdp      = "idp"
+)
+
+const (
+	WellknownIdpRoot      = "root"
+	WellknownIdpGoogle    = "google"
+	WellknownIdpGithub    = "github"
+	WellknownIdpMicrosoft = "microsoft"
+	WellknownIdpApple     = "apple"
+)
+
+const (
+	ClaimTypeAcr   = "acr"
+	ClaimTypeSub   = "sub"
+	ClaimTypeIat   = "iat"
+	ClaimTypeExp   = "exp"
+	ClaimTypeNbf   = "nbf"
+	ClaimTypeJti   = "jti"
+	ClaimTypeIss   = "iss"
+	ClainTypeAud   = "aud"
+	ClaimTypeAzp   = "azp"
+	ClaimTypeNonce = "nonce"
+	ClaimTypeAmr   = "amr"
+)
