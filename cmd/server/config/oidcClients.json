@@ -1,0 +1,17 @@
+{
+  "clients": [
+    {
+      "client_id": "go-client",
+      "allowed_grant_types": ["autorization_code"],
+      "client_secrets": [
+        {
+          "id": "cim6nke5cpqs73cqthgg",
+          "name": "secret",
+          "expiration_unix": "4843141941",
+          "hash": "$argon2id$v=19$m=65536,t=1,p=2$8DTBS3H1FXas5rSBzf2SNA$y5r6pvZZm2FRIYSOd6OT3YTFwb3dfCnh9GuSHZfXSZc"
+        }
+      ],
+      "allowed_redirect_uris": ["http://localhost:5556/auth/callback"]
+    }
+  ]
+}

@@ -1,0 +1,172 @@
+syntax = "proto3";
+
+option go_package = "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/client;client";
+option java_multiple_files = true;
+option java_package = "com.fluffybunny.hankooidc.client";
+option csharp_namespace = "FluffyBunny.HankoOidc.Oidc.Client";
+
+
+package proto.oidc.client;
+
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/wrappers.proto";
+import "proto/types/filter.proto";
+import "proto/types/pagination.proto";
+import "proto/oidc/models/client.proto";
+
+import "google/api/annotations.proto";
+
+message Filter {
+    proto.types.IDFilterExpression           client_id = 1;
+    proto.types.BoolFilterExpression         enabled = 2;
+    proto.types.StringFilterExpression       client_name = 3;
+    proto.types.StringFilterExpression       description = 4;
+    proto.types.StringFilterExpression       namespace = 5;
+    proto.types.BoolFilterExpression         require_refresh_client_secret = 6;
+    proto.types.BoolFilterExpression         allow_offline_access = 7;
+    proto.types.BoolFilterExpression         update_access_token_claims_on_refresh = 8;
+    proto.types.BoolFilterExpression         include_jwt_id = 9;
+    proto.types.BoolFilterExpression         always_send_client_claims = 10;
+    proto.types.BoolFilterExpression         always_include_user_claims_in_id_token = 11;
+    proto.types.BoolFilterExpression         require_client_secret = 12;
+    proto.types.UInt64FilterExpression       access_token_lifetime = 13;
+    proto.types.UInt64FilterExpression       absolute_refresh_token_lifetime = 14;
+    proto.types.UInt64FilterExpression       sliding_refresh_token_lifetime = 15;
+    proto.types.UInt64FilterExpression       identity_token_lifetime = 16;
+    proto.types.BoolFilterExpression         refresh_token_grace_enabled = 17;
+    proto.types.UInt64FilterExpression       refresh_token_grace_ttl = 18;
+    proto.types.UInt64FilterExpression       refresh_token_grace_max_attempts = 19;
+    proto.types.UInt64FilterExpression       refresh_token_usage = 20;
+    proto.types.UInt64FilterExpression       refresh_token_expiration = 21;
+    proto.types.UInt64FilterExpression       access_token_type = 22;
+
+    proto.types.StringArrayFilterExpression  allowed_scopes = 24;
+    proto.types.StringArrayFilterExpression  allowed_grant_types = 25;
+    proto.types.StringArrayFilterExpression  allowed_permissions = 27;
+    proto.types.StringArrayFilterExpression  allowed_dynamic_claim_types = 28;
+    proto.types.StringArrayFilterExpression  allowed_token_exchange_requested_token_types = 29;
+
+ 
+    
+    // AST
+    repeated Filter and = 100;
+    repeated Filter or = 101;
+    repeated Filter not = 102;
+}
+
+service ClientService {
+    // Create client
+    rpc CreateClient (CreateClientRequest) returns (CreateClientResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/Client/_create"
+            body: "*"
+          };
+    }
+    // Get client
+    rpc GetClient (GetClientRequest) returns (GetClientResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/Client/client_id/{client_id}"
+          };
+    }
+
+    // Delete client
+    rpc DeleteClient (DeleteClientRequest) returns (DeleteClientResponse) {
+        option (google.api.http) = {
+            delete: "/api/v1/Client/client_id/{client_id}"
+          };
+    }
+    // Update client
+    rpc UpdateClient (UpdateClientRequest) returns (UpdateClientResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/Client/_update"
+            body: "*"
+          };
+    }
+    // List clients
+    rpc ListClient (ListClientRequest) returns (ListClientResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/Client/_search"
+            body: "*"
+          };
+    }
+    // Generate a new client secret
+    rpc AddNewClientSecret (AddNewClientSecretRequest) returns (AddNewClientSecretResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/Client/add/secret"
+            body: "*"
+          };
+    }
+    // Generate a new client secret
+    rpc ValidateClientSecret ( ValidateClientSecretRequest) returns (ValidateClientSecretResponse) {}
+} 
+
+
+message ValidateClientSecretRequest{
+    // The client id
+    string                          client_id = 1;
+    // secret
+    string                          secret = 2;
+}
+message ValidateClientSecretResponse{
+   bool valid = 1;
+}
+message AddNewClientSecretRequest {
+   // The client id
+   string                          client_id = 1;
+   // The secret name
+   string                          name = 2;
+   // expiration of the secret
+   int64                           expiration_unix = 3;
+
+   // the secret vs a generated secret
+   google.protobuf.StringValue     secret = 4;
+
+
+   
+}
+message AddNewClientSecretResponse {
+   // The client id
+   string                  client_id = 1;
+   // The secret name
+   proto.oidc.models.ClientSecretResponse    client_secret = 2;
+}
+
+message CreateClientRequest {
+    proto.oidc.models.Client client = 1;
+}   
+message CreateClientResponse {
+    proto.oidc.models.Client client = 1;
+}
+message GetClientRequest {
+   string client_id = 1;
+}
+message GetClientResponse {
+    proto.oidc.models.Client client = 1;
+}
+
+message DeleteClientRequest {
+   string client_id = 1;
+}
+message DeleteClientResponse {
+}
+message UpdateClientRequest {
+    proto.oidc.models.ClientUpdate client = 1;
+}
+message UpdateClientResponse {
+    proto.oidc.models.Client client = 1;
+}
+
+message ListClientRequest {
+   // Filter
+   Filter filter = 1;
+
+   // Pagination
+   proto.types.Pagination pagination = 100;
+}
+
+message ListClientResponse {
+   repeated proto.oidc.models.Client clients = 1;
+
+   // Pagination details
+   proto.types.PaginationResponse pagination = 100;
+}

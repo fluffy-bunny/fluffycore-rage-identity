@@ -1,4 +1,4 @@
-FROM golang:1.21 as build
+FROM golang:1.22 as build
 
 #!!!DO NOT REMOVE THE BELOW 3 LINES!!! Needed for github action to work
 #GHAONLY:COPY dotssh/* /root/.ssh/
@@ -65,12 +65,12 @@ COPY ./cmd/server/static ./static/
 ENV PATH=/app:${PATH}
 ENV PORT="50051"
 ENV REST_PORT="50052"
-ENV OAUTH2_PORT="50053"
+ENV oauth2Port="50053"
 ENV GRPC_GATEWAY_ENABLED="true"
 
 ENV ENABLE_GRPC_SERVER_REFLECTION="true"
-ENV JWT_VALIDATORS__ISSUERS="@@@REPLACE@@@"
-ENV JWT_VALIDATORS__JWKS_URLS="@@@REPLACE@@@"
+ENV jwtValidators__issuers="@@@REPLACE@@@"
+ENV jwtValidators__jwksUrls="@@@REPLACE@@@"
 
 # DO NOT USE CURL. imagine if someone got access to your running docker container.
 #HEALTHCHECK --interval=10s --timeout=3s \

@@ -83,7 +83,7 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 	di.AddInstance[*fluffycore_contracts_ddprofiler.Config](builder, config.DDProfilerConfig)
 	di.AddInstance[*contracts_config.Config](builder, config)
 
-	services.ConfigureServices(builder)
+	services.ConfigureServices(ctx, config, builder)
 	fluffycore_services_ddprofiler.AddSingletonIProfiler(builder)
 	services_health.AddHealthService(builder)
 	services_greeter.AddGreeterService(builder)
@@ -100,6 +100,7 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 			})
 	}
 	fluffycore_middleware_auth_jwt.AddValidators(builder, issuerConfigs)
+
 }
 func (s *startup) Configure(ctx context.Context, rootContainer di.Container, unaryServerInterceptorBuilder fluffycore_contracts_middleware.IUnaryServerInterceptorBuilder, streamServerInterceptorBuilder fluffycore_contracts_middleware.IStreamServerInterceptorBuilder) {
 	log := zerolog.Ctx(ctx).With().Str("method", "Configure").Logger()
@@ -143,19 +144,19 @@ func (s *startup) Configure(ctx context.Context, rootContainer di.Container, una
 func (s *startup) OnPreServerStartup(ctx context.Context) error {
 	log := zerolog.Ctx(ctx).With().Str("method", "OnPreServerStartup").Logger()
 
-	clientsJSON, err := os.ReadFile(s.config.ConfigFiles.ClientPath)
-	var clients []mocks_contracts_oauth2.Client
+	mockOauth2ClientsJSON, err := os.ReadFile(s.config.ConfigFiles.MockOAuth2ClientPath)
+	var mockOauth2Clients []mocks_contracts_oauth2.Client
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal(clientsJSON, &clients)
+	err = json.Unmarshal(mockOauth2ClientsJSON, &mockOauth2Clients)
 	if err != nil {
 		return err
 	}
 
-	log.Info().Interface("clients", clients).Msg("clients")
+	log.Info().Interface("mockOauth2ClientsJSON", mockOauth2Clients).Msg("mockOauth2ClientsJSON")
 	s.mockOAuth2Server = mocks_oauth2_echo.NewOAuth2TestServer(&mocks_contracts_oauth2.MockOAuth2Config{
-		Clients: clients,
+		Clients: mockOauth2Clients,
 	})
 	s.oidcserverRuntime = core_echo_runtime.New(oidcserver.NewStartup())
 	s.oidcserverFuture = fluffycore_async.ExecuteWithPromiseAsync(func(promise async.Promise[fluffycore_async.AsyncResponse]) {

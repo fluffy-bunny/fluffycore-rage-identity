@@ -24,7 +24,7 @@ func (s *service) Ctor() (contracts_tokenservice.ITokenService, error) {
 	return &service{}, nil
 }
 
-func AddSingletonISomeUtil(cb di.ContainerBuilder) {
+func AddSingletonITokenService(cb di.ContainerBuilder) {
 	di.AddSingleton[contracts_tokenservice.ITokenService](cb, stemService.Ctor)
 }
 

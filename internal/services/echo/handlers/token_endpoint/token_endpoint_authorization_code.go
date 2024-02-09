@@ -3,11 +3,13 @@ package token_endpoint
 import (
 	"net/http"
 
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/models"
+
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	oauth2 "github.com/go-oauth2/oauth2/v4"
 	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
-	"github.com/rs/zerolog"
+	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 )
 
@@ -19,9 +21,9 @@ type TokenEndpointAuthorizationCodeRequest struct {
 }
 
 type TokenEndpointAuthorizationCodeResponse struct {
-	AccessToken  string `json:"access_token",omitempty`
-	TokenType    string `json:"token_type",omitempty`
-	ExpiresIn    int    `json:"expires_in",omitempty`
+	AccessToken  string `json:"access_token,omitempty"`
+	TokenType    string `json:"token_type,omitempty"`
+	ExpiresIn    int    `json:"expires_in,omitempty"`
 	RefreshToken string `json:"refresh_token,omitempty"`
 	IDToken      string `json:"id_token,omitempty"`
 }
@@ -44,12 +46,36 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 	log := zerolog.Ctx(ctx).With().
 		Str("grant_type", string(oauth2.AuthorizationCode)).Logger()
 
+	clientI, err := s.scopedMemoryCache.Get("client")
+	if err != nil {
+		log.Error().Err(err).Msg("s.scopedMemoryCache.Get client")
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+	client, ok := clientI.(*proto_oidc_models.Client)
+	if !ok {
+		log.Error().Msg("clientI.(*proto_oidc_models.Client)")
+		return c.String(http.StatusBadRequest, "clientI.(*proto_oidc_models.Client)")
+	}
+
+	allowedGrantType := false
+	// is this client allowed to use the authorization_code grant type?
+	for _, gt := range client.AllowedGrantTypes {
+		allowedGrantType = (gt == string(oauth2.AuthorizationCode))
+		if allowedGrantType {
+			break
+		}
+	}
+	if !allowedGrantType {
+		log.Error().Msg("allowedGrantType")
+		return c.String(http.StatusUnauthorized, "allowedGrantType")
+	}
+
 	req := &TokenEndpointAuthorizationCodeRequest{}
 	if err := c.Bind(req); err != nil {
 		log.Error().Err(err).Msg("Bind")
 		return err
 	}
-	err := s.validateTokenEndpointAuthorizationCodeRequest(req)
+	err = s.validateTokenEndpointAuthorizationCodeRequest(req)
 	if err != nil {
 		log.Error().Err(err).Msg("validateTokenEndpointAuthorizationCodeRequest")
 		return c.String(http.StatusBadRequest, err.Error())

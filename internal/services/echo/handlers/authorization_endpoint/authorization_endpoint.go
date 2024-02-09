@@ -11,6 +11,7 @@ import (
 	contracts_util "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/util"
 	models "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/models"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/wellknown/echo"
+	proto_oidc_client "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/client"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v4"
@@ -20,9 +21,10 @@ import (
 
 type (
 	service struct {
-		someUtil          contracts_util.ISomeUtil
-		scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache
-		oidcFlowStore     contracts_eko_gocache.IOIDCFlowStore
+		someUtil            contracts_util.ISomeUtil
+		scopedMemoryCache   fluffycore_contracts_common.IScopedMemoryCache
+		oidcFlowStore       contracts_eko_gocache.IOIDCFlowStore
+		clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer
 	}
 )
 
@@ -33,12 +35,14 @@ func init() {
 }
 
 func (s *service) Ctor(scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
+	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
 	oidcFlowStore contracts_eko_gocache.IOIDCFlowStore,
 	someUtil contracts_util.ISomeUtil) (*service, error) {
 	return &service{
-		someUtil:          someUtil,
-		scopedMemoryCache: scopedMemoryCache,
-		oidcFlowStore:     oidcFlowStore,
+		someUtil:            someUtil,
+		scopedMemoryCache:   scopedMemoryCache,
+		oidcFlowStore:       oidcFlowStore,
+		clientServiceServer: clientServiceServer,
 	}, nil
 }
 

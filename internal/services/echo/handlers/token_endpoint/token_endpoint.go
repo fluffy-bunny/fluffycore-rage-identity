@@ -60,6 +60,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 
 func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{
+		// this will pull the client_id and client_secret from the Authorization header or form and put the client into the scoped memory cache
 		clientauthorization.AuthenticateOAuth2Client(),
 	}
 }

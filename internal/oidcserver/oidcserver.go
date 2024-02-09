@@ -1,6 +1,8 @@
 package oidcserver
 
 import (
+	"context"
+
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/config"
 	services "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services"
@@ -58,7 +60,7 @@ func (s *startup) ConfigureServices(builder di.ContainerBuilder) error {
 		Port: s.config.Echo.Port,
 	})
 	s.addAppHandlers(builder)
-	services.ConfigureServices(builder)
+	services.ConfigureServices(context.TODO(), s.config, builder)
 	return nil
 }
 
