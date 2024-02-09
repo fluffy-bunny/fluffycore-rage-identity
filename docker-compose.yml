@@ -13,6 +13,7 @@ services:
       - "50053:50053"
       - "9044:9044"
     environment:
+      ENABLE_GRPC_SERVER_REFLECTION: "true"
       APPLICATION_NAME: "starterkit"
       APPLICATION_ENVIRONMENT: "DOCKER"
       LOG_LEVEL": "debug"
@@ -23,12 +24,13 @@ services:
       oauth2Port: "50053"
       customString: "In Flames"
       someSecret: "1234567890"
-      ENABLE_GRPC_SERVER_REFLECTION: "true"
       jwtValidators__issuers: "http://starterkit:50053"
       jwtValidators__jwksUrls: "http://starterkit:50053/.well-known/jwks"
-      ConfigFiles__CLIENT_PATH: "/config/clients.json"
+      configFiles__mockOAuth2ClientPath: "/config/mockOAuth2Clients.json"
+      configFiles__oidcClientPath: "/config/oidcClients.json"
     volumes:
-      - ./config/clients.json:/config/clients.json
+      - ./cmd/server/config/mockOAuth2Clients.json:/config/mockOAuth2Clients.json
+      - ./cmd/server/config/oidcClients.json:/config/oidcClients.json
     entrypoint: ["/app/server", "serve"]
 
   whoami:
