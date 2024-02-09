@@ -1,0 +1,138 @@
+syntax = "proto3";
+
+option go_package = "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/models;models";
+option java_multiple_files = true;
+option java_package = "com.fluffybunny.hankooidc.models";
+option csharp_namespace = "FluffyBunny.HankoOidc.Oidc.Models";
+
+
+package proto.oidc.models;
+
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/wrappers.proto";
+import "proto/types/primitives.proto";
+
+
+message Claim {
+    string type = 1;
+    oneof value {
+        string                      string_value = 2;
+        bool                        bool_value = 3;
+        int64                       int64_value = 4;
+        double                      double_value = 5;
+        proto.types.StringValues    string_values = 6;
+        proto.types.Int64Values     int64_values = 7;
+        proto.types.DoubleValues    double_values = 8;
+    }
+}
+
+message ClaimsValue {
+    repeated Claim values = 1;
+} 
+
+message ClaimsUpdate {
+    message Granular{
+        repeated Claim    add = 1;
+        repeated Claim    remove = 2;
+        repeated string   remove_all = 3;
+    }
+    oneof update {
+        Granular          granular = 1;
+        ClaimsValue       replace = 2;
+    }
+}
+message ClientSecret {
+    string  id = 1;
+    string  name = 2;
+    int64   expiration_unix = 3;
+    string  hash = 4;
+}
+
+message ClientSecretResponse {
+    string  id = 1;
+    string  name = 2;
+    int64   expiration_unix = 3;
+    string  secret = 4;
+}
+message ClientSecretsUpdate {
+    message ByIds{
+        repeated string             ids = 1;
+    }
+    oneof update {
+        ByIds                       remove_by_ids = 1;
+        google.protobuf.BoolValue   remove_all = 2;
+    }
+    bool                            remove_expired = 3;
+}
+message Client {
+    string                                      client_id = 1;
+    bool                                        enabled = 2;
+    string                                      client_name = 3;
+    string                                      description = 4;
+    string                                      namespace = 5;
+    bool                                        require_refresh_client_secret = 6;
+    bool                                        allow_offline_access = 7;
+    bool                                        update_access_token_claims_on_refresh = 8;
+    bool                                        include_jwt_id = 9;
+    bool                                        always_send_client_claims = 10;
+    bool                                        always_include_user_claims_in_id_token = 11;
+    bool                                        require_client_secret = 12;
+    uint64                                      access_token_lifetime = 13;
+    uint64                                      absolute_refresh_token_lifetime = 14;
+    uint64                                      sliding_refresh_token_lifetime = 15;
+    uint64                                      identity_token_lifetime = 16;
+    bool                                        refresh_token_grace_enabled = 17;
+    uint64                                      refresh_token_grace_ttl = 18;
+    uint64                                      refresh_token_grace_max_attempts = 19;
+    uint64                                      refresh_token_usage = 20;
+    uint64                                      refresh_token_expiration = 21;
+    uint64                                      access_token_type = 22;
+    repeated Claim                              claims = 23;
+    repeated string                             allowed_scopes = 24;
+    repeated string                             allowed_grant_types = 25;
+    repeated ClientSecret                       client_secrets = 26;
+    repeated string                             allowed_permissions = 27;
+    proto.types.StringMapValue                  metadata = 28;
+    repeated string                             allowed_dynamic_claim_types = 29;
+    repeated string                             allowed_token_exchange_requested_token_types = 30;
+    repeated string                             allowed_redirect_uris = 31;
+
+}
+message Clients {
+    repeated Client clients = 1;
+}
+message ClientUpdate {
+    string                                  client_id = 1;
+    google.protobuf.BoolValue               enabled = 2;
+    google.protobuf.StringValue             client_name = 3;
+    google.protobuf.StringValue             description = 4;
+    google.protobuf.StringValue             namespace = 5;
+    google.protobuf.BoolValue               require_refresh_client_secret = 6;
+    google.protobuf.BoolValue               allow_offline_access = 7;
+    google.protobuf.BoolValue               update_access_token_claims_on_refresh = 8;
+    google.protobuf.BoolValue               include_jwt_id = 9;
+    google.protobuf.BoolValue               always_send_client_claims = 10;
+    google.protobuf.BoolValue               always_include_user_claims_in_id_token = 11;
+    google.protobuf.BoolValue               require_client_secret = 12;
+    google.protobuf.UInt64Value             access_token_lifetime = 13;
+    google.protobuf.UInt64Value             absolute_refresh_token_lifetime = 14;
+    google.protobuf.UInt64Value             sliding_refresh_token_lifetime = 15;
+    google.protobuf.UInt64Value             identity_token_lifetime = 16;
+    google.protobuf.BoolValue               refresh_token_grace_enabled = 17;
+    google.protobuf.UInt64Value             refresh_token_grace_ttl = 18;
+    google.protobuf.UInt64Value             refresh_token_grace_max_attempts = 19;
+    google.protobuf.UInt64Value             refresh_token_usage = 20;
+    google.protobuf.UInt64Value             refresh_token_expiration = 21;
+    google.protobuf.UInt64Value             access_token_type = 22;
+    ClaimsUpdate                            claims = 23;
+    proto.types.StringArrayUpdate           allowed_scopes = 24;
+    proto.types.StringArrayUpdate           allowed_grant_types = 25;
+    ClientSecretsUpdate                     client_secrets = 26;
+    proto.types.StringArrayUpdate           allowed_permissions = 27;
+    proto.types.StringMapUpdate             metadata = 28;
+    proto.types.StringArrayUpdate           allowed_dynamic_claim_types = 29;
+    proto.types.StringArrayUpdate           allowed_token_exchange_requested_token_types = 30;
+    proto.types.StringArrayUpdate           allowed_redirect_uris = 31;
+    
+
+}

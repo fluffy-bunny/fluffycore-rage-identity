@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+option go_package = "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/types;types";
+option java_multiple_files = true;
+option java_package = "com.fluffybunny.hankooidc.types";
+option csharp_namespace = "FluffyBunny.HankoOidc.Types";
+
+
+package proto.types;
+
+import "google/protobuf/descriptor.proto";
+
+
+enum Order {
+    // Conventional default for enums. Do not use this.
+    ORDER_UNSPECIFIED = 0;
+    // Ascending order
+    ASC = 1;
+    // Descending order
+    DESC = 2;
+}  
+message Pagination {
+    // Maximum number of entries to retrieve
+    uint32 limit = 1;
+    string iterator = 2;
+    Order order = 3;
+}
+
+
+// PaginationResponse ...
+message PaginationResponse {
+    string iterator = 1;
+    string prev_iterator = 2;
+    // Is a total count of records available?
+    bool total_available = 3;
+
+    // Total number of records available (if totalAvailable = true)
+    uint64 total = 4;
+
+     // There is no more data
+    bool no_more_data = 5;
+}

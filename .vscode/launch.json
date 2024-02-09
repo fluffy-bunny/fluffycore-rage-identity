@@ -11,6 +11,7 @@
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/server",
             "env": {
+                "ENABLE_GRPC_SERVER_REFLECTION": "true",
                 "APPLICATION_NAME": "server",
                 "APPLICATION_ENVIRONMENT":"Development",
                 "LOG_LEVEL": "debug",     
@@ -18,12 +19,11 @@
                 "PORT": "50051",
                 "GRPC_GATEWAY_ENABLED": "true",
                 "REST_PORT": "50052",
-                "OAUTH2_PORT":"50053",
-                "CUSTOM_STRING": "In Flames",
-                "SOME_SECRET": "1234567890",
-                "ENABLE_GRPC_SERVER_REFLECTION": "true",
-                "JWT_VALIDATORS__ISSUERS": "http://localhost:50053,http://host.docker.internal:50053",
-                "JWT_VALIDATORS__JWKS_URLS": "http://localhost:50053/.well-known/jwks,http://host.docker.internal:50053/.well-known/jwks",
+                "oauth2Port":"50053",
+                "customString": "In Flames",
+                "someSecret": "1234567890",
+                "jwtValidators__issuers": "http://localhost:50053,http://host.docker.internal:50053",
+                "jwtValidators__jwksUrls": "http://localhost:50053/.well-known/jwks,http://host.docker.internal:50053/.well-known/jwks",
 
             },
             "args": [ "serve" ]        
