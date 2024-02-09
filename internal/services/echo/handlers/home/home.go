@@ -4,14 +4,19 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_util "github.com/fluffy-bunny/fluffycore-starterkit/internal/contracts/util"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-starterkit/internal/wellknown/echo"
+	contracts_util "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/util"
+	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/base"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/wellknown/echo"
+	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
+	fluffycore_echo_contracts_contextaccessor "github.com/fluffy-bunny/fluffycore/echo/contracts/contextaccessor"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v4"
 )
 
 type (
 	service struct {
+		services_echo_handlers_base.BaseHandler
+
 		someUtil contracts_util.ISomeUtil
 	}
 )
@@ -22,8 +27,12 @@ func init() {
 	var _ contracts_handler.IHandler = stemService
 }
 
-func (s *service) Ctor(someUtil contracts_util.ISomeUtil) (*service, error) {
+func (s *service) Ctor(someUtil contracts_util.ISomeUtil,
+	claimsPrincipal fluffycore_contracts_common.IClaimsPrincipal,
+	echoContextAccessor fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor) (*service, error) {
 	return &service{
+		BaseHandler: services_echo_handlers_base.BaseHandler{
+			ClaimsPrincipal: claimsPrincipal, EchoContextAccessor: echoContextAccessor},
 		someUtil: someUtil,
 	}, nil
 }
@@ -45,13 +54,13 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 // HealthCheck godoc
-// @Summary Show the status of server.
-// @Description get the status of server.
+// @Summary get the home page.
+// @Description get the home page.
 // @Tags root
 // @Accept */*
 // @Produce json
 // @Success 200 {object} string
 // @Router / [get]
 func (s *service) Do(c echo.Context) error {
-	return c.Render(http.StatusOK, "views/home/index", map[string]interface{}{})
+	return s.Render(c, http.StatusOK, "views/home/index", map[string]interface{}{})
 }

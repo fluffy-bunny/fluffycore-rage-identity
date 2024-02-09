@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+option go_package = "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/types;types";
+option java_multiple_files = true;
+option java_package = "com.fluffybunny.hankooidc.types";
+option csharp_namespace = "FluffyBunny.HankoOidc.Types";
+
+
+package proto.types;
+
+import "google/protobuf/descriptor.proto";
+
+message StringValues {
+    repeated string values = 1;
+}
+message Int64Values {
+    repeated int64 values = 1;
+}
+message Int32Values {
+    repeated int32 values = 1;
+}
+message DoubleValues {
+    repeated double values = 1;
+}
+message UInt32Values {
+    repeated uint32 values = 1;
+}
+message UInt64Values {
+    repeated uint64 values = 1;
+}
+
+message StringMapValue {
+    map<string, string> value = 1;
+}
+message StringMapUpdate {
+    message Granular{
+        map<string, string> add = 1;
+        repeated string remove = 2;
+     }
+    oneof update {
+        Granular          granular = 1;
+        StringMapValue    replace = 2;
+    }
+}
+
+ 
+message StringArrayUpdate {
+    message Granular{
+        repeated string add = 1;
+        repeated string remove = 2;
+     }
+    oneof update {
+        Granular            granular = 1;
+        StringValues        replace = 2;
+    }
+}
+
+ 
+message UInt32ArrayUpdate {
+    message Granular{
+        repeated uint32 add = 1;
+        repeated uint32 remove = 2;
+     }
+    oneof update {
+        Granular            granular = 1;
+        UInt32Values        replace = 2;
+    }
+}
+
+
+
+message UInt64ArrayUpdate {
+    message Granular{
+        repeated uint64 add = 1;
+        repeated uint64 remove = 2;
+     }
+    oneof update {
+        Granular        granular = 1;
+        UInt64Values    replace = 2;
+    }
+}
+
+
+
+message Int32ArrayUpdate {
+    message Granular{
+        repeated int32 add = 1;
+        repeated int32 remove = 2;
+     }
+    oneof update {
+        Granular            granular = 1;
+        Int32Values    replace = 2;
+    }
+}
+
+ 
+message Int64ArrayUpdate {
+    message Granular{
+        repeated int64 add = 1;
+        repeated int64 remove = 2;
+     }
+    oneof update {
+        Granular            granular = 1;
+        Int64Values         replace = 2;
+    }
+}

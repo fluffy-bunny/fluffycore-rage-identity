@@ -1,0 +1,169 @@
+syntax = "proto3";
+
+option go_package = "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/types;types";
+option java_multiple_files = true;
+option java_package = "com.fluffybunny.hankooidc.types";
+option csharp_namespace = "FluffyBunny.HankoOidc.Types";
+
+
+package proto.types;
+
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/timestamp.proto";
+
+message IDFilterExpression {
+    option (filter_expression) = true;
+    
+    string eq          = 1 [(op) = OP_EQ];
+    repeated string in = 2 [(op) = OP_IN];
+}
+message StringFilterExpression {
+    option (filter_expression) = true;
+
+    string eq          = 1 [(op) = OP_EQ];
+    string contains    = 2 [(op) = OP_CONTAINS];
+    repeated string in = 3 [(op) = OP_IN];
+    string ne          = 4 [(op) = OP_NE];
+}
+
+message BoolFilterExpression {
+    option (filter_expression) = true;
+
+    bool eq = 1 [(op) = OP_EQ];
+
+    bool is_defined = 10; // This is to distinguish explicitly defined value from its default value. The filter is not effective unless _is_defined == true
+}
+message FloatFilterExpression {
+    option (filter_expression) = true;
+    option (allow_multi) = true;
+
+    float eq          = 1 [(op) = OP_EQ];
+    float gt          = 2 [(op) = OP_GT];
+    float gte         = 3 [(op) = OP_GTE];
+    float lt          = 4 [(op) = OP_LT];
+    float lte         = 5 [(op) = OP_LTE];
+    repeated float in = 6 [(op) = OP_IN];
+}
+
+message Int32FilterExpression {
+    option (filter_expression) = true;
+    option (allow_multi) = true;
+
+    int32 eq          = 1 [(op) = OP_EQ];
+    int32 gt          = 2 [(op) = OP_GT];
+    int32 gte         = 3 [(op) = OP_GTE];
+    int32 lt          = 4 [(op) = OP_LT];
+    int32 lte         = 5 [(op) = OP_LTE];
+    repeated int32 in = 6 [(op) = OP_IN];
+}
+message Int64FilterExpression {
+    option (filter_expression) = true;
+    option (allow_multi) = true;
+
+    int64 eq          = 1 [(op) = OP_EQ];
+    int64 gt          = 2 [(op) = OP_GT];
+    int64 gte         = 3 [(op) = OP_GTE];
+    int64 lt          = 4 [(op) = OP_LT];
+    int64 lte         = 5 [(op) = OP_LTE];
+    repeated int64 in = 6 [(op) = OP_IN];
+}
+message UInt32FilterExpression {
+    option (filter_expression) = true;
+    option (allow_multi) = true;
+
+    uint32 eq          = 1 [(op) = OP_EQ];
+    uint32 gt          = 2 [(op) = OP_GT];
+    uint32 gte         = 3 [(op) = OP_GTE];
+    uint32 lt          = 4 [(op) = OP_LT];
+    uint32 lte         = 5 [(op) = OP_LTE];
+    repeated uint32 in = 6 [(op) = OP_IN];
+}
+message UInt64FilterExpression {
+    option (filter_expression) = true;
+    option (allow_multi) = true;
+
+    uint64 eq          = 1 [(op) = OP_EQ];
+    uint64 gt          = 2 [(op) = OP_GT];
+    uint64 gte         = 3 [(op) = OP_GTE];
+    uint64 lt          = 4 [(op) = OP_LT];
+    uint64 lte         = 5 [(op) = OP_LTE];
+    repeated uint64 in = 6 [(op) = OP_IN];
+}
+message StringArrayFilterExpression {
+    option (filter_expression) = true;
+
+    string eq          = 1 [(op) = OP_EQ];
+    repeated string in = 2 [(op) = OP_IN];
+    string ne          = 3 [(op) = OP_NE];
+}
+
+message TimestampFilterExpression {
+    option (filter_expression) = true;
+    option (allow_multi) = true;
+
+    google.protobuf.Timestamp eq     = 1 [(op) = OP_EQ];
+    google.protobuf.Timestamp gt     = 2 [(op) = OP_GT];
+    google.protobuf.Timestamp gte    = 3 [(op) = OP_GTE];
+    google.protobuf.Timestamp lt     = 4 [(op) = OP_LT];
+    google.protobuf.Timestamp lte    = 5 [(op) = OP_LTE];
+}
+
+//
+// Extensions used in the creation of FilterExpressions and Filters
+//
+extend google.protobuf.FieldOptions {
+    // For Filters, this allows a json dot separated path to be specified for the field
+    // location in MongoDB or other document stores. It is optional, and only needed if
+    // the filter.value.xyz field being referenced is nested in the document store.
+    //
+    // For example:
+    // ```
+    // string person_name = 1 [(filter_path) = "my.value.person_name"];
+    // ```
+    // Note that "person_name" at the end of that path is in Protobuf snake_case, not
+    // JSON lowerCamelCase. GTM will give it the proper casing when generating BSON.
+    string filter_path = 75000;
+
+    // For FilterExpressions, this is the operation to be used in the creation of BSON
+    Operator op = 75001;
+}
+
+extend google.protobuf.MessageOptions {
+    // Indicates this message is a nested Filter for a custom type (see notes at the top)
+    bool nested_filter = 75000;
+
+    // Indicates this message is a FilterExpression
+    bool filter_expression = 75100;
+
+    // For FilterExpressions, allows multiple values to be set which will be AND'd together
+    // default is false
+    bool allow_multi = 75101;
+}
+
+enum Operator {
+    OPERATOR_UNSPECIFIED = 0;
+
+    // Existance
+    OP_EXISTS = 1;      // bool value (true=exists, false=does not exist)
+
+    // Numeric expressions
+    OP_EQ = 10;     // == 
+    OP_NE = 11;     // !=
+    OP_GT = 12;     // >
+    OP_GTE = 13;    // >=
+    OP_LT = 14;     // <
+    OP_LTE = 15;    // <=
+
+    // String expressions
+    OP_EQUALS = 20;
+    OP_CONTAINS = 21;
+    OP_REGEX = 22;      // Regex - regex in query value provided used on stored field (/pattern/{opts} or 'pattern' format)
+    OP_INVREGEX = 23;   // Inverted regex - regex in stored field used on query value provided
+
+    // Array expressions
+    OP_SIZE = 31;       // Matches if the stored array field is the size specified in the query value
+    OP_ALL = 32;        // Matches stored arrays that contain all elements specified in the query value array
+    OP_IN = 33;         // Check if a stored scalar field is ANY of the values in the provided query value array
+    OP_NIN = 34;        // Check if a stored scalar field is NONE of the values in the provided query value array
+
+}

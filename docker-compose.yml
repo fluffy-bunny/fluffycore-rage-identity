@@ -6,13 +6,14 @@ services:
     extends:
       file: ./docker-compose-common.yml
       service: micro
-    image: fluffycore.starterkit:latest
+    image: fluffycore.hanko.oidc:latest
     ports:
       - "50051:50051"
       - "50052:50052"
       - "50053:50053"
       - "9044:9044"
     environment:
+      ENABLE_GRPC_SERVER_REFLECTION: "true"
       APPLICATION_NAME: "starterkit"
       APPLICATION_ENVIRONMENT: "DOCKER"
       LOG_LEVEL": "debug"
@@ -20,15 +21,16 @@ services:
       PORT: "50051"
       GRPC_GATEWAY_ENABLED: "true"
       REST_PORT: "50052"
-      OAUTH2_PORT: "50053"
-      CUSTOM_STRING: "In Flames"
-      SOME_SECRET: "1234567890"
-      ENABLE_GRPC_SERVER_REFLECTION: "true"
-      JWT_VALIDATORS__ISSUERS: "http://starterkit:50053"
-      JWT_VALIDATORS__JWKS_URLS: "http://starterkit:50053/.well-known/jwks"
-      CONFIG_FILES__CLIENT_PATH: "/config/clients.json"
+      oauth2Port: "50053"
+      customString: "In Flames"
+      someSecret: "1234567890"
+      jwtValidators__issuers: "http://starterkit:50053"
+      jwtValidators__jwksUrls: "http://starterkit:50053/.well-known/jwks"
+      configFiles__mockOAuth2ClientPath: "/config/mockOAuth2Clients.json"
+      configFiles__oidcClientPath: "/config/oidcClients.json"
     volumes:
-      - ./config/clients.json:/config/clients.json
+      - ./cmd/server/config/mockOAuth2Clients.json:/config/mockOAuth2Clients.json
+      - ./cmd/server/config/oidcClients.json:/config/oidcClients.json
     entrypoint: ["/app/server", "serve"]
 
   whoami:

@@ -1,6 +1,59 @@
-# fluffycore-starterkit
+# FluffyCore OIDC authorization server
 
-starter kit for a fluffycore DI based application
+This is a Proof-Of-Life authentication server.  
+
+No calls to the userinfo endpoint are supported.  id_token is the only thing returned that is useful.  It is meant to use that id_token as an argument to an internal token_exchange that knows more about the user in the context of that system.  
+
+## TL;DR
+
+Just build and run this thing;
+
+```bash
+ docker build --file .\build\Dockerfile . --tag fluffycore.hanko.oidc:latest
+ docker-compose up -d
+```
+
+Now that we have the server running in docker, lets run our client locally.  
+
+```powershell
+cd cmd/go-client
+go build .
+
+$env:PORT = "5556";$env:OAUTH2_CLIENT_ID = "go-client";$env:OAUTH2_CLIENT_SECRET = "secret";$env:AUTHORITY = "http://localhost:9044/"; .\go-client.exe
+```
+
+Open your browser, [Edge](https://www.microsoft.com/en-us/edge) is best and we all know it!  
+
+Navigate to [http://localhost:5556/login](http://localhost:5556/login)  
+
+Any username and password will work.  
+
+You should see a json response like this.  
+
+```json
+
+{
+    "OAuth2Token": {
+        "access_token": "eyJhbGciOiJFUzI1NiIsImtpZCI6IjBiMmNkMmU1NGM5MjRjZTg5ZjAxMGYyNDI4NjIzNjdkIiwidHlwIjoiSldUIn0.eyJhdWQiOiJnby1jbGllbnQiLCJjbGllbnRfaWQiOiJnby1jbGllbnQiLCJlbWFpbCI6InRlc3RAdGVzdC5jb20iLCJleHAiOjE3MDc1MjQ0ODUsImlhdCI6MTcwNzUyMDg4NSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo5MDQ0IiwianRpIjoiY24zYjZ0YWkycW5iMzc4MjgwbjAiLCJuYmYiOjE3MDc1MjA1ODUsInBlcm1pc3Npb25zIjpbInJlYWQiLCJ3cml0ZSJdLCJzdWIiOiIxMjMifQ.R9zQX2njveB-iUhQTO698logMjPtFdDbe7Ne2scSoT8kcMEMk3wEIz2D8tyzcjSlsqSSoXoAP6YKo1dIfnFOOQ",
+        "token_type": "bearer",
+        "refresh_token": "refresh_token",
+        "expiry": "2024-02-09T16:21:26.0012199-08:00"
+    },
+    "IDTokenClaims": {
+        "aud": "go-client",
+        "client_id": "go-client",
+        "email": "test@test.com",
+        "exp": 1707524485,
+        "iat": 1707520885,
+        "iss": "http://localhost:9044",
+        "jti": "cn3b6tai2qnb378280mg",
+        "nbf": 1707520585,
+        "nonce": "AeJpC-NrPt0ED3-Qh2M34g",
+        "sub": "123"
+    },
+    "IDToken": "eyJhbGciOiJFUzI1NiIsImtpZCI6IjBiMmNkMmU1NGM5MjRjZTg5ZjAxMGYyNDI4NjIzNjdkIiwidHlwIjoiSldUIn0.eyJhdWQiOiJnby1jbGllbnQiLCJjbGllbnRfaWQiOiJnby1jbGllbnQiLCJlbWFpbCI6InRlc3RAdGVzdC5jb20iLCJleHAiOjE3MDc1MjQ0ODUsImlhdCI6MTcwNzUyMDg4NSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo5MDQ0IiwianRpIjoiY24zYjZ0YWkycW5iMzc4MjgwbWciLCJuYmYiOjE3MDc1MjA1ODUsIm5vbmNlIjoiQWVKcEMtTnJQdDBFRDMtUWgyTTM0ZyIsInN1YiI6IjEyMyJ9.0KuxDAlXX4DIh5Lh0KSXTahY8gQicRYVWMd-4Ic8J5ZwbFwnrFPk_sgE2cGetcaAFiReHg1SYAszsY8Sahds6A"
+}
+```
 
 ## Protos
 
@@ -18,6 +71,17 @@ go install github.com/fluffy-bunny/fluffycore/protoc-gen-go-fluffycore-di/cmd/pr
 go get github.com/fluffy-bunny/fluffycore   
 
 protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/helloworld/helloworld.proto  
+
+protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/types/primitives.proto 
+
+protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/types/filter.proto 
+
+protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/types/pagination.proto 
+
+protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/oidc/models/client.proto 
+
+protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/oidc/client/client.proto 
+
 ```
 
 ## Private OAuth2 server
@@ -48,7 +112,7 @@ curl --location 'http://localhost:50053/oauth/token' --header 'Content-Type: app
 ## Docker Build
 
 ```bash
- docker build --file .\build\Dockerfile . --tag fluffycore.starterkit:latest
+ docker build --file .\build\Dockerfile . --tag fluffycore.hanko.oidc:latest
  ```
 
 ## Health check  
@@ -93,4 +157,12 @@ We want to swag init the general dir first, which is in the cmd/server directory
 ```bash
 cd cmd/server
 swag init  --dir ./,../../internal  
+```
+## GO OIDC CLIENT
+
+```powershell
+cd cmd/go-client
+go build .
+
+$env:PORT = "5556";$env:OAUTH2_CLIENT_ID = "go-client";$env:OAUTH2_CLIENT_SECRET = "secret";$env:AUTHORITY = "http://localhost:9044/"; .\go-client.exe
 ```

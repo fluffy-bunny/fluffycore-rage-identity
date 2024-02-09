@@ -9,6 +9,7 @@
         <h1>A Bootstrap 5 Starter Template</h1>
         <p class="lead">A complete project boilerplate built with Bootstrap</p>
         <p>Bootstrap v5.1.3</p>
+        <p><a class="nav-link active" aria-current="page" href="/swagger/">swagger</a></p>
         <p><a class="nav-link active" aria-current="page" href="/.well-known/openid-configuration">openid-configuration</a></p>
         <p><a class="nav-link active" aria-current="page" href="/.well-known/jwks">JWKS</a></p>
     </div>

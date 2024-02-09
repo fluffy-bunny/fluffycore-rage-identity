@@ -1,31 +1,42 @@
 package config
 
 import (
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/models"
 	fluffycore_contracts_config "github.com/fluffy-bunny/fluffycore/contracts/config"
 	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
 )
 
 type (
 	JWTValidators struct {
-		Issuers  []string `json:"issuers" mapstructure:"ISSUERS"`
-		JWKSURLS []string `json:"jwksUrls" mapstructure:"JWKS_URLS"`
+		Issuers  []string `json:"issuers"`
+		JWKSURLS []string `json:"jwksUrls"`
 	}
 	ConfigFiles struct {
-		ClientPath string `json:"clientPath" mapstructure:"CLIENT_PATH"`
+		MockOAuth2ClientPath string `json:"mockOAuth2ClientPath"`
+		OIDCClientPath       string `json:"oidcClientPath"`
+	}
+	InMemoryClient struct {
+		Secret   string `json:"secret"`
+		ClientId string `json:"clientId"`
+	}
+	InMemoryClients struct {
+		Clients []*proto_oidc_models.Client `json:"clients"`
 	}
 )
 type EchoConfig struct {
 	Port int `json:"port"`
 }
 type Config struct {
-	ConfigFiles                            ConfigFiles `json:"configFiles" mapstructure:"CONFIG_FILES"`
 	fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
-	CustomString                           string                                  `json:"CUSTOM_STRING" mapstructure:"CUSTOM_STRING"`
-	SomeSecret                             string                                  `json:"SOME_SECRET" mapstructure:"SOME_SECRET" redact:"true"`
-	OAuth2Port                             int                                     `json:"oauth2Port"  mapstructure:"OAUTH2_PORT"`
-	JWTValidators                          JWTValidators                           `json:"jwtValidators" mapstructure:"JWT_VALIDATORS"`
-	DDProfilerConfig                       *fluffycore_contracts_ddprofiler.Config `json:"ddProfilerConfig" mapstructure:"DD_PROFILER_CONFIG"`
-	Echo                                   EchoConfig                              `json:"echo"`
+
+	ConfigFiles      ConfigFiles                             `json:"configFiles"`
+	CustomString     string                                  `json:"customString"`
+	SomeSecret       string                                  `json:"someSecret" redact:"true"`
+	OAuth2Port       int                                     `json:"oauth2Port"`
+	JWTValidators    JWTValidators                           `json:"jwtValidators"`
+	DDProfilerConfig *fluffycore_contracts_ddprofiler.Config `json:"ddProfilerConfig"`
+	Echo             EchoConfig                              `json:"echo"`
+	InMemoryClients  InMemoryClients                         `json:"inMemoryClients"`
 }
 
 // ConfigDefaultJSON default json
@@ -37,15 +48,17 @@ var ConfigDefaultJSON = []byte(`
 	"LOG_LEVEL": "info",
 	"PORT": 50051,
 	"REST_PORT": 50052,
-	"OAUTH2_PORT": 50053,
-	"CUSTOM_STRING": "some default value",
-	"SOME_SECRET": "password",
+	"oauth2Port": 50053,
+	"customString": "some default value",
+	"someSecret": "password",
 	"GRPC_GATEWAY_ENABLED": true,
-	"JWT_VALIDATORS": {},
-	"CONFIG_FILES": {
-		"CLIENT_PATH": "./config/clients.json"
+	"jwtValidators": {},
+	"configFiles": {
+		"mockOAuth2ClientPath": "./config/mockOAuth2Clients.json",
+		"oidcClientPath": "./config/oidcClients.json"
+
 	},
-	"DD_PROFILER_CONFIG": {
+	"ddProfilerConfig": {
 		"ENABLED": false,
 		"SERVICE_NAME": "in-environment",
 		"APPLICATION_ENVIRONMENT": "in-environment",
@@ -53,7 +66,11 @@ var ConfigDefaultJSON = []byte(`
 	},
 	"echo": {
 		"port": 9044 
+	},
+	"inMemoryClients": {
+		"clients": []
 	}
+
 
   }
 `)

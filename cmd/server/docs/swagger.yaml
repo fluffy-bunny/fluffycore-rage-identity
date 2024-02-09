@@ -13,6 +13,81 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
+  /:
+    get:
+      consumes:
+      - '*/*'
+      description: get the home page.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: get the home page.
+      tags:
+      - root
+  /.well-known/jwks:
+    get:
+      consumes:
+      - '*/*'
+      description: get the public keys of the server.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: get the public keys of the server.
+      tags:
+      - root
+  /.well-known/openid-configuration:
+    get:
+      consumes:
+      - '*/*'
+      description: get the status of server.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Show the status of server.
+      tags:
+      - root
+  /about:
+    get:
+      consumes:
+      - '*/*'
+      description: get the about page.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: get the about page.
+      tags:
+      - root
+  /error:
+    get:
+      consumes:
+      - '*/*'
+      description: get the error page.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: get the error page.
+      tags:
+      - root
   /healthz:
     get:
       consumes:
@@ -28,4 +103,122 @@ paths:
       summary: Show the status of server.
       tags:
       - root
+  /login:
+    get:
+      consumes:
+      - '*/*'
+      description: get the home page.
+      parameters:
+      - description: code
+        in: query
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: get the home page.
+      tags:
+      - root
+  /oidc/v1/auth:
+    get:
+      consumes:
+      - '*/*'
+      description: get the home page.
+      parameters:
+      - description: client_id requested
+        in: query
+        name: client_id
+        required: true
+        type: string
+      - description: response_type requested
+        in: query
+        name: response_type
+        required: true
+        type: string
+      - default: '"openid profile email"'
+        description: scope requested
+        in: query
+        name: scope
+        required: true
+        type: string
+      - description: state requested
+        in: query
+        name: state
+        required: true
+        type: string
+      - description: redirect_uri requested
+        in: query
+        name: redirect_uri
+        required: true
+        type: string
+      - description: audience requested
+        in: query
+        name: audience
+        type: string
+      - description: PKCE challenge code
+        in: query
+        name: code_challenge
+        type: string
+      - default: '"S256"'
+        description: PKCE challenge method
+        in: query
+        name: code_challenge_method
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: get the home page.
+      tags:
+      - root
+  /token:
+    post:
+      consumes:
+      - '*/*'
+      description: OAuth2 token endpoint.
+      parameters:
+      - description: response_type requested
+        in: query
+        name: response_type
+        required: true
+        type: string
+      - default: '"openid profile email"'
+        description: scope requested
+        in: query
+        name: scope
+        required: true
+        type: string
+      - description: state requested
+        in: query
+        name: state
+        required: true
+        type: string
+      - description: redirect_uri requested
+        in: query
+        name: redirect_uri
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      security:
+      - BasicAuth: []
+      summary: OAuth2 token endpoint.
+      tags:
+      - root
+securityDefinitions:
+  BasicAuth:
+    type: basic
 swagger: "2.0"
