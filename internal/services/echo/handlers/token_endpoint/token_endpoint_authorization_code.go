@@ -3,8 +3,8 @@ package token_endpoint
 import (
 	"net/http"
 
+	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/tokenservice"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/models"
-
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	oauth2 "github.com/go-oauth2/oauth2/v4"
 	status "github.com/gogo/status"
@@ -82,13 +82,64 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 	}
 	log.Debug().Interface("req", req).Msg("req")
 
+	authFinal, err := s.oidcFlowStore.GetAuthorizationFinal(ctx, req.Code)
+	if err != nil {
+		log.Warn().Err(err).Msg("GetAuthorizationFinal")
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+	idClaims := map[string]interface{}{
+		//--REQUIRED--
+		"aud":   client.ClientId,
+		"nonce": authFinal.Request.Nonce,
+		"sub":   authFinal.Identity.Subject,
+		//--REQUIRED FOR US --
+		"client_id": client.ClientId,
+		"email":     authFinal.Identity.Email,
+		//--OPTIONAL--
+	}
+	idToken, err := s.tokenService.MintToken(ctx, &contracts_tokenservice.MintTokenRequest{
+		Claims:                  idClaims,
+		DurationLifeTimeSeconds: 3600,
+		NotBeforeUnix:           0,
+	})
+	if err != nil {
+		log.Warn().Err(err).Msg("MintToken - idToken")
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+	// this one should be a token exchange to an external service, faking it for now
+	accessTokenClaims := map[string]interface{}{
+		"client_id": client.ClientId,
+		"aud":       client.ClientId,
+		"sub":       authFinal.Identity.Subject,
+		"email":     authFinal.Identity.Email,
+		"permissions": []string{
+			"read",
+			"write",
+		},
+	}
+	accessToken, err := s.tokenService.MintToken(ctx, &contracts_tokenservice.MintTokenRequest{
+		Claims:                  accessTokenClaims,
+		DurationLifeTimeSeconds: 3600,
+		NotBeforeUnix:           0,
+	})
+	if err != nil {
+		log.Warn().Err(err).Msg("MintToken - accessToken")
+		return c.String(http.StatusBadRequest, err.Error())
+	}
 	response := &TokenEndpointAuthorizationCodeResponse{
-		AccessToken:  "access_token",
+		AccessToken:  accessToken.Token,
 		TokenType:    "bearer",
 		ExpiresIn:    3600,
 		RefreshToken: "refresh_token",
-		IDToken:      "id_token",
+		IDToken:      idToken.Token,
 	}
 	// return as json
+	defer func() {
+		log.Debug().Interface("response", response).Msg("response")
+		err := s.oidcFlowStore.DeleteAuthorizationFinal(ctx, req.Code)
+		if err != nil {
+			log.Error().Err(err).Msg("DeleteAuthorizationFinal")
+		}
+	}()
 	return c.JSONPretty(http.StatusOK, response, "  ")
 }

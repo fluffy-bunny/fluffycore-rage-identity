@@ -8,6 +8,7 @@ import (
 	contracts_util "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/util"
 	models "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/base"
+	echo_utils "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/wellknown/echo"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_echo_contracts_contextaccessor "github.com/fluffy-bunny/fluffycore/echo/contracts/contextaccessor"
@@ -107,7 +108,7 @@ func (s *service) DoGet(c echo.Context) error {
 func (s *service) DoPost(c echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
-
+	rootPath := echo_utils.GetMyRootPath(c)
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 	model := &LoginPostRequest{}
@@ -138,8 +139,15 @@ func (s *service) DoPost(c echo.Context) error {
 	// "urn:mastodon:idp:google", "urn:mastodon:idp:spacex", "urn:mastodon:idp:github-enterprise", etc.
 	// "urn:mastodon:password", "urn:mastodon:2fa", "urn:mastodon:email", etc.
 	err = s.oidcFlowStore.StoreAuthorizationFinal(ctx, code, mm)
+	if err != nil {
+		// redirect to error page
+		return c.Redirect(http.StatusFound, "/error")
+	}
 	// redirect to the client with the code.
-	redirectUri := mm.Request.RedirectURI + "?code=" + code
+	redirectUri := mm.Request.RedirectURI +
+		"?code=" + code +
+		"&state=" + mm.Request.State +
+		"&iss=" + rootPath
 	return c.Redirect(http.StatusFound, redirectUri)
 
 }

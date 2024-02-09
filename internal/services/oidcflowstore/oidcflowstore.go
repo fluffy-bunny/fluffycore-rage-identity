@@ -54,3 +54,7 @@ func (s *service) GetAuthorizationFinal(ctx context.Context, code string) (*mode
 	}
 	return value, nil
 }
+func (s *service) DeleteAuthorizationFinal(ctx context.Context, code string) error {
+	err := s.oidcFlowCache.Delete(ctx, code)
+	return err
+}

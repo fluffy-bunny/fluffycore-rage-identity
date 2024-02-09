@@ -58,7 +58,7 @@ func (s *service) Do(c echo.Context) error {
 	rootPath := echo_utils.GetMyRootPath(c)
 
 	discovery := models.DiscoveryDocument{
-		Issuer:                rootPath + "/",
+		Issuer:                rootPath,
 		TokenEndpoint:         rootPath + wellknown_echo.OAuth2TokenEndpointPath,
 		JwksURI:               rootPath + wellknown_echo.WellKnownJWKS,
 		UserinfoEndpoint:      rootPath + wellknown_echo.UserInfoPath,
@@ -82,6 +82,9 @@ func (s *service) Do(c echo.Context) error {
 			"token id_token",
 			"code token id_token",
 			"none",
+		},
+		IDTokenSigningAlgValuesSupported: []string{
+			"ES256",
 		},
 	}
 	return c.JSONPretty(http.StatusOK, discovery, "  ")

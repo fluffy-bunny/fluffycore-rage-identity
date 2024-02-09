@@ -105,3 +105,11 @@ We want to swag init the general dir first, which is in the cmd/server directory
 cd cmd/server
 swag init  --dir ./,../../internal  
 ```
+## GO OIDC CLIENT
+
+```powershell
+cd cmd/go-client
+go build .
+
+$env:PORT = "5556";$env:OAUTH2_CLIENT_ID = "go-client";$env:OAUTH2_CLIENT_SECRET = "secret";$env:AUTHORITY = "http://localhost:9044/"; .\go-client.exe
+```
