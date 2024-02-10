@@ -84,18 +84,27 @@ Response id_token
 
 ```json
 {
-  "sub": "00u47ijy7sRLaeSdC0g7",
-  "ver": 1,
-  "iss": "https://{yourOktaDomain}/oauth2/default",
-  "aud": "0oa48e74ox4t7mQJX0g7",
-  "iat": 1661289624,
-  "exp": 1661293224,
-  "jti": "ID.dz6ibX-YnBNlt14huAtBULam_Z0_wPG0ig5SWCy8XQU",
-  "amr": ["idp", "mfa:auth_app"],
-  "acr": ["urn:fluffyidp:loa:mfa:any", "urn:fluffyidp:loa:idp:usa.ca.gov.dmv"],
-  "idp": ["fluffyroot", "usa.ca.gov.dmv"],
-  "auth_time": 1661289603,
-  "at_hash": "w6BLQV3642TKWvaVwTAJuw"
+    "sub": "00u47ijy7sRLaeSdC0g7",
+    "ver": 1,
+    "iss": "https://{yourOktaDomain}/oauth2/default",
+    "aud": "0oa48e74ox4t7mQJX0g7",
+    "iat": 1661289624,
+    "exp": 1661293224,
+    "jti": "ID.dz6ibX-YnBNlt14huAtBULam_Z0_wPG0ig5SWCy8XQU",
+    "amr": [
+        "idp",
+        "mfa:auth_app"
+    ],
+    "acr": [
+        "urn:fluffyidp:loa:mfa:any",
+        "urn:fluffyidp:loa:idp:usa.ca.gov.dmv"
+    ],
+    "idp": [
+        "fluffyroot",
+        "usa.ca.gov.dmv"
+    ],
+    "auth_time": 1661289603,
+    "at_hash": "w6BLQV3642TKWvaVwTAJuw"
 }
 ```
 
