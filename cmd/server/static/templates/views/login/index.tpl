@@ -6,6 +6,12 @@
 <!-- Page content-->
 <div class="container">
     <div class="text-center mt-5" class="alert alert-success" role="alert">
+        <form action="/external-idp" method="post">
+            <input type="hidden" name="idp_slug" value="google-social">
+            <button type="submit" class="btn btn-primary">Google</button>
+        </form>
+    </div>
+    <div class="text-center mt-5" class="alert alert-success" role="alert">
         <h1>Login.</h1>
         <div class="mt-5 alert alert-success" class="alert alert-success" role="alert">
             <table class="table table-striped">

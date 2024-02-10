@@ -16,4 +16,12 @@ type (
 		GetAuthorizationFinal(ctx context.Context, code string) (*models.AuthorizationFinal, error)
 		DeleteAuthorizationFinal(ctx context.Context, code string) error
 	}
+	IExternalOAuth2Cache interface {
+		fluffycore_contracts_eko_gocache.IGoCache
+	}
+	IExternalOauth2FlowStore interface {
+		StoreAuthorizationFinal(ctx context.Context, code string, value *models.AuthorizationFinal) error
+		GetAuthorizationFinal(ctx context.Context, code string) (*models.AuthorizationFinal, error)
+		DeleteAuthorizationFinal(ctx context.Context, code string) error
+	}
 )

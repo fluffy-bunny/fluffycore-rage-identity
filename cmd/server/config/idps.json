@@ -1,0 +1,23 @@
+{
+  "idps": [
+    {
+      "id": "google-social",
+      "enabled": true,
+      "slug": "google-social",
+      "name": "Google",
+      "description": "Google",
+      "protocol": {
+        "oidc": {
+          "authority": "https://accounts.google.com",
+          "client_id": "1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com",
+          "client_secret": "abcdefghijklmnopqrstuvwxyz",
+          "scope": "openid email profile"
+        }
+      },
+      "metadata": {
+        "hidden": "false",
+        "icon": "https://www.google.com/images/branding/product/1x/googleg_48dp.png"
+      }
+    }
+  ]
+}

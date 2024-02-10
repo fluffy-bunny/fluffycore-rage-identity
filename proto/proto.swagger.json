@@ -1,17 +1,429 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "proto/oidc/models/client.proto",
+    "title": "proto/oidc/idp/idp.proto",
     "version": "version not set"
   },
+  "tags": [
+    {
+      "name": "IDPService"
+    }
+  ],
   "consumes": [
     "application/json"
   ],
   "produces": [
     "application/json"
   ],
-  "paths": {},
+  "paths": {
+    "/api/v1/idp/_create": {
+      "post": {
+        "summary": "Create idp",
+        "operationId": "IDPService_CreateIDP",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/idpCreateIDPResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/idpCreateIDPRequest"
+            }
+          }
+        ],
+        "tags": [
+          "IDPService"
+        ]
+      }
+    },
+    "/api/v1/idp/_search": {
+      "post": {
+        "summary": "List idps",
+        "operationId": "IDPService_ListIDP",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/idpListIDPResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/idpListIDPRequest"
+            }
+          }
+        ],
+        "tags": [
+          "IDPService"
+        ]
+      }
+    },
+    "/api/v1/idp/_update": {
+      "post": {
+        "summary": "Update idp",
+        "operationId": "IDPService_UpdateIDP",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/idpUpdateIDPResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/idpUpdateIDPRequest"
+            }
+          }
+        ],
+        "tags": [
+          "IDPService"
+        ]
+      }
+    },
+    "/api/v1/idp/id/{id}": {
+      "get": {
+        "summary": "Get idp",
+        "operationId": "IDPService_GetIDP",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/idpGetIDPResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "IDPService"
+        ]
+      },
+      "delete": {
+        "summary": "Delete idp",
+        "operationId": "IDPService_DeleteIDP",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/idpDeleteIDPResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "IDPService"
+        ]
+      }
+    },
+    "/api/v1/idp/slug/{slug}": {
+      "get": {
+        "summary": "Get idp",
+        "operationId": "IDPService_GetIDPBySlug",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/idpGetIDPBySlugResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "IDPService"
+        ]
+      }
+    }
+  },
   "definitions": {
+    "idpCreateIDPRequest": {
+      "type": "object",
+      "properties": {
+        "idp": {
+          "$ref": "#/definitions/modelsIDP"
+        }
+      }
+    },
+    "idpCreateIDPResponse": {
+      "type": "object",
+      "properties": {
+        "idp": {
+          "$ref": "#/definitions/modelsIDP"
+        }
+      }
+    },
+    "idpDeleteIDPResponse": {
+      "type": "object"
+    },
+    "idpFilter": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "$ref": "#/definitions/typesStringFilterExpression"
+        },
+        "name": {
+          "$ref": "#/definitions/typesStringFilterExpression"
+        },
+        "description": {
+          "$ref": "#/definitions/typesStringFilterExpression"
+        },
+        "metadata": {
+          "$ref": "#/definitions/typesStringMapStringFilterExpression"
+        },
+        "enabled": {
+          "$ref": "#/definitions/typesBoolFilterExpression"
+        },
+        "and": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/idpFilter"
+          },
+          "title": "AST"
+        },
+        "or": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/idpFilter"
+          }
+        },
+        "not": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/idpFilter"
+          }
+        }
+      }
+    },
+    "idpGetIDPBySlugResponse": {
+      "type": "object",
+      "properties": {
+        "idp": {
+          "$ref": "#/definitions/modelsIDP"
+        }
+      }
+    },
+    "idpGetIDPResponse": {
+      "type": "object",
+      "properties": {
+        "idp": {
+          "$ref": "#/definitions/modelsIDP"
+        }
+      }
+    },
+    "idpListIDPRequest": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "$ref": "#/definitions/idpFilter",
+          "title": "Filter"
+        },
+        "pagination": {
+          "$ref": "#/definitions/typesPagination",
+          "title": "Pagination"
+        }
+      }
+    },
+    "idpListIDPResponse": {
+      "type": "object",
+      "properties": {
+        "idps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/modelsIDP"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/typesPaginationResponse",
+          "title": "Pagination details"
+        }
+      }
+    },
+    "idpUpdateIDPRequest": {
+      "type": "object",
+      "properties": {
+        "idp": {
+          "$ref": "#/definitions/modelsIDPUpdate"
+        }
+      }
+    },
+    "idpUpdateIDPResponse": {
+      "type": "object",
+      "properties": {
+        "idp": {
+          "$ref": "#/definitions/modelsIDP"
+        }
+      }
+    },
+    "modelsIDP": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "protocol": {
+          "$ref": "#/definitions/modelsProtocol"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "modelsIDPUpdate": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "protocol": {
+          "$ref": "#/definitions/modelsProtocolUpdate"
+        },
+        "metadata": {
+          "$ref": "#/definitions/typesStringMapUpdate"
+        }
+      }
+    },
+    "modelsOAuth2Protocol": {
+      "type": "object"
+    },
+    "modelsOIDCProtocol": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string"
+        },
+        "clientId": {
+          "type": "string"
+        },
+        "clientSecret": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        }
+      }
+    },
+    "modelsProtocol": {
+      "type": "object",
+      "properties": {
+        "oidc": {
+          "$ref": "#/definitions/modelsOIDCProtocol"
+        },
+        "oauth2": {
+          "$ref": "#/definitions/modelsOAuth2Protocol"
+        }
+      }
+    },
+    "modelsProtocolUpdate": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "$ref": "#/definitions/modelsProtocol"
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -36,6 +448,161 @@
           "items": {
             "type": "object",
             "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "typesBoolFilterExpression": {
+      "type": "object",
+      "properties": {
+        "eq": {
+          "type": "boolean"
+        },
+        "isDefined": {
+          "type": "boolean",
+          "title": "This is to distinguish explicitly defined value from its default value. The filter is not effective unless _is_defined == true"
+        }
+      }
+    },
+    "typesOrder": {
+      "type": "string",
+      "enum": [
+        "ORDER_UNSPECIFIED",
+        "ASC",
+        "DESC"
+      ],
+      "default": "ORDER_UNSPECIFIED",
+      "title": "- ORDER_UNSPECIFIED: Conventional default for enums. Do not use this.\n - ASC: Ascending order\n - DESC: Descending order"
+    },
+    "typesPagination": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Maximum number of entries to retrieve"
+        },
+        "iterator": {
+          "type": "string"
+        },
+        "order": {
+          "$ref": "#/definitions/typesOrder"
+        }
+      }
+    },
+    "typesPaginationResponse": {
+      "type": "object",
+      "properties": {
+        "iterator": {
+          "type": "string"
+        },
+        "prevIterator": {
+          "type": "string"
+        },
+        "totalAvailable": {
+          "type": "boolean",
+          "title": "Is a total count of records available?"
+        },
+        "total": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Total number of records available (if totalAvailable = true)"
+        },
+        "noMoreData": {
+          "type": "boolean",
+          "title": "There is no more data"
+        }
+      },
+      "description": "PaginationResponse ..."
+    },
+    "typesStringFilterExpression": {
+      "type": "object",
+      "properties": {
+        "eq": {
+          "type": "string"
+        },
+        "contains": {
+          "type": "string"
+        },
+        "in": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ne": {
+          "type": "string"
+        }
+      }
+    },
+    "typesStringMapStringFilterExpression": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "$ref": "#/definitions/typesStringFilterExpression"
+        },
+        "and": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/typesStringMapStringFilterExpression"
+          },
+          "title": "AST"
+        },
+        "or": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/typesStringMapStringFilterExpression"
+          }
+        },
+        "not": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/typesStringMapStringFilterExpression"
+          }
+        }
+      }
+    },
+    "typesStringMapUpdate": {
+      "type": "object",
+      "properties": {
+        "granular": {
+          "$ref": "#/definitions/typesStringMapUpdateGranular"
+        },
+        "replace": {
+          "$ref": "#/definitions/typesStringMapValue"
+        }
+      }
+    },
+    "typesStringMapUpdateGranular": {
+      "type": "object",
+      "properties": {
+        "add": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "remove": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "typesStringMapValue": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
           }
         }
       }

@@ -14,6 +14,7 @@ type (
 	ConfigFiles struct {
 		MockOAuth2ClientPath string `json:"mockOAuth2ClientPath"`
 		OIDCClientPath       string `json:"oidcClientPath"`
+		IDPsPath             string `json:"idpsPath"`
 	}
 	InMemoryClient struct {
 		Secret   string `json:"secret"`
@@ -55,7 +56,8 @@ var ConfigDefaultJSON = []byte(`
 	"jwtValidators": {},
 	"configFiles": {
 		"mockOAuth2ClientPath": "./config/mockOAuth2Clients.json",
-		"oidcClientPath": "./config/oidcClients.json"
+		"oidcClientPath": "./config/oidcClients.json",
+		"idpsPath": "./config/idps.json"
 
 	},
 	"ddProfilerConfig": {

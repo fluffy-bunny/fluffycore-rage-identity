@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option go_package = "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/models;models";
+option java_multiple_files = true;
+option java_package = "com.fluffybunny.hankooidc.models";
+option csharp_namespace = "FluffyBunny.HankoOidc.Oidc.Models";
+
+
+package proto.oidc.models;
+
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/wrappers.proto";
+import "proto/types/primitives.proto";
+
+
+message User {
+    string type = 1;
+    oneof value {
+        string                      string_value = 2;
+        bool                        bool_value = 3;
+        int64                       int64_value = 4;
+        double                      double_value = 5;
+        proto.types.StringValues    string_values = 6;
+        proto.types.Int64Values     int64_values = 7;
+        proto.types.DoubleValues    double_values = 8;
+    }
+}

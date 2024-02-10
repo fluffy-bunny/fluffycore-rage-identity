@@ -1,0 +1,119 @@
+syntax = "proto3";
+
+option go_package = "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/idp;idp";
+option java_multiple_files = true;
+option java_package = "com.fluffybunny.hankooidc.idp";
+option csharp_namespace = "FluffyBunny.HankoOidc.Oidc.IDP";
+
+
+package proto.oidc.idp;
+
+import "google/protobuf/descriptor.proto";
+import "proto/types/filter.proto";
+import "proto/types/pagination.proto";
+import "proto/oidc/models/idp.proto";
+
+import "google/api/annotations.proto";
+
+message Filter {
+    proto.types.StringFilterExpression              slug = 1;
+    proto.types.StringFilterExpression              name = 2;
+    proto.types.StringFilterExpression              description = 3;
+    proto.types.StringMapStringFilterExpression     metadata = 4;
+    proto.types.BoolFilterExpression                enabled = 5;
+
+    // AST
+    repeated Filter and = 100;
+    repeated Filter or = 101;
+    repeated Filter not = 102;
+}
+
+service IDPService {
+    // Create idp
+    rpc CreateIDP (CreateIDPRequest) returns (CreateIDPResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/idp/_create"
+            body: "*"
+          };
+    }
+    // Get idp
+    rpc GetIDP (GetIDPRequest) returns (GetIDPResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/idp/id/{id}"
+          };
+    }
+
+    // Get idp
+    rpc GetIDPBySlug (GetIDPBySlugRequest) returns (GetIDPBySlugResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/idp/slug/{slug}"
+            };
+    }
+    // Delete idp
+    rpc DeleteIDP (DeleteIDPRequest) returns (DeleteIDPResponse) {
+        option (google.api.http) = {
+            delete: "/api/v1/idp/id/{id}"
+          };
+    }
+    // Update idp
+    rpc UpdateIDP (UpdateIDPRequest) returns (UpdateIDPResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/idp/_update"
+            body: "*"
+          };
+    }
+    // List idps
+    rpc ListIDP (ListIDPRequest) returns (ListIDPResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/idp/_search"
+            body: "*"
+          };
+    }
+ } 
+
+ 
+message CreateIDPRequest {
+    proto.oidc.models.IDP idp = 1;
+}   
+message CreateIDPResponse {
+    proto.oidc.models.IDP idp = 1;
+}
+message GetIDPRequest {
+   string id = 1;
+}
+message GetIDPResponse {
+    proto.oidc.models.IDP idp = 1;
+}
+message GetIDPBySlugRequest {
+    string slug = 1; 
+}
+message GetIDPBySlugResponse {
+    proto.oidc.models.IDP idp = 1;
+}
+
+message DeleteIDPRequest {
+   string id = 1;
+}
+message DeleteIDPResponse {
+}
+message UpdateIDPRequest {
+    proto.oidc.models.IDPUpdate idp = 1;
+}
+message UpdateIDPResponse {
+    proto.oidc.models.IDP idp = 1;
+}
+
+message ListIDPRequest {
+   // Filter
+   Filter filter = 1;
+
+   // Pagination
+   proto.types.Pagination pagination = 100;
+}
+
+message ListIDPResponse {
+   repeated proto.oidc.models.IDP idps = 1;
+
+   // Pagination details
+   proto.types.PaginationResponse pagination = 100;
+}

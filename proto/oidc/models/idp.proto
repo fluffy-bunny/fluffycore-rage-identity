@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+option go_package = "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/models;models";
+option java_multiple_files = true;
+option java_package = "com.fluffybunny.hankooidc.models";
+option csharp_namespace = "FluffyBunny.HankoOidc.Oidc.Models";
+
+
+package proto.oidc.models;
+
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/wrappers.proto";
+import "proto/types/primitives.proto";
+
+message OIDCProtocol {
+    string authority = 1;
+    string client_id = 2;
+    string client_secret = 3;
+    string scope = 4;
+}
+message OAuth2Protocol {
+   
+}
+message Protocol {
+    oneof value {
+        OIDCProtocol    oidc = 5;
+        OAuth2Protocol  oauth2 = 6;
+    }
+}
+message ProtocolUpdate {
+    Protocol value = 1;
+}
+
+message IDP {
+    string                                  id = 1;
+    bool                                    enabled = 2;
+    string                                  slug = 3;
+    string                                  name = 4;
+    string                                  description = 5;
+    Protocol                                protocol = 6;
+    map<string, string>                     metadata = 7;
+}
+message IDPs {
+    repeated IDP idps = 1;
+}
+message IDPUpdate {
+    string                                  id = 1;
+    google.protobuf.BoolValue               enabled = 2;
+    google.protobuf.StringValue             slug = 3;
+    google.protobuf.StringValue             name = 4;
+    google.protobuf.StringValue             description = 5;
+    ProtocolUpdate                          protocol = 6;
+    proto.types.StringMapUpdate             metadata = 7;
+
+}

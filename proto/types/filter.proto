@@ -97,6 +97,17 @@ message StringArrayFilterExpression {
     string ne          = 3 [(op) = OP_NE];
 }
 
+message StringMapStringFilterExpression {
+    string                  key = 1;
+    StringFilterExpression  value = 2;
+
+    // AST
+    repeated StringMapStringFilterExpression and = 100;
+    repeated StringMapStringFilterExpression or = 101;
+    repeated StringMapStringFilterExpression not = 102;
+}
+
+ 
 message TimestampFilterExpression {
     option (filter_expression) = true;
     option (allow_multi) = true;

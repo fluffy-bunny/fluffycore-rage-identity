@@ -68,6 +68,9 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 type LoginGetRequest struct {
 	Code string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
 }
+type ExternalIDPAuthRequest struct {
+	IDPSlug string `param:"idp_slug" query:"idp_slug" form:"idp_slug" json:"idp_slug" xml:"idp_slug"`
+}
 type LoginPostRequest struct {
 	Code     string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
 	UserName string `param:"username" query:"username" form:"username" json:"username" xml:"username"`

@@ -9,7 +9,10 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/config"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/eko_gocache"
 	services_client_inmemory "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/client/inmemory"
+	services_idp_inmemory "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/idp/inmemory"
+	services_oauth2flowstore "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/oauth2flowstore"
 	services_oidcflowstore "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/oidcflowstore"
+
 	services_tokenservice "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/tokenservice"
 	services_util "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/util"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/models"
@@ -24,23 +27,48 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	// this has to be added FIRST as it sets up the default inmemory version of the IClient stores
 	// it addes an empty *stores_services_client_inmemory.Clients
 	services_client_inmemory.AddSingletonIFluffyCoreClientServiceServer(builder)
+	services_idp_inmemory.AddSingletonIFluffyCoreIDPServiceServer(builder)
 
 	services_tokenservice.AddSingletonITokenService(builder)
 	services_util.AddSingletonISomeUtil(builder)
-	fluffycore_services_eko_gocache_go_cache.AddISingletonInMemoryCache(builder, reflect.TypeOf((*contracts_eko_gocache.IOIDCFlowCache)(nil)))
+	fluffycore_services_eko_gocache_go_cache.AddISingletonInMemoryCache(builder,
+		reflect.TypeOf((*contracts_eko_gocache.IOIDCFlowCache)(nil)),
+		reflect.TypeOf((*contracts_eko_gocache.IExternalOAuth2Cache)(nil)),
+	)
 	services_oidcflowstore.AddSingletonIOIDCFlowCache(builder)
+	services_oauth2flowstore.AddSingletonIExternalOauth2FlowStore(builder)
 	OnConfigureServicesLoadOIDCClients(ctx, config, builder)
+	OnConfigureServicesLoadIDPs(ctx, config, builder)
+}
+func OnConfigureServicesLoadIDPs(ctx context.Context, config *contracts_config.Config, builder di.ContainerBuilder) error {
+	log := zerolog.Ctx(ctx).With().Str("method", "OnConfigureServicesLoadIDPs").Logger()
+	fileContent, err := os.ReadFile(config.ConfigFiles.IDPsPath)
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to read IDPsPath - may not be a problem if idps are comming from a DB")
+		return nil
+	}
+	var idps *proto_oidc_models.IDPs = &proto_oidc_models.IDPs{}
+	err = protojson.Unmarshal(fileContent, idps)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to unmarshal OIDCClientPath")
+		return err
+	}
+	di.AddSingleton[*proto_oidc_models.IDPs](builder, func() *proto_oidc_models.IDPs {
+		return idps
+	})
+	return nil
+
 }
 
 func OnConfigureServicesLoadOIDCClients(ctx context.Context, config *contracts_config.Config, builder di.ContainerBuilder) error {
-	log := zerolog.Ctx(ctx).With().Str("method", "OnPreServerStartupLoadOIDCClients").Logger()
-	oidcClientClientsJSON, err := os.ReadFile(config.ConfigFiles.OIDCClientPath)
+	log := zerolog.Ctx(ctx).With().Str("method", "OnConfigureServicesLoadOIDCClients").Logger()
+	fileContent, err := os.ReadFile(config.ConfigFiles.OIDCClientPath)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to read OIDCClientPath - may not be a problem if clients are comming from a DB")
 		return nil
 	}
 	var oidcClients *proto_oidc_models.Clients = &proto_oidc_models.Clients{}
-	err = protojson.Unmarshal(oidcClientClientsJSON, oidcClients)
+	err = protojson.Unmarshal(fileContent, oidcClients)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to unmarshal OIDCClientPath")
 		return err
