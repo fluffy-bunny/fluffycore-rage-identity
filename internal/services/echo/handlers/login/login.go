@@ -10,6 +10,9 @@ import (
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/wellknown/echo"
+	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/idp"
+	proto_types "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/types"
+
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_echo_contracts_contextaccessor "github.com/fluffy-bunny/fluffycore/echo/contracts/contextaccessor"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -20,10 +23,10 @@ import (
 type (
 	service struct {
 		services_echo_handlers_base.BaseHandler
-		container     di.Container
-		oidcFlowStore contracts_eko_gocache.IOIDCFlowStore
-
-		someUtil contracts_util.ISomeUtil
+		container        di.Container
+		oidcFlowStore    contracts_eko_gocache.IOIDCFlowStore
+		idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer
+		someUtil         contracts_util.ISomeUtil
 	}
 )
 
@@ -37,14 +40,16 @@ func (s *service) Ctor(someUtil contracts_util.ISomeUtil,
 	container di.Container,
 	oidcFlowStore contracts_eko_gocache.IOIDCFlowStore,
 	claimsPrincipal fluffycore_contracts_common.IClaimsPrincipal,
+	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
 	echoContextAccessor fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor) (*service, error) {
 
 	return &service{
 		BaseHandler: services_echo_handlers_base.BaseHandler{
 			ClaimsPrincipal: claimsPrincipal, EchoContextAccessor: echoContextAccessor},
-		container:     container,
-		someUtil:      someUtil,
-		oidcFlowStore: oidcFlowStore,
+		container:        container,
+		someUtil:         someUtil,
+		idpServiceServer: idpServiceServer,
+		oidcFlowStore:    oidcFlowStore,
 	}, nil
 }
 
@@ -100,12 +105,29 @@ func (s *service) DoGet(c echo.Context) error {
 		Value string
 	}
 
+	listIDPResponse, err := s.idpServiceServer.ListIDP(ctx, &proto_oidc_idp.ListIDPRequest{
+		Filter: &proto_oidc_idp.Filter{
+			Enabled: &proto_types.BoolFilterExpression{
+				Eq: true,
+			},
+			Metadata: &proto_types.StringMapStringFilterExpression{
+				Key: "hidden",
+				Value: &proto_types.StringFilterExpression{
+					Eq: "false",
+				},
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
 	var rows []row
 	rows = append(rows, row{Key: "code", Value: model.Code})
 
 	return s.Render(c, http.StatusOK, "views/login/index",
 		map[string]interface{}{
 			"defs": rows,
+			"idps": listIDPResponse.Idps,
 		})
 }
 func (s *service) DoPost(c echo.Context) error {

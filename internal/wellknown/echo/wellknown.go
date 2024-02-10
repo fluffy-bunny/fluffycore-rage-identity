@@ -20,11 +20,13 @@ const (
 type Paths struct {
 	Home  string
 	About string
+	Login string
 }
 
 func NewPaths() *Paths {
 	return &Paths{
 		Home:  HomePath,
 		About: AboutPath,
+		Login: LoginPath,
 	}
 }

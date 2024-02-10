@@ -96,8 +96,47 @@ func (s *service) GetIDPBySlug(ctx context.Context, request *proto_oidc_idp.GetI
 	return nil, status.Error(codes.NotFound, "IDP not found")
 }
 
+func (s *service) validateListIDPRequest(request *proto_oidc_idp.ListIDPRequest) error {
+	if request == nil {
+		return status.Error(codes.InvalidArgument, "request is required")
+	}
+	return nil
+
+}
+
 // List idps
 func (s *service) ListIDP(ctx context.Context, request *proto_oidc_idp.ListIDPRequest) (*proto_oidc_idp.ListIDPResponse, error) {
+	err := s.validateListIDPRequest(request)
+	if err != nil {
+		return nil, err
+	}
+	var idps []*proto_oidc_models.IDP
+
+	linq.From(s.idps.Idps).WhereT(func(c *proto_oidc_models.IDP) bool {
+		if request.Filter != nil {
+			if request.Filter.Enabled != nil {
+				if request.Filter.Enabled.Eq != c.Enabled {
+					return false
+				}
+			}
+			if request.Filter.Metadata != nil {
+				metadataValue, ok := c.Metadata[request.Filter.Metadata.Key]
+				if !ok {
+					return false
+				}
+				if metadataValue != request.Filter.Metadata.Value.Eq {
+					return false
+				}
+			}
+			return true
+		} else {
+			return true
+		}
+
+	}).SelectT(func(c *proto_oidc_models.IDP) *proto_oidc_models.IDP {
+		return c
+	}).ToSlice(&idps)
+
 	return &proto_oidc_idp.ListIDPResponse{
 		Idps: s.idps.Idps,
 	}, nil

@@ -6,10 +6,14 @@
 <!-- Page content-->
 <div class="container">
     <div class="text-center mt-5" class="alert alert-success" role="alert">
-        <form action="/external-idp" method="post">
-            <input type="hidden" name="idp_slug" value="google-social">
-            <button type="submit" class="btn btn-primary">Google</button>
-        </form>
+        {{range $idx,$idp := .idps}}
+            <form action="/external-idp" method="post">
+                <input type="hidden" name="idp_slug" value="{{$idp.Slug}}">
+                <button type="submit" class="btn btn-primary">{{$idp.Name}}</button>
+            </form>
+        {{end}}
+
+       
     </div>
     <div class="text-center mt-5" class="alert alert-success" role="alert">
         <h1>Login.</h1>
