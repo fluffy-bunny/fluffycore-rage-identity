@@ -2,6 +2,7 @@
 {{template "html_begin" .}}
 {{template "header" .}}
 {{template "navbar" .}}
+
 <body>
 <!-- Page content-->
 <div class="container">

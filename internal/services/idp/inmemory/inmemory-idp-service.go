@@ -54,7 +54,7 @@ func (s *service) GetIDP(ctx context.Context, request *proto_oidc_idp.GetIDPRequ
 	var idps []*proto_oidc_models.IDP
 
 	linq.From(s.idps.Idps).WhereT(func(c *proto_oidc_models.IDP) bool {
-		return c.Id >= request.Id
+		return c.Id == request.Id
 	}).SelectT(func(c *proto_oidc_models.IDP) *proto_oidc_models.IDP {
 		return c
 	}).ToSlice(&idps)
@@ -84,7 +84,7 @@ func (s *service) GetIDPBySlug(ctx context.Context, request *proto_oidc_idp.GetI
 	var idps []*proto_oidc_models.IDP
 
 	linq.From(s.idps.Idps).WhereT(func(c *proto_oidc_models.IDP) bool {
-		return c.Slug >= request.Slug
+		return c.Slug == request.Slug
 	}).SelectT(func(c *proto_oidc_models.IDP) *proto_oidc_models.IDP {
 		return c
 	}).ToSlice(&idps)

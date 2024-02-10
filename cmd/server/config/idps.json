@@ -18,6 +18,23 @@
         "hidden": "false",
         "icon": "https://www.google.com/images/branding/product/1x/googleg_48dp.png"
       }
+    },
+    {
+      "id": "github-social",
+      "enabled": true,
+      "slug": "github-social",
+      "name": "Github",
+      "description": "Github",
+      "protocol": {
+        "github": {
+          "client_id": "bdbe2f2235eb3a02065c",
+          "client_secret": "518855c75dbce0532b8b623cdaa96ecfb03ae4bb"
+        }
+      },
+      "metadata": {
+        "hidden": "false",
+        "image_ref": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
+      }
     }
   ]
 }

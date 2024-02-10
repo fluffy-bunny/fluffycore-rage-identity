@@ -13,6 +13,13 @@ type (
 		ACRValues           string `param:"acr_values" query:"acr_values" form:"acr_values" json:"acr_values" xml:"acr_values"`
 		Nonce               string `param:"nonce" query:"nonce" form:"nonce" json:"nonce" xml:"nonce"`
 	}
+
+	ExternalOauth2Request struct {
+		IDPSlug             string `json:"idp_slug,omitempty"`
+		CodeChallenge       string `json:"code_challenge,omitempty"`
+		CodeChallengeMethod string `json:"code_challenge_method,omitempty"`
+		State               string `json:"state,omitempty"`
+	}
 	Identity struct {
 		Subject string
 		Email   string
@@ -20,6 +27,10 @@ type (
 	}
 	AuthorizationFinal struct {
 		Request  *AuthorizationRequest
+		Identity *Identity
+	}
+	ExternalOauth2Final struct {
+		Request  *ExternalOauth2Request
 		Identity *Identity
 	}
 )

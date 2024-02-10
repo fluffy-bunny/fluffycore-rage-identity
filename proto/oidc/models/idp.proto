@@ -18,13 +18,22 @@ message OIDCProtocol {
     string client_secret = 3;
     string scope = 4;
 }
+message GithubOAuth2Protocol {
+    string client_id = 1;
+    string client_secret = 2;
+}
 message OAuth2Protocol {
-   
+    string client_id = 1;
+    string client_secret = 2;
+    string scope = 3;
+    string authorization_endpoint = 4;
+    string token_endpoint = 5;
 }
 message Protocol {
     oneof value {
-        OIDCProtocol    oidc = 5;
-        OAuth2Protocol  oauth2 = 6;
+        OIDCProtocol            oidc = 1;
+        OAuth2Protocol          oauth2 = 2;
+        GithubOAuth2Protocol    github = 3;
     }
 }
 message ProtocolUpdate {

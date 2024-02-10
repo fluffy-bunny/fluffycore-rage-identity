@@ -2,26 +2,36 @@ package externalidp
 
 import (
 	"net/http"
+	"strings"
+
+	"crypto/sha256"
+	"encoding/base64"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/eko_gocache"
 	contracts_util "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/util"
+	models "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/base"
+	echo_utils "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/wellknown/echo"
+	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/idp"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/models"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_echo_contracts_contextaccessor "github.com/fluffy-bunny/fluffycore/echo/contracts/contextaccessor"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v4"
+	xid "github.com/rs/xid"
 	zerolog "github.com/rs/zerolog"
+	oauth2 "golang.org/x/oauth2"
 )
 
 type (
 	service struct {
 		services_echo_handlers_base.BaseHandler
-		container     di.Container
-		oidcFlowStore contracts_eko_gocache.IOIDCFlowStore
-
-		someUtil contracts_util.ISomeUtil
+		container               di.Container
+		externalOauth2FlowStore contracts_eko_gocache.IExternalOauth2FlowStore
+		idpServiceServer        proto_oidc_idp.IFluffyCoreIDPServiceServer
+		someUtil                contracts_util.ISomeUtil
 	}
 )
 
@@ -33,16 +43,18 @@ func init() {
 
 func (s *service) Ctor(someUtil contracts_util.ISomeUtil,
 	container di.Container,
-	oidcFlowStore contracts_eko_gocache.IOIDCFlowStore,
+	externalOauth2FlowStore contracts_eko_gocache.IExternalOauth2FlowStore,
 	claimsPrincipal fluffycore_contracts_common.IClaimsPrincipal,
+	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
 	echoContextAccessor fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor) (*service, error) {
 
 	return &service{
 		BaseHandler: services_echo_handlers_base.BaseHandler{
 			ClaimsPrincipal: claimsPrincipal, EchoContextAccessor: echoContextAccessor},
-		container:     container,
-		someUtil:      someUtil,
-		oidcFlowStore: oidcFlowStore,
+		container:               container,
+		someUtil:                someUtil,
+		externalOauth2FlowStore: externalOauth2FlowStore,
+		idpServiceServer:        idpServiceServer,
 	}, nil
 }
 
@@ -68,6 +80,8 @@ type ExternalIDPAuthRequest struct {
 
 func (s *service) DoPost(c echo.Context) error {
 	r := c.Request()
+	rootPath := echo_utils.GetMyRootPath(c)
+
 	// is the request get or post?
 	//rootPath := echo_utils.GetMyRootPath(c)
 	ctx := r.Context()
@@ -77,8 +91,91 @@ func (s *service) DoPost(c echo.Context) error {
 		return err
 	}
 	log.Info().Interface("model", model).Msg("model")
+
+	getIDPBySlugResponse, err := s.idpServiceServer.GetIDPBySlug(ctx,
+		&proto_oidc_idp.GetIDPBySlugRequest{
+			Slug: model.IDPSlug,
+		})
+	if err != nil {
+		log.Error().Err(err).Msg("GetIDPBySlug")
+		return c.Redirect(http.StatusFound, "/error")
+	}
+	idp := getIDPBySlugResponse.Idp
+	if idp.Protocol != nil {
+		log.Info().Interface("getIDPBySlugResponse", getIDPBySlugResponse).Msg("getIDPBySlugResponse")
+		switch v := idp.Protocol.Value.(type) {
+		case *proto_oidc_models.Protocol_Github:
+			{
+
+				state := xid.New().String()
+				codeChallenge := xid.New().String()
+				err = s.externalOauth2FlowStore.StoreExternalOauth2Final(ctx, state, &models.ExternalOauth2Final{
+					Request: &models.ExternalOauth2Request{
+						IDPSlug:             model.IDPSlug,
+						State:               state,
+						CodeChallenge:       codeChallenge,
+						CodeChallengeMethod: "S256",
+					},
+				})
+				if err != nil {
+					log.Error().Err(err).Msg("StoreExternalOauth2Final")
+					// redirect to error page
+					return c.Redirect(http.StatusFound, "/error")
+				}
+				oauth2Config := wellknown_echo.GetGithubConfig(c, v.Github)
+				u := oauth2Config.AuthCodeURL(state,
+					oauth2.SetAuthURLParam("code_challenge", genCodeChallengeS256(codeChallenge)),
+					oauth2.SetAuthURLParam("code_challenge_method", "S256"))
+				return c.Redirect(http.StatusFound, u)
+
+			}
+		case *proto_oidc_models.Protocol_Oauth2:
+			{
+				state := xid.New().String()
+				codeChallenge := xid.New().String()
+
+				err = s.externalOauth2FlowStore.StoreExternalOauth2Final(ctx, state, &models.ExternalOauth2Final{
+					Request: &models.ExternalOauth2Request{
+						IDPSlug:             model.IDPSlug,
+						State:               state,
+						CodeChallenge:       codeChallenge,
+						CodeChallengeMethod: "S256",
+					},
+				})
+				if err != nil {
+					log.Error().Err(err).Msg("StoreExternalOauth2Final")
+					// redirect to error page
+					return c.Redirect(http.StatusFound, "/error")
+				}
+				scopes := strings.Split(v.Oauth2.Scope, " ")
+				config := oauth2.Config{
+					ClientID:     v.Oauth2.ClientId,
+					ClientSecret: v.Oauth2.ClientSecret,
+					Scopes:       scopes,
+					RedirectURL:  rootPath + wellknown_echo.OAuth2CallbackPath,
+					Endpoint: oauth2.Endpoint{
+						AuthURL:  v.Oauth2.AuthorizationEndpoint,
+						TokenURL: v.Oauth2.TokenEndpoint,
+					},
+				}
+				u := config.AuthCodeURL(state,
+					oauth2.SetAuthURLParam("code_challenge", genCodeChallengeS256(codeChallenge)),
+					oauth2.SetAuthURLParam("code_challenge_method", "S256"))
+				return c.Redirect(http.StatusFound, u)
+			}
+		case *proto_oidc_models.Protocol_Oidc:
+			{
+			}
+		}
+	}
+
 	return c.Redirect(http.StatusFound, "/error")
 
+}
+
+func genCodeChallengeS256(s string) string {
+	s256 := sha256.Sum256([]byte(s))
+	return base64.URLEncoding.EncodeToString(s256[:])
 }
 
 // HealthCheck godoc

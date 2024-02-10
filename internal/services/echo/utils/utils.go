@@ -3,7 +3,7 @@ package utils
 import (
 	"fmt"
 
-	"github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v4"
 )
 
 func GetMyRootPath(c echo.Context) string {

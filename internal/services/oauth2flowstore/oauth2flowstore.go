@@ -33,17 +33,17 @@ func AddSingletonIExternalOauth2FlowStore(cb di.ContainerBuilder) {
 	di.AddSingleton[contracts_eko_gocache.IExternalOauth2FlowStore](cb, stemService.Ctor)
 }
 
-func (s *service) StoreAuthorizationFinal(ctx context.Context, code string, value *models.AuthorizationFinal) error {
-	err := s.externalOAuth2Cache.Set(ctx, code, value, store.WithExpiration(30*time.Minute))
+func (s *service) StoreExternalOauth2Final(ctx context.Context, state string, value *models.ExternalOauth2Final) error {
+	err := s.externalOAuth2Cache.Set(ctx, state, value, store.WithExpiration(30*time.Minute))
 	return err
 }
-func (s *service) GetAuthorizationFinal(ctx context.Context, code string) (*models.AuthorizationFinal, error) {
-	mm, err := s.externalOAuth2Cache.Get(ctx, code)
+func (s *service) GetExternalOauth2Final(ctx context.Context, state string) (*models.ExternalOauth2Final, error) {
+	mm, err := s.externalOAuth2Cache.Get(ctx, state)
 	if err != nil {
 		// redirect to error page
 		return nil, err
 	}
-	var value *models.AuthorizationFinal = new(models.AuthorizationFinal)
+	var value *models.ExternalOauth2Final = new(models.ExternalOauth2Final)
 	mmB, err := json.Marshal(mm)
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (s *service) GetAuthorizationFinal(ctx context.Context, code string) (*mode
 	}
 	return value, nil
 }
-func (s *service) DeleteAuthorizationFinal(ctx context.Context, code string) error {
-	err := s.externalOAuth2Cache.Delete(ctx, code)
+func (s *service) DeleteExternalOauth2Final(ctx context.Context, state string) error {
+	err := s.externalOAuth2Cache.Delete(ctx, state)
 	return err
 }
