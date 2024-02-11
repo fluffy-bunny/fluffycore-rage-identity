@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_config "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/config"
 	contracts_util "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/util"
 	models "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/models"
-	echo_utils "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/wellknown/echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v4"
@@ -14,6 +14,7 @@ import (
 
 type (
 	service struct {
+		config   *contracts_config.Config
 		someUtil contracts_util.ISomeUtil
 	}
 )
@@ -24,8 +25,9 @@ func init() {
 	var _ contracts_handler.IHandler = stemService
 }
 
-func (s *service) Ctor(someUtil contracts_util.ISomeUtil) (*service, error) {
+func (s *service) Ctor(config *contracts_config.Config, someUtil contracts_util.ISomeUtil) (*service, error) {
 	return &service{
+		config:   config,
 		someUtil: someUtil,
 	}, nil
 }
@@ -55,7 +57,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Success 200 {object} string
 // @Router /.well-known/openid-configuration [get]
 func (s *service) Do(c echo.Context) error {
-	rootPath := echo_utils.GetMyRootPath(c)
+	rootPath := s.config.BaseUrl
 
 	discovery := models.DiscoveryDocument{
 		Issuer:                rootPath,

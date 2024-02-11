@@ -38,6 +38,8 @@ type Config struct {
 	DDProfilerConfig *fluffycore_contracts_ddprofiler.Config `json:"ddProfilerConfig"`
 	Echo             EchoConfig                              `json:"echo"`
 	InMemoryClients  InMemoryClients                         `json:"inMemoryClients"`
+	// BaseUrl is the base url for the application.  Hardened as opposed to getting it from the request
+	BaseUrl string `json:"baseUrl"`
 }
 
 // ConfigDefaultJSON default json
@@ -53,6 +55,7 @@ var ConfigDefaultJSON = []byte(`
 	"customString": "some default value",
 	"someSecret": "password",
 	"GRPC_GATEWAY_ENABLED": true,
+	"baseUrl": "[in-environment]",
 	"jwtValidators": {},
 	"configFiles": {
 		"mockOAuth2ClientPath": "./config/mockOAuth2Clients.json",

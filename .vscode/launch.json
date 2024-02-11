@@ -22,6 +22,7 @@
                 "oauth2Port":"50053",
                 "customString": "In Flames",
                 "someSecret": "1234567890",
+                "baseUrl": "http://localhost:9044",
                 "jwtValidators__issuers": "http://localhost:50053,http://host.docker.internal:50053",
                 "jwtValidators__jwksUrls": "http://localhost:50053/.well-known/jwks,http://host.docker.internal:50053/.well-known/jwks",
 

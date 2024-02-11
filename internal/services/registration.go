@@ -9,10 +9,11 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/config"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/eko_gocache"
 	services_client_inmemory "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/client/inmemory"
+	services_codeexchanges_github "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/codeexchanges/github"
 	services_idp_inmemory "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/idp/inmemory"
+	services_oauth2factory "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/oauth2factory"
 	services_oauth2flowstore "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/oauth2flowstore"
 	services_oidcflowstore "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/oidcflowstore"
-
 	services_tokenservice "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/tokenservice"
 	services_util "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/util"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/models"
@@ -28,8 +29,9 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	// it addes an empty *stores_services_client_inmemory.Clients
 	services_client_inmemory.AddSingletonIFluffyCoreClientServiceServer(builder)
 	services_idp_inmemory.AddSingletonIFluffyCoreIDPServiceServer(builder)
-
+	services_oauth2factory.AddSingletonIOAuth2Factory(builder)
 	services_tokenservice.AddSingletonITokenService(builder)
+	services_codeexchanges_github.AddSingletonIGithubCodeExchange(builder)
 	services_util.AddSingletonISomeUtil(builder)
 	fluffycore_services_eko_gocache_go_cache.AddISingletonInMemoryCache(builder,
 		reflect.TypeOf((*contracts_eko_gocache.IOIDCFlowCache)(nil)),
@@ -37,6 +39,7 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	)
 	services_oidcflowstore.AddSingletonIOIDCFlowCache(builder)
 	services_oauth2flowstore.AddSingletonIExternalOauth2FlowStore(builder)
+	di.AddInstance[*contracts_config.Config](builder, config)
 	OnConfigureServicesLoadOIDCClients(ctx, config, builder)
 	OnConfigureServicesLoadIDPs(ctx, config, builder)
 }

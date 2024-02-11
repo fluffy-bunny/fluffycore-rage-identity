@@ -7,12 +7,16 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_codeexchange "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/codeexchange"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/eko_gocache"
 	contracts_util "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/util"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/wellknown/echo"
 	proto_oidc_client "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/client"
+	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/idp"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/models"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
+	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
 )
@@ -23,6 +27,8 @@ type (
 		scopedMemoryCache       fluffycore_contracts_common.IScopedMemoryCache
 		externalOauth2FlowStore contracts_eko_gocache.IExternalOauth2FlowStore
 		clientServiceServer     proto_oidc_client.IFluffyCoreClientServiceServer
+		idpServiceServer        proto_oidc_idp.IFluffyCoreIDPServiceServer
+		githubCodeExchange      contracts_codeexchange.IGithubCodeExchange
 	}
 )
 
@@ -35,12 +41,16 @@ func init() {
 func (s *service) Ctor(scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
 	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
 	externalOauth2FlowStore contracts_eko_gocache.IExternalOauth2FlowStore,
+	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
+	githubCodeExchange contracts_codeexchange.IGithubCodeExchange,
 	someUtil contracts_util.ISomeUtil) (*service, error) {
 	return &service{
 		someUtil:                someUtil,
 		scopedMemoryCache:       scopedMemoryCache,
 		externalOauth2FlowStore: externalOauth2FlowStore,
 		clientServiceServer:     clientServiceServer,
+		idpServiceServer:        idpServiceServer,
+		githubCodeExchange:      githubCodeExchange,
 	}, nil
 }
 
@@ -87,5 +97,41 @@ func (s *service) Do(c echo.Context) error {
 	}
 	log.Info().Interface("model", model).Msg("model")
 
+	finalCache, err := s.externalOauth2FlowStore.GetExternalOauth2Final(ctx, model.State)
+	if err != nil {
+		log.Error().Err(err).Msg("GetExternalOauth2Final")
+		return c.Redirect(http.StatusTemporaryRedirect, "/login?error=invalid_state")
+	}
+
+	getIDPBySlugResponse, err := s.idpServiceServer.GetIDPBySlug(ctx,
+		&proto_oidc_idp.GetIDPBySlugRequest{
+			Slug: finalCache.Request.IDPSlug,
+		})
+	if err != nil {
+		log.Error().Err(err).Msg("GetIDPBySlug")
+		return c.Redirect(http.StatusFound, "/error")
+	}
+	var exchangeCodeResponse *contracts_codeexchange.ExchangeCodeResponse
+	idp := getIDPBySlugResponse.Idp
+	if idp.Protocol != nil {
+		log.Info().Interface("getIDPBySlugResponse", getIDPBySlugResponse).Msg("getIDPBySlugResponse")
+		switch idp.Protocol.Value.(type) {
+		case *proto_oidc_models.Protocol_Github:
+			{
+				exchangeCodeResponse, err = s.githubCodeExchange.ExchangeCode(ctx, &contracts_codeexchange.ExchangeCodeRequest{
+					Code:         model.Code,
+					CodeVerifier: finalCache.Request.CodeChallenge,
+				})
+				if err != nil {
+					log.Error().Err(err).Msg("ExchangeCode")
+					return c.Redirect(http.StatusTemporaryRedirect, "/login?error=exchange_code")
+				}
+
+			}
+		}
+	}
+	if exchangeCodeResponse != nil && fluffycore_utils.IsEmptyOrNil(exchangeCodeResponse.IdToken) {
+		// now we do the link dance
+	}
 	return c.Redirect(http.StatusTemporaryRedirect, "/login?code="+model.Code)
 }

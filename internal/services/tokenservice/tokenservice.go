@@ -7,7 +7,7 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/tokenservice"
 	mocks_oauth2 "github.com/fluffy-bunny/fluffycore/mocks/oauth2"
-	"github.com/rs/xid"
+	xid "github.com/rs/xid"
 )
 
 type (

@@ -9,6 +9,7 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/eko_gocache"
+	contracts_oauth2factory "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/oauth2factory"
 	contracts_util "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/util"
 	models "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/base"
@@ -32,6 +33,7 @@ type (
 		externalOauth2FlowStore contracts_eko_gocache.IExternalOauth2FlowStore
 		idpServiceServer        proto_oidc_idp.IFluffyCoreIDPServiceServer
 		someUtil                contracts_util.ISomeUtil
+		oauth2Factory           contracts_oauth2factory.IOAuth2Factory
 	}
 )
 
@@ -46,6 +48,7 @@ func (s *service) Ctor(someUtil contracts_util.ISomeUtil,
 	externalOauth2FlowStore contracts_eko_gocache.IExternalOauth2FlowStore,
 	claimsPrincipal fluffycore_contracts_common.IClaimsPrincipal,
 	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
+	oauth2Factory contracts_oauth2factory.IOAuth2Factory,
 	echoContextAccessor fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor) (*service, error) {
 
 	return &service{
@@ -55,6 +58,7 @@ func (s *service) Ctor(someUtil contracts_util.ISomeUtil,
 		someUtil:                someUtil,
 		externalOauth2FlowStore: externalOauth2FlowStore,
 		idpServiceServer:        idpServiceServer,
+		oauth2Factory:           oauth2Factory,
 	}, nil
 }
 
@@ -122,7 +126,15 @@ func (s *service) DoPost(c echo.Context) error {
 					// redirect to error page
 					return c.Redirect(http.StatusFound, "/error")
 				}
-				oauth2Config := wellknown_echo.GetGithubConfig(c, v.Github)
+				getConfigResponse, err := s.oauth2Factory.GetConfig(ctx,
+					&contracts_oauth2factory.GetConfigRequest{
+						IDPSlug: model.IDPSlug,
+					})
+				if err != nil {
+					log.Error().Err(err).Msg("Failed to get oauth2Config")
+					return c.Redirect(http.StatusFound, "/error")
+				}
+				oauth2Config := getConfigResponse.Config
 				u := oauth2Config.AuthCodeURL(state,
 					oauth2.SetAuthURLParam("code_challenge", genCodeChallengeS256(codeChallenge)),
 					oauth2.SetAuthURLParam("code_challenge_method", "S256"))
