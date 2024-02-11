@@ -15,10 +15,13 @@ type (
 	}
 
 	ExternalOauth2Request struct {
-		IDPSlug             string `json:"idp_slug,omitempty"`
-		CodeChallenge       string `json:"code_challenge,omitempty"`
-		CodeChallengeMethod string `json:"code_challenge_method,omitempty"`
-		State               string `json:"state,omitempty"`
+		IDPSlug               string `json:"idp_slug,omitempty"`
+		ClientID              string `json:"client_id,omitempty"`
+		CodeChallenge         string `json:"code_challenge,omitempty"`
+		CodeChallengeMethod   string `json:"code_challenge_method,omitempty"`
+		State                 string `json:"state,omitempty"`
+		CodeChallengeVerifier string `json:"code_challenge_verifier,omitempty"`
+		Nonce                 string `json:"nonce,omitempty"`
 	}
 	Identity struct {
 		Subject string

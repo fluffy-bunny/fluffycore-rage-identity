@@ -2,9 +2,9 @@ package oauth2factory
 
 import (
 	"context"
+	"strings"
 	"sync"
 
-	oidc "github.com/coreos/go-oidc/v3/oidc"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/config"
 	contracts_oauth2factory "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/oauth2factory"
@@ -20,11 +20,11 @@ import (
 
 type (
 	service struct {
-		config           *contracts_config.Config
-		idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer
-		oidcProviders    map[string]*oidc.Provider
-		oauth2Configs    map[string]*oauth2.Config
-		lock             sync.Mutex
+		config                *contracts_config.Config
+		idpServiceServer      proto_oidc_idp.IFluffyCoreIDPServiceServer
+		oauth2Configs         map[string]*oauth2.Config
+		oauth2ProviderFactory contracts_oauth2factory.IOIDCProviderFactory
+		lock                  sync.Mutex
 	}
 )
 
@@ -33,12 +33,14 @@ var stemService = (*service)(nil)
 func init() {
 	var _ contracts_oauth2factory.IOAuth2Factory = stemService
 }
-func (s *service) Ctor(config *contracts_config.Config, idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer) (contracts_oauth2factory.IOAuth2Factory, error) {
+func (s *service) Ctor(config *contracts_config.Config,
+	oauth2ProviderFactory contracts_oauth2factory.IOIDCProviderFactory,
+	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer) (contracts_oauth2factory.IOAuth2Factory, error) {
 	return &service{
-		config:           config,
-		idpServiceServer: idpServiceServer,
-		oidcProviders:    make(map[string]*oidc.Provider),
-		oauth2Configs:    make(map[string]*oauth2.Config),
+		config:                config,
+		idpServiceServer:      idpServiceServer,
+		oauth2ProviderFactory: oauth2ProviderFactory,
+		oauth2Configs:         make(map[string]*oauth2.Config),
 	}, nil
 }
 
@@ -109,23 +111,23 @@ func (s *service) GetConfig(ctx context.Context, request *contracts_oauth2factor
 
 		case *proto_oidc_models.Protocol_Oidc:
 			{
-				oidcProvider, ok := s.oidcProviders[request.IDPSlug]
-				if !ok {
-					provider, err := oidc.NewProvider(ctx, v.Oidc.Authority)
-					if err != nil {
-						log.Error().Err(err).Msg("oidc.NewProvider")
-						return nil, err
-					}
-					s.oidcProviders[request.IDPSlug] = provider
-					oidcProvider = provider
+				getOIDCProviderResponse, err := s.oauth2ProviderFactory.GetOIDCProvider(ctx,
+					&contracts_oauth2factory.GetOIDCProviderRequest{
+						IDPSlug: request.IDPSlug,
+					})
+				if err != nil {
+					log.Error().Err(err).Msg("Failed to get oidcProvider")
+					return nil, err
 				}
+				oidcProvider := getOIDCProviderResponse.OIDCProvider
+
 				oauth2Config, ok := s.oauth2Configs[request.IDPSlug]
 				if !ok {
-
+					scopes := strings.Split(v.Oidc.Scope, " ")
 					config := oauth2.Config{
 						ClientID:     v.Oidc.ClientId,
 						ClientSecret: v.Oidc.ClientSecret,
-						Scopes:       GithubScopes,
+						Scopes:       scopes,
 						RedirectURL:  s.config.BaseUrl + wellknown_echo.OAuth2CallbackPath,
 						Endpoint: oauth2.Endpoint{
 							AuthURL:  oidcProvider.Endpoint().AuthURL,

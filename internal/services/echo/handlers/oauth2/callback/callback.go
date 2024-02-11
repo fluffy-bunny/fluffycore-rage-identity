@@ -29,6 +29,7 @@ type (
 		clientServiceServer     proto_oidc_client.IFluffyCoreClientServiceServer
 		idpServiceServer        proto_oidc_idp.IFluffyCoreIDPServiceServer
 		githubCodeExchange      contracts_codeexchange.IGithubCodeExchange
+		genericOIDCCodeExchange contracts_codeexchange.IGenericOIDCCodeExchange
 	}
 )
 
@@ -43,6 +44,7 @@ func (s *service) Ctor(scopedMemoryCache fluffycore_contracts_common.IScopedMemo
 	externalOauth2FlowStore contracts_eko_gocache.IExternalOauth2FlowStore,
 	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
 	githubCodeExchange contracts_codeexchange.IGithubCodeExchange,
+	genericOIDCCodeExchange contracts_codeexchange.IGenericOIDCCodeExchange,
 	someUtil contracts_util.ISomeUtil) (*service, error) {
 	return &service{
 		someUtil:                someUtil,
@@ -51,6 +53,7 @@ func (s *service) Ctor(scopedMemoryCache fluffycore_contracts_common.IScopedMemo
 		clientServiceServer:     clientServiceServer,
 		idpServiceServer:        idpServiceServer,
 		githubCodeExchange:      githubCodeExchange,
+		genericOIDCCodeExchange: genericOIDCCodeExchange,
 	}, nil
 }
 
@@ -119,8 +122,25 @@ func (s *service) Do(c echo.Context) error {
 		case *proto_oidc_models.Protocol_Github:
 			{
 				exchangeCodeResponse, err = s.githubCodeExchange.ExchangeCode(ctx, &contracts_codeexchange.ExchangeCodeRequest{
+					IDPSlug:      finalCache.Request.IDPSlug,
+					ClientID:     finalCache.Request.ClientID,
+					Nonce:        finalCache.Request.Nonce,
 					Code:         model.Code,
 					CodeVerifier: finalCache.Request.CodeChallenge,
+				})
+				if err != nil {
+					log.Error().Err(err).Msg("ExchangeCode")
+					return c.Redirect(http.StatusTemporaryRedirect, "/login?error=exchange_code")
+				}
+			}
+		case *proto_oidc_models.Protocol_Oidc:
+			{
+				exchangeCodeResponse, err = s.genericOIDCCodeExchange.ExchangeCode(ctx, &contracts_codeexchange.ExchangeCodeRequest{
+					IDPSlug:  finalCache.Request.IDPSlug,
+					ClientID: finalCache.Request.ClientID,
+					Nonce:    finalCache.Request.Nonce,
+					Code:     model.Code,
+					//			CodeVerifier: finalCache.Request.CodeChallenge,
 				})
 				if err != nil {
 					log.Error().Err(err).Msg("ExchangeCode")

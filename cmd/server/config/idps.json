@@ -9,14 +9,14 @@
       "protocol": {
         "oidc": {
           "authority": "https://accounts.google.com",
-          "client_id": "1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com",
-          "client_secret": "abcdefghijklmnopqrstuvwxyz",
+          "client_id": "1096301616546-edbl612881t7rkpljp3qa3juminskulo.apps.googleusercontent.com",
+          "client_secret": "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",
           "scope": "openid email profile"
         }
       },
       "metadata": {
         "hidden": "false",
-        "icon": "https://www.google.com/images/branding/product/1x/googleg_48dp.png"
+        "icon": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
       }
     },
     {

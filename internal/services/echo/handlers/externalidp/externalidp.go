@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
 
@@ -110,15 +111,16 @@ func (s *service) DoPost(c echo.Context) error {
 		switch v := idp.Protocol.Value.(type) {
 		case *proto_oidc_models.Protocol_Github:
 			{
-
 				state := xid.New().String()
-				codeChallenge := xid.New().String()
+				codeChallenge, verifier := generateCodeChallenge()
 				err = s.externalOauth2FlowStore.StoreExternalOauth2Final(ctx, state, &models.ExternalOauth2Final{
 					Request: &models.ExternalOauth2Request{
-						IDPSlug:             model.IDPSlug,
-						State:               state,
-						CodeChallenge:       codeChallenge,
-						CodeChallengeMethod: "S256",
+						IDPSlug:               model.IDPSlug,
+						ClientID:              v.Github.ClientId,
+						State:                 state,
+						CodeChallenge:         codeChallenge,
+						CodeChallengeMethod:   "S256",
+						CodeChallengeVerifier: verifier,
 					},
 				})
 				if err != nil {
@@ -136,7 +138,7 @@ func (s *service) DoPost(c echo.Context) error {
 				}
 				oauth2Config := getConfigResponse.Config
 				u := oauth2Config.AuthCodeURL(state,
-					oauth2.SetAuthURLParam("code_challenge", genCodeChallengeS256(codeChallenge)),
+					oauth2.SetAuthURLParam("code_challenge", codeChallenge),
 					oauth2.SetAuthURLParam("code_challenge_method", "S256"))
 				return c.Redirect(http.StatusFound, u)
 
@@ -144,14 +146,16 @@ func (s *service) DoPost(c echo.Context) error {
 		case *proto_oidc_models.Protocol_Oauth2:
 			{
 				state := xid.New().String()
-				codeChallenge := xid.New().String()
+				codeChallenge, verifier := generateCodeChallenge()
 
 				err = s.externalOauth2FlowStore.StoreExternalOauth2Final(ctx, state, &models.ExternalOauth2Final{
 					Request: &models.ExternalOauth2Request{
-						IDPSlug:             model.IDPSlug,
-						State:               state,
-						CodeChallenge:       codeChallenge,
-						CodeChallengeMethod: "S256",
+						IDPSlug:               model.IDPSlug,
+						ClientID:              v.Oauth2.ClientId,
+						State:                 state,
+						CodeChallenge:         codeChallenge,
+						CodeChallengeMethod:   "S256",
+						CodeChallengeVerifier: verifier,
 					},
 				})
 				if err != nil {
@@ -170,13 +174,49 @@ func (s *service) DoPost(c echo.Context) error {
 						TokenURL: v.Oauth2.TokenEndpoint,
 					},
 				}
+
 				u := config.AuthCodeURL(state,
-					oauth2.SetAuthURLParam("code_challenge", genCodeChallengeS256(codeChallenge)),
+					oauth2.SetAuthURLParam("code_challenge", codeChallenge),
 					oauth2.SetAuthURLParam("code_challenge_method", "S256"))
+
 				return c.Redirect(http.StatusFound, u)
 			}
 		case *proto_oidc_models.Protocol_Oidc:
 			{
+				state := xid.New().String()
+				nonce := xid.New().String()
+
+				//codeChallenge, verifier := generateCodeChallenge()
+				err = s.externalOauth2FlowStore.StoreExternalOauth2Final(ctx, state, &models.ExternalOauth2Final{
+					Request: &models.ExternalOauth2Request{
+						IDPSlug:  model.IDPSlug,
+						ClientID: v.Oidc.ClientId,
+						State:    state,
+						//			CodeChallenge:         codeChallenge,
+						//			CodeChallengeMethod:   "S256",
+						//			CodeChallengeVerifier: verifier,
+						Nonce: nonce,
+					},
+				})
+				if err != nil {
+					log.Error().Err(err).Msg("StoreExternalOauth2Final")
+					// redirect to error page
+					return c.Redirect(http.StatusFound, "/error")
+				}
+				getConfigResponse, err := s.oauth2Factory.GetConfig(ctx,
+					&contracts_oauth2factory.GetConfigRequest{
+						IDPSlug: model.IDPSlug,
+					})
+				if err != nil {
+					log.Error().Err(err).Msg("Failed to get oauth2Config")
+					return c.Redirect(http.StatusFound, "/error")
+				}
+				oauth2Config := getConfigResponse.Config
+				authCodeOptions := []oauth2.AuthCodeOption{
+					oauth2.SetAuthURLParam("nonce", nonce),
+				}
+				u := oauth2Config.AuthCodeURL(state, authCodeOptions...)
+				return c.Redirect(http.StatusFound, u)
 			}
 		}
 	}
@@ -185,9 +225,25 @@ func (s *service) DoPost(c echo.Context) error {
 
 }
 
-func genCodeChallengeS256(s string) string {
-	s256 := sha256.Sum256([]byte(s))
-	return base64.URLEncoding.EncodeToString(s256[:])
+func generateCodeChallenge() (string, string) {
+	// Generate a random 32-byte verifier string
+	verifierBytes := make([]byte, 32)
+	if _, err := rand.Read(verifierBytes); err != nil {
+		panic(err) // Handle error appropriately in production code
+	}
+	verifier := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(verifierBytes)
+
+	// Calculate the SHA256 hash of the verifier
+	hash := sha256.Sum256([]byte(verifier))
+
+	// Base64-encode the hash using URL-safe encoding without padding
+	challenge := base64.URLEncoding.WithPadding(base64.NoPadding).EncodeToString(hash[:])
+
+	// Replace any '+' or '/' characters with '-' and '_', respectively
+	challenge = strings.ReplaceAll(challenge, "+", "-")
+	challenge = strings.ReplaceAll(challenge, "/", "_")
+
+	return challenge, verifier
 }
 
 // HealthCheck godoc

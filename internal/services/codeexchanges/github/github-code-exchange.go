@@ -83,6 +83,8 @@ func (s *service) validateExchangeCodeRequest(request *contracts_codeexchange.Ex
 	return nil
 }
 
+var Duration30MinutesSeconds = 1800
+
 func (s *service) ExchangeCode(ctx context.Context, request *contracts_codeexchange.ExchangeCodeRequest) (*contracts_codeexchange.ExchangeCodeResponse, error) {
 	log := zerolog.Ctx(ctx).With().Logger()
 	if err := s.validateExchangeCodeRequest(request); err != nil {
@@ -90,7 +92,7 @@ func (s *service) ExchangeCode(ctx context.Context, request *contracts_codeexcha
 	}
 	// get the config
 	getConfigRequest := &contracts_oauth2factory.GetConfigRequest{
-		IDPSlug: "github-social",
+		IDPSlug: request.IDPSlug,
 	}
 	getConfigResponse, err := s.oauth2Factory.GetConfig(ctx, getConfigRequest)
 	if err != nil {
@@ -141,7 +143,7 @@ func (s *service) ExchangeCode(ctx context.Context, request *contracts_codeexcha
 	}
 	claims := map[string]interface{}{
 		"sub": strconv.Itoa(githubUser.ID),
-		"idp": "github-social",
+		"idp": request.IDPSlug,
 	}
 	if primaryEmail != nil {
 		claims["email"] = primaryEmail.Email
@@ -153,7 +155,8 @@ func (s *service) ExchangeCode(ctx context.Context, request *contracts_codeexcha
 
 	mintTokenResponse, err := s.tokenService.MintToken(ctx,
 		&contracts_tokenservice.MintTokenRequest{
-			Claims: claims,
+			DurationLifeTimeSeconds: Duration30MinutesSeconds,
+			Claims:                  claims,
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("failed to mint token")
