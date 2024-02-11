@@ -241,25 +241,6 @@
     }
   },
   "definitions": {
-    "LinkedIdentitiesUpdateGranular": {
-      "type": "object",
-      "properties": {
-        "add": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/modelsIdentity"
-          }
-        },
-        "remove": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/modelsIdentity"
-          }
-        }
-      }
-    },
     "modelsIdentity": {
       "type": "object",
       "properties": {
@@ -301,10 +282,45 @@
       "type": "object",
       "properties": {
         "granular": {
-          "$ref": "#/definitions/LinkedIdentitiesUpdateGranular"
+          "$ref": "#/definitions/modelsLinkedIdentitiesUpdateGranular"
         },
         "replace": {
           "$ref": "#/definitions/modelsLinkedIdentities"
+        }
+      }
+    },
+    "modelsLinkedIdentitiesUpdateGranular": {
+      "type": "object",
+      "properties": {
+        "add": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/modelsIdentity"
+          }
+        },
+        "remove": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/modelsIdentity"
+          }
+        }
+      }
+    },
+    "modelsRecovery": {
+      "type": "object",
+      "properties": {
+        "emails": {
+          "$ref": "#/definitions/typesStringValues"
+        }
+      }
+    },
+    "modelsRecoveryUpdate": {
+      "type": "object",
+      "properties": {
+        "emails": {
+          "$ref": "#/definitions/typesStringArrayUpdate"
         }
       }
     },
@@ -316,6 +332,9 @@
         },
         "linkedIdentities": {
           "$ref": "#/definitions/modelsLinkedIdentities"
+        },
+        "recovery": {
+          "$ref": "#/definitions/modelsRecovery"
         }
       }
     },
@@ -327,6 +346,9 @@
         },
         "linkedIdentities": {
           "$ref": "#/definitions/modelsLinkedIdentitiesUpdate"
+        },
+        "recovery": {
+          "$ref": "#/definitions/modelsRecoveryUpdate"
         }
       }
     },
@@ -423,6 +445,34 @@
       },
       "description": "PaginationResponse ..."
     },
+    "typesStringArrayUpdate": {
+      "type": "object",
+      "properties": {
+        "granular": {
+          "$ref": "#/definitions/typesStringArrayUpdateGranular"
+        },
+        "replace": {
+          "$ref": "#/definitions/typesStringValues"
+        }
+      }
+    },
+    "typesStringArrayUpdateGranular": {
+      "type": "object",
+      "properties": {
+        "add": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "remove": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "typesStringFilterExpression": {
       "type": "object",
       "properties": {
@@ -440,6 +490,17 @@
         },
         "ne": {
           "type": "string"
+        }
+      }
+    },
+    "typesStringValues": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },

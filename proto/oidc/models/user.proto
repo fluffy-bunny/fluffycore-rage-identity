@@ -10,7 +10,8 @@ package proto.oidc.models;
 
 import "google/protobuf/descriptor.proto";
 import "google/protobuf/wrappers.proto";
- 
+import "proto/types/primitives.proto";
+
 message Identity {
     string subject = 1;
     string idp_slug = 2;
@@ -37,14 +38,21 @@ message LinkedIdentitiesUpdate {
         LinkedIdentities    replace = 2;
     }
 }
-
+message Recovery{
+    proto.types.StringValues emails = 1;
+}
+message RecoveryUpdate{
+    proto.types.StringArrayUpdate emails = 1;
+}
 message User {
     Identity            root_identity = 1;
     LinkedIdentities    linked_identities = 2;
+    Recovery            recovery = 3;
 }
 
 message UserUpdate {
-    IdentityUpdate root_identity = 1;
-    LinkedIdentitiesUpdate linked_identities = 2;
+    IdentityUpdate          root_identity = 1;
+    LinkedIdentitiesUpdate  linked_identities = 2;
+    RecoveryUpdate          recovery = 3;
 }
 
