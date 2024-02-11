@@ -5,6 +5,7 @@ reference: https://github.com/go-oauth2/oauth2/blob/master/example/client/client
 */
 import (
 	"net/http"
+	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_codeexchange "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/codeexchange"
@@ -18,6 +19,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
+	jwxt "github.com/lestrrat-go/jwx/v2/jwt"
 	zerolog "github.com/rs/zerolog"
 )
 
@@ -153,8 +155,28 @@ func (s *service) Do(c echo.Context) error {
 			}
 		}
 	}
-	if exchangeCodeResponse != nil && fluffycore_utils.IsEmptyOrNil(exchangeCodeResponse.IdToken) {
+	if exchangeCodeResponse != nil && !fluffycore_utils.IsEmptyOrNil(exchangeCodeResponse.IdToken) {
 		// now we do the link dance
+		parseOptions := []jwxt.ParseOption{
+			jwxt.WithVerify(false),
+			jwxt.WithAcceptableSkew(time.Minute * 5),
+		}
+		rawToken, err := jwxt.ParseString(exchangeCodeResponse.IdToken, parseOptions...)
+		if err != nil {
+			log.Error().Err(err).Msg("ParseString")
+			return c.Redirect(http.StatusTemporaryRedirect, "/login?error=parse_id_token")
+		}
+
+		// just save the id_token.  Its verifiable by the backend
+		c.SetCookie(&http.Cookie{
+			Name:     "_external_user",
+			Value:    exchangeCodeResponse.IdToken,
+			Path:     "/",
+			Expires:  rawToken.Expiration(),
+			Secure:   true,
+			SameSite: http.SameSiteNoneMode,
+		})
+
 	}
 	return c.Redirect(http.StatusTemporaryRedirect, "/login?code="+model.Code)
 }
