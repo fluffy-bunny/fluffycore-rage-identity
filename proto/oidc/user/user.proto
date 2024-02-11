@@ -1,0 +1,139 @@
+syntax = "proto3";
+
+option go_package = "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user;user";
+option java_multiple_files = true;
+option java_package = "com.fluffybunny.rageoidc.user";
+option csharp_namespace = "FluffyBunny.RageOidc.Oidc.User";
+
+
+package proto.oidc.user;
+
+import "google/protobuf/descriptor.proto";
+import "proto/types/filter.proto";
+import "proto/types/pagination.proto";
+import "proto/oidc/models/user.proto";
+
+import "google/api/annotations.proto";
+
+message IdentityFilter {
+    proto.types.IDFilterExpression           subject = 1;
+    proto.types.IDFilterExpression           idp_slug = 2;
+    proto.types.StringFilterExpression       email = 3;
+
+}
+message Filter {
+    IdentityFilter root_identity = 1;
+    IdentityFilter linked_identity = 2;
+    // AST
+    repeated Filter and = 100;
+    repeated Filter or = 101;
+    repeated Filter not = 102;
+}
+
+service UserService {
+    // Create client
+    rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/user/_create"
+            body: "*"
+          };
+    }
+    // Get client
+    rpc GetUser (GetUserRequest) returns (GetUserResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/user/client_id/{client_id}"
+          };
+    }
+
+    // Delete client
+    rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse) {
+        option (google.api.http) = {
+            delete: "/api/v1/user/client_id/{client_id}"
+          };
+    }
+    // Update client
+    rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/user/_update"
+            body: "*"
+          };
+    }
+    // List clients
+    rpc ListUser (ListUserRequest) returns (ListUserResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/user/_search"
+            body: "*"
+          };
+    }
+
+    rpc LinkUsers (LinkUsersRequest) returns (LinkUsersResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/user/_link"
+            body: "*"
+          };
+    }
+    rpc UnlinkUsers (UnlinkUsersRequest) returns (UnlinkUsersResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/user/_unlink"
+            body: "*"
+          };
+    }
+} 
+
+message LinkUsersRequest {
+    string root_subject = 1;
+    proto.oidc.models.Identity external_identity = 2;
+}
+
+message LinkUsersResponse {
+    proto.oidc.models.User user = 1;
+}
+
+message UnlinkUsersRequest {
+    string root_subject = 1;
+    proto.oidc.models.Identity external_identity = 2;
+}
+message UnlinkUsersResponse {
+    proto.oidc.models.User user = 1;
+}
+
+  
+message CreateUserRequest {
+    proto.oidc.models.User user = 1;
+}   
+message CreateUserResponse {
+    proto.oidc.models.User cluserient = 1;
+}
+message GetUserRequest {
+   string client_id = 1;
+}
+message GetUserResponse {
+    proto.oidc.models.User user = 1;
+}
+
+message DeleteUserRequest {
+   string client_id = 1;
+}
+message DeleteUserResponse {
+}
+message UpdateUserRequest {
+    proto.oidc.models.UserUpdate user = 1;
+}
+message UpdateUserResponse {
+    proto.oidc.models.User client = 1;
+}
+
+message ListUserRequest {
+   // Filter
+   Filter filter = 1;
+
+   // Pagination
+   proto.types.Pagination pagination = 100;
+}
+
+message ListUserResponse {
+   repeated proto.oidc.models.User users = 1;
+
+   // Pagination details
+   proto.types.PaginationResponse pagination = 100;
+}

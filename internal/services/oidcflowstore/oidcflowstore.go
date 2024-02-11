@@ -8,8 +8,8 @@ import (
 
 	store "github.com/eko/gocache/lib/v4/store"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/eko_gocache"
-	models "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/models"
+	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/eko_gocache"
+	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 )
 
 type (

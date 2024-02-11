@@ -5,9 +5,9 @@ import (
 	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	utils "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/utils"
-	proto_oidc_client "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/client"
-	proto_oidc_models "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/models"
+	utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/utils"
+	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/client"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	zerolog "github.com/rs/zerolog"

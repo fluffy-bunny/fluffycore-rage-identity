@@ -7,9 +7,9 @@ import (
 
 	golinq "github.com/ahmetb/go-linq/v3"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_util "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/util"
-	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/services/echo/handlers/base"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/wellknown/echo"
+	contracts_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/util"
+	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_echo_contracts_contextaccessor "github.com/fluffy-bunny/fluffycore/echo/contracts/contextaccessor"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"

@@ -9,7 +9,7 @@ No calls to the userinfo endpoint are supported. id_token is the only thing retu
 Just build and run this thing;
 
 ```bash
- docker build --file .\build\Dockerfile . --tag fluffycore.hanko.oidc:latest
+ docker build --file .\build\Dockerfile . --tag fluffycore.rage.oidc:latest
  docker-compose up -d
 ```
 
@@ -81,9 +81,13 @@ protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gat
 
 protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/oidc/models/idps.proto
 
+protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/oidc/models/user.proto
+
 protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/oidc/client/client.proto
 
 protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/oidc/idps/idps.proto
+
+protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/oidc/user/user.proto
 ```
 
 ## Private OAuth2 server
@@ -114,7 +118,7 @@ curl --location 'http://localhost:50053/oauth/token' --header 'Content-Type: app
 ## Docker Build
 
 ```bash
- docker build --file .\build\Dockerfile . --tag fluffycore.hanko.oidc:latest
+ docker build --file .\build\Dockerfile . --tag fluffycore.rage.oidc:latest
 ```
 
 ## Health check

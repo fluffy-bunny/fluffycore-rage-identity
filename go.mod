@@ -1,4 +1,4 @@
-module github.com/fluffy-bunny/fluffycore-hanko-oidc
+module github.com/fluffy-bunny/fluffycore-rage-oidc
 
 go 1.22
 

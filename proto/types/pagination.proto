@@ -1,9 +1,9 @@
 syntax = "proto3";
 
-option go_package = "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/types;types";
+option go_package = "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/types;types";
 option java_multiple_files = true;
-option java_package = "com.fluffybunny.hankooidc.types";
-option csharp_namespace = "FluffyBunny.HankoOidc.Types";
+option java_package = "com.fluffybunny.rageoidc.types";
+option csharp_namespace = "FluffyBunny.RageOidc.Types";
 
 
 package proto.types;

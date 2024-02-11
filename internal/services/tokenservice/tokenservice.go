@@ -5,7 +5,7 @@ import (
 	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/tokenservice"
+	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/tokenservice"
 	mocks_oauth2 "github.com/fluffy-bunny/fluffycore/mocks/oauth2"
 	xid "github.com/rs/xid"
 )

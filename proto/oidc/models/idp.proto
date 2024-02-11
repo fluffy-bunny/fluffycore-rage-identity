@@ -1,9 +1,9 @@
 syntax = "proto3";
 
-option go_package = "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/models;models";
+option go_package = "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models;models";
 option java_multiple_files = true;
-option java_package = "com.fluffybunny.hankooidc.models";
-option csharp_namespace = "FluffyBunny.HankoOidc.Oidc.Models";
+option java_package = "com.fluffybunny.rageoidc.models";
+option csharp_namespace = "FluffyBunny.RageOidc.Oidc.Models";
 
 
 package proto.oidc.models;

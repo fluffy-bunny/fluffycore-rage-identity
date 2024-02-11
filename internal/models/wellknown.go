@@ -13,9 +13,9 @@ const (
 )
 
 const (
-	ACRPassword = "urn:hanko:loa:1fa:pwd"
-	ACR2FA      = "urn:hanko:loa:2fa"
-	ACRIdp      = "urn:hanko:loa:idp:{idp}"
+	ACRPassword = "urn:rage:loa:1fa:pwd"
+	ACR2FA      = "urn:rage:loa:2fa"
+	ACRIdp      = "urn:rage:loa:idp:{idp}"
 )
 const (
 	AMRPassword = "pwd"

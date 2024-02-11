@@ -1,17 +1,335 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "proto/oidc/models/idp.proto",
+    "title": "proto/oidc/user/user.proto",
     "version": "version not set"
   },
+  "tags": [
+    {
+      "name": "UserService"
+    }
+  ],
   "consumes": [
     "application/json"
   ],
   "produces": [
     "application/json"
   ],
-  "paths": {},
+  "paths": {
+    "/api/v1/user/_create": {
+      "post": {
+        "summary": "Create client",
+        "operationId": "UserService_CreateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/userCreateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/userCreateUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/api/v1/user/_link": {
+      "post": {
+        "operationId": "UserService_LinkUsers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/userLinkUsersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/userLinkUsersRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/api/v1/user/_search": {
+      "post": {
+        "summary": "List clients",
+        "operationId": "UserService_ListUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/userListUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/userListUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/api/v1/user/_unlink": {
+      "post": {
+        "operationId": "UserService_UnlinkUsers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/userUnlinkUsersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/userUnlinkUsersRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/api/v1/user/_update": {
+      "post": {
+        "summary": "Update client",
+        "operationId": "UserService_UpdateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/userUpdateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/userUpdateUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/api/v1/user/client_id/{clientId}": {
+      "get": {
+        "summary": "Get client",
+        "operationId": "UserService_GetUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/userGetUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      },
+      "delete": {
+        "summary": "Delete client",
+        "operationId": "UserService_DeleteUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/userDeleteUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    }
+  },
   "definitions": {
+    "LinkedIdentitiesUpdateGranular": {
+      "type": "object",
+      "properties": {
+        "add": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/modelsIdentity"
+          }
+        },
+        "remove": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/modelsIdentity"
+          }
+        }
+      }
+    },
+    "modelsIdentity": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "type": "string"
+        },
+        "idpSlug": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "modelsIdentityUpdate": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "modelsLinkedIdentities": {
+      "type": "object",
+      "properties": {
+        "identities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/modelsIdentity"
+          }
+        }
+      }
+    },
+    "modelsLinkedIdentitiesUpdate": {
+      "type": "object",
+      "properties": {
+        "granular": {
+          "$ref": "#/definitions/LinkedIdentitiesUpdateGranular"
+        },
+        "replace": {
+          "$ref": "#/definitions/modelsLinkedIdentities"
+        }
+      }
+    },
+    "modelsUser": {
+      "type": "object",
+      "properties": {
+        "rootIdentity": {
+          "$ref": "#/definitions/modelsIdentity"
+        },
+        "linkedIdentities": {
+          "$ref": "#/definitions/modelsLinkedIdentities"
+        }
+      }
+    },
+    "modelsUserUpdate": {
+      "type": "object",
+      "properties": {
+        "rootIdentity": {
+          "$ref": "#/definitions/modelsIdentityUpdate"
+        },
+        "linkedIdentities": {
+          "$ref": "#/definitions/modelsLinkedIdentitiesUpdate"
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -37,6 +355,248 @@
             "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "typesIDFilterExpression": {
+      "type": "object",
+      "properties": {
+        "eq": {
+          "type": "string"
+        },
+        "in": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "typesOrder": {
+      "type": "string",
+      "enum": [
+        "ORDER_UNSPECIFIED",
+        "ASC",
+        "DESC"
+      ],
+      "default": "ORDER_UNSPECIFIED",
+      "title": "- ORDER_UNSPECIFIED: Conventional default for enums. Do not use this.\n - ASC: Ascending order\n - DESC: Descending order"
+    },
+    "typesPagination": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Maximum number of entries to retrieve"
+        },
+        "iterator": {
+          "type": "string"
+        },
+        "order": {
+          "$ref": "#/definitions/typesOrder"
+        }
+      }
+    },
+    "typesPaginationResponse": {
+      "type": "object",
+      "properties": {
+        "iterator": {
+          "type": "string"
+        },
+        "prevIterator": {
+          "type": "string"
+        },
+        "totalAvailable": {
+          "type": "boolean",
+          "title": "Is a total count of records available?"
+        },
+        "total": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Total number of records available (if totalAvailable = true)"
+        },
+        "noMoreData": {
+          "type": "boolean",
+          "title": "There is no more data"
+        }
+      },
+      "description": "PaginationResponse ..."
+    },
+    "typesStringFilterExpression": {
+      "type": "object",
+      "properties": {
+        "eq": {
+          "type": "string"
+        },
+        "contains": {
+          "type": "string"
+        },
+        "in": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ne": {
+          "type": "string"
+        }
+      }
+    },
+    "userCreateUserRequest": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/modelsUser"
+        }
+      }
+    },
+    "userCreateUserResponse": {
+      "type": "object",
+      "properties": {
+        "cluserient": {
+          "$ref": "#/definitions/modelsUser"
+        }
+      }
+    },
+    "userDeleteUserResponse": {
+      "type": "object"
+    },
+    "userFilter": {
+      "type": "object",
+      "properties": {
+        "rootIdentity": {
+          "$ref": "#/definitions/userIdentityFilter"
+        },
+        "linkedIdentity": {
+          "$ref": "#/definitions/userIdentityFilter"
+        },
+        "and": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/userFilter"
+          },
+          "title": "AST"
+        },
+        "or": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/userFilter"
+          }
+        },
+        "not": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/userFilter"
+          }
+        }
+      }
+    },
+    "userGetUserResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/modelsUser"
+        }
+      }
+    },
+    "userIdentityFilter": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "$ref": "#/definitions/typesIDFilterExpression"
+        },
+        "idpSlug": {
+          "$ref": "#/definitions/typesIDFilterExpression"
+        },
+        "email": {
+          "$ref": "#/definitions/typesStringFilterExpression"
+        }
+      }
+    },
+    "userLinkUsersRequest": {
+      "type": "object",
+      "properties": {
+        "rootSubject": {
+          "type": "string"
+        },
+        "externalIdentity": {
+          "$ref": "#/definitions/modelsIdentity"
+        }
+      }
+    },
+    "userLinkUsersResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/modelsUser"
+        }
+      }
+    },
+    "userListUserRequest": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "$ref": "#/definitions/userFilter",
+          "title": "Filter"
+        },
+        "pagination": {
+          "$ref": "#/definitions/typesPagination",
+          "title": "Pagination"
+        }
+      }
+    },
+    "userListUserResponse": {
+      "type": "object",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/modelsUser"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/typesPaginationResponse",
+          "title": "Pagination details"
+        }
+      }
+    },
+    "userUnlinkUsersRequest": {
+      "type": "object",
+      "properties": {
+        "rootSubject": {
+          "type": "string"
+        },
+        "externalIdentity": {
+          "$ref": "#/definitions/modelsIdentity"
+        }
+      }
+    },
+    "userUnlinkUsersResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/modelsUser"
+        }
+      }
+    },
+    "userUpdateUserRequest": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/modelsUserUpdate"
+        }
+      }
+    },
+    "userUpdateUserResponse": {
+      "type": "object",
+      "properties": {
+        "client": {
+          "$ref": "#/definitions/modelsUser"
         }
       }
     }

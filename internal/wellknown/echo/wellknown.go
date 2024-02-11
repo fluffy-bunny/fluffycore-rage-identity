@@ -3,7 +3,7 @@ package echo
 import (
 	"fmt"
 
-	proto_oidc_models "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/models"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
 	echo "github.com/labstack/echo/v4"
 	oauth2 "golang.org/x/oauth2"
 )

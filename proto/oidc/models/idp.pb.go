@@ -7,7 +7,7 @@
 package models
 
 import (
-	types "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/types"
+	types "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/types"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	_ "google.golang.org/protobuf/types/descriptorpb"
