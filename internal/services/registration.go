@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"reflect"
+	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/config"
@@ -37,11 +38,27 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	services_codeexchanges_genericoidc.AddSingletonIGenericOIDCCodeExchange(builder)
 	services_oidcproviderfactory.AddSingletonIOIDCProviderFactory(builder)
 	services_util.AddSingletonISomeUtil(builder)
-	fluffycore_services_eko_gocache_go_cache.AddISingletonInMemoryCache(builder,
-		reflect.TypeOf((*contracts_eko_gocache.IOIDCFlowCache)(nil)),
-		reflect.TypeOf((*contracts_eko_gocache.IExternalOAuth2Cache)(nil)),
-	)
-	services_oidcflowstore.AddSingletonIOIDCFlowCache(builder)
+	switch config.BackingCache.Type {
+	case contracts_config.BackingCacheTypeInMemory:
+		inMemoryOptions := &fluffycore_services_eko_gocache_go_cache.InMemoryCacheOptions{
+			ImplementedInterfaceTypes: []reflect.Type{
+				reflect.TypeOf((*contracts_eko_gocache.IOIDCFlowCache)(nil)),
+				reflect.TypeOf((*contracts_eko_gocache.IExternalOAuth2Cache)(nil)),
+			},
+		}
+		durationPtr := func(duration time.Duration) *time.Duration {
+			return &duration
+		}
+		if config.BackingCache.InMemoryCache.DefaultExpirationSeconds > 0 {
+			inMemoryOptions.DefaultExpiration = durationPtr(time.Duration(config.BackingCache.InMemoryCache.DefaultExpirationSeconds) * time.Second)
+		}
+		if config.BackingCache.InMemoryCache.CleanupIntervalSeconds > 0 {
+			inMemoryOptions.CleanupInterval = durationPtr(time.Duration(config.BackingCache.InMemoryCache.CleanupIntervalSeconds) * time.Second)
+		}
+		fluffycore_services_eko_gocache_go_cache.AddISingletonInMemoryCacheWithOptions(builder, inMemoryOptions)
+	}
+
+	services_oidcflowstore.AddSingletonIOIDCFlowStore(builder)
 	services_oauth2flowstore.AddSingletonIExternalOauth2FlowStore(builder)
 	di.AddInstance[*contracts_config.Config](builder, config)
 	OnConfigureServicesLoadOIDCClients(ctx, config, builder)

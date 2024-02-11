@@ -1,6 +1,8 @@
 package config
 
 import (
+	"strings"
+
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/models"
 	fluffycore_contracts_config "github.com/fluffy-bunny/fluffycore/contracts/config"
 	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
@@ -27,6 +29,23 @@ type (
 type EchoConfig struct {
 	Port int `json:"port"`
 }
+
+const (
+	BackingCacheTypeInMemory = "in-memory"
+	BackingCacheTypeRedis    = "redis"
+)
+
+type (
+	InMemoryCacheConfig struct {
+		DefaultExpirationSeconds int `json:"defaultExpirationSeconds"`
+		CleanupIntervalSeconds   int `json:"cleanupIntervalSeconds"`
+	}
+	BackingCacheConfig struct {
+		Type          string              `json:"type"`
+		InMemoryCache InMemoryCacheConfig `json:"inMemoryCache"`
+	}
+)
+
 type Config struct {
 	fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
 
@@ -39,11 +58,12 @@ type Config struct {
 	Echo             EchoConfig                              `json:"echo"`
 	InMemoryClients  InMemoryClients                         `json:"inMemoryClients"`
 	// BaseUrl is the base url for the application.  Hardened as opposed to getting it from the request
-	BaseUrl string `json:"baseUrl"`
+	BaseUrl      string             `json:"baseUrl"`
+	BackingCache BackingCacheConfig `json:"backingCache"`
 }
 
 // ConfigDefaultJSON default json
-var ConfigDefaultJSON = []byte(`
+const configDefaultJSONTemplate = `
 {
 	"APPLICATION_NAME": "in-environment",
 	"APPLICATION_ENVIRONMENT": "in-environment",
@@ -57,6 +77,13 @@ var ConfigDefaultJSON = []byte(`
 	"GRPC_GATEWAY_ENABLED": true,
 	"baseUrl": "[in-environment]",
 	"jwtValidators": {},
+	"backingCache": {
+		"type": "${{BACKING_CACHE_TYPE}}",
+		"inMemoryCache": {
+			"defaultExpirationSeconds": -1,
+			"cleanupIntervalSeconds": 60
+		}
+	},
 	"configFiles": {
 		"mockOAuth2ClientPath": "./config/mockOAuth2Clients.json",
 		"oidcClientPath": "./config/oidcClients.json",
@@ -78,4 +105,17 @@ var ConfigDefaultJSON = []byte(`
 
 
   }
-`)
+`
+
+var ConfigDefaultJSON = []byte(``)
+
+func init() {
+	replaceMap := map[string]string{
+		"${{BACKING_CACHE_TYPE}}": BackingCacheTypeInMemory,
+	}
+	fixed := configDefaultJSONTemplate
+	for k, v := range replaceMap {
+		fixed = strings.Replace(fixed, k, v, -1)
+	}
+	ConfigDefaultJSON = []byte(fixed)
+}

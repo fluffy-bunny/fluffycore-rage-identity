@@ -29,7 +29,7 @@ func (s *service) Ctor(oidcFlowCache contracts_eko_gocache.IOIDCFlowCache) (cont
 	}, nil
 }
 
-func AddSingletonIOIDCFlowCache(cb di.ContainerBuilder) {
+func AddSingletonIOIDCFlowStore(cb di.ContainerBuilder) {
 	di.AddSingleton[contracts_eko_gocache.IOIDCFlowStore](cb, stemService.Ctor)
 }
 

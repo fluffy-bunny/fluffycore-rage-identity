@@ -105,7 +105,10 @@ func (s *service) Do(c echo.Context) error {
 		log.Error().Err(err).Msg("GetExternalOauth2Final")
 		return c.Redirect(http.StatusTemporaryRedirect, "/login?error=invalid_state")
 	}
-
+	// if we get here we are going to NUKE the cache for this transaction
+	defer func() {
+		s.externalOauth2FlowStore.DeleteExternalOauth2Final(ctx, model.State)
+	}()
 	getIDPBySlugResponse, err := s.idpServiceServer.GetIDPBySlug(ctx,
 		&proto_oidc_idp.GetIDPBySlugRequest{
 			Slug: finalCache.Request.IDPSlug,
