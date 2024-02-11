@@ -122,6 +122,7 @@ require (
 	github.com/secure-systems-lab/go-securesystemslib v0.7.0 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
+	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
