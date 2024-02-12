@@ -9,12 +9,14 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_codeexchange "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/codeexchange"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/eko_gocache"
 	contracts_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/util"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
 	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/client"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
+	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
@@ -32,6 +34,8 @@ type (
 		idpServiceServer        proto_oidc_idp.IFluffyCoreIDPServiceServer
 		githubCodeExchange      contracts_codeexchange.IGithubCodeExchange
 		genericOIDCCodeExchange contracts_codeexchange.IGenericOIDCCodeExchange
+		userService             proto_oidc_user.IFluffyCoreUserServiceServer
+		config                  *contracts_config.Config
 	}
 )
 
@@ -41,11 +45,13 @@ func init() {
 	var _ contracts_handler.IHandler = stemService
 }
 
-func (s *service) Ctor(scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
+func (s *service) Ctor(config *contracts_config.Config,
+	scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
 	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
 	externalOauth2FlowStore contracts_eko_gocache.IExternalOauth2FlowStore,
 	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
 	githubCodeExchange contracts_codeexchange.IGithubCodeExchange,
+	userService proto_oidc_user.IFluffyCoreUserServiceServer,
 	genericOIDCCodeExchange contracts_codeexchange.IGenericOIDCCodeExchange,
 	someUtil contracts_util.ISomeUtil) (*service, error) {
 	return &service{
@@ -56,6 +62,8 @@ func (s *service) Ctor(scopedMemoryCache fluffycore_contracts_common.IScopedMemo
 		idpServiceServer:        idpServiceServer,
 		githubCodeExchange:      githubCodeExchange,
 		genericOIDCCodeExchange: genericOIDCCodeExchange,
+		userService:             userService,
+		config:                  config,
 	}, nil
 }
 

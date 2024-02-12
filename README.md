@@ -1,4 +1,8 @@
-# FluffyCore OIDC authorization server
+# Mastodon Identity
+
+## A simple and opinionated OIDC authorization server
+
+![Alt text](docs/mastodon-identity.jpg?raw=true "Title")
 
 This is a Proof-Of-Life authentication server.
 

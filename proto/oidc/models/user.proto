@@ -11,7 +11,31 @@ package proto.oidc.models;
 import "google/protobuf/descriptor.proto";
 import "google/protobuf/wrappers.proto";
 import "proto/types/primitives.proto";
+import "proto/types/filter.proto";
 
+enum UserState {
+    USER_STATE_UNSPECIFIED = 0;
+    USER_STATE_ACTIVE = 1;
+    USER_STATE_DISABLED = 2;
+    USER_STATE_DELETED = 3;
+}
+
+message UserStateFilterExpression {
+    option (proto.types.filter_expression) = true;
+
+    UserState eq          = 1 [(proto.types.op) = OP_EQ];
+    repeated UserState in = 2 [(proto.types.op) = OP_IN];
+}
+
+message UserStateValue {
+    UserState vale = 1;
+}
+message Password {
+    string  hash = 1;
+}
+message PasswordUpdate {
+    google.protobuf.StringValue hash = 1;
+}
 message Identity {
     string subject = 1;
     string idp_slug = 2;
@@ -48,11 +72,15 @@ message User {
     Identity            root_identity = 1;
     LinkedIdentities    linked_identities = 2;
     Recovery            recovery = 3;
+    Password            password = 4;
+    UserState           state = 5;
 }
 
 message UserUpdate {
     IdentityUpdate          root_identity = 1;
     LinkedIdentitiesUpdate  linked_identities = 2;
     RecoveryUpdate          recovery = 3;
+    PasswordUpdate          password = 4;
+    UserStateValue          state = 5;
 }
 

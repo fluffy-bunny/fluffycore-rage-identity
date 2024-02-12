@@ -1,4 +1,4 @@
-{{define "views/login/index"}}
+{{define "views/signup/index"}}
 {{template "html_begin" .}}
 {{template "header" .}}
 {{template "navbar" .}}
@@ -17,7 +17,7 @@
        
     </div>
     <div class="text-center mt-5" class="alert alert-success" role="alert">
-        <h1>Login.</h1>
+        <h1>Signup.</h1>
         <div class="mt-5 alert alert-success" class="alert alert-success" role="alert">
             <table class="table table-striped">
                 <thead>
@@ -39,7 +39,7 @@
             </tbody>
             </table>
         </div>
-        <form action="/login" method="post">
+        <form action="/signup" method="post">
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
                 <input type="text" class="form-control" id="username" name="username" required>
@@ -48,10 +48,8 @@
                 <label for="password" class="form-label">Password</label>
                 <input type="password" class="form-control" id="password" name="password" required>
             </div>
-            <button type="submit" class="btn btn-primary">Login</button>
+            <button type="submit" class="btn btn-primary">Signup</button>
         </form>
-        <p><a class="nav-link active" aria-current="page" href="/signup">Signup</a></p>
-
     </div>
 </div>
 </body>

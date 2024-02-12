@@ -18,7 +18,7 @@
   "paths": {
     "/api/v1/user/_create": {
       "post": {
-        "summary": "Create client",
+        "summary": "Create user",
         "operationId": "UserService_CreateUser",
         "responses": {
           "200": {
@@ -83,7 +83,7 @@
     },
     "/api/v1/user/_search": {
       "post": {
-        "summary": "List clients",
+        "summary": "List users",
         "operationId": "UserService_ListUser",
         "responses": {
           "200": {
@@ -148,7 +148,7 @@
     },
     "/api/v1/user/_update": {
       "post": {
-        "summary": "Update client",
+        "summary": "Update user",
         "operationId": "UserService_UpdateUser",
         "responses": {
           "200": {
@@ -179,9 +179,9 @@
         ]
       }
     },
-    "/api/v1/user/client_id/{clientId}": {
+    "/api/v1/user/subject/{subject}": {
       "get": {
-        "summary": "Get client",
+        "summary": "Get user",
         "operationId": "UserService_GetUser",
         "responses": {
           "200": {
@@ -199,7 +199,7 @@
         },
         "parameters": [
           {
-            "name": "clientId",
+            "name": "subject",
             "in": "path",
             "required": true,
             "type": "string"
@@ -210,7 +210,7 @@
         ]
       },
       "delete": {
-        "summary": "Delete client",
+        "summary": "Delete user",
         "operationId": "UserService_DeleteUser",
         "responses": {
           "200": {
@@ -228,7 +228,7 @@
         },
         "parameters": [
           {
-            "name": "clientId",
+            "name": "subject",
             "in": "path",
             "required": true,
             "type": "string"
@@ -308,6 +308,22 @@
         }
       }
     },
+    "modelsPassword": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string"
+        }
+      }
+    },
+    "modelsPasswordUpdate": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string"
+        }
+      }
+    },
     "modelsRecovery": {
       "type": "object",
       "properties": {
@@ -335,6 +351,44 @@
         },
         "recovery": {
           "$ref": "#/definitions/modelsRecovery"
+        },
+        "password": {
+          "$ref": "#/definitions/modelsPassword"
+        },
+        "state": {
+          "$ref": "#/definitions/modelsUserState"
+        }
+      }
+    },
+    "modelsUserState": {
+      "type": "string",
+      "enum": [
+        "USER_STATE_UNSPECIFIED",
+        "USER_STATE_ACTIVE",
+        "USER_STATE_DISABLED",
+        "USER_STATE_DELETED"
+      ],
+      "default": "USER_STATE_UNSPECIFIED"
+    },
+    "modelsUserStateFilterExpression": {
+      "type": "object",
+      "properties": {
+        "eq": {
+          "$ref": "#/definitions/modelsUserState"
+        },
+        "in": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modelsUserState"
+          }
+        }
+      }
+    },
+    "modelsUserStateValue": {
+      "type": "object",
+      "properties": {
+        "vale": {
+          "$ref": "#/definitions/modelsUserState"
         }
       }
     },
@@ -349,6 +403,12 @@
         },
         "recovery": {
           "$ref": "#/definitions/modelsRecoveryUpdate"
+        },
+        "password": {
+          "$ref": "#/definitions/modelsPasswordUpdate"
+        },
+        "state": {
+          "$ref": "#/definitions/modelsUserStateValue"
         }
       }
     },
@@ -515,7 +575,7 @@
     "userCreateUserResponse": {
       "type": "object",
       "properties": {
-        "cluserient": {
+        "user": {
           "$ref": "#/definitions/modelsUser"
         }
       }
@@ -531,6 +591,9 @@
         },
         "linkedIdentity": {
           "$ref": "#/definitions/userIdentityFilter"
+        },
+        "state": {
+          "$ref": "#/definitions/modelsUserStateFilterExpression"
         },
         "and": {
           "type": "array",
@@ -656,7 +719,7 @@
     "userUpdateUserResponse": {
       "type": "object",
       "properties": {
-        "client": {
+        "user": {
           "$ref": "#/definitions/modelsUser"
         }
       }

@@ -32,15 +32,15 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserServiceClient interface {
-	// Create client
+	// Create user
 	CreateUser(ctx context.Context, in *CreateUserRequest, opts ...grpc.CallOption) (*CreateUserResponse, error)
-	// Get client
+	// Get user
 	GetUser(ctx context.Context, in *GetUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
-	// Delete client
+	// Delete user
 	DeleteUser(ctx context.Context, in *DeleteUserRequest, opts ...grpc.CallOption) (*DeleteUserResponse, error)
-	// Update client
+	// Update user
 	UpdateUser(ctx context.Context, in *UpdateUserRequest, opts ...grpc.CallOption) (*UpdateUserResponse, error)
-	// List clients
+	// List users
 	ListUser(ctx context.Context, in *ListUserRequest, opts ...grpc.CallOption) (*ListUserResponse, error)
 	LinkUsers(ctx context.Context, in *LinkUsersRequest, opts ...grpc.CallOption) (*LinkUsersResponse, error)
 	UnlinkUsers(ctx context.Context, in *UnlinkUsersRequest, opts ...grpc.CallOption) (*UnlinkUsersResponse, error)
@@ -121,15 +121,15 @@ func (c *userServiceClient) UnlinkUsers(ctx context.Context, in *UnlinkUsersRequ
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility
 type UserServiceServer interface {
-	// Create client
+	// Create user
 	CreateUser(context.Context, *CreateUserRequest) (*CreateUserResponse, error)
-	// Get client
+	// Get user
 	GetUser(context.Context, *GetUserRequest) (*GetUserResponse, error)
-	// Delete client
+	// Delete user
 	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserResponse, error)
-	// Update client
+	// Update user
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserResponse, error)
-	// List clients
+	// List users
 	ListUser(context.Context, *ListUserRequest) (*ListUserResponse, error)
 	LinkUsers(context.Context, *LinkUsersRequest) (*LinkUsersResponse, error)
 	UnlinkUsers(context.Context, *UnlinkUsersRequest) (*UnlinkUsersResponse, error)

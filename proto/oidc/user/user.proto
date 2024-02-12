@@ -24,6 +24,8 @@ message IdentityFilter {
 message Filter {
     IdentityFilter root_identity = 1;
     IdentityFilter linked_identity = 2;
+    proto.oidc.models.UserStateFilterExpression state = 3;
+
     // AST
     repeated Filter and = 100;
     repeated Filter or = 101;
@@ -31,34 +33,34 @@ message Filter {
 }
 
 service UserService {
-    // Create client
+    // Create user
     rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {
         option (google.api.http) = {
             post: "/api/v1/user/_create"
             body: "*"
           };
     }
-    // Get client
+    // Get user
     rpc GetUser (GetUserRequest) returns (GetUserResponse) {
         option (google.api.http) = {
-            get: "/api/v1/user/client_id/{client_id}"
+            get: "/api/v1/user/subject/{subject}"
           };
     }
 
-    // Delete client
+    // Delete user
     rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse) {
         option (google.api.http) = {
-            delete: "/api/v1/user/client_id/{client_id}"
+            delete: "/api/v1/user/subject/{subject}"
           };
     }
-    // Update client
+    // Update user
     rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse) {
         option (google.api.http) = {
             post: "/api/v1/user/_update"
             body: "*"
           };
     }
-    // List clients
+    // List users
     rpc ListUser (ListUserRequest) returns (ListUserResponse) {
         option (google.api.http) = {
             post: "/api/v1/user/_search"
@@ -102,17 +104,17 @@ message CreateUserRequest {
     proto.oidc.models.User user = 1;
 }   
 message CreateUserResponse {
-    proto.oidc.models.User cluserient = 1;
+    proto.oidc.models.User user = 1;
 }
 message GetUserRequest {
-   string client_id = 1;
+   string subject = 1;
 }
 message GetUserResponse {
     proto.oidc.models.User user = 1;
 }
 
 message DeleteUserRequest {
-   string client_id = 1;
+   string subject = 1;
 }
 message DeleteUserResponse {
 }
@@ -120,7 +122,7 @@ message UpdateUserRequest {
     proto.oidc.models.UserUpdate user = 1;
 }
 message UpdateUserResponse {
-    proto.oidc.models.User client = 1;
+    proto.oidc.models.User user = 1;
 }
 
 message ListUserRequest {

@@ -58,8 +58,9 @@ type Config struct {
 	Echo             EchoConfig                              `json:"echo"`
 	InMemoryClients  InMemoryClients                         `json:"inMemoryClients"`
 	// BaseUrl is the base url for the application.  Hardened as opposed to getting it from the request
-	BaseUrl      string             `json:"baseUrl"`
-	BackingCache BackingCacheConfig `json:"backingCache"`
+	BaseUrl              string             `json:"baseUrl"`
+	BackingCache         BackingCacheConfig `json:"backingCache"`
+	AutolinkOnEmailMatch bool               `json:"autolinkOnEmailMatch"`
 }
 
 // ConfigDefaultJSON default json
@@ -77,6 +78,7 @@ const configDefaultJSONTemplate = `
 	"GRPC_GATEWAY_ENABLED": true,
 	"baseUrl": "[in-environment]",
 	"jwtValidators": {},
+	"autolinkOnEmailMatch": true,
 	"backingCache": {
 		"type": "${{BACKING_CACHE_TYPE}}",
 		"inMemoryCache": {
