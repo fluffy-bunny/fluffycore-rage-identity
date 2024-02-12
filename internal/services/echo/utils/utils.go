@@ -31,6 +31,15 @@ func GeneratePasswordHash(password string) (string, error) {
 func ComparePasswordHash(password string, hash string) (bool, error) {
 	return argon2id.ComparePasswordAndHash(password, hash)
 }
+func DeleteCookie(c echo.Context, name string) {
+	cookie := &http.Cookie{
+		Name:   name,
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1,
+	}
+	c.SetCookie(cookie)
+}
 func SetCookieInterface(c echo.Context, cookie *http.Cookie, value interface{}) {
 	cookieData, _ := json.Marshal(value)
 	encodedValue := base64.StdEncoding.EncodeToString([]byte(cookieData))

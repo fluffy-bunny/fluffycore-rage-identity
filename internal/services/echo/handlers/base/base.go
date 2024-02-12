@@ -21,11 +21,24 @@ func (b BaseHandler) Render(c echo.Context, code int, name string, data map[stri
 		if b.ClaimsPrincipal == nil {
 			return false
 		}
-		return b.ClaimsPrincipal.HasClaimType(core_wellknown.ClaimTypeAuthenticated)
+		isAuthenticated := b.ClaimsPrincipal.HasClaimType(core_wellknown.ClaimTypeAuthenticated)
+		return isAuthenticated
+	}
+	data["getUsername"] = func() string {
+		claims := b.ClaimsPrincipal.GetClaimsByType("email")
+		if len(claims) > 0 {
+			return claims[0].Value
+		}
+		return "Account"
 	}
 	data["paths"] = wellknown_echo.NewPaths()
+	data["username"] = "Account"
 	if b.ClaimsPrincipal != nil {
 		data["claims"] = b.ClaimsPrincipal.GetClaims()
+		claims := b.ClaimsPrincipal.GetClaimsByType("email")
+		if len(claims) > 0 {
+			data["username"] = claims[0].Value
+		}
 	}
 
 	return core_echo_templates.Render(c, code, name, data)

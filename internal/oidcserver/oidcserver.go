@@ -16,6 +16,7 @@ import (
 	services_handlers_home "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/home"
 	services_handlers_jwks_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/jwks_endpoint"
 	services_handlers_login "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/login"
+	services_handlers_logout "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/logout"
 	services_handlers_oauth2_callback "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/oauth2/callback"
 	services_handlers_oidclogin "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/oidclogin"
 	services_handlers_signup "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/signup"
@@ -93,6 +94,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_signup.AddScopedIHandler(builder)
 	services_handlers_error.AddScopedIHandler(builder)
 	services_handlers_login.AddScopedIHandler(builder)
+	services_handlers_logout.AddScopedIHandler(builder)
 	services_handlers_oidclogin.AddScopedIHandler(builder)
 	services_handlers_externalidp.AddScopedIHandler(builder)
 	services_handlers_swagger.AddScopedIHandler(builder)
@@ -135,7 +137,11 @@ func EnsureCookieClaimsPrincipal(_ di.Container) echo.MiddlewareFunc {
 
 			claimsPrincipal.AddClaim(
 				fluffycore_contracts_common.Claim{
-					Type:  "subject",
+					Type:  fluffycore_echo_wellknown.ClaimTypeAuthenticated,
+					Value: "true",
+				},
+				fluffycore_contracts_common.Claim{
+					Type:  fluffycore_echo_wellknown.ClaimTypeSubject,
 					Value: rootIdentity.Subject,
 				}, fluffycore_contracts_common.Claim{
 					Type:  "idp_slug",

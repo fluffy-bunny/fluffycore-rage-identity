@@ -11,6 +11,8 @@ import (
 const (
 	HomePath                        = "/"
 	LoginPath                       = "/login"
+	LogoutPath                      = "/logout"
+	ProfilePath                     = "/profile"
 	OIDCLoginPath                   = "/oidc-login"
 	SignupPath                      = "/signup"
 	ExternalIDPPath                 = "/external-idp"
@@ -28,16 +30,20 @@ const (
 )
 
 type Paths struct {
-	Home  string
-	About string
-	Login string
+	Home    string
+	About   string
+	Login   string
+	Logout  string
+	Profile string
 }
 
 func NewPaths() *Paths {
 	return &Paths{
-		Home:  HomePath,
-		About: AboutPath,
-		Login: LoginPath,
+		Home:    HomePath,
+		About:   AboutPath,
+		Login:   LoginPath,
+		Logout:  LogoutPath,
+		Profile: ProfilePath,
 	}
 }
 
