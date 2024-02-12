@@ -38,10 +38,6 @@ func (s *service) CreateUser(ctx context.Context, request *proto_oidc_user.Creat
 		log.Warn().Err(err).Msg("validateCreateUserRequest")
 		return nil, err
 	}
-	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
-	s.rwLock.Lock()
-	defer s.rwLock.Unlock()
-	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
 
 	user := request.User
 	getUserResponse, err := s.GetUser(ctx, &proto_oidc_user.GetUserRequest{
@@ -57,6 +53,11 @@ func (s *service) CreateUser(ctx context.Context, request *proto_oidc_user.Creat
 			User: getUserResponse.User,
 		}, nil
 	}
+	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
+	s.rwLock.Lock()
+	defer s.rwLock.Unlock()
+	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
+
 	// create the user
 	s.userMap[user.RootIdentity.Subject] = user
 	s.users = append(s.users, user)

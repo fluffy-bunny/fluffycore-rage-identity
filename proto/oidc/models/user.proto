@@ -18,6 +18,7 @@ enum UserState {
     USER_STATE_ACTIVE = 1;
     USER_STATE_DISABLED = 2;
     USER_STATE_DELETED = 3;
+    USER_STATE_PENDING = 4;
 }
 
 message UserStateFilterExpression {
@@ -40,6 +41,7 @@ message Identity {
     string subject = 1;
     string idp_slug = 2;
     string email = 3;
+    bool email_verified = 4;
 }
 
 message LinkedIdentities{

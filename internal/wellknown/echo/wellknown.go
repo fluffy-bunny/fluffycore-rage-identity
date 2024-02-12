@@ -11,6 +11,7 @@ import (
 const (
 	HomePath                        = "/"
 	LoginPath                       = "/login"
+	OIDCLoginPath                   = "/oidc-login"
 	SignupPath                      = "/signup"
 	ExternalIDPPath                 = "/external-idp"
 	SwaggerPath                     = "/swagger/*"

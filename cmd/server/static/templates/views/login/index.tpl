@@ -50,7 +50,7 @@
             </div>
             <button type="submit" class="btn btn-primary">Login</button>
         </form>
-        <p><a class="nav-link active" aria-current="page" href="/signup">Signup</a></p>
+        <p><a class="nav-link active" aria-current="page" href="/signup?redirect_url=/login">Signup</a></p>
 
     </div>
 </div>
