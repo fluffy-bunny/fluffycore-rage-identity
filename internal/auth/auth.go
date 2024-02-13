@@ -1,7 +1,7 @@
 package auth
 
 import (
-	proto_helloworld "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/helloworld"
+	proto_helloworld "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/helloworld"
 	contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	services_common_claimsprincipal "github.com/fluffy-bunny/fluffycore/services/common/claimsprincipal"
 )

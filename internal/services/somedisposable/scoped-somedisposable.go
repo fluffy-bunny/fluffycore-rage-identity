@@ -4,7 +4,7 @@ import (
 	"context"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	fluffycore_contracts_somedisposable "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/somedisposable"
+	fluffycore_contracts_somedisposable "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/somedisposable"
 	"github.com/rs/zerolog/log"
 )
 

@@ -3,7 +3,7 @@ package eko_cache
 import (
 	"context"
 
-	models "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/models"
+	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	fluffycore_contracts_eko_gocache "github.com/fluffy-bunny/fluffycore/contracts/eko_gocache"
 )
 

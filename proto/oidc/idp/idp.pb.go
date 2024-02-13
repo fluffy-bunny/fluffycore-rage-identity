@@ -7,8 +7,8 @@
 package idp
 
 import (
-	models "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/models"
-	types "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/types"
+	models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
+	types "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/types"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"

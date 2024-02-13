@@ -17,7 +17,7 @@
        
     </div>
     <div class="text-center mt-5" class="alert alert-success" role="alert">
-        <h1>Login.</h1>
+        <h1>{{ .login }}</h1>
         <div class="mt-5 alert alert-success" class="alert alert-success" role="alert">
             <table class="table table-striped">
                 <thead>
@@ -50,6 +50,8 @@
             </div>
             <button type="submit" class="btn btn-primary">Login</button>
         </form>
+        <p><a class="nav-link active" aria-current="page" href="/signup?redirect_url=/login">Signup</a></p>
+
     </div>
 </div>
 </body>

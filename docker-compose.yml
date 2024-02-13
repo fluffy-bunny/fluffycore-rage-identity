@@ -6,7 +6,7 @@ services:
     extends:
       file: ./docker-compose-common.yml
       service: micro
-    image: fluffycore.hanko.oidc:latest
+    image: fluffycore.rage.oidc:latest
     ports:
       - "50051:50051"
       - "50052:50052"

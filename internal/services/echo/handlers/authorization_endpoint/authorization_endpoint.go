@@ -4,14 +4,15 @@ package authorization_endpoint
 reference: https://developers.onelogin.com/openid-connect/api/authorization-code
 */
 import (
+	"fmt"
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/eko_gocache"
-	contracts_util "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/util"
-	models "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/models"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/wellknown/echo"
-	proto_oidc_client "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/client"
+	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/eko_gocache"
+	contracts_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/util"
+	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
+	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/client"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v4"
@@ -110,5 +111,7 @@ func (s *service) Do(c echo.Context) error {
 	log.Info().Interface("mm", mm).Msg("mm")
 	// redirect to the server Auth login pages.
 	//
-	return c.Redirect(http.StatusTemporaryRedirect, "/login?code="+code)
+	finalOIDCPath := fmt.Sprintf("%s?code=%s", wellknown_echo.OIDCLoginPath, code)
+	redirectPath := fmt.Sprintf("%s?redirect_uri=%s", wellknown_echo.LoginPath, finalOIDCPath)
+	return c.Redirect(http.StatusFound, redirectPath)
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/tokenservice"
+	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/tokenservice"
 	require "github.com/stretchr/testify/require"
 )
 

@@ -3,7 +3,7 @@ package echo
 import (
 	"fmt"
 
-	proto_oidc_models "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/models"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
 	echo "github.com/labstack/echo/v4"
 	oauth2 "golang.org/x/oauth2"
 )
@@ -11,6 +11,10 @@ import (
 const (
 	HomePath                        = "/"
 	LoginPath                       = "/login"
+	LogoutPath                      = "/logout"
+	ProfilePath                     = "/profile"
+	OIDCLoginPath                   = "/oidc-login"
+	SignupPath                      = "/signup"
 	ExternalIDPPath                 = "/external-idp"
 	SwaggerPath                     = "/swagger/*"
 	HealthzPath                     = "/healthz"
@@ -26,16 +30,20 @@ const (
 )
 
 type Paths struct {
-	Home  string
-	About string
-	Login string
+	Home    string
+	About   string
+	Login   string
+	Logout  string
+	Profile string
 }
 
 func NewPaths() *Paths {
 	return &Paths{
-		Home:  HomePath,
-		About: AboutPath,
-		Login: LoginPath,
+		Home:    HomePath,
+		About:   AboutPath,
+		Login:   LoginPath,
+		Logout:  LogoutPath,
+		Profile: ProfilePath,
 	}
 }
 
