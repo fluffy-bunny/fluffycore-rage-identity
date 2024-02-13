@@ -175,5 +175,5 @@ swag init  --dir ./,../../internal
 cd cmd/go-client
 go build .
 
-$env:PORT = "5556";$env:OAUTH2_CLIENT_ID = "go-client";$env:OAUTH2_CLIENT_SECRET = "secret";$env:AUTHORITY = "http://localhost:9044/"; .\go-client.exe
+$env:PORT = "5556";$env:OAUTH2_CLIENT_ID = "go-client";$env:OAUTH2_CLIENT_SECRET = "secret";$env:AUTHORITY = "http://localhost:9044"; .\go-client.exe
 ```

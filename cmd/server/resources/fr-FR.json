@@ -1,4 +1,5 @@
 {
   "hello": "Bonjour!",
-  "login": "connectez-vous"
+  "login": "connectez-vous",
+  "signup": "Sign Up"
 }

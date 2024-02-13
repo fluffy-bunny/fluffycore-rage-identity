@@ -7,6 +7,7 @@ import (
 
 	golinq "github.com/ahmetb/go-linq/v3"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
 	contracts_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/util"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
@@ -33,13 +34,16 @@ func init() {
 
 func (s *service) Ctor(someUtil contracts_util.ISomeUtil,
 	container di.Container,
+	localizer contracts_localizer.ILocalizer,
 	claimsPrincipal fluffycore_contracts_common.IClaimsPrincipal,
 	echoContextAccessor fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor) (*service, error) {
 	return &service{
 		BaseHandler: services_echo_handlers_base.BaseHandler{
-			ClaimsPrincipal: claimsPrincipal, EchoContextAccessor: echoContextAccessor},
-		container: container,
-		someUtil:  someUtil,
+			ClaimsPrincipal:     claimsPrincipal,
+			EchoContextAccessor: echoContextAccessor,
+			Localizer:           localizer,
+		}, container: container,
+		someUtil: someUtil,
 	}, nil
 }
 

@@ -54,7 +54,9 @@ func (s *service) Ctor(someUtil contracts_util.ISomeUtil,
 
 	return &service{
 		BaseHandler: services_echo_handlers_base.BaseHandler{
-			ClaimsPrincipal: claimsPrincipal, EchoContextAccessor: echoContextAccessor,
+			ClaimsPrincipal:     claimsPrincipal,
+			EchoContextAccessor: echoContextAccessor,
+			Localizer:           localizer,
 		},
 		container:        container,
 		someUtil:         someUtil,

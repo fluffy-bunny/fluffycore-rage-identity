@@ -1,12 +1,8 @@
-{{define "views/signup/index"}}
+{{define "views/oidclogin/index"}}
 {{template "html_begin" .}}
 {{template "header" .}}
-{{ if (call .isWizardMode ) }}
-{{ else }}
-    {{template "navbar" .}}
-{{end}}
-
-<body>  
+ 
+<body>
 <!-- Page content-->
 <div class="container">
     <div class="text-center mt-5" class="alert alert-success" role="alert">
@@ -20,8 +16,7 @@
        
     </div>
     <div class="text-center mt-5" class="alert alert-success" role="alert">
-        <h1> {{ call .LocalizeMessage "signup" }}</h1>
-
+        <h1>{{ .login }}</h1>
         <div class="mt-5 alert alert-success" class="alert alert-success" role="alert">
             <table class="table table-striped">
                 <thead>
@@ -43,9 +38,7 @@
             </tbody>
             </table>
         </div>
-        <form action="/signup" method="post">
-            <input type="hidden" name="wizard_mode" value="{{ (call .isWizardMode ) }}">
-
+        <form action="/oidc-login" method="post">
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
                 <input type="text" class="form-control" id="username" name="username" required>
@@ -54,8 +47,10 @@
                 <label for="password" class="form-label">Password</label>
                 <input type="password" class="form-control" id="password" name="password" required>
             </div>
-            <button type="submit" class="btn btn-primary">Signup</button>
+            <button type="submit" class="btn btn-primary">{{ call .LocalizeMessage "login" }}</button>
         </form>
+        <p><a class="nav-link active" aria-current="page" href="{{ .paths.Signup }}?redirect_url={{ .paths.OIDCLogin }}?code={{ .code }}&wizard_mode=true">{{ call .LocalizeMessage "signup" }}</a></p>
+
     </div>
 </div>
 </body>

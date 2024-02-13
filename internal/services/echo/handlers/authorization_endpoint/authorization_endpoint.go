@@ -112,6 +112,9 @@ func (s *service) Do(c echo.Context) error {
 	// redirect to the server Auth login pages.
 	//
 	finalOIDCPath := fmt.Sprintf("%s?code=%s", wellknown_echo.OIDCLoginPath, code)
-	redirectPath := fmt.Sprintf("%s?redirect_uri=%s", wellknown_echo.LoginPath, finalOIDCPath)
-	return c.Redirect(http.StatusFound, redirectPath)
+	// url enocde the redirect_uri
+	//encodedRedirect := url.QueryEscape(finalOIDCPath)
+
+	//redirectPath := fmt.Sprintf("%s?redirect_uri=%s", wellknown_echo.OIDCLoginPath, encodedRedirect)
+	return c.Redirect(http.StatusFound, finalOIDCPath)
 }

@@ -17,7 +17,7 @@
        
     </div>
     <div class="text-center mt-5" class="alert alert-success" role="alert">
-        <h1>{{ .login }}</h1>
+        <h1> {{ call .LocalizeMessage "login" }}</h1>
         <div class="mt-5 alert alert-success" class="alert alert-success" role="alert">
             <table class="table table-striped">
                 <thead>

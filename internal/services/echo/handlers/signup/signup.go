@@ -1,6 +1,7 @@
 package signup
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/eko_gocache"
+	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
 	contracts_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/util"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
@@ -53,11 +55,14 @@ func (s *service) Ctor(
 	oidcFlowStore contracts_eko_gocache.IOIDCFlowStore,
 	claimsPrincipal fluffycore_contracts_common.IClaimsPrincipal,
 	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
+	localizer contracts_localizer.ILocalizer,
 	echoContextAccessor fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor) (*service, error) {
 
 	return &service{
 		BaseHandler: services_echo_handlers_base.BaseHandler{
-			ClaimsPrincipal: claimsPrincipal, EchoContextAccessor: echoContextAccessor,
+			ClaimsPrincipal:     claimsPrincipal,
+			EchoContextAccessor: echoContextAccessor,
+			Localizer:           localizer,
 		},
 		config:           config,
 		container:        container,
@@ -86,17 +91,40 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type SignupGetRequest struct {
+	WizardMode  bool   `param:"wizard_mode" query:"wizard_mode" form:"wizard_mode" json:"wizard_mode" xml:"wizard_mode"`
 	RedirectURL string `param:"redirect_url" query:"redirect_url" form:"redirect_url" json:"redirect_url" xml:"redirect_url"`
 }
 type ExternalIDPAuthRequest struct {
 	IDPSlug string `param:"idp_slug" query:"idp_slug" form:"idp_slug" json:"idp_slug" xml:"idp_slug"`
 }
 type SignupPostRequest struct {
-	Code     string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
-	UserName string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
-	Password string `param:"password" query:"password" form:"password" json:"password" xml:"password"`
+	WizardMode bool   `param:"wizard_mode" query:"wizard_mode" form:"wizard_mode" json:"wizard_mode" xml:"wizard_mode"`
+	Code       string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
+	UserName   string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
+	Password   string `param:"password" query:"password" form:"password" json:"password" xml:"password"`
 }
 
+func (s *service) getIDPs(ctx context.Context) ([]*proto_oidc_models.IDP, error) {
+	listIDPResponse, err := s.idpServiceServer.ListIDP(ctx, &proto_oidc_idp.ListIDPRequest{
+		Filter: &proto_oidc_idp.Filter{
+			Enabled: &proto_types.BoolFilterExpression{
+				Eq: true,
+			},
+			Metadata: &proto_types.StringMapStringFilterExpression{
+				Key: "hidden",
+				Value: &proto_types.StringFilterExpression{
+					Eq: "false",
+				},
+			},
+		},
+	})
+	if err != nil {
+
+		return nil, err
+	}
+
+	return listIDPResponse.Idps, nil
+}
 func (s *service) DoGet(c echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
@@ -113,24 +141,12 @@ func (s *service) DoGet(c echo.Context) error {
 		Key   string
 		Value string
 	}
-
-	listIDPResponse, err := s.idpServiceServer.ListIDP(ctx, &proto_oidc_idp.ListIDPRequest{
-		Filter: &proto_oidc_idp.Filter{
-			Enabled: &proto_types.BoolFilterExpression{
-				Eq: true,
-			},
-			Metadata: &proto_types.StringMapStringFilterExpression{
-				Key: "hidden",
-				Value: &proto_types.StringFilterExpression{
-					Eq: "false",
-				},
-			},
-		},
-	})
+	idps, err := s.getIDPs(ctx)
 	if err != nil {
-		log.Error().Err(err).Msg("ListIDP")
+		log.Error().Err(err).Msg("getIDPs")
 		return c.Redirect(http.StatusFound, "/error")
 	}
+
 	echo_utils.SetCookieInterface(c, &http.Cookie{
 		Name:     "_signup_request",
 		Path:     "/",
@@ -145,7 +161,10 @@ func (s *service) DoGet(c echo.Context) error {
 	return s.Render(c, http.StatusOK, "views/signup/index",
 		map[string]interface{}{
 			"defs": rows,
-			"idps": listIDPResponse.Idps,
+			"idps": idps,
+			"isWizardMode": func() bool {
+				return model.WizardMode
+			},
 		})
 }
 
@@ -182,16 +201,25 @@ func (s *service) validateSignupPostRequest(request *SignupPostRequest) ([]*Erro
 
 func (s *service) DoPost(c echo.Context) error {
 	r := c.Request()
-
-	// is the request get or post?
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
+
+	idps, err := s.getIDPs(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("getIDPs")
+		return c.Redirect(http.StatusFound, "/error")
+	}
+	// is the request get or post?
 	model := &SignupPostRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Debug().Err(err).Msg("Bind")
 		return s.Render(c, http.StatusBadRequest, "views/signup/index",
 			map[string]interface{}{
 				"defs": []*Error{NewErrorF("model", "model is invalid")},
+				"isWizardMode": func() bool {
+					return model.WizardMode
+				},
+				"idps": idps,
 			})
 	}
 	log.Info().Interface("model", model).Msg("model")
@@ -203,6 +231,10 @@ func (s *service) DoPost(c echo.Context) error {
 		return s.Render(c, http.StatusBadRequest, "views/signup/index",
 			map[string]interface{}{
 				"defs": errors,
+				"isWizardMode": func() bool {
+					return model.WizardMode
+				},
+				"idps": idps,
 			})
 	}
 	model.UserName = strings.ToLower(model.UserName)
@@ -224,6 +256,10 @@ func (s *service) DoPost(c echo.Context) error {
 		return s.Render(c, http.StatusBadRequest, "views/signup/index",
 			map[string]interface{}{
 				"defs": []*Error{NewErrorF("username", "username:%s already exists", model.UserName)},
+				"isWizardMode": func() bool {
+					return model.WizardMode
+				},
+				"idps": idps,
 			})
 	}
 	hash, err := echo_utils.GeneratePasswordHash(model.Password)

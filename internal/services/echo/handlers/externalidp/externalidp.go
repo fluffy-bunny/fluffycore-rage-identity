@@ -11,6 +11,7 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/eko_gocache"
+	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
 	contracts_oauth2factory "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/oauth2factory"
 	contracts_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/util"
 	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
@@ -51,6 +52,7 @@ func init() {
 func (s *service) Ctor(config *contracts_config.Config,
 	container di.Container,
 	someUtil contracts_util.ISomeUtil,
+	localizer contracts_localizer.ILocalizer,
 	externalOauth2FlowStore contracts_eko_gocache.IExternalOauth2FlowStore,
 	claimsPrincipal fluffycore_contracts_common.IClaimsPrincipal,
 	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
@@ -60,7 +62,10 @@ func (s *service) Ctor(config *contracts_config.Config,
 
 	return &service{
 		BaseHandler: services_echo_handlers_base.BaseHandler{
-			ClaimsPrincipal: claimsPrincipal, EchoContextAccessor: echoContextAccessor},
+			ClaimsPrincipal:     claimsPrincipal,
+			EchoContextAccessor: echoContextAccessor,
+			Localizer:           localizer,
+		},
 		container:               container,
 		someUtil:                someUtil,
 		externalOauth2FlowStore: externalOauth2FlowStore,
