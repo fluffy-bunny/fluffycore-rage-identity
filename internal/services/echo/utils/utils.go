@@ -9,6 +9,7 @@ import (
 
 	argon2id "github.com/alexedwards/argon2id"
 	echo "github.com/labstack/echo/v4"
+	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
 func GetMyRootPath(c echo.Context) string {
@@ -57,4 +58,8 @@ func GetCookieInterface(c echo.Context, name string, v any) error {
 		return err
 	}
 	return json.Unmarshal(decodedValue, v)
+}
+func GetLocalizerFromEchoContext(b *i18n.Bundle, e echo.Context) *i18n.Localizer {
+	accept := e.Request().Header.Get("Accept-Language")
+	return i18n.NewLocalizer(b, accept)
 }

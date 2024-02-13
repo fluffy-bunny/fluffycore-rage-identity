@@ -3,9 +3,11 @@ package oidcserver
 import (
 	"context"
 	"strconv"
+	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
+	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
 	services "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services"
 	services_handlers_about "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/about"
 	services_handlers_authorization_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/authorization_endpoint"
@@ -23,6 +25,8 @@ import (
 	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/swagger"
 	services_handlers_token_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/token_endpoint"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
+	services_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/localizer"
+	services_localizerbundle "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/localizerbundle"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
@@ -60,6 +64,7 @@ func NewStartup() contracts_startup.IStartup {
 		PreStartHook:    myStartup.PreStartHook,
 		PreShutdownHook: myStartup.PreShutdownHook,
 	}
+
 	myStartup.AddHooks(hooks)
 	return myStartup
 }
@@ -71,11 +76,14 @@ func (s *startup) ConfigureServices(builder di.ContainerBuilder) error {
 	})
 	s.addAppHandlers(builder)
 	services.ConfigureServices(context.TODO(), s.config, builder)
+	services_localizerbundle.AddSingletonILocalizerBundle(builder)
+	services_localizer.AddScopedILocalizer(builder)
 	return nil
 }
 
 func (s *startup) PreStartHook(echo *echo.Echo) error {
 	log.Info().Msg("PreStartHook")
+
 	return nil
 }
 func (s *startup) PostBuildHook(container di.Container) error {
@@ -113,7 +121,27 @@ func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 // Configure
 func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 	e.Use(EnsureCookieClaimsPrincipal(root))
+	e.Use(EnsureLocalizer(root))
 	return nil
+}
+func EnsureLocalizer(_ di.Container) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			//ctx := c.Request().Context()
+			subContainer, ok := c.Get(fluffycore_echo_wellknown.SCOPED_CONTAINER_KEY).(di.Container)
+			if !ok {
+				return next(c)
+			}
+			// pull the SCOPED ILocalizer and initialize it.
+			localizer := di.Get[contracts_localizer.ILocalizer](subContainer)
+			accept := strings.TrimSpace(c.Request().Header.Get("Accept-Language"))
+			if accept == "" {
+				accept = "en-US"
+			}
+			localizer.Initialize(c)
+			return next(c)
+		}
+	}
 }
 
 // EnsureContextLogger ...

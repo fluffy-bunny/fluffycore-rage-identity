@@ -8,6 +8,7 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/eko_gocache"
+	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
 	contracts_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/util"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
@@ -20,6 +21,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
+	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
 	zerolog "github.com/rs/zerolog"
 )
 
@@ -31,6 +33,7 @@ type (
 		idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer
 		someUtil         contracts_util.ISomeUtil
 		userService      proto_oidc_user.IFluffyCoreUserServiceServer
+		localizer        *i18n.Localizer
 	}
 )
 
@@ -46,6 +49,7 @@ func (s *service) Ctor(someUtil contracts_util.ISomeUtil,
 	claimsPrincipal fluffycore_contracts_common.IClaimsPrincipal,
 	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
 	userService proto_oidc_user.IFluffyCoreUserServiceServer,
+	localizer contracts_localizer.ILocalizer,
 	echoContextAccessor fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor) (*service, error) {
 
 	return &service{
@@ -57,6 +61,7 @@ func (s *service) Ctor(someUtil contracts_util.ISomeUtil,
 		idpServiceServer: idpServiceServer,
 		oidcFlowStore:    oidcFlowStore,
 		userService:      userService,
+		localizer:        localizer.GetLocalizer(),
 	}, nil
 }
 
@@ -137,10 +142,12 @@ func (s *service) DoGet(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	loginMsg, _ := s.localizer.LocalizeMessage(&i18n.Message{ID: "login"})
 
 	return s.Render(c, http.StatusOK, "views/login/index",
 		map[string]interface{}{
-			"idps": listIDPResponse.Idps,
+			"login": loginMsg,
+			"idps":  listIDPResponse.Idps,
 		})
 }
 
