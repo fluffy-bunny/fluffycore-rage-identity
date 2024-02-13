@@ -28,6 +28,15 @@
 
             },
             "args": [ "serve" ]        
+        },
+        {
+            "name": "gotp",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/gotp",
+             
+            "args": [ "" ]        
         }
     ]
 }
