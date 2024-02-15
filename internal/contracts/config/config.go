@@ -62,6 +62,7 @@ type Config struct {
 	BackingCache              BackingCacheConfig `json:"backingCache"`
 	AutolinkOnEmailMatch      bool               `json:"autolinkOnEmailMatch"`
 	EmailVerificationRequired bool               `json:"emailVerificationRequired"`
+	SigningKeyJsonPath        string             `json:"signingKeyJsonPath"`
 }
 
 // ConfigDefaultJSON default json
@@ -105,7 +106,8 @@ const configDefaultJSONTemplate = `
 	},
 	"inMemoryClients": {
 		"clients": []
-	}
+	},
+	"signingKeyJsonPath": "./config/signing-keys.json"
 
 
   }

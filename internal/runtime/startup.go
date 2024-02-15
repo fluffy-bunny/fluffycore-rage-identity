@@ -19,6 +19,7 @@ import (
 	internal_version "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/version"
 	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
 	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
+	fluffycore_contracts_jwtminter "github.com/fluffy-bunny/fluffycore/contracts/jwtminter"
 	fluffycore_contracts_middleware "github.com/fluffy-bunny/fluffycore/contracts/middleware"
 	fluffycore_contracts_middleware_auth_jwt "github.com/fluffy-bunny/fluffycore/contracts/middleware/auth/jwt"
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
@@ -31,6 +32,8 @@ import (
 	mocks_contracts_oauth2 "github.com/fluffy-bunny/fluffycore/mocks/contracts/oauth2"
 	mocks_oauth2_echo "github.com/fluffy-bunny/fluffycore/mocks/oauth2/echo"
 	fluffycore_services_ddprofiler "github.com/fluffy-bunny/fluffycore/services/ddprofiler"
+	fluffycore_services_jwtminter "github.com/fluffy-bunny/fluffycore/services/jwtminter"
+	fluffycore_services_keymaterial "github.com/fluffy-bunny/fluffycore/services/keymaterial"
 	fluffycore_utils_redact "github.com/fluffy-bunny/fluffycore/utils/redact"
 	status "github.com/gogo/status"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
@@ -101,6 +104,24 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 	}
 	fluffycore_middleware_auth_jwt.AddValidators(builder, issuerConfigs)
 
+	addJwtMinter := func(builder di.ContainerBuilder) {
+		signingKeys := []*fluffycore_contracts_jwtminter.SigningKey{}
+		fileContent, err := os.ReadFile(config.SigningKeyJsonPath)
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to read signing key file")
+		}
+		err = json.Unmarshal(fileContent, &signingKeys)
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to unmarshal signing key file")
+		}
+		keymaterial := &fluffycore_contracts_jwtminter.KeyMaterial{
+			SigningKeys: signingKeys,
+		}
+		di.AddInstance[*fluffycore_contracts_jwtminter.KeyMaterial](builder, keymaterial)
+		fluffycore_services_keymaterial.AddSingletonIKeyMaterial(builder)
+		fluffycore_services_jwtminter.AddSingletonIJWTMinter(builder)
+	}
+	addJwtMinter(builder)
 }
 func (s *startup) Configure(ctx context.Context, rootContainer di.Container, unaryServerInterceptorBuilder fluffycore_contracts_middleware.IUnaryServerInterceptorBuilder, streamServerInterceptorBuilder fluffycore_contracts_middleware.IStreamServerInterceptorBuilder) {
 	log := zerolog.Ctx(ctx).With().Str("method", "Configure").Logger()

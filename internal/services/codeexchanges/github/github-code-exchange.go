@@ -13,6 +13,7 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
 	contracts_oauth2factory "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/oauth2factory"
 	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/tokenservice"
+	fluffycore_services_claims "github.com/fluffy-bunny/fluffycore/services/claims"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	req "github.com/imroc/req/v3"
@@ -141,13 +142,13 @@ func (s *service) ExchangeCode(ctx context.Context, request *contracts_codeexcha
 			primaryEmail = &e
 		}
 	}
-	claims := map[string]interface{}{
-		"sub": strconv.Itoa(githubUser.ID),
-		"idp": request.IDPSlug,
-	}
+	claims := fluffycore_services_claims.NewClaims()
+	claims.Set("sub", strconv.Itoa(githubUser.ID))
+	claims.Set("idp", request.IDPSlug)
+
 	if primaryEmail != nil {
-		claims["email"] = primaryEmail.Email
-		claims["email_verified"] = primaryEmail.Verified
+		claims.Set("email", primaryEmail.Email)
+		claims.Set("email_verified", primaryEmail.Verified)
 	} else {
 		// if we don't have an email, we can't mint a token
 		return nil, status.Error(codes.Internal, "failed to get user info, can't get emails")

@@ -9,6 +9,7 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
 	contracts_oauth2factory "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/oauth2factory"
 	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/tokenservice"
+	fluffycore_services_claims "github.com/fluffy-bunny/fluffycore/services/claims"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	zerolog "github.com/rs/zerolog"
@@ -134,13 +135,11 @@ func (s *service) ExchangeCode(ctx context.Context, request *contracts_codeexcha
 		log.Error().Err(err).Msg("failed to get claims")
 		return nil, err
 	}
-
-	claims := map[string]interface{}{
-		"sub":            idToken.Subject,
-		"idp":            request.IDPSlug,
-		"email":          idTokenClaims.Email,
-		"email_verified": idTokenClaims.EmailVerified,
-	}
+	claims := fluffycore_services_claims.NewClaims()
+	claims.Set("sub", idToken.Subject)
+	claims.Set("idp", request.IDPSlug)
+	claims.Set("email", idTokenClaims.Email)
+	claims.Set("email_verified", idTokenClaims.EmailVerified)
 
 	mintTokenResponse, err := s.tokenService.MintToken(ctx,
 		&contracts_tokenservice.MintTokenRequest{

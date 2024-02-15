@@ -1,12 +1,16 @@
 package tokenservice
 
-import "context"
+import (
+	"context"
+
+	fluffycore_contracts_claims "github.com/fluffy-bunny/fluffycore/contracts/claims"
+)
 
 type (
 	MintTokenRequest struct {
 		// Claims is a map of claims to be included in the token.
 		// The standard claims of the token provider are added automatically.  i.e. issuer, etc
-		Claims map[string]interface{}
+		Claims fluffycore_contracts_claims.IClaims
 		// DurationLifeTimeSeconds is the duration of the token in seconds.
 		// the final expiration time is calculated as NotBeforeUnix + DurationLifeTimeSeconds
 		DurationLifeTimeSeconds int
