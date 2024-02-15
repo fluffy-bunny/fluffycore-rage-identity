@@ -4,16 +4,15 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/util"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
+	fluffycore_contracts_jwtminter "github.com/fluffy-bunny/fluffycore/contracts/jwtminter"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
-	mocks_oauth2 "github.com/fluffy-bunny/fluffycore/mocks/oauth2"
 	echo "github.com/labstack/echo/v4"
 )
 
 type (
 	service struct {
-		someUtil contracts_util.ISomeUtil
+		jwtMinter fluffycore_contracts_jwtminter.IJWTMinter
 	}
 )
 
@@ -22,20 +21,11 @@ var stemService = (*service)(nil)
 func init() {
 	var _ contracts_handler.IHandler = stemService
 
-	signingKey, _ = mocks_oauth2.LoadSigningKey()
-	jwksKeys = &mocks_oauth2.JWKSKeys{
-		Keys: []mocks_oauth2.PublicJwk{
-			signingKey.PublicJwk,
-		},
-	}
 }
 
-var signingKey *mocks_oauth2.SigningKey
-var jwksKeys *mocks_oauth2.JWKSKeys
-
-func (s *service) Ctor(someUtil contracts_util.ISomeUtil) (*service, error) {
+func (s *service) Ctor(jwtMinter fluffycore_contracts_jwtminter.IJWTMinter) (*service, error) {
 	return &service{
-		someUtil: someUtil,
+		jwtMinter: jwtMinter,
 	}, nil
 }
 
@@ -64,5 +54,10 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Success 200 {object} string
 // @Router /.well-known/jwks [get]
 func (s *service) Do(c echo.Context) error {
-	return c.JSONPretty(http.StatusOK, jwksKeys, "  ")
+	ctx := c.Request().Context()
+	publickKeys, err := s.jwtMinter.PublicKeys(ctx)
+	if err != nil {
+		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+	}
+	return c.JSONPretty(http.StatusOK, publickKeys, "  ")
 }

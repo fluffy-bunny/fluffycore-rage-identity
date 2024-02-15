@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"reflect"
 	"time"
@@ -21,7 +22,10 @@ import (
 	services_user_inmemory "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/user/inmemory"
 	services_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/util"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
+	fluffycore_contracts_jwtminter "github.com/fluffy-bunny/fluffycore/contracts/jwtminter"
 	fluffycore_services_eko_gocache_go_cache "github.com/fluffy-bunny/fluffycore/services/eko_gocache/go_cache"
+	fluffycore_services_jwtminter "github.com/fluffy-bunny/fluffycore/services/jwtminter"
+	fluffycore_services_keymaterial "github.com/fluffy-bunny/fluffycore/services/keymaterial"
 	zerolog "github.com/rs/zerolog"
 	protojson "google.golang.org/protobuf/encoding/protojson"
 )
@@ -29,6 +33,8 @@ import (
 // put all services you want shared between the echo and grpc servers here
 // NOTE: they are NOT the same instance, but they are the same type in context of the server.
 func ConfigureServices(ctx context.Context, config *contracts_config.Config, builder di.ContainerBuilder) {
+
+	log := zerolog.Ctx(ctx).With().Str("method", "Configure").Logger()
 	// this has to be added FIRST as it sets up the default inmemory version of the IClient stores
 	// it addes an empty *stores_services_client_inmemory.Clients
 	services_client_inmemory.AddSingletonIFluffyCoreClientServiceServer(builder)
@@ -65,6 +71,24 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	di.AddInstance[*contracts_config.Config](builder, config)
 	OnConfigureServicesLoadOIDCClients(ctx, config, builder)
 	OnConfigureServicesLoadIDPs(ctx, config, builder)
+	addJwtMinter := func() {
+		signingKeys := []*fluffycore_contracts_jwtminter.SigningKey{}
+		fileContent, err := os.ReadFile(config.SigningKeyJsonPath)
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to read signing key file")
+		}
+		err = json.Unmarshal(fileContent, &signingKeys)
+		if err != nil {
+			log.Fatal().Err(err).Msg("failed to unmarshal signing key file")
+		}
+		keymaterial := &fluffycore_contracts_jwtminter.KeyMaterial{
+			SigningKeys: signingKeys,
+		}
+		di.AddInstance[*fluffycore_contracts_jwtminter.KeyMaterial](builder, keymaterial)
+		fluffycore_services_keymaterial.AddSingletonIKeyMaterial(builder)
+		fluffycore_services_jwtminter.AddSingletonIJWTMinter(builder)
+	}
+	addJwtMinter()
 }
 func OnConfigureServicesLoadIDPs(ctx context.Context, config *contracts_config.Config, builder di.ContainerBuilder) error {
 	log := zerolog.Ctx(ctx).With().Str("method", "OnConfigureServicesLoadIDPs").Logger()
