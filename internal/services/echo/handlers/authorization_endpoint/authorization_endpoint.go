@@ -75,6 +75,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Param       audience     	 		query     string  false  "audience requested"
 // @Param       code_challenge   		query     string  false  "PKCE challenge code"
 // @Param       code_challenge_method 	query     string  false  "PKCE challenge method" default("S256")
+// @Param       acr_values 				query     string  false  "acr_values requested"
 // @Success 200 {object} string
 // @Router /oidc/v1/auth [get]
 func (s *service) Do(c echo.Context) error {
@@ -85,6 +86,7 @@ func (s *service) Do(c echo.Context) error {
 	if err := c.Bind(model); err != nil {
 		return err
 	}
+	log.Debug().Interface("model", model).Msg("AuthorizationRequest")
 	// TODO: validate the request
 	// does the client have the permissions to do this?
 	code := xid.New().String()

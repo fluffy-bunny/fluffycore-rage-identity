@@ -176,4 +176,14 @@ cd cmd/go-client
 go build .
 
 $env:PORT = "5556";$env:OAUTH2_CLIENT_ID = "go-client";$env:OAUTH2_CLIENT_SECRET = "secret";$env:AUTHORITY = "http://localhost:9044"; .\go-client.exe
+
+$env:PORT = "5556";$env:OAUTH2_CLIENT_ID = "go-client";$env:OAUTH2_CLIENT_SECRET = "secret";$env:AUTHORITY = "http://localhost:9044"; .\go-client.exe
+```
+
+```bash
+cd cmd/oidc-client
+go build .
+
+.\oidc-client.exe serve --acr_values "urn:mastodon:idp:google-social"   --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
+
 ```
