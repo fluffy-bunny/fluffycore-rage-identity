@@ -10,36 +10,28 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
-	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/eko_gocache"
-	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
 	contracts_oauth2factory "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/oauth2factory"
-	contracts_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/util"
 	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
-	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user"
-	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
-	fluffycore_echo_contracts_contextaccessor "github.com/fluffy-bunny/fluffycore/echo/contracts/contextaccessor"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
+	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
+	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	xid "github.com/rs/xid"
 	zerolog "github.com/rs/zerolog"
 	oauth2 "golang.org/x/oauth2"
+	codes "google.golang.org/grpc/codes"
 )
 
 type (
 	service struct {
-		services_echo_handlers_base.BaseHandler
-		container               di.Container
-		externalOauth2FlowStore contracts_eko_gocache.IExternalOauth2FlowStore
-		idpServiceServer        proto_oidc_idp.IFluffyCoreIDPServiceServer
-		someUtil                contracts_util.ISomeUtil
-		oauth2Factory           contracts_oauth2factory.IOAuth2Factory
-		userService             proto_oidc_user.IFluffyCoreUserServiceServer
-		config                  *contracts_config.Config
+		*services_echo_handlers_base.BaseHandler
+		oauth2Factory contracts_oauth2factory.IOAuth2Factory
+		config        *contracts_config.Config
 	}
 )
 
@@ -49,30 +41,15 @@ func init() {
 	var _ contracts_handler.IHandler = stemService
 }
 
-func (s *service) Ctor(config *contracts_config.Config,
+func (s *service) Ctor(
+	config *contracts_config.Config,
 	container di.Container,
-	someUtil contracts_util.ISomeUtil,
-	localizer contracts_localizer.ILocalizer,
-	externalOauth2FlowStore contracts_eko_gocache.IExternalOauth2FlowStore,
-	claimsPrincipal fluffycore_contracts_common.IClaimsPrincipal,
-	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
-	oauth2Factory contracts_oauth2factory.IOAuth2Factory,
-	userService proto_oidc_user.IFluffyCoreUserServiceServer,
-	echoContextAccessor fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor) (*service, error) {
+	oauth2Factory contracts_oauth2factory.IOAuth2Factory) (*service, error) {
 
 	return &service{
-		BaseHandler: services_echo_handlers_base.BaseHandler{
-			ClaimsPrincipal:     claimsPrincipal,
-			EchoContextAccessor: echoContextAccessor,
-			Localizer:           localizer,
-		},
-		container:               container,
-		someUtil:                someUtil,
-		externalOauth2FlowStore: externalOauth2FlowStore,
-		idpServiceServer:        idpServiceServer,
-		oauth2Factory:           oauth2Factory,
-		userService:             userService,
-		config:                  config,
+		BaseHandler:   services_echo_handlers_base.NewBaseHandler(container),
+		oauth2Factory: oauth2Factory,
+		config:        config,
 	}, nil
 }
 
@@ -93,9 +70,28 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type ExternalIDPAuthRequest struct {
-	IDPSlug string `param:"idp_slug" query:"idp_slug" form:"idp_slug" json:"idp_slug" xml:"idp_slug"`
+	Directive   string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
+	State       string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
+	IDPSlug     string `param:"idp_slug" query:"idp_slug" form:"idp_slug" json:"idp_slug" xml:"idp_slug"`
+	RedirectURL string `param:"redirect_url" query:"redirect_url" form:"redirect_url" json:"redirect_url" xml:"redirect_url"`
 }
 
+func (s *service) validateLoginGetRequest(model *ExternalIDPAuthRequest) error {
+
+	if fluffycore_utils.IsEmptyOrNil(model.State) {
+		return status.Error(codes.InvalidArgument, "State is required")
+	}
+	if fluffycore_utils.IsEmptyOrNil(model.IDPSlug) {
+		return status.Error(codes.InvalidArgument, "IDPSlug is required")
+	}
+	if fluffycore_utils.IsEmptyOrNil(model.Directive) {
+		return status.Error(codes.InvalidArgument, "Directive is required")
+	}
+	if !(model.Directive == "login" || model.Directive == "signup") {
+		return status.Error(codes.InvalidArgument, "Directive must be 'login' or 'signup'")
+	}
+	return nil
+}
 func (s *service) DoPost(c echo.Context) error {
 	r := c.Request()
 	rootPath := echo_utils.GetMyRootPath(c)
@@ -108,9 +104,13 @@ func (s *service) DoPost(c echo.Context) error {
 	if err := c.Bind(model); err != nil {
 		return err
 	}
+	if err := s.validateLoginGetRequest(model); err != nil {
+		log.Error().Err(err).Msg("validateLoginGetRequest")
+		return c.Redirect(http.StatusFound, "/error")
+	}
 	log.Info().Interface("model", model).Msg("model")
 
-	getIDPBySlugResponse, err := s.idpServiceServer.GetIDPBySlug(ctx,
+	getIDPBySlugResponse, err := s.IdpServiceServer().GetIDPBySlug(ctx,
 		&proto_oidc_idp.GetIDPBySlugRequest{
 			Slug: model.IDPSlug,
 		})
@@ -119,23 +119,28 @@ func (s *service) DoPost(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 	idp := getIDPBySlugResponse.Idp
+	externalState := xid.New().String()
 	if idp.Protocol != nil {
 		log.Info().Interface("getIDPBySlugResponse", getIDPBySlugResponse).Msg("getIDPBySlugResponse")
 		switch v := idp.Protocol.Value.(type) {
 		case *proto_oidc_models.Protocol_Github:
 			{
-				state := xid.New().String()
 				codeChallenge, verifier := generateCodeChallenge()
-				err = s.externalOauth2FlowStore.StoreExternalOauth2Final(ctx, state, &models.ExternalOauth2Final{
-					Request: &models.ExternalOauth2Request{
-						IDPSlug:               model.IDPSlug,
-						ClientID:              v.Github.ClientId,
-						State:                 state,
-						CodeChallenge:         codeChallenge,
-						CodeChallengeMethod:   "S256",
-						CodeChallengeVerifier: verifier,
-					},
-				})
+				err = s.ExternalOauth2FlowStore().StoreExternalOauth2Final(ctx,
+					externalState,
+					&models.ExternalOauth2Final{
+						Request: &models.ExternalOauth2Request{
+							IDPSlug:               model.IDPSlug,
+							ClientID:              v.Github.ClientId,
+							State:                 model.State,
+							CodeChallenge:         codeChallenge,
+							CodeChallengeMethod:   "S256",
+							CodeChallengeVerifier: verifier,
+							RedirectURL:           model.RedirectURL,
+							Directive:             model.Directive,
+							ParentState:           model.State,
+						},
+					})
 				if err != nil {
 					log.Error().Err(err).Msg("StoreExternalOauth2Final")
 					// redirect to error page
@@ -150,7 +155,7 @@ func (s *service) DoPost(c echo.Context) error {
 					return c.Redirect(http.StatusFound, "/error")
 				}
 				oauth2Config := getConfigResponse.Config
-				u := oauth2Config.AuthCodeURL(state,
+				u := oauth2Config.AuthCodeURL(externalState,
 					oauth2.SetAuthURLParam("code_challenge", codeChallenge),
 					oauth2.SetAuthURLParam("code_challenge_method", "S256"))
 				return c.Redirect(http.StatusFound, u)
@@ -158,19 +163,23 @@ func (s *service) DoPost(c echo.Context) error {
 			}
 		case *proto_oidc_models.Protocol_Oauth2:
 			{
-				state := xid.New().String()
 				codeChallenge, verifier := generateCodeChallenge()
 
-				err = s.externalOauth2FlowStore.StoreExternalOauth2Final(ctx, state, &models.ExternalOauth2Final{
-					Request: &models.ExternalOauth2Request{
-						IDPSlug:               model.IDPSlug,
-						ClientID:              v.Oauth2.ClientId,
-						State:                 state,
-						CodeChallenge:         codeChallenge,
-						CodeChallengeMethod:   "S256",
-						CodeChallengeVerifier: verifier,
-					},
-				})
+				err = s.ExternalOauth2FlowStore().StoreExternalOauth2Final(ctx,
+					externalState,
+					&models.ExternalOauth2Final{
+						Request: &models.ExternalOauth2Request{
+							IDPSlug:               model.IDPSlug,
+							ClientID:              v.Oauth2.ClientId,
+							State:                 model.State,
+							CodeChallenge:         codeChallenge,
+							CodeChallengeMethod:   "S256",
+							CodeChallengeVerifier: verifier,
+							RedirectURL:           model.RedirectURL,
+							Directive:             model.Directive,
+							ParentState:           model.State,
+						},
+					})
 				if err != nil {
 					log.Error().Err(err).Msg("StoreExternalOauth2Final")
 					// redirect to error page
@@ -188,29 +197,33 @@ func (s *service) DoPost(c echo.Context) error {
 					},
 				}
 
-				u := config.AuthCodeURL(state,
+				u := config.AuthCodeURL(externalState,
 					oauth2.SetAuthURLParam("code_challenge", codeChallenge),
 					oauth2.SetAuthURLParam("code_challenge_method", "S256"))
-
 				return c.Redirect(http.StatusFound, u)
+
 			}
 		case *proto_oidc_models.Protocol_Oidc:
 			{
-				state := xid.New().String()
 				nonce := xid.New().String()
 
 				//codeChallenge, verifier := generateCodeChallenge()
-				err = s.externalOauth2FlowStore.StoreExternalOauth2Final(ctx, state, &models.ExternalOauth2Final{
-					Request: &models.ExternalOauth2Request{
-						IDPSlug:  model.IDPSlug,
-						ClientID: v.Oidc.ClientId,
-						State:    state,
-						//			CodeChallenge:         codeChallenge,
-						//			CodeChallengeMethod:   "S256",
-						//			CodeChallengeVerifier: verifier,
-						Nonce: nonce,
-					},
-				})
+				err = s.ExternalOauth2FlowStore().StoreExternalOauth2Final(ctx,
+					externalState,
+					&models.ExternalOauth2Final{
+						Request: &models.ExternalOauth2Request{
+							IDPSlug:  model.IDPSlug,
+							ClientID: v.Oidc.ClientId,
+							State:    model.State,
+							//			CodeChallenge:         codeChallenge,
+							//			CodeChallengeMethod:   "S256",
+							//			CodeChallengeVerifier: verifier,
+							Nonce:       nonce,
+							RedirectURL: model.RedirectURL,
+							Directive:   model.Directive,
+							ParentState: model.State,
+						},
+					})
 				if err != nil {
 					log.Error().Err(err).Msg("StoreExternalOauth2Final")
 					// redirect to error page
@@ -228,7 +241,7 @@ func (s *service) DoPost(c echo.Context) error {
 				authCodeOptions := []oauth2.AuthCodeOption{
 					oauth2.SetAuthURLParam("nonce", nonce),
 				}
-				u := oauth2Config.AuthCodeURL(state, authCodeOptions...)
+				u := oauth2Config.AuthCodeURL(externalState, authCodeOptions...)
 				return c.Redirect(http.StatusFound, u)
 			}
 		}

@@ -6,12 +6,17 @@
     {{template "navbar" .}}
 {{end}}
 
+{{ $state       := .state }}
+{{ $directive   := .directive }}
+
 <body>  
 <!-- Page content-->
 <div class="container">
     <div class="text-center mt-5" class="alert alert-success" role="alert">
         {{range $idx,$idp := .idps}}
             <form action="/external-idp" method="post">
+                <input type="hidden" name="state"       value="{{ $state }}">
+                <input type="hidden" name="directive"   value="{{ $directive }}">
                 <input type="hidden" name="idp_slug" value="{{$idp.Slug}}">
                 <button type="submit" class="btn btn-primary">{{$idp.Name}}</button>
             </form>
@@ -45,7 +50,7 @@
         </div>
         <form action="/signup" method="post">
             <input type="hidden" name="wizard_mode" value="{{ (call .isWizardMode ) }}">
-
+            <input type="hidden" name="state" value="{{ $state  }}">
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
                 <input type="text" class="form-control" id="username" name="username" required>

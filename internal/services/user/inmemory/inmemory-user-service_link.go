@@ -3,6 +3,7 @@ package inmemory
 import (
 	"context"
 
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/types"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
@@ -37,10 +38,7 @@ func (s *service) LinkUsers(ctx context.Context, request *proto_oidc_user.LinkUs
 		log.Warn().Err(err).Msg("validateLinkUsersRequest")
 		return nil, err
 	}
-	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
-	s.rwLock.Lock()
-	defer s.rwLock.Unlock()
-	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
+
 	getUserResponse, err := s.GetUser(ctx, &proto_oidc_user.GetUserRequest{
 		Subject: request.RootSubject,
 	})
@@ -65,6 +63,10 @@ func (s *service) LinkUsers(ctx context.Context, request *proto_oidc_user.LinkUs
 	if err != nil {
 		return nil, err
 	}
+	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
+	s.rwLock.Lock()
+	defer s.rwLock.Unlock()
+	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
 	if len(listUserResponse.Users) > 0 {
 		// is this a problem?  could be the same user
 		if listUserResponse.Users[0].RootIdentity.Subject != user.RootIdentity.Subject {
@@ -72,6 +74,9 @@ func (s *service) LinkUsers(ctx context.Context, request *proto_oidc_user.LinkUs
 		}
 	} else {
 		// add the link
+		if user.LinkedIdentities == nil {
+			user.LinkedIdentities = &proto_oidc_models.LinkedIdentities{}
+		}
 		user.LinkedIdentities.Identities = append(user.LinkedIdentities.Identities, request.ExternalIdentity)
 	}
 	s.userMap[user.RootIdentity.Subject] = user

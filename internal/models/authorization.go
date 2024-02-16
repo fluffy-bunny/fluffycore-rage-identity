@@ -1,5 +1,16 @@
 package models
 
+const (
+	LoginDirective  string = "login"
+	SignupDirective string = "signup"
+)
+const (
+	InternalError            string = "internal-error"
+	ExternalIDPNotLinked     string = "external-idp-not-linked"
+	UsernamePasswordNotFound string = "username-password-not-found"
+	IdentityFound            string = "identity-found"
+)
+
 type (
 	AuthorizationRequest struct {
 		ClientId            string `param:"client_id" query:"client_id" form:"client_id" json:"client_id" xml:"client_id"`
@@ -12,6 +23,7 @@ type (
 		CodeChallengeMethod string `param:"code_challenge_method" query:"code_challenge_method" form:"code_challenge_method" json:"code_challenge_method" xml:"code_challenge_method"`
 		ACRValues           string `param:"acr_values" query:"acr_values" form:"acr_values" json:"acr_values" xml:"acr_values"`
 		Nonce               string `param:"nonce" query:"nonce" form:"nonce" json:"nonce" xml:"nonce"`
+		Code                string // this is the internal code that will be returned to the OIDC client
 	}
 
 	ExternalOauth2Request struct {
@@ -22,15 +34,21 @@ type (
 		State                 string `json:"state,omitempty"`
 		CodeChallengeVerifier string `json:"code_challenge_verifier,omitempty"`
 		Nonce                 string `json:"nonce,omitempty"`
+		RedirectURL           string `json:"redirect_url,omitempty"`
+		Directive             string `json:"directive,omitempty"`
+		ParentState           string `json:"parent_state,omitempty"`
 	}
 	Identity struct {
-		Subject string
-		Email   string
-		ACR     []string
+		Subject       string
+		Email         string
+		ACR           []string
+		EmailVerified bool
 	}
 	AuthorizationFinal struct {
-		Request  *AuthorizationRequest
-		Identity *Identity
+		Request          *AuthorizationRequest
+		Identity         *Identity
+		ExternalIdentity *Identity
+		Directive        string
 	}
 	ExternalOauth2Final struct {
 		Request  *ExternalOauth2Request

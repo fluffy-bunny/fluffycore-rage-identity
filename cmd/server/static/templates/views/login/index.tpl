@@ -9,6 +9,7 @@
     <div class="text-center mt-5" class="alert alert-success" role="alert">
         {{range $idx,$idp := .idps}}
             <form action="/external-idp" method="post">
+                <input type="hidden" name="redirect_url" value="/login">
                 <input type="hidden" name="idp_slug" value="{{$idp.Slug}}">
                 <button type="submit" class="btn btn-primary">{{$idp.Name}}</button>
             </form>

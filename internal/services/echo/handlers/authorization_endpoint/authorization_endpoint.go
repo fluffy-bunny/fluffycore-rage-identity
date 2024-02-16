@@ -9,7 +9,6 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/eko_gocache"
-	contracts_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/util"
 	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
 	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/client"
@@ -22,7 +21,6 @@ import (
 
 type (
 	service struct {
-		someUtil            contracts_util.ISomeUtil
 		scopedMemoryCache   fluffycore_contracts_common.IScopedMemoryCache
 		oidcFlowStore       contracts_eko_gocache.IOIDCFlowStore
 		clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer
@@ -37,10 +35,8 @@ func init() {
 
 func (s *service) Ctor(scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
 	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
-	oidcFlowStore contracts_eko_gocache.IOIDCFlowStore,
-	someUtil contracts_util.ISomeUtil) (*service, error) {
+	oidcFlowStore contracts_eko_gocache.IOIDCFlowStore) (*service, error) {
 	return &service{
-		someUtil:            someUtil,
 		scopedMemoryCache:   scopedMemoryCache,
 		oidcFlowStore:       oidcFlowStore,
 		clientServiceServer: clientServiceServer,
@@ -92,18 +88,19 @@ func (s *service) Do(c echo.Context) error {
 	// TODO: validate the request
 	// does the client have the permissions to do this?
 	code := xid.New().String()
+	model.Code = code
 	// store the model in the cache.  Redis in production.
 	authorizationFinal := &models.AuthorizationFinal{
 		Request: model,
 	}
 
-	err := s.oidcFlowStore.StoreAuthorizationFinal(ctx, code, authorizationFinal)
+	err := s.oidcFlowStore.StoreAuthorizationFinal(ctx, model.State, authorizationFinal)
 	if err != nil {
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")
 	}
 
-	mm, err := s.oidcFlowStore.GetAuthorizationFinal(ctx, code)
+	mm, err := s.oidcFlowStore.GetAuthorizationFinal(ctx, model.State)
 	if err != nil {
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")
@@ -111,7 +108,7 @@ func (s *service) Do(c echo.Context) error {
 	log.Info().Interface("mm", mm).Msg("mm")
 	// redirect to the server Auth login pages.
 	//
-	finalOIDCPath := fmt.Sprintf("%s?code=%s", wellknown_echo.OIDCLoginPath, code)
+	finalOIDCPath := fmt.Sprintf("%s?state=%s", wellknown_echo.OIDCLoginPath, model.State)
 	// url enocde the redirect_uri
 	//encodedRedirect := url.QueryEscape(finalOIDCPath)
 

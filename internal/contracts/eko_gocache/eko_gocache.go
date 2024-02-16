@@ -12,9 +12,9 @@ type (
 		fluffycore_contracts_eko_gocache.IGoCache
 	}
 	IOIDCFlowStore interface {
-		StoreAuthorizationFinal(ctx context.Context, code string, value *models.AuthorizationFinal) error
-		GetAuthorizationFinal(ctx context.Context, code string) (*models.AuthorizationFinal, error)
-		DeleteAuthorizationFinal(ctx context.Context, code string) error
+		StoreAuthorizationFinal(ctx context.Context, state string, value *models.AuthorizationFinal) error
+		GetAuthorizationFinal(ctx context.Context, state string) (*models.AuthorizationFinal, error)
+		DeleteAuthorizationFinal(ctx context.Context, state string) error
 	}
 	IExternalOAuth2Cache interface {
 		fluffycore_contracts_eko_gocache.IGoCache

@@ -1,20 +1,14 @@
 {{define "views/oidclogin/index"}}
 {{template "html_begin" .}}
 {{template "header" .}}
- 
+
+{{ $state       := .state }}
+{{ $directive   := .directive }}
+
 <body>
 <!-- Page content-->
 <div class="container">
-    <div class="text-center mt-5" class="alert alert-success" role="alert">
-        {{range $idx,$idp := .idps}}
-            <form action="/external-idp" method="post">
-                <input type="hidden" name="idp_slug" value="{{$idp.Slug}}">
-                <button type="submit" class="btn btn-primary">{{$idp.Name}}</button>
-            </form>
-        {{end}}
-
-       
-    </div>
+   
     <div class="text-center mt-5" class="alert alert-success" role="alert">
         <h1>{{ .login }}</h1>
         <div class="mt-5 alert alert-success" class="alert alert-success" role="alert">
@@ -39,6 +33,7 @@
             </table>
         </div>
         <form action="/oidc-login" method="post">
+            <input type="hidden" name="state" value="{{ $state  }}">
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
                 <input type="text" class="form-control" id="username" name="username" required>
@@ -49,8 +44,17 @@
             </div>
             <button type="submit" class="btn btn-primary">{{ call .LocalizeMessage "login" }}</button>
         </form>
-        <p><a class="nav-link active" aria-current="page" href="{{ .paths.Signup }}?redirect_url={{ .paths.OIDCLogin }}?code={{ .code }}&wizard_mode=true">{{ call .LocalizeMessage "signup" }}</a></p>
-
+        <p><a class="nav-link active" aria-current="page" href="{{ .paths.Signup }}?state={{ $state }}&wizard_mode=true">{{ call .LocalizeMessage "signup" }}</a></p>
+        <div class="text-center mt-5" class="alert alert-success" role="alert">
+        {{range $idx,$idp := .idps}}
+            <form action="/external-idp" method="post">
+                <input type="hidden" name="state"       value="{{ $state }}">
+                <input type="hidden" name="directive"   value="{{ $directive }}">
+                <input type="hidden" name="idp_slug"    value="{{$idp.Slug}}">
+                <button type="submit" class="btn btn-primary">{{$idp.Name}}</button>
+            </form>
+        {{end}}
+    </div>
     </div>
 </div>
 </body>

@@ -1,7 +1,6 @@
 package signup
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"strings"
@@ -9,18 +8,12 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
-	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/eko_gocache"
-	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
-	contracts_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/util"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
-	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/types"
-	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
-	fluffycore_echo_contracts_contextaccessor "github.com/fluffy-bunny/fluffycore/echo/contracts/contextaccessor"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
@@ -30,14 +23,9 @@ import (
 
 type (
 	service struct {
-		services_echo_handlers_base.BaseHandler
+		*services_echo_handlers_base.BaseHandler
 
-		config           *contracts_config.Config
-		container        di.Container
-		oidcFlowStore    contracts_eko_gocache.IOIDCFlowStore
-		idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer
-		someUtil         contracts_util.ISomeUtil
-		userService      proto_oidc_user.IFluffyCoreUserServiceServer
+		config *contracts_config.Config
 	}
 )
 
@@ -48,28 +36,14 @@ func init() {
 }
 
 func (s *service) Ctor(
-	config *contracts_config.Config,
-	someUtil contracts_util.ISomeUtil,
-	userService proto_oidc_user.IFluffyCoreUserServiceServer,
 	container di.Container,
-	oidcFlowStore contracts_eko_gocache.IOIDCFlowStore,
-	claimsPrincipal fluffycore_contracts_common.IClaimsPrincipal,
-	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
-	localizer contracts_localizer.ILocalizer,
-	echoContextAccessor fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor) (*service, error) {
+	config *contracts_config.Config,
+	userService proto_oidc_user.IFluffyCoreUserServiceServer,
+) (*service, error) {
 
 	return &service{
-		BaseHandler: services_echo_handlers_base.BaseHandler{
-			ClaimsPrincipal:     claimsPrincipal,
-			EchoContextAccessor: echoContextAccessor,
-			Localizer:           localizer,
-		},
-		config:           config,
-		container:        container,
-		someUtil:         someUtil,
-		idpServiceServer: idpServiceServer,
-		oidcFlowStore:    oidcFlowStore,
-		userService:      userService,
+		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
+		config:      config,
 	}, nil
 }
 
@@ -91,40 +65,19 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type SignupGetRequest struct {
-	WizardMode  bool   `param:"wizard_mode" query:"wizard_mode" form:"wizard_mode" json:"wizard_mode" xml:"wizard_mode"`
-	RedirectURL string `param:"redirect_url" query:"redirect_url" form:"redirect_url" json:"redirect_url" xml:"redirect_url"`
+	WizardMode bool   `param:"wizard_mode" query:"wizard_mode" form:"wizard_mode" json:"wizard_mode" xml:"wizard_mode"`
+	State      string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 }
 type ExternalIDPAuthRequest struct {
 	IDPSlug string `param:"idp_slug" query:"idp_slug" form:"idp_slug" json:"idp_slug" xml:"idp_slug"`
 }
 type SignupPostRequest struct {
 	WizardMode bool   `param:"wizard_mode" query:"wizard_mode" form:"wizard_mode" json:"wizard_mode" xml:"wizard_mode"`
-	Code       string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
+	State      string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 	UserName   string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
 	Password   string `param:"password" query:"password" form:"password" json:"password" xml:"password"`
 }
 
-func (s *service) getIDPs(ctx context.Context) ([]*proto_oidc_models.IDP, error) {
-	listIDPResponse, err := s.idpServiceServer.ListIDP(ctx, &proto_oidc_idp.ListIDPRequest{
-		Filter: &proto_oidc_idp.Filter{
-			Enabled: &proto_types.BoolFilterExpression{
-				Eq: true,
-			},
-			Metadata: &proto_types.StringMapStringFilterExpression{
-				Key: "hidden",
-				Value: &proto_types.StringFilterExpression{
-					Eq: "false",
-				},
-			},
-		},
-	})
-	if err != nil {
-
-		return nil, err
-	}
-
-	return listIDPResponse.Idps, nil
-}
 func (s *service) DoGet(c echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
@@ -141,7 +94,7 @@ func (s *service) DoGet(c echo.Context) error {
 		Key   string
 		Value string
 	}
-	idps, err := s.getIDPs(ctx)
+	idps, err := s.GetIDPs(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("getIDPs")
 		return c.Redirect(http.StatusFound, "/error")
@@ -165,6 +118,7 @@ func (s *service) DoGet(c echo.Context) error {
 			"isWizardMode": func() bool {
 				return model.WizardMode
 			},
+			"state": model.State,
 		})
 }
 
@@ -204,7 +158,7 @@ func (s *service) DoPost(c echo.Context) error {
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
-	idps, err := s.getIDPs(ctx)
+	idps, err := s.GetIDPs(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("getIDPs")
 		return c.Redirect(http.StatusFound, "/error")
@@ -219,7 +173,8 @@ func (s *service) DoPost(c echo.Context) error {
 				"isWizardMode": func() bool {
 					return model.WizardMode
 				},
-				"idps": idps,
+				"idps":  idps,
+				"state": model.State,
 			})
 	}
 	log.Info().Interface("model", model).Msg("model")
@@ -239,7 +194,7 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 	model.UserName = strings.ToLower(model.UserName)
 	// does the user exist.
-	listUserResponse, err := s.userService.ListUser(ctx, &proto_oidc_user.ListUserRequest{
+	listUserResponse, err := s.UserService().ListUser(ctx, &proto_oidc_user.ListUserRequest{
 		Filter: &proto_oidc_user.Filter{
 			RootIdentity: &proto_oidc_user.IdentityFilter{
 				Email: &proto_types.StringFilterExpression{
@@ -279,7 +234,7 @@ func (s *service) DoPost(c echo.Context) error {
 		},
 		State: proto_oidc_models.UserState_USER_STATE_PENDING,
 	}
-	_, err = s.userService.CreateUser(ctx, &proto_oidc_user.CreateUserRequest{
+	_, err = s.UserService().CreateUser(ctx, &proto_oidc_user.CreateUserRequest{
 		User: user,
 	})
 	if err != nil {
@@ -299,12 +254,8 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("Unmarshal")
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	if !fluffycore_utils.IsEmptyOrNil(signupGetRequest.RedirectURL) {
-		return c.Redirect(http.StatusFound, signupGetRequest.RedirectURL)
-	}
-
-	return c.Redirect(http.StatusFound, "/login")
-
+	redirectUrl := fmt.Sprintf("%s?state=%s", wellknown_echo.OIDCLoginPath, model.State)
+	return c.Redirect(http.StatusFound, redirectUrl)
 }
 
 // HealthCheck godoc

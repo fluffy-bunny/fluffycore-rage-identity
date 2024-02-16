@@ -2,6 +2,7 @@ package inmemory
 
 import (
 	"context"
+	"strings"
 
 	linq "github.com/ahmetb/go-linq/v3"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
@@ -49,7 +50,8 @@ func (s *service) ListUser(ctx context.Context, request *proto_oidc_user.ListUse
 			}
 			if request.Filter.RootIdentity != nil {
 				if request.Filter.RootIdentity.Email != nil {
-					if request.Filter.RootIdentity.Email.Eq != c.RootIdentity.Email {
+					eqEmail := strings.ToLower(request.Filter.RootIdentity.Email.Eq)
+					if eqEmail != c.RootIdentity.Email {
 						return false
 					}
 				}
@@ -60,6 +62,9 @@ func (s *service) ListUser(ctx context.Context, request *proto_oidc_user.ListUse
 				}
 			}
 			if request.Filter.LinkedIdentity != nil {
+				if c.LinkedIdentities == nil {
+					return false
+				}
 				for _, v := range c.LinkedIdentities.Identities {
 					if request.Filter.LinkedIdentity.Subject != nil {
 						if request.Filter.LinkedIdentity.Subject.Eq != v.Subject {

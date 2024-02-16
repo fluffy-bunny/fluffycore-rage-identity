@@ -4,37 +4,37 @@ package callback
 reference: https://github.com/go-oauth2/oauth2/blob/master/example/client/client.go
 */
 import (
+	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_codeexchange "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/codeexchange"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
-	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/eko_gocache"
-	contracts_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/util"
+	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
+	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
 	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/client"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user"
-	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
+	proto_types "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
 	jwxt "github.com/lestrrat-go/jwx/v2/jwt"
 	zerolog "github.com/rs/zerolog"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type (
 	service struct {
-		someUtil                contracts_util.ISomeUtil
-		scopedMemoryCache       fluffycore_contracts_common.IScopedMemoryCache
-		externalOauth2FlowStore contracts_eko_gocache.IExternalOauth2FlowStore
+		*services_echo_handlers_base.BaseHandler
 		clientServiceServer     proto_oidc_client.IFluffyCoreClientServiceServer
-		idpServiceServer        proto_oidc_idp.IFluffyCoreIDPServiceServer
 		githubCodeExchange      contracts_codeexchange.IGithubCodeExchange
 		genericOIDCCodeExchange contracts_codeexchange.IGenericOIDCCodeExchange
-		userService             proto_oidc_user.IFluffyCoreUserServiceServer
 		config                  *contracts_config.Config
 	}
 )
@@ -45,24 +45,17 @@ func init() {
 	var _ contracts_handler.IHandler = stemService
 }
 
-func (s *service) Ctor(config *contracts_config.Config,
-	scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
+func (s *service) Ctor(
+	container di.Container,
+	config *contracts_config.Config,
 	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
-	externalOauth2FlowStore contracts_eko_gocache.IExternalOauth2FlowStore,
-	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
 	githubCodeExchange contracts_codeexchange.IGithubCodeExchange,
-	userService proto_oidc_user.IFluffyCoreUserServiceServer,
-	genericOIDCCodeExchange contracts_codeexchange.IGenericOIDCCodeExchange,
-	someUtil contracts_util.ISomeUtil) (*service, error) {
+	genericOIDCCodeExchange contracts_codeexchange.IGenericOIDCCodeExchange) (*service, error) {
 	return &service{
-		someUtil:                someUtil,
-		scopedMemoryCache:       scopedMemoryCache,
-		externalOauth2FlowStore: externalOauth2FlowStore,
+		BaseHandler:             services_echo_handlers_base.NewBaseHandler(container),
 		clientServiceServer:     clientServiceServer,
-		idpServiceServer:        idpServiceServer,
 		githubCodeExchange:      githubCodeExchange,
 		genericOIDCCodeExchange: genericOIDCCodeExchange,
-		userService:             userService,
 		config:                  config,
 	}, nil
 }
@@ -110,18 +103,19 @@ func (s *service) Do(c echo.Context) error {
 	}
 	log.Info().Interface("model", model).Msg("model")
 
-	finalCache, err := s.externalOauth2FlowStore.GetExternalOauth2Final(ctx, model.State)
+	externalOAuth2State, err := s.ExternalOauth2FlowStore().GetExternalOauth2Final(ctx, model.State)
 	if err != nil {
 		log.Error().Err(err).Msg("GetExternalOauth2Final")
 		return c.Redirect(http.StatusTemporaryRedirect, "/login?error=invalid_state")
 	}
+	parentState := externalOAuth2State.Request.ParentState
 	// if we get here we are going to NUKE the cache for this transaction
 	defer func() {
-		s.externalOauth2FlowStore.DeleteExternalOauth2Final(ctx, model.State)
+		s.ExternalOauth2FlowStore().DeleteExternalOauth2Final(ctx, model.State)
 	}()
-	getIDPBySlugResponse, err := s.idpServiceServer.GetIDPBySlug(ctx,
+	getIDPBySlugResponse, err := s.IdpServiceServer().GetIDPBySlug(ctx,
 		&proto_oidc_idp.GetIDPBySlugRequest{
-			Slug: finalCache.Request.IDPSlug,
+			Slug: externalOAuth2State.Request.IDPSlug,
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("GetIDPBySlug")
@@ -135,11 +129,11 @@ func (s *service) Do(c echo.Context) error {
 		case *proto_oidc_models.Protocol_Github:
 			{
 				exchangeCodeResponse, err = s.githubCodeExchange.ExchangeCode(ctx, &contracts_codeexchange.ExchangeCodeRequest{
-					IDPSlug:      finalCache.Request.IDPSlug,
-					ClientID:     finalCache.Request.ClientID,
-					Nonce:        finalCache.Request.Nonce,
+					IDPSlug:      externalOAuth2State.Request.IDPSlug,
+					ClientID:     externalOAuth2State.Request.ClientID,
+					Nonce:        externalOAuth2State.Request.Nonce,
 					Code:         model.Code,
-					CodeVerifier: finalCache.Request.CodeChallenge,
+					CodeVerifier: externalOAuth2State.Request.CodeChallenge,
 				})
 				if err != nil {
 					log.Error().Err(err).Msg("ExchangeCode")
@@ -149,9 +143,9 @@ func (s *service) Do(c echo.Context) error {
 		case *proto_oidc_models.Protocol_Oidc:
 			{
 				exchangeCodeResponse, err = s.genericOIDCCodeExchange.ExchangeCode(ctx, &contracts_codeexchange.ExchangeCodeRequest{
-					IDPSlug:  finalCache.Request.IDPSlug,
-					ClientID: finalCache.Request.ClientID,
-					Nonce:    finalCache.Request.Nonce,
+					IDPSlug:  externalOAuth2State.Request.IDPSlug,
+					ClientID: externalOAuth2State.Request.ClientID,
+					Nonce:    externalOAuth2State.Request.Nonce,
 					Code:     model.Code,
 					//			CodeVerifier: finalCache.Request.CodeChallenge,
 				})
@@ -174,17 +168,149 @@ func (s *service) Do(c echo.Context) error {
 			log.Error().Err(err).Msg("ParseString")
 			return c.Redirect(http.StatusTemporaryRedirect, "/login?error=parse_id_token")
 		}
+		email, ok := rawToken.Get("email")
+		if !ok {
+			log.Error().Msg("email not found")
+			return c.Redirect(http.StatusTemporaryRedirect, "/login?error=email_not_found")
+		}
+		emailVerified := false
+		emailVerifiedC, ok := rawToken.Get("email_verified")
+		if ok {
+			bval, ok := emailVerifiedC.(bool)
+			if ok {
+				emailVerified = bval
+			}
+		}
 
-		// just save the id_token.  Its verifiable by the backend
-		c.SetCookie(&http.Cookie{
-			Name:     "_external_user",
-			Value:    exchangeCodeResponse.IdToken,
-			Path:     "/",
-			Expires:  rawToken.Expiration(),
-			Secure:   true,
-			SameSite: http.SameSiteNoneMode,
+		externalIdentity := &models.Identity{
+			Subject: rawToken.Subject(),
+			Email:   email.(string),
+			ACR: []string{
+				fmt.Sprintf("urn:mastodon:idp:%s", externalOAuth2State.Request.IDPSlug),
+			},
+			EmailVerified: emailVerified,
+		}
+
+		// is this user already linked.
+		listUserResponse, err := s.UserService().ListUser(ctx, &proto_oidc_user.ListUserRequest{
+			Filter: &proto_oidc_user.Filter{
+				LinkedIdentity: &proto_oidc_user.IdentityFilter{
+					Subject: &proto_types.IDFilterExpression{
+						Eq: rawToken.Subject(),
+					},
+				},
+			},
 		})
+		if err != nil {
+			log.Error().Err(err).Msg("ListUser")
+			redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
+				wellknown_echo.OIDCLoginPath,
+				parentState, models.InternalError)
+			return c.Redirect(http.StatusFound, redirectURL)
+		}
+		if len(listUserResponse.Users) > 0 {
+			user := listUserResponse.Users[0]
+			// login this user.
+			oidcFinalState, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, parentState)
+			if err != nil {
+				log.Error().Err(err).Msg("GetAuthorizationFinal")
+				redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
+					wellknown_echo.OIDCLoginPath,
+					parentState, models.InternalError)
+				return c.Redirect(http.StatusFound, redirectURL)
+			}
+			oidcFinalState.Identity = &models.Identity{
+				Subject: user.RootIdentity.Subject,
+				Email:   user.RootIdentity.Email,
+				ACR: []string{
+					fmt.Sprintf("urn:mastodon:idp:%s", externalOAuth2State.Request.IDPSlug),
+				},
+			}
+			err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, parentState, oidcFinalState)
+			if err != nil {
+				log.Error().Err(err).Msg("StoreAuthorizationFinal")
+				redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
+					wellknown_echo.OIDCLoginPath,
+					parentState, models.InternalError)
+				return c.Redirect(http.StatusFound, redirectURL)
+			}
+			// redirect back
+			redirectURL := fmt.Sprintf("%s?state=%s&directive=%s", wellknown_echo.OIDCLoginPath, parentState, models.IdentityFound)
+			return c.Redirect(http.StatusFound, redirectURL)
+		}
+
+		getUserByEmail := func(email string) (*proto_oidc_models.User, error) {
+			// is this user already linked.
+			listUserResponse, err := s.UserService().ListUser(ctx, &proto_oidc_user.ListUserRequest{
+				Filter: &proto_oidc_user.Filter{
+					RootIdentity: &proto_oidc_user.IdentityFilter{
+						Email: &proto_types.StringFilterExpression{
+							Eq: strings.ToLower(email),
+						},
+					},
+				},
+			})
+			if err != nil {
+				log.Error().Err(err).Msg("ListUser")
+				return nil, err
+			}
+			if len(listUserResponse.Users) > 0 {
+				return listUserResponse.Users[0], nil
+			}
+			return nil, status.Error(codes.NotFound, "user not found")
+
+		}
+		// not found, redirect to OIDC LoginPage telling the user to do the signup dance
+		if externalOAuth2State.Request.Directive == models.LoginDirective {
+			// we don't store the external identity on a missed match.  User has to go through the trouble of a signup
+
+			// auto link if we get an email hit
+			user, err := getUserByEmail(externalIdentity.Email)
+			if err == nil && user != nil {
+				// link these accounts
+				_, err = s.UserService().LinkUsers(ctx, &proto_oidc_user.LinkUsersRequest{
+					RootSubject: user.RootIdentity.Subject,
+					ExternalIdentity: &proto_oidc_models.Identity{
+						Subject:       externalIdentity.Subject,
+						Email:         externalIdentity.Email,
+						IdpSlug:       externalOAuth2State.Request.IDPSlug,
+						EmailVerified: externalIdentity.EmailVerified,
+					},
+				})
+				if err != nil {
+					log.Error().Err(err).Msg("LinkUsers")
+					redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
+						wellknown_echo.OIDCLoginPath,
+						parentState, models.InternalError)
+
+					return c.Redirect(http.StatusFound, redirectURL)
+				}
+			} else {
+				redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
+					wellknown_echo.OIDCLoginPath,
+					parentState, models.ExternalIDPNotLinked)
+				return c.Redirect(http.StatusFound, redirectURL)
+			}
+
+		}
+		if externalOAuth2State.Request.Directive == models.SignupDirective {
+			oidcFinalState, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, parentState)
+			if err != nil {
+				log.Error().Err(err).Msg("GetAuthorizationFinal")
+				return c.Redirect(http.StatusTemporaryRedirect, "/login?error=oidc_flow_store")
+			}
+			oidcFinalState.Directive = models.SignupDirective
+			oidcFinalState.ExternalIdentity = externalIdentity
+			err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, parentState, oidcFinalState)
+			if err != nil {
+				log.Error().Err(err).Msg("StoreAuthorizationFinal")
+				return c.Redirect(http.StatusTemporaryRedirect, "/login?error=store_authorization_final")
+			}
+			// we don't store the external identity on a missed match.  User has to go through the trouble of a signup
+			redirectURL := fmt.Sprintf("%s?state=%s", wellknown_echo.OIDCLoginPath, parentState)
+			return c.Redirect(http.StatusFound, redirectURL)
+		}
 
 	}
-	return c.Redirect(http.StatusTemporaryRedirect, "/login?code="+model.Code)
+	return c.Redirect(http.StatusTemporaryRedirect, "/error?state="+parentState)
 }

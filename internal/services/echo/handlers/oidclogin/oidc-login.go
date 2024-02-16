@@ -7,18 +7,13 @@ import (
 	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/eko_gocache"
-	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
-	contracts_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/util"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
 	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
-	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/idp"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/types"
-	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
-	fluffycore_echo_contracts_contextaccessor "github.com/fluffy-bunny/fluffycore/echo/contracts/contextaccessor"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
@@ -26,11 +21,8 @@ import (
 
 type (
 	service struct {
-		services_echo_handlers_base.BaseHandler
-		container        di.Container
-		oidcFlowStore    contracts_eko_gocache.IOIDCFlowStore
-		idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer
-		userService      proto_oidc_user.IFluffyCoreUserServiceServer
+		*services_echo_handlers_base.BaseHandler
+		config *contracts_config.Config
 	}
 )
 
@@ -40,25 +32,13 @@ func init() {
 	var _ contracts_handler.IHandler = stemService
 }
 
-func (s *service) Ctor(someUtil contracts_util.ISomeUtil,
+func (s *service) Ctor(
+	config *contracts_config.Config,
 	container di.Container,
-	localizer contracts_localizer.ILocalizer,
-	userService proto_oidc_user.IFluffyCoreUserServiceServer,
-	oidcFlowStore contracts_eko_gocache.IOIDCFlowStore,
-	claimsPrincipal fluffycore_contracts_common.IClaimsPrincipal,
-	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
-	echoContextAccessor fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor) (*service, error) {
-
+) (*service, error) {
 	return &service{
-		BaseHandler: services_echo_handlers_base.BaseHandler{
-			ClaimsPrincipal:     claimsPrincipal,
-			EchoContextAccessor: echoContextAccessor,
-			Localizer:           localizer,
-		},
-		container:        container,
-		userService:      userService,
-		idpServiceServer: idpServiceServer,
-		oidcFlowStore:    oidcFlowStore,
+		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
+		config:      config,
 	}, nil
 }
 
@@ -80,17 +60,67 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type LoginGetRequest struct {
-	Code string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
+	State     string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
+	Error     string `param:"error" query:"error" form:"error" json:"error" xml:"error"`
+	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
 }
 type ExternalIDPAuthRequest struct {
 	IDPSlug string `param:"idp_slug" query:"idp_slug" form:"idp_slug" json:"idp_slug" xml:"idp_slug"`
 }
 type LoginPostRequest struct {
-	Code     string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
+	State    string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 	UserName string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
 	Password string `param:"password" query:"password" form:"password" json:"password" xml:"password"`
 }
 
+type row struct {
+	Key   string
+	Value string
+}
+
+func (s *service) handleIdentityFound(c echo.Context, state string) error {
+	r := c.Request()
+	// is the request get or post?
+	rootPath := s.config.BaseUrl
+	ctx := r.Context()
+	log := zerolog.Ctx(ctx).With().Logger()
+	mm, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, state)
+	if err != nil {
+		log.Error().Err(err).Msg("GetAuthorizationFinal")
+		// redirect to error page
+		redirectUrl := fmt.Sprintf("%s?state=%s&error=%s", wellknown_echo.OIDCLoginPath, state, models.InternalError)
+		return c.Redirect(http.StatusFound, redirectUrl)
+	}
+	if mm.Identity == nil {
+		redirectUrl := fmt.Sprintf("%s?state=%s&error=%s", wellknown_echo.OIDCLoginPath, state, models.InternalError)
+		return c.Redirect(http.StatusFound, redirectUrl)
+	}
+
+	echo_utils.SetCookieInterface(c, &http.Cookie{
+		Name:     "_auth",
+		Path:     "/",
+		Expires:  time.Now().Add(24 * time.Hour),
+		Secure:   true,
+		SameSite: http.SameSiteNoneMode,
+		HttpOnly: true,
+	}, mm.Identity)
+
+	err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, mm.Request.Code, mm)
+	if err != nil {
+		log.Warn().Err(err).Msg("StoreAuthorizationFinal")
+		// redirect to error page
+		return c.Redirect(http.StatusFound, "/error")
+	}
+	s.OIDCFlowStore().DeleteAuthorizationFinal(ctx, state)
+
+	// redirect to the client with the code.
+	redirectUri := mm.Request.RedirectURI +
+		"?code=" + mm.Request.Code +
+		"&state=" + mm.Request.State +
+		"&iss=" + rootPath
+	return c.Redirect(http.StatusFound, redirectUri)
+
+}
 func (s *service) DoGet(c echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
@@ -103,41 +133,25 @@ func (s *service) DoGet(c echo.Context) error {
 	}
 	log.Info().Interface("model", model).Msg("model")
 
-	c.SetCookie(&http.Cookie{
-		Name:   "_code",
-		Value:  model.Code,
-		Path:   "/",
-		Secure: true,
-	})
-	type row struct {
-		Key   string
-		Value string
-	}
-
-	listIDPResponse, err := s.idpServiceServer.ListIDP(ctx, &proto_oidc_idp.ListIDPRequest{
-		Filter: &proto_oidc_idp.Filter{
-			Enabled: &proto_types.BoolFilterExpression{
-				Eq: true,
-			},
-			Metadata: &proto_types.StringMapStringFilterExpression{
-				Key: "hidden",
-				Value: &proto_types.StringFilterExpression{
-					Eq: "false",
-				},
-			},
-		},
-	})
-	if err != nil {
-		return err
-	}
 	var rows []row
-	rows = append(rows, row{Key: "code", Value: model.Code})
+	rows = append(rows, row{Key: "state", Value: model.State})
+
+	switch model.Directive {
+	case models.IdentityFound:
+		return s.handleIdentityFound(c, model.State)
+
+	}
+	idps, err := s.GetIDPs(ctx)
+	if err != nil {
+		rows = append(rows, row{Key: "error", Value: err.Error()})
+	}
 
 	return s.Render(c, http.StatusOK, "views/oidclogin/index",
 		map[string]interface{}{
-			"defs": rows,
-			"idps": listIDPResponse.Idps,
-			"code": model.Code,
+			"defs":      rows,
+			"idps":      idps,
+			"state":     model.State,
+			"directive": models.LoginDirective,
 		})
 }
 
@@ -166,16 +180,15 @@ func (s *service) DoPost(c echo.Context) error {
 
 	model.UserName = strings.ToLower(model.UserName)
 
-	// get the code from the cookie
-	cookie, err := c.Cookie("_code")
+	var errors []*Error
+	errors = append(errors, NewErrorF("state", model.State))
+	idps, err := s.GetIDPs(ctx)
 	if err != nil {
-		return err
+		errors = append(errors, NewErrorF("error", err.Error()))
 	}
-	code := cookie.Value
-	log.Info().Str("code", code).Msg("code")
 
 	// does the user exist.
-	listUserResponse, err := s.userService.ListUser(ctx, &proto_oidc_user.ListUserRequest{
+	listUserResponse, err := s.UserService().ListUser(ctx, &proto_oidc_user.ListUserRequest{
 		Filter: &proto_oidc_user.Filter{
 			RootIdentity: &proto_oidc_user.IdentityFilter{
 				Email: &proto_types.StringFilterExpression{
@@ -185,29 +198,52 @@ func (s *service) DoPost(c echo.Context) error {
 		},
 	})
 	if len(listUserResponse.Users) == 0 {
+		errors = append(errors, NewErrorF("username", "username:%s not found", model.UserName))
 		return s.Render(c, http.StatusBadRequest, "views/oidclogin/index",
 			map[string]interface{}{
-				"defs": []*Error{NewErrorF("username", "username:%s does not exist", model.UserName)},
+				"state":     model.State,
+				"idps":      idps,
+				"defs":      errors,
+				"directive": models.LoginDirective,
 			})
 
 	}
 	if err != nil {
 		log.Warn().Err(err).Msg("ListUser")
-		return c.Redirect(http.StatusFound, fmt.Sprintf("%s?code=%s", wellknown_echo.OIDCLoginPath, code))
+		errors = append(errors, NewErrorF("error", err.Error()))
+
+		return s.Render(c, http.StatusBadRequest, "views/oidclogin/index",
+			map[string]interface{}{
+				"state":     model.State,
+				"idps":      idps,
+				"defs":      errors,
+				"directive": models.LoginDirective,
+			})
 	}
 	user := listUserResponse.Users[0]
 	if user.Password == nil {
+		errors = append(errors, NewErrorF("username", "username:%s does not have a password", model.UserName))
+
 		return s.Render(c, http.StatusBadRequest, "views/oidclogin/index",
 			map[string]interface{}{
-				"defs": []*Error{NewErrorF("username", "username:%s does not have a password", model.UserName)},
+				"state":     model.State,
+				"idps":      idps,
+				"defs":      errors,
+				"directive": models.LoginDirective,
 			})
 	}
 
 	passwordValid, err := echo_utils.ComparePasswordHash(model.Password, user.Password.Hash)
 	if err != nil && !passwordValid {
 		log.Warn().Err(err).Msg("ComparePasswordHash")
-		redirectUrl := fmt.Sprintf("%s%s?code=%s", rootPath, wellknown_echo.OIDCLoginPath, code)
-		return c.Redirect(http.StatusFound, redirectUrl)
+		errors = append(errors, NewErrorF("password", "password is invalid"))
+		return s.Render(c, http.StatusBadRequest, "views/oidclogin/index",
+			map[string]interface{}{
+				"state":     model.State,
+				"idps":      idps,
+				"defs":      errors,
+				"directive": models.LoginDirective,
+			})
 	}
 	echo_utils.SetCookieInterface(c, &http.Cookie{
 		Name:     "_auth",
@@ -218,7 +254,7 @@ func (s *service) DoPost(c echo.Context) error {
 		HttpOnly: true,
 	}, user.RootIdentity)
 
-	mm, err := s.oidcFlowStore.GetAuthorizationFinal(ctx, code)
+	mm, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, model.State)
 	if err != nil {
 		log.Warn().Err(err).Msg("GetAuthorizationFinal")
 		// redirect to error page
@@ -227,19 +263,28 @@ func (s *service) DoPost(c echo.Context) error {
 	mm.Identity = &models.Identity{
 		Subject: user.RootIdentity.Subject,
 		Email:   user.RootIdentity.Email,
-		ACR:     []string{"urn:mastodon:password", "urn:mastodon:2fa", "urn:mastodon:idp:root"},
+		ACR:     []string{"urn:mastodon:password", "urn:mastodon:idp:root"},
 	}
 
 	// "urn:mastodon:idp:google", "urn:mastodon:idp:spacex", "urn:mastodon:idp:github-enterprise", etc.
 	// "urn:mastodon:password", "urn:mastodon:2fa", "urn:mastodon:email", etc.
-	err = s.oidcFlowStore.StoreAuthorizationFinal(ctx, code, mm)
+	// we are done with the state now.  Lets map it to the code so it can be looked up by the client.
+	err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, mm.Request.Code, mm)
+	if err != nil {
+		log.Warn().Err(err).Msg("StoreAuthorizationFinal")
+		// redirect to error page
+		return c.Redirect(http.StatusFound, "/error")
+	}
+	s.OIDCFlowStore().DeleteAuthorizationFinal(ctx, model.State)
+
+	err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, model.State, mm)
 	if err != nil {
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")
 	}
 	// redirect to the client with the code.
 	redirectUri := mm.Request.RedirectURI +
-		"?code=" + code +
+		"?code=" + mm.Request.Code +
 		"&state=" + mm.Request.State +
 		"&iss=" + rootPath
 	return c.Redirect(http.StatusFound, redirectUri)
