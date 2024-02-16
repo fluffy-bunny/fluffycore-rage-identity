@@ -96,6 +96,14 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 	//--REQUIRED FOR US --
 	idClaims.Set("client_id", client.ClientId)
 	idClaims.Set("email", authFinal.Identity.Email)
+	idClaims.Set("email_verified", authFinal.Identity.EmailVerified)
+	if len(authFinal.Identity.ACR) > 0 {
+		if len(authFinal.Identity.ACR) > 1 {
+			idClaims.Set("acr", authFinal.Identity.ACR)
+		} else {
+			idClaims.Set("acr", authFinal.Identity.ACR[0])
+		}
+	}
 	//--OPTIONAL--
 
 	idToken, err := s.tokenService.MintToken(ctx, &contracts_tokenservice.MintTokenRequest{

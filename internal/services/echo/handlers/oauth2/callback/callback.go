@@ -190,26 +190,28 @@ func (s *service) Do(c echo.Context) error {
 			},
 			EmailVerified: emailVerified,
 		}
-
-		// is this user already linked.
-		listUserResponse, err := s.UserService().ListUser(ctx, &proto_oidc_user.ListUserRequest{
-			Filter: &proto_oidc_user.Filter{
-				LinkedIdentity: &proto_oidc_user.IdentityFilter{
-					Subject: &proto_types.IDFilterExpression{
-						Eq: rawToken.Subject(),
+		getUserByEmail := func(email string) (*proto_oidc_models.User, error) {
+			// is this user already linked.
+			listUserResponse, err := s.UserService().ListUser(ctx, &proto_oidc_user.ListUserRequest{
+				Filter: &proto_oidc_user.Filter{
+					RootIdentity: &proto_oidc_user.IdentityFilter{
+						Email: &proto_types.StringFilterExpression{
+							Eq: strings.ToLower(email),
+						},
 					},
 				},
-			},
-		})
-		if err != nil {
-			log.Error().Err(err).Msg("ListUser")
-			redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
-				wellknown_echo.OIDCLoginPath,
-				parentState, models.InternalError)
-			return c.Redirect(http.StatusFound, redirectURL)
+			})
+			if err != nil {
+				log.Error().Err(err).Msg("ListUser")
+				return nil, err
+			}
+			if len(listUserResponse.Users) > 0 {
+				return listUserResponse.Users[0], nil
+			}
+			return nil, status.Error(codes.NotFound, "user not found")
+
 		}
-		if len(listUserResponse.Users) > 0 {
-			user := listUserResponse.Users[0]
+		loginLinkedUser := func(user *proto_oidc_models.User) error {
 			// login this user.
 			oidcFinalState, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, parentState)
 			if err != nil {
@@ -239,27 +241,29 @@ func (s *service) Do(c echo.Context) error {
 			return c.Redirect(http.StatusFound, redirectURL)
 		}
 
-		getUserByEmail := func(email string) (*proto_oidc_models.User, error) {
-			// is this user already linked.
-			listUserResponse, err := s.UserService().ListUser(ctx, &proto_oidc_user.ListUserRequest{
-				Filter: &proto_oidc_user.Filter{
-					RootIdentity: &proto_oidc_user.IdentityFilter{
-						Email: &proto_types.StringFilterExpression{
-							Eq: strings.ToLower(email),
-						},
+		// is this user already linked.
+		listUserResponse, err := s.UserService().ListUser(ctx, &proto_oidc_user.ListUserRequest{
+			Filter: &proto_oidc_user.Filter{
+				LinkedIdentity: &proto_oidc_user.IdentityFilter{
+					Subject: &proto_types.IDFilterExpression{
+						Eq: rawToken.Subject(),
 					},
 				},
-			})
-			if err != nil {
-				log.Error().Err(err).Msg("ListUser")
-				return nil, err
-			}
-			if len(listUserResponse.Users) > 0 {
-				return listUserResponse.Users[0], nil
-			}
-			return nil, status.Error(codes.NotFound, "user not found")
-
+			},
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("ListUser")
+			redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
+				wellknown_echo.OIDCLoginPath,
+				parentState, models.InternalError)
+			return c.Redirect(http.StatusFound, redirectURL)
 		}
+
+		if len(listUserResponse.Users) > 0 {
+			user := listUserResponse.Users[0]
+			return loginLinkedUser(user)
+		}
+
 		// not found, redirect to OIDC LoginPage telling the user to do the signup dance
 		if externalOAuth2State.Request.Directive == models.LoginDirective {
 			// we don't store the external identity on a missed match.  User has to go through the trouble of a signup
@@ -285,7 +289,9 @@ func (s *service) Do(c echo.Context) error {
 
 					return c.Redirect(http.StatusFound, redirectURL)
 				}
+				return loginLinkedUser(user)
 			} else {
+				// we bounce the user back to go through a sigunup flow
 				redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
 					wellknown_echo.OIDCLoginPath,
 					parentState, models.ExternalIDPNotLinked)
