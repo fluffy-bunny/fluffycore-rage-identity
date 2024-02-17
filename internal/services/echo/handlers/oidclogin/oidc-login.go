@@ -65,7 +65,7 @@ type LoginGetRequest struct {
 	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
 }
 type ExternalIDPAuthRequest struct {
-	IDPSlug string `param:"idp_slug" query:"idp_slug" form:"idp_slug" json:"idp_slug" xml:"idp_slug"`
+	IDPHint string `param:"idp_hint" query:"idp_hint" form:"idp_hint" json:"idp_hint" xml:"idp_hint"`
 }
 type LoginPostRequest struct {
 	State    string `param:"state" query:"state" form:"state" json:"state" xml:"state"`

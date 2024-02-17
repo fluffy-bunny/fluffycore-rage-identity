@@ -26,6 +26,7 @@ import (
 	fluffycore_services_eko_gocache_go_cache "github.com/fluffy-bunny/fluffycore/services/eko_gocache/go_cache"
 	fluffycore_services_jwtminter "github.com/fluffy-bunny/fluffycore/services/jwtminter"
 	fluffycore_services_keymaterial "github.com/fluffy-bunny/fluffycore/services/keymaterial"
+	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	zerolog "github.com/rs/zerolog"
 	protojson "google.golang.org/protobuf/encoding/protojson"
 )
@@ -97,8 +98,9 @@ func OnConfigureServicesLoadIDPs(ctx context.Context, config *contracts_config.C
 		log.Warn().Err(err).Msg("failed to read IDPsPath - may not be a problem if idps are comming from a DB")
 		return nil
 	}
+	fixedFileContent := fluffycore_utils.ReplaceEnv(string(fileContent), "${%s}")
 	var idps *proto_oidc_models.IDPs = &proto_oidc_models.IDPs{}
-	err = protojson.Unmarshal(fileContent, idps)
+	err = protojson.Unmarshal([]byte(fixedFileContent), idps)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to unmarshal OIDCClientPath")
 		return err

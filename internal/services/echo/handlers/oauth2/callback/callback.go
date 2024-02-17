@@ -115,7 +115,7 @@ func (s *service) Do(c echo.Context) error {
 	}()
 	getIDPBySlugResponse, err := s.IdpServiceServer().GetIDPBySlug(ctx,
 		&proto_oidc_idp.GetIDPBySlugRequest{
-			Slug: externalOAuth2State.Request.IDPSlug,
+			Slug: externalOAuth2State.Request.IDPHint,
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("GetIDPBySlug")
@@ -129,7 +129,7 @@ func (s *service) Do(c echo.Context) error {
 		case *proto_oidc_models.Protocol_Github:
 			{
 				exchangeCodeResponse, err = s.githubCodeExchange.ExchangeCode(ctx, &contracts_codeexchange.ExchangeCodeRequest{
-					IDPSlug:      externalOAuth2State.Request.IDPSlug,
+					IDPHint:      externalOAuth2State.Request.IDPHint,
 					ClientID:     externalOAuth2State.Request.ClientID,
 					Nonce:        externalOAuth2State.Request.Nonce,
 					Code:         model.Code,
@@ -143,7 +143,7 @@ func (s *service) Do(c echo.Context) error {
 		case *proto_oidc_models.Protocol_Oidc:
 			{
 				exchangeCodeResponse, err = s.genericOIDCCodeExchange.ExchangeCode(ctx, &contracts_codeexchange.ExchangeCodeRequest{
-					IDPSlug:  externalOAuth2State.Request.IDPSlug,
+					IDPHint:  externalOAuth2State.Request.IDPHint,
 					ClientID: externalOAuth2State.Request.ClientID,
 					Nonce:    externalOAuth2State.Request.Nonce,
 					Code:     model.Code,
@@ -186,7 +186,7 @@ func (s *service) Do(c echo.Context) error {
 			Subject: rawToken.Subject(),
 			Email:   email.(string),
 			ACR: []string{
-				fmt.Sprintf("urn:mastodon:idp:%s", externalOAuth2State.Request.IDPSlug),
+				fmt.Sprintf("urn:mastodon:idp:%s", externalOAuth2State.Request.IDPHint),
 			},
 			EmailVerified: emailVerified,
 		}
@@ -225,7 +225,7 @@ func (s *service) Do(c echo.Context) error {
 				Subject: user.RootIdentity.Subject,
 				Email:   user.RootIdentity.Email,
 				ACR: []string{
-					fmt.Sprintf("urn:mastodon:idp:%s", externalOAuth2State.Request.IDPSlug),
+					fmt.Sprintf("urn:mastodon:idp:%s", externalOAuth2State.Request.IDPHint),
 				},
 			}
 			err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, parentState, oidcFinalState)
@@ -277,7 +277,7 @@ func (s *service) Do(c echo.Context) error {
 					ExternalIdentity: &proto_oidc_models.Identity{
 						Subject:       externalIdentity.Subject,
 						Email:         externalIdentity.Email,
-						IdpSlug:       externalOAuth2State.Request.IDPSlug,
+						IdpSlug:       externalOAuth2State.Request.IDPHint,
 						EmailVerified: externalIdentity.EmailVerified,
 					},
 				})

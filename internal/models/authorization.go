@@ -13,7 +13,7 @@ const (
 
 // urn prefixes
 const (
-	URNIdpPrefix     string = "urn:mastodon:idp:{idp_slug}"
+	URNIdpPrefix     string = "urn:mastodon:idp:{idp_hint}"
 	URLRootCandidate string = "urn:mastodon:root_candidate:{user_id}"
 )
 
@@ -30,10 +30,15 @@ type (
 		ACRValues           string `param:"acr_values" query:"acr_values" form:"acr_values" json:"acr_values" xml:"acr_values"`
 		Nonce               string `param:"nonce" query:"nonce" form:"nonce" json:"nonce" xml:"nonce"`
 		Code                string // this is the internal code that will be returned to the OIDC client
+		// IDPHint is the idp_hint of the external idp that the authorization must authenticate against
+		IDPHint string
+		// CandidateUserID is the user_id of the candidate user that if the external IDP has no link should be linked to
+		// The candidate user must exist.
+		CandidateUserID string
 	}
 
 	ExternalOauth2Request struct {
-		IDPSlug               string `json:"idp_slug,omitempty"`
+		IDPHint               string `json:"idp_hint,omitempty"`
 		ClientID              string `json:"client_id,omitempty"`
 		CodeChallenge         string `json:"code_challenge,omitempty"`
 		CodeChallengeMethod   string `json:"code_challenge_method,omitempty"`

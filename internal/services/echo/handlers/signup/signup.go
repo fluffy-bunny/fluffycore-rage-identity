@@ -69,7 +69,7 @@ type SignupGetRequest struct {
 	State      string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 }
 type ExternalIDPAuthRequest struct {
-	IDPSlug string `param:"idp_slug" query:"idp_slug" form:"idp_slug" json:"idp_slug" xml:"idp_slug"`
+	IDPHint string `param:"idp_hint" query:"idp_hint" form:"idp_hint" json:"idp_hint" xml:"idp_hint"`
 }
 type SignupPostRequest struct {
 	WizardMode bool   `param:"wizard_mode" query:"wizard_mode" form:"wizard_mode" json:"wizard_mode" xml:"wizard_mode"`

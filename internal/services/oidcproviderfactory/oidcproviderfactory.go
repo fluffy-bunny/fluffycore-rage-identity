@@ -46,8 +46,8 @@ func (s *service) validateGetOIDCProviderRequest(request *contracts_oauth2factor
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is required")
 	}
-	if fluffycore_utils.IsEmptyOrNil(request.IDPSlug) {
-		return status.Error(codes.InvalidArgument, "IDPSlug is required")
+	if fluffycore_utils.IsEmptyOrNil(request.IDPHint) {
+		return status.Error(codes.InvalidArgument, "IDPHint is required")
 	}
 	return nil
 }
@@ -62,7 +62,7 @@ func (s *service) GetOIDCProvider(ctx context.Context, request *contracts_oauth2
 
 	getIDPBySlugResponse, err := s.idpServiceServer.GetIDPBySlug(ctx,
 		&proto_oidc_idp.GetIDPBySlugRequest{
-			Slug: request.IDPSlug,
+			Slug: request.IDPHint,
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("GetIDPBySlug")
@@ -75,14 +75,14 @@ func (s *service) GetOIDCProvider(ctx context.Context, request *contracts_oauth2
 
 		case *proto_oidc_models.Protocol_Oidc:
 			{
-				oidcProvider, ok := s.oidcProviders[request.IDPSlug]
+				oidcProvider, ok := s.oidcProviders[request.IDPHint]
 				if !ok {
 					provider, err := oidc.NewProvider(ctx, v.Oidc.Authority)
 					if err != nil {
 						log.Error().Err(err).Msg("oidc.NewProvider")
 						return nil, err
 					}
-					s.oidcProviders[request.IDPSlug] = provider
+					s.oidcProviders[request.IDPHint] = provider
 					oidcProvider = provider
 				}
 				return &contracts_oauth2factory.GetOIDCProviderResponse{
@@ -91,5 +91,5 @@ func (s *service) GetOIDCProvider(ctx context.Context, request *contracts_oauth2
 			}
 		}
 	}
-	return nil, status.Errorf(codes.NotFound, "no oauth2 protocol found for IDPSlug: %s", request.IDPSlug)
+	return nil, status.Errorf(codes.NotFound, "no oauth2 protocol found for IDPHint: %s", request.IDPHint)
 }

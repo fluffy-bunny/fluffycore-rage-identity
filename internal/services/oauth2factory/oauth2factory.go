@@ -63,8 +63,8 @@ func (s *service) validateGetConfigRequest(request *contracts_oauth2factory.GetC
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is required")
 	}
-	if fluffycore_utils.IsEmptyOrNil(request.IDPSlug) {
-		return status.Error(codes.InvalidArgument, "IDPSlug is required")
+	if fluffycore_utils.IsEmptyOrNil(request.IDPHint) {
+		return status.Error(codes.InvalidArgument, "IDPHint is required")
 	}
 	return nil
 }
@@ -79,7 +79,7 @@ func (s *service) GetConfig(ctx context.Context, request *contracts_oauth2factor
 
 	getIDPBySlugResponse, err := s.idpServiceServer.GetIDPBySlug(ctx,
 		&proto_oidc_idp.GetIDPBySlugRequest{
-			Slug: request.IDPSlug,
+			Slug: request.IDPHint,
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("GetIDPBySlug")
@@ -90,7 +90,7 @@ func (s *service) GetConfig(ctx context.Context, request *contracts_oauth2factor
 		log.Info().Interface("getIDPBySlugResponse", getIDPBySlugResponse).Msg("getIDPBySlugResponse")
 		switch v := idp.Protocol.Value.(type) {
 		case *proto_oidc_models.Protocol_Github:
-			oauth2Config, ok := s.oauth2Configs[request.IDPSlug]
+			oauth2Config, ok := s.oauth2Configs[request.IDPHint]
 			if !ok {
 				config := oauth2.Config{
 					ClientID:     v.Github.ClientId,
@@ -102,7 +102,7 @@ func (s *service) GetConfig(ctx context.Context, request *contracts_oauth2factor
 						TokenURL: GithubTokenURL,
 					},
 				}
-				s.oauth2Configs[request.IDPSlug] = &config
+				s.oauth2Configs[request.IDPHint] = &config
 				oauth2Config = &config
 			}
 			return &contracts_oauth2factory.GetConfigResponse{
@@ -113,7 +113,7 @@ func (s *service) GetConfig(ctx context.Context, request *contracts_oauth2factor
 			{
 				getOIDCProviderResponse, err := s.oauth2ProviderFactory.GetOIDCProvider(ctx,
 					&contracts_oauth2factory.GetOIDCProviderRequest{
-						IDPSlug: request.IDPSlug,
+						IDPHint: request.IDPHint,
 					})
 				if err != nil {
 					log.Error().Err(err).Msg("Failed to get oidcProvider")
@@ -121,7 +121,7 @@ func (s *service) GetConfig(ctx context.Context, request *contracts_oauth2factor
 				}
 				oidcProvider := getOIDCProviderResponse.OIDCProvider
 
-				oauth2Config, ok := s.oauth2Configs[request.IDPSlug]
+				oauth2Config, ok := s.oauth2Configs[request.IDPHint]
 				if !ok {
 					scopes := strings.Split(v.Oidc.Scope, " ")
 					config := oauth2.Config{
@@ -134,7 +134,7 @@ func (s *service) GetConfig(ctx context.Context, request *contracts_oauth2factor
 							TokenURL: oidcProvider.Endpoint().TokenURL,
 						},
 					}
-					s.oauth2Configs[request.IDPSlug] = &config
+					s.oauth2Configs[request.IDPHint] = &config
 					oauth2Config = &config
 				}
 				return &contracts_oauth2factory.GetConfigResponse{
@@ -143,5 +143,5 @@ func (s *service) GetConfig(ctx context.Context, request *contracts_oauth2factor
 			}
 		}
 	}
-	return nil, status.Errorf(codes.NotFound, "no oauth2 protocol found for IDPSlug: %s", request.IDPSlug)
+	return nil, status.Errorf(codes.NotFound, "no oauth2 protocol found for IDPHint: %s", request.IDPHint)
 }

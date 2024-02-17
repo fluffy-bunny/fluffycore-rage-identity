@@ -50,7 +50,7 @@
             <form action="/external-idp" method="post">
                 <input type="hidden" name="state"       value="{{ $state }}">
                 <input type="hidden" name="directive"   value="{{ $directive }}">
-                <input type="hidden" name="idp_slug"    value="{{$idp.Slug}}">
+                <input type="hidden" name="idp_hint"    value="{{$idp.Slug}}">
                 <button type="submit" class="btn btn-primary">{{$idp.Name}}</button>
             </form>
         {{end}}

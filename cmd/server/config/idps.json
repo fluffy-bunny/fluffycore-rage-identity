@@ -10,7 +10,7 @@
         "oidc": {
           "authority": "https://accounts.google.com",
           "client_id": "1096301616546-edbl612881t7rkpljp3qa3juminskulo.apps.googleusercontent.com",
-          "client_secret": "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",
+          "client_secret": "${GOOGLE_1096301616546-edbl612881t7rkpljp3qa3juminskulo.apps.googleusercontent.com_CLIENT_SECRET}",
           "scope": "openid email profile"
         }
       },
@@ -28,11 +28,30 @@
       "protocol": {
         "github": {
           "client_id": "bdbe2f2235eb3a02065c",
-          "client_secret": "518855c75dbce0532b8b623cdaa96ecfb03ae4bb"
+          "client_secret": "${GITHUB_bdbe2f2235eb3a02065c_CLIENT_SECRET}"
         }
       },
       "metadata": {
         "hidden": "false",
+        "image_ref": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
+      }
+    },
+    {
+      "id": "mapped-enterprise",
+      "enabled": true,
+      "slug": "mapped-enterprise",
+      "name": "Mapped.com",
+      "description": "Mapped.com",
+      "protocol": {
+        "oidc": {
+          "authority": "https://login.microsoftonline.com/5905aed6-175d-4ef4-914d-3ee92a398d55/v2.0",
+          "client_id": "3b918868-9bff-431f-bd9c-f9896d628e6b",
+          "client_secret": "${AZUREAD_3b918868-9bff-431f-bd9c-f9896d628e6b_CLIENT_SECRET}",
+          "scope": "openid email profile"
+        }
+      },
+      "metadata": {
+        "hidden": "true",
         "image_ref": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
       }
     }

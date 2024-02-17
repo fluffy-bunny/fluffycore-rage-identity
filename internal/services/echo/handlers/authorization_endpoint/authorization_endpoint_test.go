@@ -11,12 +11,12 @@ func TestIdpUrnExtraction(t *testing.T) {
 	template := "urn:mastodon:idp:google"
 	info, err := extractIdpSlug(template)
 	require.NoError(t, err)
-	require.Equal(t, "google", info["idp_slug"])
+	require.Equal(t, "google", info["idp_hint"])
 
 	template = "urn:mastodon:idp:"
 	info, err = extractIdpSlug(template)
 	require.NoError(t, err)
-	require.Equal(t, "", info["idp_slug"])
+	require.Equal(t, "", info["idp_hint"])
 
 	template = "urn:mastodon:idp"
 	info, err = extractIdpSlug(template)

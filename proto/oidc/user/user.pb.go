@@ -30,7 +30,7 @@ type IdentityFilter struct {
 	unknownFields protoimpl.UnknownFields
 
 	Subject *types.IDFilterExpression     `protobuf:"bytes,1,opt,name=subject,proto3" json:"subject,omitempty"`
-	IdpSlug *types.IDFilterExpression     `protobuf:"bytes,2,opt,name=idp_slug,json=idpSlug,proto3" json:"idp_slug,omitempty"`
+	IdpSlug *types.IDFilterExpression     `protobuf:"bytes,2,opt,name=idp_hint,json=idpHint,proto3" json:"idp_hint,omitempty"`
 	Email   *types.StringFilterExpression `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
 }
 
@@ -1083,7 +1083,7 @@ var file_proto_oidc_user_user_proto_goTypes = []interface{}{
 }
 var file_proto_oidc_user_user_proto_depIdxs = []int32{
 	16, // 0: proto.oidc.user.IdentityFilter.subject:type_name -> proto.types.IDFilterExpression
-	16, // 1: proto.oidc.user.IdentityFilter.idp_slug:type_name -> proto.types.IDFilterExpression
+	16, // 1: proto.oidc.user.IdentityFilter.idp_hint:type_name -> proto.types.IDFilterExpression
 	17, // 2: proto.oidc.user.IdentityFilter.email:type_name -> proto.types.StringFilterExpression
 	0,  // 3: proto.oidc.user.Filter.root_identity:type_name -> proto.oidc.user.IdentityFilter
 	0,  // 4: proto.oidc.user.Filter.linked_identity:type_name -> proto.oidc.user.IdentityFilter

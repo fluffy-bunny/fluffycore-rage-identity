@@ -62,8 +62,8 @@ func (s *service) validateExchangeCodeRequest(request *contracts_codeexchange.Ex
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is required")
 	}
-	if fluffycore_utils.IsEmptyOrNil(request.IDPSlug) {
-		return status.Error(codes.InvalidArgument, "IDPSlug is required")
+	if fluffycore_utils.IsEmptyOrNil(request.IDPHint) {
+		return status.Error(codes.InvalidArgument, "IDPHint is required")
 	}
 	if fluffycore_utils.IsEmptyOrNil(request.Code) {
 		return status.Error(codes.InvalidArgument, "code is required")
@@ -81,7 +81,7 @@ func (s *service) ExchangeCode(ctx context.Context, request *contracts_codeexcha
 	}
 	// get the oidc provider
 	oidcProviderResponse, err := s.oidcProviderFactory.GetOIDCProvider(ctx, &contracts_oauth2factory.GetOIDCProviderRequest{
-		IDPSlug: request.IDPSlug,
+		IDPHint: request.IDPHint,
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get oidc provider")
@@ -94,7 +94,7 @@ func (s *service) ExchangeCode(ctx context.Context, request *contracts_codeexcha
 	}
 	idTokenVerifier := oidcProvider.Verifier(oidcConfig)
 	getConfigResponse, err := s.oauth2Factory.GetConfig(ctx, &contracts_oauth2factory.GetConfigRequest{
-		IDPSlug: request.IDPSlug,
+		IDPHint: request.IDPHint,
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get config")
@@ -137,7 +137,7 @@ func (s *service) ExchangeCode(ctx context.Context, request *contracts_codeexcha
 	}
 	claims := fluffycore_services_claims.NewClaims()
 	claims.Set("sub", idToken.Subject)
-	claims.Set("idp", request.IDPSlug)
+	claims.Set("idp", request.IDPHint)
 	claims.Set("email", idTokenClaims.Email)
 	claims.Set("email_verified", idTokenClaims.EmailVerified)
 

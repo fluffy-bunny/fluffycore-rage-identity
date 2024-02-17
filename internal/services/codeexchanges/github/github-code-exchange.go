@@ -93,7 +93,7 @@ func (s *service) ExchangeCode(ctx context.Context, request *contracts_codeexcha
 	}
 	// get the config
 	getConfigRequest := &contracts_oauth2factory.GetConfigRequest{
-		IDPSlug: request.IDPSlug,
+		IDPHint: request.IDPHint,
 	}
 	getConfigResponse, err := s.oauth2Factory.GetConfig(ctx, getConfigRequest)
 	if err != nil {
@@ -144,7 +144,7 @@ func (s *service) ExchangeCode(ctx context.Context, request *contracts_codeexcha
 	}
 	claims := fluffycore_services_claims.NewClaims()
 	claims.Set("sub", strconv.Itoa(githubUser.ID))
-	claims.Set("idp", request.IDPSlug)
+	claims.Set("idp", request.IDPHint)
 
 	if primaryEmail != nil {
 		claims.Set("email", primaryEmail.Email)

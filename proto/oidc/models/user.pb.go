@@ -280,7 +280,7 @@ type Identity struct {
 	unknownFields protoimpl.UnknownFields
 
 	Subject       string `protobuf:"bytes,1,opt,name=subject,proto3" json:"subject,omitempty"`
-	IdpSlug       string `protobuf:"bytes,2,opt,name=idp_slug,json=idpSlug,proto3" json:"idp_slug,omitempty"`
+	IdpSlug       string `protobuf:"bytes,2,opt,name=idp_hint,json=idpHint,proto3" json:"idp_hint,omitempty"`
 	Email         string `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
 	EmailVerified bool   `protobuf:"varint,4,opt,name=email_verified,json=emailVerified,proto3" json:"email_verified,omitempty"`
 }

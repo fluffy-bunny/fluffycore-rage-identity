@@ -9,13 +9,13 @@ import (
 
 type (
 	GetConfigRequest struct {
-		IDPSlug string
+		IDPHint string
 	}
 	GetConfigResponse struct {
 		Config *oauth2.Config
 	}
 	GetOIDCProviderRequest struct {
-		IDPSlug string
+		IDPHint string
 	}
 	GetOIDCProviderResponse struct {
 		OIDCProvider *oidc.Provider

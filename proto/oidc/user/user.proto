@@ -17,7 +17,7 @@ import "google/api/annotations.proto";
 
 message IdentityFilter {
     proto.types.IDFilterExpression           subject = 1;
-    proto.types.IDFilterExpression           idp_slug = 2;
+    proto.types.IDFilterExpression           idp_hint = 2;
     proto.types.StringFilterExpression       email = 3;
 
 }

@@ -15,6 +15,7 @@ import (
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
 	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/client"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/idp"
+	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
@@ -29,6 +30,7 @@ type (
 		oidcFlowStore       contracts_eko_gocache.IOIDCFlowStore
 		clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer
 		idpServiceServer    proto_oidc_idp.IFluffyCoreIDPServiceServer
+		userService         proto_oidc_user.IFluffyCoreUserServiceServer
 	}
 )
 
@@ -40,6 +42,8 @@ func init() {
 
 func (s *service) Ctor(
 	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
+	userService proto_oidc_user.IFluffyCoreUserServiceServer,
+
 	scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
 	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
 	oidcFlowStore contracts_eko_gocache.IOIDCFlowStore) (*service, error) {
@@ -48,6 +52,7 @@ func (s *service) Ctor(
 		oidcFlowStore:       oidcFlowStore,
 		clientServiceServer: clientServiceServer,
 		idpServiceServer:    idpServiceServer,
+		userService:         userService,
 	}, nil
 }
 
@@ -104,38 +109,52 @@ func (s *service) Do(c echo.Context) error {
 		Request: model,
 	}
 
-	if fluffycore_utils.IsEmptyOrNil(model.ACRValues) {
+	if !fluffycore_utils.IsEmptyOrNil(model.ACRValues) {
 		acrValues := strings.Split(model.ACRValues, " ")
 
-		idpSlug := ""
-		rootCandidate := ""
+		idpHint := ""
+		candidateUserID := ""
 		for _, acrValue := range acrValues {
 			d, err := extractIdpSlug(acrValue)
 			if err == nil {
-				v, ok := d["idp_slug"]
+				v, ok := d["idp_hint"]
 				if ok {
-					idpSlug = v
+					idpHint = v
 				}
 			}
 			d, err = extractRootCandidate(acrValue)
 			if err == nil {
 				v, ok := d["user_id"]
 				if ok {
-					rootCandidate = v
+					candidateUserID = v
 				}
 			}
 		}
-		log.Info().Str("idpSlug", idpSlug).Str("rootCandidate", rootCandidate).Msg("acrValues")
-		if !fluffycore_utils.IsEmptyOrNil(idpSlug) {
+
+		log.Info().Str("idpHint", idpHint).Str("rootCandidate", candidateUserID).Msg("acrValues")
+		if !fluffycore_utils.IsEmptyOrNil(idpHint) {
 			getIDPBySlugResponse, err := s.idpServiceServer.GetIDPBySlug(ctx, &proto_oidc_idp.GetIDPBySlugRequest{
-				Slug: idpSlug,
+				Slug: idpHint,
 			})
 			if err != nil ||
 				getIDPBySlugResponse == nil ||
 				getIDPBySlugResponse.Idp == nil {
-				idpSlug = ""
+				idpHint = ""
+				c.Redirect(http.StatusFound, "/error&error=invalid_idp_hint")
 			}
+			model.IDPHint = idpHint
 		}
+		if !fluffycore_utils.IsEmptyOrNil(candidateUserID) {
+			getUserResponse, err := s.userService.GetUser(ctx, &proto_oidc_user.GetUserRequest{
+				Subject: candidateUserID,
+			})
+			if err != nil || getUserResponse == nil || getUserResponse.User == nil {
+				candidateUserID = ""
+				c.Redirect(http.StatusFound, "/error&error=invalid_root_candidate")
+			}
+			model.CandidateUserID = candidateUserID
+		}
+
 	}
 
 	err := s.oidcFlowStore.StoreAuthorizationFinal(ctx, model.State, authorizationFinal)
@@ -151,8 +170,17 @@ func (s *service) Do(c echo.Context) error {
 	}
 	log.Info().Interface("mm", mm).Msg("mm")
 	// redirect to the server Auth login pages.
-	//
-	finalOIDCPath := fmt.Sprintf("%s?state=%s", wellknown_echo.OIDCLoginPath, model.State)
+	//s
+	finalOIDCPath := ""
+	if fluffycore_utils.IsEmptyOrNil(model.IDPHint) {
+		finalOIDCPath = fmt.Sprintf("%s?state=%s", wellknown_echo.OIDCLoginPath, model.State)
+	} else {
+		finalOIDCPath = fmt.Sprintf("%s?state=%s&idp_hint=%s&directive=%s", wellknown_echo.ExternalIDPPath,
+			model.State,
+			model.IDPHint,
+			models.LoginDirective)
+
+	}
 	// url enocde the redirect_uri
 	//encodedRedirect := url.QueryEscape(finalOIDCPath)
 
@@ -178,7 +206,7 @@ func extractIdpSlug(template string) (map[string]string, error) {
 
 	// Extract and store the values
 	info := make(map[string]string)
-	info["idp_slug"] = match[1]
+	info["idp_hint"] = match[1]
 
 	return info, nil
 }

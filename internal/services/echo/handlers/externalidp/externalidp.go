@@ -73,7 +73,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 type ExternalIDPAuthRequest struct {
 	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
 	State     string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
-	IDPSlug   string `param:"idp_slug" query:"idp_slug" form:"idp_slug" json:"idp_slug" xml:"idp_slug"`
+	IDPHint   string `param:"idp_hint" query:"idp_hint" form:"idp_hint" json:"idp_hint" xml:"idp_hint"`
 }
 
 func (s *service) validateLoginGetRequest(model *ExternalIDPAuthRequest) error {
@@ -81,8 +81,8 @@ func (s *service) validateLoginGetRequest(model *ExternalIDPAuthRequest) error {
 	if fluffycore_utils.IsEmptyOrNil(model.State) {
 		return status.Error(codes.InvalidArgument, "State is required")
 	}
-	if fluffycore_utils.IsEmptyOrNil(model.IDPSlug) {
-		return status.Error(codes.InvalidArgument, "IDPSlug is required")
+	if fluffycore_utils.IsEmptyOrNil(model.IDPHint) {
+		return status.Error(codes.InvalidArgument, "IDPHint is required")
 	}
 	if fluffycore_utils.IsEmptyOrNil(model.Directive) {
 		return status.Error(codes.InvalidArgument, "Directive is required")
@@ -113,7 +113,7 @@ func (s *service) DoPost(c echo.Context) error {
 
 	getIDPBySlugResponse, err := s.IdpServiceServer().GetIDPBySlug(ctx,
 		&proto_oidc_idp.GetIDPBySlugRequest{
-			Slug: model.IDPSlug,
+			Slug: model.IDPHint,
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("GetIDPBySlug")
@@ -131,7 +131,7 @@ func (s *service) DoPost(c echo.Context) error {
 					externalState,
 					&models.ExternalOauth2Final{
 						Request: &models.ExternalOauth2Request{
-							IDPSlug:               model.IDPSlug,
+							IDPHint:               model.IDPHint,
 							ClientID:              v.Github.ClientId,
 							State:                 model.State,
 							CodeChallenge:         codeChallenge,
@@ -148,7 +148,7 @@ func (s *service) DoPost(c echo.Context) error {
 				}
 				getConfigResponse, err := s.oauth2Factory.GetConfig(ctx,
 					&contracts_oauth2factory.GetConfigRequest{
-						IDPSlug: model.IDPSlug,
+						IDPHint: model.IDPHint,
 					})
 				if err != nil {
 					log.Error().Err(err).Msg("Failed to get oauth2Config")
@@ -169,7 +169,7 @@ func (s *service) DoPost(c echo.Context) error {
 					externalState,
 					&models.ExternalOauth2Final{
 						Request: &models.ExternalOauth2Request{
-							IDPSlug:               model.IDPSlug,
+							IDPHint:               model.IDPHint,
 							ClientID:              v.Oauth2.ClientId,
 							State:                 model.State,
 							CodeChallenge:         codeChallenge,
@@ -211,7 +211,7 @@ func (s *service) DoPost(c echo.Context) error {
 					externalState,
 					&models.ExternalOauth2Final{
 						Request: &models.ExternalOauth2Request{
-							IDPSlug:  model.IDPSlug,
+							IDPHint:  model.IDPHint,
 							ClientID: v.Oidc.ClientId,
 							State:    model.State,
 							//			CodeChallenge:         codeChallenge,
@@ -229,7 +229,7 @@ func (s *service) DoPost(c echo.Context) error {
 				}
 				getConfigResponse, err := s.oauth2Factory.GetConfig(ctx,
 					&contracts_oauth2factory.GetConfigRequest{
-						IDPSlug: model.IDPSlug,
+						IDPHint: model.IDPHint,
 					})
 				if err != nil {
 					log.Error().Err(err).Msg("Failed to get oauth2Config")

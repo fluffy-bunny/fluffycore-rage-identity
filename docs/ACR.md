@@ -52,7 +52,7 @@ http://localhost:9044/oauth2/default/v1/authorize?client_id={clientId}
 | urn:{root_provider}:loa:1fa:any        | any type of auth is fine, mfa not required, any idp is ok                                                                                                                                                      |
 | urn:{root_provider}:loa:mfa:any        | mfa is required. Since external IDPs cannot be counted on to provide this information, the MFA must come from the root idp.                                                                                    |
 | urn:{root_provider}:loa:1fa:psk        | root passkey auth is required. Can be combined with also requesting mfa                                                                                                                                        |
-| urn:{root_provider}:loa:idp:{idp_slug} | an authentication to an external idp is required. i.e. urn:{root_provider}:loa:idp:usa.ca.gov.dmv, where `urn:{root_provider}:loa:idp:usa.ca.gov.dmv` is the external idp of California DMV employee user base |
+| urn:{root_provider}:loa:idp:{idp_hint} | an authentication to an external idp is required. i.e. urn:{root_provider}:loa:idp:usa.ca.gov.dmv, where `urn:{root_provider}:loa:idp:usa.ca.gov.dmv` is the external idp of California DMV employee user base |
 
 ## ARM Terms
 
@@ -65,7 +65,7 @@ http://localhost:9044/oauth2/default/v1/authorize?client_id={clientId}
 | mfa:{type} | User used more than 1 factor or authentication. `mfa:sms`, `mfa:auth_app`, `mfa:psk`, `mfa:pwd` |
 | idp        | User was authenticated through IDP. Level of authentication on the idp is unknown               |
 
-Since there are no requirements around AMR. Depending on your model you could also encode the idp(s) as ARM values. i.e. `idp:{idp_slug}`. I would suggest doing both since `idp` as a first class claim seems to be everywhere.
+Since there are no requirements around AMR. Depending on your model you could also encode the idp(s) as ARM values. i.e. `idp:{idp_hint}`. I would suggest doing both since `idp` as a first class claim seems to be everywhere.
 
 ## ACR/AMR examples
 
@@ -84,30 +84,21 @@ Response id_token
 
 ```json
 {
-    "sub": "00u47ijy7sRLaeSdC0g7",
-    "ver": 1,
-    "iss": "https://{yourOktaDomain}/oauth2/default",
-    "aud": "0oa48e74ox4t7mQJX0g7",
-    "iat": 1661289624,
-    "exp": 1661293224,
-    "jti": "ID.dz6ibX-YnBNlt14huAtBULam_Z0_wPG0ig5SWCy8XQU",
-    "amr": [
-        "idp",
-        "mfa:auth_app"
-    ],
-    "acr": [
-        "urn:fluffyidp:loa:mfa:any",
-        "urn:fluffyidp:loa:idp:usa.ca.gov.dmv"
-    ],
-    "idp": [
-        "fluffyroot",
-        "usa.ca.gov.dmv"
-    ],
-    "auth_time": 1661289603,
-    "at_hash": "w6BLQV3642TKWvaVwTAJuw"
+  "sub": "00u47ijy7sRLaeSdC0g7",
+  "ver": 1,
+  "iss": "https://{yourOktaDomain}/oauth2/default",
+  "aud": "0oa48e74ox4t7mQJX0g7",
+  "iat": 1661289624,
+  "exp": 1661293224,
+  "jti": "ID.dz6ibX-YnBNlt14huAtBULam_Z0_wPG0ig5SWCy8XQU",
+  "amr": ["idp", "mfa:auth_app"],
+  "acr": ["urn:fluffyidp:loa:mfa:any", "urn:fluffyidp:loa:idp:usa.ca.gov.dmv"],
+  "idp": ["fluffyroot", "usa.ca.gov.dmv"],
+  "auth_time": 1661289603,
+  "at_hash": "w6BLQV3642TKWvaVwTAJuw"
 }
 ```
 
 Here we see the 2 idp's have vouched for the user. Also we see that the root idp honored a mfa request.
 
-Depending on your model you could also encode the idp(s) as ARM values. i.e. `idp:{idp_slug}`.
+Depending on your model you could also encode the idp(s) as ARM values. i.e. `idp:{idp_hint}`.

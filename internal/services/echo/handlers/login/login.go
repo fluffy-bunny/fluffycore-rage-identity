@@ -59,7 +59,7 @@ type LoginGetRequest struct {
 	RedirectURL string `param:"redirect_url" query:"redirect_url" form:"redirect_url" json:"redirect_url" xml:"redirect_url"`
 }
 type ExternalIDPAuthRequest struct {
-	IDPSlug string `param:"idp_slug" query:"idp_slug" form:"idp_slug" json:"idp_slug" xml:"idp_slug"`
+	IDPHint string `param:"idp_hint" query:"idp_hint" form:"idp_hint" json:"idp_hint" xml:"idp_hint"`
 }
 type LoginPostRequest struct {
 	Code     string `param:"code" query:"code" form:"code" json:"code" xml:"code"`

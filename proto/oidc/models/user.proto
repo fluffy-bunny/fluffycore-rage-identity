@@ -39,7 +39,7 @@ message PasswordUpdate {
 }
 message Identity {
     string subject = 1;
-    string idp_slug = 2;
+    string idp_hint = 2;
     string email = 3;
     bool email_verified = 4;
 }

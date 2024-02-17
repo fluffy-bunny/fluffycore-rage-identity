@@ -172,7 +172,7 @@ func EnsureCookieClaimsPrincipal(_ di.Container) echo.MiddlewareFunc {
 					Type:  fluffycore_echo_wellknown.ClaimTypeSubject,
 					Value: rootIdentity.Subject,
 				}, fluffycore_contracts_common.Claim{
-					Type:  "idp_slug",
+					Type:  "idp_hint",
 					Value: rootIdentity.IdpSlug,
 				}, fluffycore_contracts_common.Claim{
 					Type:  "email",
