@@ -6,14 +6,18 @@ reference: https://developers.onelogin.com/openid-connect/api/authorization-code
 import (
 	"fmt"
 	"net/http"
+	"regexp"
+	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/eko_gocache"
 	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
 	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/client"
+	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/idp"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
+	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
 	xid "github.com/rs/xid"
 	zerolog "github.com/rs/zerolog"
@@ -24,6 +28,7 @@ type (
 		scopedMemoryCache   fluffycore_contracts_common.IScopedMemoryCache
 		oidcFlowStore       contracts_eko_gocache.IOIDCFlowStore
 		clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer
+		idpServiceServer    proto_oidc_idp.IFluffyCoreIDPServiceServer
 	}
 )
 
@@ -33,13 +38,16 @@ func init() {
 	var _ contracts_handler.IHandler = stemService
 }
 
-func (s *service) Ctor(scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
+func (s *service) Ctor(
+	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
+	scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
 	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
 	oidcFlowStore contracts_eko_gocache.IOIDCFlowStore) (*service, error) {
 	return &service{
 		scopedMemoryCache:   scopedMemoryCache,
 		oidcFlowStore:       oidcFlowStore,
 		clientServiceServer: clientServiceServer,
+		idpServiceServer:    idpServiceServer,
 	}, nil
 }
 
@@ -96,6 +104,40 @@ func (s *service) Do(c echo.Context) error {
 		Request: model,
 	}
 
+	if fluffycore_utils.IsEmptyOrNil(model.ACRValues) {
+		acrValues := strings.Split(model.ACRValues, " ")
+
+		idpSlug := ""
+		rootCandidate := ""
+		for _, acrValue := range acrValues {
+			d, err := extractIdpSlug(acrValue)
+			if err == nil {
+				v, ok := d["idp_slug"]
+				if ok {
+					idpSlug = v
+				}
+			}
+			d, err = extractRootCandidate(acrValue)
+			if err == nil {
+				v, ok := d["user_id"]
+				if ok {
+					rootCandidate = v
+				}
+			}
+		}
+		log.Info().Str("idpSlug", idpSlug).Str("rootCandidate", rootCandidate).Msg("acrValues")
+		if !fluffycore_utils.IsEmptyOrNil(idpSlug) {
+			getIDPBySlugResponse, err := s.idpServiceServer.GetIDPBySlug(ctx, &proto_oidc_idp.GetIDPBySlugRequest{
+				Slug: idpSlug,
+			})
+			if err != nil ||
+				getIDPBySlugResponse == nil ||
+				getIDPBySlugResponse.Idp == nil {
+				idpSlug = ""
+			}
+		}
+	}
+
 	err := s.oidcFlowStore.StoreAuthorizationFinal(ctx, model.State, authorizationFinal)
 	if err != nil {
 		// redirect to error page
@@ -116,4 +158,49 @@ func (s *service) Do(c echo.Context) error {
 
 	//redirectPath := fmt.Sprintf("%s?redirect_uri=%s", wellknown_echo.OIDCLoginPath, encodedRedirect)
 	return c.Redirect(http.StatusFound, finalOIDCPath)
+}
+
+func extractIdpSlug(template string) (map[string]string, error) {
+	// Define the regular expression pattern
+	pattern := `^urn:mastodon:idp:([^:]+)?$`
+
+	// Compile the regular expression
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	// Match the template against the regular expression
+	match := re.FindStringSubmatch(template)
+	if match == nil {
+		return nil, fmt.Errorf("invalid template format")
+	}
+
+	// Extract and store the values
+	info := make(map[string]string)
+	info["idp_slug"] = match[1]
+
+	return info, nil
+}
+func extractRootCandidate(template string) (map[string]string, error) {
+	// Define the regular expression pattern
+	pattern := `^urn:mastodon:root_candidate:([^:]+)?$`
+
+	// Compile the regular expression
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	// Match the template against the regular expression
+	match := re.FindStringSubmatch(template)
+	if match == nil {
+		return nil, fmt.Errorf("invalid template format")
+	}
+
+	// Extract and store the values
+	info := make(map[string]string)
+	info["user_id"] = match[1]
+
+	return info, nil
 }

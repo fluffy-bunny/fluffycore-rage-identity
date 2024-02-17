@@ -58,6 +58,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
 		stemService.Ctor,
 		[]contracts_handler.HTTPVERB{
+			contracts_handler.GET,
 			contracts_handler.POST,
 		},
 		wellknown_echo.ExternalIDPPath,
@@ -70,10 +71,9 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type ExternalIDPAuthRequest struct {
-	Directive   string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
-	State       string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
-	IDPSlug     string `param:"idp_slug" query:"idp_slug" form:"idp_slug" json:"idp_slug" xml:"idp_slug"`
-	RedirectURL string `param:"redirect_url" query:"redirect_url" form:"redirect_url" json:"redirect_url" xml:"redirect_url"`
+	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
+	State     string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
+	IDPSlug   string `param:"idp_slug" query:"idp_slug" form:"idp_slug" json:"idp_slug" xml:"idp_slug"`
 }
 
 func (s *service) validateLoginGetRequest(model *ExternalIDPAuthRequest) error {
@@ -92,6 +92,7 @@ func (s *service) validateLoginGetRequest(model *ExternalIDPAuthRequest) error {
 	}
 	return nil
 }
+
 func (s *service) DoPost(c echo.Context) error {
 	r := c.Request()
 	rootPath := echo_utils.GetMyRootPath(c)
@@ -136,7 +137,6 @@ func (s *service) DoPost(c echo.Context) error {
 							CodeChallenge:         codeChallenge,
 							CodeChallengeMethod:   "S256",
 							CodeChallengeVerifier: verifier,
-							RedirectURL:           model.RedirectURL,
 							Directive:             model.Directive,
 							ParentState:           model.State,
 						},
@@ -175,7 +175,6 @@ func (s *service) DoPost(c echo.Context) error {
 							CodeChallenge:         codeChallenge,
 							CodeChallengeMethod:   "S256",
 							CodeChallengeVerifier: verifier,
-							RedirectURL:           model.RedirectURL,
 							Directive:             model.Directive,
 							ParentState:           model.State,
 						},
@@ -219,7 +218,6 @@ func (s *service) DoPost(c echo.Context) error {
 							//			CodeChallengeMethod:   "S256",
 							//			CodeChallengeVerifier: verifier,
 							Nonce:       nonce,
-							RedirectURL: model.RedirectURL,
 							Directive:   model.Directive,
 							ParentState: model.State,
 						},
@@ -286,8 +284,7 @@ func (s *service) Do(c echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 	switch r.Method {
-
-	case http.MethodPost:
+	case http.MethodGet, http.MethodPost:
 		return s.DoPost(c)
 	}
 	// return not found

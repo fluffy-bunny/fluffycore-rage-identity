@@ -11,6 +11,12 @@ const (
 	IdentityFound            string = "identity-found"
 )
 
+// urn prefixes
+const (
+	URNIdpPrefix     string = "urn:mastodon:idp:{idp_slug}"
+	URLRootCandidate string = "urn:mastodon:root_candidate:{user_id}"
+)
+
 type (
 	AuthorizationRequest struct {
 		ClientId            string `param:"client_id" query:"client_id" form:"client_id" json:"client_id" xml:"client_id"`
@@ -34,7 +40,6 @@ type (
 		State                 string `json:"state,omitempty"`
 		CodeChallengeVerifier string `json:"code_challenge_verifier,omitempty"`
 		Nonce                 string `json:"nonce,omitempty"`
-		RedirectURL           string `json:"redirect_url,omitempty"`
 		Directive             string `json:"directive,omitempty"`
 		ParentState           string `json:"parent_state,omitempty"`
 	}
