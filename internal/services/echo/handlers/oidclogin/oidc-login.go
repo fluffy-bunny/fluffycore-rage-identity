@@ -8,6 +8,7 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
+	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/identity"
 	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
@@ -22,7 +23,8 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
-		config *contracts_config.Config
+		config         *contracts_config.Config
+		passwordHasher contracts_identity.IPasswordHasher
 	}
 )
 
@@ -35,10 +37,12 @@ func init() {
 func (s *service) Ctor(
 	config *contracts_config.Config,
 	container di.Container,
+	passwordHasher contracts_identity.IPasswordHasher,
 ) (*service, error) {
 	return &service{
-		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
-		config:      config,
+		BaseHandler:    services_echo_handlers_base.NewBaseHandler(container),
+		config:         config,
+		passwordHasher: passwordHasher,
 	}, nil
 }
 
@@ -233,8 +237,11 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 	}
 
-	passwordValid, err := echo_utils.ComparePasswordHash(model.Password, user.Password.Hash)
-	if err != nil && !passwordValid {
+	err = s.passwordHasher.VerifyPassword(ctx, &contracts_identity.VerifyPasswordRequest{
+		Password:       model.Password,
+		HashedPassword: user.Password.Hash,
+	})
+	if err != nil {
 		log.Warn().Err(err).Msg("ComparePasswordHash")
 		errors = append(errors, NewErrorF("password", "password is invalid"))
 		return s.Render(c, http.StatusBadRequest, "views/oidclogin/index",

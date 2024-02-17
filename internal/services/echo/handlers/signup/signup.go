@@ -8,6 +8,7 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
+	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/identity"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
@@ -24,8 +25,8 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
-
-		config *contracts_config.Config
+		config         *contracts_config.Config
+		passwordHasher contracts_identity.IPasswordHasher
 	}
 )
 
@@ -38,12 +39,14 @@ func init() {
 func (s *service) Ctor(
 	container di.Container,
 	config *contracts_config.Config,
+	passwordHasher contracts_identity.IPasswordHasher,
 	userService proto_oidc_user.IFluffyCoreUserServiceServer,
 ) (*service, error) {
 
 	return &service{
-		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
-		config:      config,
+		BaseHandler:    services_echo_handlers_base.NewBaseHandler(container),
+		config:         config,
+		passwordHasher: passwordHasher,
 	}, nil
 }
 
@@ -217,7 +220,9 @@ func (s *service) DoPost(c echo.Context) error {
 				"idps": idps,
 			})
 	}
-	hash, err := echo_utils.GeneratePasswordHash(model.Password)
+	hashPasswordResponse, err := s.passwordHasher.HashPassword(ctx, &contracts_identity.HashPasswordRequest{
+		Password: model.Password,
+	})
 	if err != nil {
 		log.Error().Err(err).Msg("GeneratePasswordHash")
 		return c.Redirect(http.StatusFound, "/error")
@@ -230,7 +235,7 @@ func (s *service) DoPost(c echo.Context) error {
 			EmailVerified: false,
 		},
 		Password: &proto_oidc_models.Password{
-			Hash: hash,
+			Hash: hashPasswordResponse.HashedPassword,
 		},
 		State: proto_oidc_models.UserState_USER_STATE_PENDING,
 	}

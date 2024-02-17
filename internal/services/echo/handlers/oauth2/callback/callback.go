@@ -6,12 +6,14 @@ reference: https://github.com/go-oauth2/oauth2/blob/master/example/client/client
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_codeexchange "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/codeexchange"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
+	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/identity"
 	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
@@ -25,8 +27,8 @@ import (
 	echo "github.com/labstack/echo/v4"
 	jwxt "github.com/lestrrat-go/jwx/v2/jwt"
 	zerolog "github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 )
 
 type (
@@ -36,6 +38,7 @@ type (
 		githubCodeExchange      contracts_codeexchange.IGithubCodeExchange
 		genericOIDCCodeExchange contracts_codeexchange.IGenericOIDCCodeExchange
 		config                  *contracts_config.Config
+		userIdGenerator         contracts_identity.IUserIdGenerator
 	}
 )
 
@@ -50,6 +53,7 @@ func (s *service) Ctor(
 	config *contracts_config.Config,
 	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
 	githubCodeExchange contracts_codeexchange.IGithubCodeExchange,
+	userIdGenerator contracts_identity.IUserIdGenerator,
 	genericOIDCCodeExchange contracts_codeexchange.IGenericOIDCCodeExchange) (*service, error) {
 	return &service{
 		BaseHandler:             services_echo_handlers_base.NewBaseHandler(container),
@@ -57,6 +61,7 @@ func (s *service) Ctor(
 		githubCodeExchange:      githubCodeExchange,
 		genericOIDCCodeExchange: genericOIDCCodeExchange,
 		config:                  config,
+		userIdGenerator:         userIdGenerator,
 	}, nil
 }
 
@@ -113,6 +118,15 @@ func (s *service) Do(c echo.Context) error {
 	defer func() {
 		s.ExternalOauth2FlowStore().DeleteExternalOauth2Final(ctx, model.State)
 	}()
+	oidcFinalState, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, parentState)
+	if err != nil {
+		log.Error().Err(err).Msg("GetAuthorizationFinal")
+		redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
+			wellknown_echo.OIDCLoginPath,
+			parentState, models.InternalError)
+		return c.Redirect(http.StatusFound, redirectURL)
+	}
+
 	getIDPBySlugResponse, err := s.IdpServiceServer().GetIDPBySlug(ctx,
 		&proto_oidc_idp.GetIDPBySlugRequest{
 			Slug: externalOAuth2State.Request.IDPHint,
@@ -123,6 +137,21 @@ func (s *service) Do(c echo.Context) error {
 	}
 	var exchangeCodeResponse *contracts_codeexchange.ExchangeCodeResponse
 	idp := getIDPBySlugResponse.Idp
+
+	isMetadataBoolSet := func(key string, idp *proto_oidc_models.IDP) bool {
+		if fluffycore_utils.IsEmptyOrNil(idp.Metadata) {
+			return false
+		}
+		v, ok := idp.Metadata[key]
+		if ok {
+			// convert string to boolean
+			bVal, err := strconv.ParseBool(v)
+			if err == nil {
+				return bVal
+			}
+		}
+		return false
+	}
 	if idp.Protocol != nil {
 		log.Info().Interface("getIDPBySlugResponse", getIDPBySlugResponse).Msg("getIDPBySlugResponse")
 		switch idp.Protocol.Value.(type) {
@@ -212,15 +241,7 @@ func (s *service) Do(c echo.Context) error {
 
 		}
 		loginLinkedUser := func(user *proto_oidc_models.User) error {
-			// login this user.
-			oidcFinalState, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, parentState)
-			if err != nil {
-				log.Error().Err(err).Msg("GetAuthorizationFinal")
-				redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
-					wellknown_echo.OIDCLoginPath,
-					parentState, models.InternalError)
-				return c.Redirect(http.StatusFound, redirectURL)
-			}
+
 			oidcFinalState.Identity = &models.Identity{
 				Subject: user.RootIdentity.Subject,
 				Email:   user.RootIdentity.Email,
@@ -263,34 +284,105 @@ func (s *service) Do(c echo.Context) error {
 			user := listUserResponse.Users[0]
 			return loginLinkedUser(user)
 		}
+		linkUserAndLogin := func(candidateUserID string, externalIdentity *models.Identity) error {
+			getUserResponse, err := s.UserService().GetUser(ctx, &proto_oidc_user.GetUserRequest{
+				Subject: candidateUserID,
+			})
+			if err != nil {
+				log.Error().Err(err).Msg("GetUser")
+				redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
+					wellknown_echo.OIDCLoginPath,
+					parentState, models.InternalError)
+				return c.Redirect(http.StatusFound, redirectURL)
+			}
+			user := getUserResponse.User
+			if user == nil {
+				log.Error().Msg("user not found")
+				redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
+					wellknown_echo.OIDCLoginPath,
+					parentState, models.InternalError)
+				return c.Redirect(http.StatusFound, redirectURL)
+			}
+			_, err = s.UserService().LinkUsers(ctx, &proto_oidc_user.LinkUsersRequest{
+				RootSubject: candidateUserID,
+				ExternalIdentity: &proto_oidc_models.Identity{
+					Subject:       externalIdentity.Subject,
+					Email:         externalIdentity.Email,
+					IdpSlug:       externalOAuth2State.Request.IDPHint,
+					EmailVerified: externalIdentity.EmailVerified,
+				},
+			})
+			if err != nil {
+				log.Error().Err(err).Msg("LinkUsers")
+				redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
+					wellknown_echo.OIDCLoginPath,
+					parentState, models.InternalError)
 
+				return c.Redirect(http.StatusFound, redirectURL)
+			}
+			return loginLinkedUser(user)
+		}
 		// not found, redirect to OIDC LoginPage telling the user to do the signup dance
 		if externalOAuth2State.Request.Directive == models.LoginDirective {
-			// we don't store the external identity on a missed match.  User has to go through the trouble of a signup
+
+			// a perfect email match beats out a candidate user
+			//--------------------------------------------------------------------------------------------
 
 			// auto link if we get an email hit
 			user, err := getUserByEmail(externalIdentity.Email)
 			if err == nil && user != nil {
-				// link these accounts
-				_, err = s.UserService().LinkUsers(ctx, &proto_oidc_user.LinkUsersRequest{
-					RootSubject: user.RootIdentity.Subject,
-					ExternalIdentity: &proto_oidc_models.Identity{
-						Subject:       externalIdentity.Subject,
-						Email:         externalIdentity.Email,
-						IdpSlug:       externalOAuth2State.Request.IDPHint,
-						EmailVerified: externalIdentity.EmailVerified,
-					},
-				})
-				if err != nil {
-					log.Error().Err(err).Msg("LinkUsers")
-					redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
-						wellknown_echo.OIDCLoginPath,
-						parentState, models.InternalError)
-
-					return c.Redirect(http.StatusFound, redirectURL)
-				}
-				return loginLinkedUser(user)
+				// Perfect email match
+				//--------------------------------------------------------------------------------------------
+				return linkUserAndLogin(user.RootIdentity.Subject, externalIdentity)
 			} else {
+				// do we have a candidate user to link to?
+				if !fluffycore_utils.IsEmptyOrNil(oidcFinalState.Request.CandidateUserID) {
+					// CandidateUserID hint
+					//--------------------------------------------------------------------------------------------
+					return linkUserAndLogin(user.RootIdentity.Subject, externalIdentity)
+				}
+
+				// is AUTO-ACCOUNT creation enabled for this IDP?
+				if isMetadataBoolSet(models.Wellknown_IDP_Metadata_AutoCreate, idp) {
+					emailVerified := false
+					emailVerificationRequired := isMetadataBoolSet(models.Wellknown_IDP_Metadata_EmailVerificationRequired, idp)
+					if emailVerificationRequired {
+						if externalIdentity.EmailVerified {
+							emailVerified = true
+						}
+					} else {
+						emailVerified = true
+					}
+					createUserResponse, err := s.UserService().CreateUser(ctx,
+						&proto_oidc_user.CreateUserRequest{
+							User: &proto_oidc_models.User{
+								RootIdentity: &proto_oidc_models.Identity{
+									Subject:       s.userIdGenerator.GenerateUserId(),
+									IdpSlug:       models.WellknownIdpRoot,
+									Email:         externalIdentity.Email,
+									EmailVerified: emailVerified,
+								},
+								LinkedIdentities: &proto_oidc_models.LinkedIdentities{
+									Identities: []*proto_oidc_models.Identity{
+										{
+											Subject:       externalIdentity.Subject,
+											Email:         externalIdentity.Email,
+											IdpSlug:       externalOAuth2State.Request.IDPHint,
+											EmailVerified: externalIdentity.EmailVerified,
+										},
+									},
+								},
+							},
+						})
+					if err != nil {
+						log.Error().Err(err).Msg("CreateUser")
+						redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
+							wellknown_echo.OIDCLoginPath,
+							parentState, models.InternalError)
+						return c.Redirect(http.StatusFound, redirectURL)
+					}
+					return loginLinkedUser(createUserResponse.User)
+				}
 				// we bounce the user back to go through a sigunup flow
 				redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
 					wellknown_echo.OIDCLoginPath,
@@ -300,11 +392,6 @@ func (s *service) Do(c echo.Context) error {
 
 		}
 		if externalOAuth2State.Request.Directive == models.SignupDirective {
-			oidcFinalState, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, parentState)
-			if err != nil {
-				log.Error().Err(err).Msg("GetAuthorizationFinal")
-				return c.Redirect(http.StatusTemporaryRedirect, "/login?error=oidc_flow_store")
-			}
 			oidcFinalState.Directive = models.SignupDirective
 			oidcFinalState.ExternalIdentity = externalIdentity
 			err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, parentState, oidcFinalState)

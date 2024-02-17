@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/mail"
 
-	argon2id "github.com/alexedwards/argon2id"
 	echo "github.com/labstack/echo/v4"
 	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
 )
@@ -22,16 +21,7 @@ func IsValidEmailAddress(address string) (string, bool) {
 	}
 	return addr.Address, true
 }
-func GeneratePasswordHash(password string) (string, error) {
-	hash, err := argon2id.CreateHash(password, argon2id.DefaultParams)
-	if err != nil {
-		return "", err
-	}
-	return hash, nil
-}
-func ComparePasswordHash(password string, hash string) (bool, error) {
-	return argon2id.ComparePasswordAndHash(password, hash)
-}
+
 func DeleteCookie(c echo.Context, name string) {
 	cookie := &http.Cookie{
 		Name:   name,

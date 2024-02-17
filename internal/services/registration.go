@@ -13,6 +13,8 @@ import (
 	services_client_inmemory "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/client/inmemory"
 	services_codeexchanges_genericoidc "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/codeexchanges/genericoidc"
 	services_codeexchanges_github "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/codeexchanges/github"
+	services_identity_passwordhasher "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/identity/passwordhasher"
+	services_identity_userid "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/identity/userid"
 	services_idp_inmemory "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/idp/inmemory"
 	services_oauth2factory "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/oauth2factory"
 	services_oauth2flowstore "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/oauth2flowstore"
@@ -47,6 +49,8 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	services_codeexchanges_genericoidc.AddSingletonIGenericOIDCCodeExchange(builder)
 	services_oidcproviderfactory.AddSingletonIOIDCProviderFactory(builder)
 	services_util.AddSingletonISomeUtil(builder)
+	services_identity_passwordhasher.AddSingletonIPasswordHasher(builder)
+	services_identity_userid.AddSingletonIUserIdGenerator(builder)
 	switch config.BackingCache.Type {
 	case contracts_config.BackingCacheTypeInMemory:
 		inMemoryOptions := &fluffycore_services_eko_gocache_go_cache.InMemoryCacheOptions{

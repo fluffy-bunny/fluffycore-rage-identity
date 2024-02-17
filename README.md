@@ -186,4 +186,7 @@ go build .
 
 .\oidc-client.exe serve --acr_values "urn:mastodon:idp:google-social"   --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
 
+.\oidc-client.exe serve --acr_values "urn:mastodon:idp:mapped-enterprise" --acr_values "urn:mastodon:root_candidate:cn8cp8khb6334r4ri1bg"  --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
+
+.\oidc-client.exe serve --acr_values "urn:mastodon:idp:mapped-enterprise"  --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
 ```

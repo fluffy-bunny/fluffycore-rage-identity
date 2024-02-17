@@ -7,6 +7,7 @@ import (
 	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/identity"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
@@ -23,6 +24,7 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
+		passwordHasher contracts_identity.IPasswordHasher
 	}
 )
 
@@ -32,9 +34,10 @@ func init() {
 	var _ contracts_handler.IHandler = stemService
 }
 
-func (s *service) Ctor(container di.Container) (*service, error) {
+func (s *service) Ctor(container di.Container, passwordHasher contracts_identity.IPasswordHasher) (*service, error) {
 	return &service{
-		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:    services_echo_handlers_base.NewBaseHandler(container),
+		passwordHasher: passwordHasher,
 	}, nil
 }
 
@@ -183,8 +186,11 @@ func (s *service) DoPost(c echo.Context) error {
 				"defs": []*Error{NewErrorF("username", "username:%s does not have a password", model.UserName)},
 			})
 	}
-	passwordValid, err := echo_utils.ComparePasswordHash(model.Password, user.Password.Hash)
-	if err != nil && !passwordValid {
+	err = s.passwordHasher.VerifyPassword(ctx, &contracts_identity.VerifyPasswordRequest{
+		Password:       model.Password,
+		HashedPassword: user.Password.Hash,
+	})
+	if err != nil {
 		log.Warn().Err(err).Msg("ComparePasswordHash")
 		redirectUrl := rootPath + "/login?redirect_url=" + loginGetRequest.RedirectURL
 		return c.Redirect(http.StatusFound, redirectUrl)

@@ -16,6 +16,7 @@
       },
       "metadata": {
         "hidden": "false",
+        "email_verification_required": "true",
         "icon": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
       }
     },
@@ -33,6 +34,7 @@
       },
       "metadata": {
         "hidden": "false",
+        "email_verification_required": "true",
         "image_ref": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
       }
     },
@@ -52,7 +54,8 @@
       },
       "metadata": {
         "hidden": "true",
-        "image_ref": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
+        "email_verification_required": "false",
+        "auto_create": "true"
       }
     }
   ]
