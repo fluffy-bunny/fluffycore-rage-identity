@@ -48,6 +48,7 @@ require (
 	github.com/DataDog/sketches-go v1.4.2 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
+	github.com/NoteToScreen/maily-go v0.0.0-20210828030214-7b4db6a4ffb5 // indirect
 	github.com/andybalholm/brotli v1.0.6 // indirect
 	github.com/auth0/go-jwt-middleware/v2 v2.2.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect

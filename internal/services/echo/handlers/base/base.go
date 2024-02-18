@@ -109,8 +109,8 @@ func (b *BaseHandler) getExternalOauth2FlowStore() contracts_eko_gocache.IExtern
 func (b *BaseHandler) Render(c echo.Context, code int, name string, data map[string]interface{}) error {
 	localizer := b.Localizer().GetLocalizer()
 	data["LocalizeMessage"] = func(key string) string {
-		loginMsg, _ := localizer.LocalizeMessage(&i18n.Message{ID: key})
-		return loginMsg
+		message, _ := localizer.LocalizeMessage(&i18n.Message{ID: key})
+		return message
 	}
 	data["isAuthenticated"] = func() bool {
 		if b.ClaimsPrincipal == nil {

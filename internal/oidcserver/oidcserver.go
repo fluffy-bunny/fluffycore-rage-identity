@@ -7,6 +7,7 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
+	contracts_email "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/email"
 	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
 	services "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services"
 	services_handlers_about "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/about"
@@ -25,22 +26,23 @@ import (
 	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/swagger"
 	services_handlers_token_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/token_endpoint"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
-	services_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/localizer"
-	services_localizerbundle "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/localizerbundle"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
 	contracts_startup "github.com/fluffy-bunny/fluffycore/echo/contracts/startup"
 	services_startup "github.com/fluffy-bunny/fluffycore/echo/services/startup"
+	fluffycore_echo_templates "github.com/fluffy-bunny/fluffycore/echo/templates"
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	echo "github.com/labstack/echo/v4"
-	log "github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
+	zlog "github.com/rs/zerolog/log"
 )
 
 type (
 	startup struct {
 		services_startup.StartupBase
 		config *contracts_config.Config
+		log    zerolog.Logger
 	}
 )
 
@@ -58,6 +60,7 @@ func (s *startup) GetConfigOptions() *fluffycore_contracts_runtime.ConfigOptions
 func NewStartup() contracts_startup.IStartup {
 	myStartup := &startup{
 		config: &contracts_config.Config{},
+		log:    zlog.With().Str("runtime", "oidcserver").Caller().Logger(),
 	}
 	hooks := &contracts_startup.Hooks{
 		PostBuildHook:   myStartup.PostBuildHook,
@@ -76,22 +79,31 @@ func (s *startup) ConfigureServices(builder di.ContainerBuilder) error {
 	})
 	s.addAppHandlers(builder)
 	services.ConfigureServices(context.TODO(), s.config, builder)
-	services_localizerbundle.AddSingletonILocalizerBundle(builder)
-	services_localizer.AddScopedILocalizer(builder)
 	return nil
 }
 
 func (s *startup) PreStartHook(echo *echo.Echo) error {
-	log.Info().Msg("PreStartHook")
+	s.log.Info().Msg("PreStartHook")
 
 	return nil
 }
 func (s *startup) PostBuildHook(container di.Container) error {
-	log.Info().Msg("PostBuildHook")
+	s.log.Info().Msg("PostBuildHook")
+	emailRenderer := di.Get[contracts_email.IEmailRenderer](container)
+	templateEngine, err := fluffycore_echo_templates.FindAndParseTemplates("./static/templates_email", nil)
+	if err != nil {
+		s.log.Error().Err(err).Msg("failed to parse email templates")
+		return err
+	}
+	err = emailRenderer.SetTemplateEngine(templateEngine)
+	if err != nil {
+		s.log.Error().Err(err).Msg("failed to set email template engine")
+		return err
+	}
 	return nil
 }
 func (s *startup) PreShutdownHook(echo *echo.Echo) error {
-	log.Info().Msg("PreShutdownHook")
+	s.log.Info().Msg("PreShutdownHook")
 	return nil
 }
 func (s *startup) addAppHandlers(builder di.ContainerBuilder) {

@@ -13,9 +13,13 @@ import (
 	services_client_inmemory "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/client/inmemory"
 	services_codeexchanges_genericoidc "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/codeexchanges/genericoidc"
 	services_codeexchanges_github "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/codeexchanges/github"
+	services_email "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/email"
+	services_emailrenderer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/emailrenderer"
 	services_identity_passwordhasher "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/identity/passwordhasher"
 	services_identity_userid "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/identity/userid"
 	services_idp_inmemory "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/idp/inmemory"
+	services_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/localizer"
+	services_localizerbundle "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/localizerbundle"
 	services_oauth2factory "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/oauth2factory"
 	services_oauth2flowstore "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/oauth2flowstore"
 	services_oidcflowstore "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/oidcflowstore"
@@ -94,6 +98,10 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 		fluffycore_services_jwtminter.AddSingletonIJWTMinter(builder)
 	}
 	addJwtMinter()
+	services_localizerbundle.AddSingletonILocalizerBundle(builder)
+	services_localizer.AddScopedILocalizer(builder)
+	services_email.AddScopedIEmailService(builder)
+	services_emailrenderer.AddSingletonIEmailRenderer(builder)
 }
 func OnConfigureServicesLoadIDPs(ctx context.Context, config *contracts_config.Config, builder di.ContainerBuilder) error {
 	log := zerolog.Ctx(ctx).With().Str("method", "OnConfigureServicesLoadIDPs").Logger()
