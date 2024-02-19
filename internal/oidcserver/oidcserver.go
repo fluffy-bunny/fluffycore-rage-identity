@@ -7,7 +7,6 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
-	contracts_email "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/email"
 	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
 	services "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services"
 	services_handlers_about "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/about"
@@ -31,10 +30,9 @@ import (
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
 	contracts_startup "github.com/fluffy-bunny/fluffycore/echo/contracts/startup"
 	services_startup "github.com/fluffy-bunny/fluffycore/echo/services/startup"
-	fluffycore_echo_templates "github.com/fluffy-bunny/fluffycore/echo/templates"
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	echo "github.com/labstack/echo/v4"
-	"github.com/rs/zerolog"
+	zerolog "github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
 )
 
@@ -89,17 +87,6 @@ func (s *startup) PreStartHook(echo *echo.Echo) error {
 }
 func (s *startup) PostBuildHook(container di.Container) error {
 	s.log.Info().Msg("PostBuildHook")
-	emailRenderer := di.Get[contracts_email.IEmailRenderer](container)
-	templateEngine, err := fluffycore_echo_templates.FindAndParseTemplates("./static/templates_email", nil)
-	if err != nil {
-		s.log.Error().Err(err).Msg("failed to parse email templates")
-		return err
-	}
-	err = emailRenderer.SetTemplateEngine(templateEngine)
-	if err != nil {
-		s.log.Error().Err(err).Msg("failed to set email template engine")
-		return err
-	}
 	return nil
 }
 func (s *startup) PreShutdownHook(echo *echo.Echo) error {

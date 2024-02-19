@@ -15,6 +15,7 @@ import (
 type (
 	service struct {
 		localizer contracts_localizer.ILocalizer
+		config    *contracts_email.EmailConfig
 	}
 )
 
@@ -23,9 +24,10 @@ var stemService = (*service)(nil)
 func init() {
 	var _ contracts_email.IEmailService = stemService
 }
-func (s *service) Ctor(localizer contracts_localizer.ILocalizer) (contracts_email.IEmailService, error) {
+func (s *service) Ctor(config *contracts_email.EmailConfig, localizer contracts_localizer.ILocalizer) (contracts_email.IEmailService, error) {
 	return &service{
 		localizer: localizer,
+		config:    config,
 	}, nil
 }
 

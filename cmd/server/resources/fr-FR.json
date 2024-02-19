@@ -1,5 +1,7 @@
 {
   "hello": "Bonjour!",
-  "login": "connectez-vous",
-  "signup": "Sign Up"
+  "login": "Se connecter",
+  "signup": "S'inscrire",
+  "email/account/footer/message": "You received this email because you have a Rage Identity account. Manage your account at <a href=\"http://localhost:9044\">fluffycore.rage.identity</a>. You can also reach out to <a href=\"mailto:rage@test.com\">rageidentidy admin</a> for no help at all.",
+  "email/account/verificationCode": "Verification Code"
 }

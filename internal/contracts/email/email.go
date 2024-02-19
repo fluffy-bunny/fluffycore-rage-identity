@@ -26,8 +26,22 @@ type (
 		Html string
 		Text string
 	}
+
+	PlainAuth struct {
+		Identity string `json:"identity"`
+		Username string `json:"username"`
+		Password string `json:"password"`
+		Host     string `json:"host"`
+	}
+	Auth struct {
+		PlainAuth *PlainAuth `json:"plainAuth"`
+	}
+	EmailConfig struct {
+		TemplateEngine *template.Template
+		Host           string `json:"host"`
+		Auth           *Auth  `json:"auth"`
+	}
 	IEmailRenderer interface {
 		RenderEmail(ctx context.Context, request *RenderEmailRequest) (*RenderEmailResponse, error)
-		SetTemplateEngine(templateEngine *template.Template) error
 	}
 )

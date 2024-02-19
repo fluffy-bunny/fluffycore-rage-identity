@@ -7,6 +7,7 @@ import (
 	"os"
 
 	about "github.com/fluffy-bunny/fluffycore-rage-oidc/cmd/oidc-client/cmd/about"
+	email "github.com/fluffy-bunny/fluffycore-rage-oidc/cmd/oidc-client/cmd/email"
 	serve "github.com/fluffy-bunny/fluffycore-rage-oidc/cmd/oidc-client/cmd/serve"
 	version "github.com/fluffy-bunny/fluffycore-rage-oidc/cmd/oidc-client/cmd/version"
 	cobra "github.com/spf13/cobra"
@@ -50,4 +51,5 @@ func init() {
 	about.InitCommand(rootCmd)
 	version.InitCommand(rootCmd)
 	serve.InitCommand(rootCmd)
+	email.InitCommand(rootCmd)
 }

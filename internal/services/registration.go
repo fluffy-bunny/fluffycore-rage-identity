@@ -10,6 +10,7 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/eko_gocache"
+	contracts_email "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/email"
 	services_client_inmemory "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/client/inmemory"
 	services_codeexchanges_genericoidc "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/codeexchanges/genericoidc"
 	services_codeexchanges_github "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/codeexchanges/github"
@@ -29,6 +30,7 @@ import (
 	services_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/util"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
 	fluffycore_contracts_jwtminter "github.com/fluffy-bunny/fluffycore/contracts/jwtminter"
+	fluffycore_echo_templates "github.com/fluffy-bunny/fluffycore/echo/templates"
 	fluffycore_services_eko_gocache_go_cache "github.com/fluffy-bunny/fluffycore/services/eko_gocache/go_cache"
 	fluffycore_services_jwtminter "github.com/fluffy-bunny/fluffycore/services/jwtminter"
 	fluffycore_services_keymaterial "github.com/fluffy-bunny/fluffycore/services/keymaterial"
@@ -39,7 +41,7 @@ import (
 
 // put all services you want shared between the echo and grpc servers here
 // NOTE: they are NOT the same instance, but they are the same type in context of the server.
-func ConfigureServices(ctx context.Context, config *contracts_config.Config, builder di.ContainerBuilder) {
+func ConfigureServices(ctx context.Context, config *contracts_config.Config, builder di.ContainerBuilder) error {
 
 	log := zerolog.Ctx(ctx).With().Str("method", "Configure").Logger()
 	// this has to be added FIRST as it sets up the default inmemory version of the IClient stores
@@ -98,10 +100,19 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 		fluffycore_services_jwtminter.AddSingletonIJWTMinter(builder)
 	}
 	addJwtMinter()
+	templateEngine, err := fluffycore_echo_templates.FindAndParseTemplates("./static/templates_email", nil)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to parse email templates")
+		return err
+	}
+	config.EmailConfig.TemplateEngine = templateEngine
+	di.AddInstance[*contracts_email.EmailConfig](builder, config.EmailConfig)
+
 	services_localizerbundle.AddSingletonILocalizerBundle(builder)
 	services_localizer.AddScopedILocalizer(builder)
 	services_email.AddScopedIEmailService(builder)
 	services_emailrenderer.AddSingletonIEmailRenderer(builder)
+	return nil
 }
 func OnConfigureServicesLoadIDPs(ctx context.Context, config *contracts_config.Config, builder di.ContainerBuilder) error {
 	log := zerolog.Ctx(ctx).With().Str("method", "OnConfigureServicesLoadIDPs").Logger()

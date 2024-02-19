@@ -37,6 +37,15 @@
             "program": "${workspaceFolder}/cmd/gotp",
              
             "args": [ "" ]        
+        },
+        {
+            "name": "email",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/oidc-client",
+             
+            "args": [ "email" ]        
         }
     ]
 }
