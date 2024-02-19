@@ -9,7 +9,7 @@ import (
 	"net/smtp"
 
 	mailyak "github.com/domodwyer/mailyak/v3"
-	"github.com/fluffy-bunny/fluffycore-rage-oidc/cmd/oidc-client/shared"
+	shared "github.com/fluffy-bunny/fluffycore-rage-oidc/cmd/oidc-client/shared"
 	cobra_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/cobra_utils"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	cobra "github.com/spf13/cobra"

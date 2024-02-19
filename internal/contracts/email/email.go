@@ -7,11 +7,11 @@ import (
 
 type (
 	SendEmailRequest struct {
-		ToEmail   string
-		FromEmail string
-		SubjectId string
-		Template  string
-		Data      map[string]interface{}
+		ToEmail      string
+		SubjectId    string
+		HtmlTemplate string
+		TextTemplate string
+		Data         map[string]interface{}
 	}
 	SendEmailResponse struct {
 	}
@@ -19,8 +19,9 @@ type (
 		SendEmail(ctx context.Context, request *SendEmailRequest) (*SendEmailResponse, error)
 	}
 	RenderEmailRequest struct {
-		Template string
-		Data     map[string]interface{}
+		HtmlTemplate string
+		TextTemplate string
+		Data         map[string]interface{}
 	}
 	RenderEmailResponse struct {
 		Html string
@@ -40,6 +41,8 @@ type (
 		TemplateEngine *template.Template
 		Host           string `json:"host"`
 		Auth           *Auth  `json:"auth"`
+		FromName       string `json:"fromName"`
+		FromEmail      string `json:"fromEmail"`
 	}
 	IEmailRenderer interface {
 		RenderEmail(ctx context.Context, request *RenderEmailRequest) (*RenderEmailResponse, error)

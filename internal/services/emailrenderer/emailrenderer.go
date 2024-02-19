@@ -1,6 +1,7 @@
 package emailrenderer
 
 import (
+	"bytes"
 	"context"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
@@ -37,13 +38,15 @@ func (s *service) validateRenderEmailRequest(request *contracts_email.RenderEmai
 	if request.Data == nil {
 		request.Data = make(map[string]interface{})
 	}
-	if fluffycore_utils.IsEmptyOrNil(request.Template) {
-		return status.Error(codes.InvalidArgument, "TemplateId is empty")
+	if fluffycore_utils.IsEmptyOrNil(request.HtmlTemplate) {
+		return status.Error(codes.InvalidArgument, "HtmlTemplate is empty")
+	}
+	if fluffycore_utils.IsEmptyOrNil(request.TextTemplate) {
+		return status.Error(codes.InvalidArgument, "TextTemplate is empty")
 	}
 	if fluffycore_utils.IsEmptyOrNil(request.Data) {
 		return status.Error(codes.InvalidArgument, "Data is empty")
 	}
-
 	return nil
 }
 func (s *service) RenderEmail(ctx context.Context, request *contracts_email.RenderEmailRequest) (*contracts_email.RenderEmailResponse, error) {
@@ -51,5 +54,21 @@ func (s *service) RenderEmail(ctx context.Context, request *contracts_email.Rend
 	if err != nil {
 		return nil, err
 	}
-	return &contracts_email.RenderEmailResponse{}, nil
+	streamWriter := new(bytes.Buffer)
+	err = s.config.TemplateEngine.ExecuteTemplate(streamWriter, request.HtmlTemplate, request.Data)
+	if err != nil {
+		return nil, err
+	}
+	html := streamWriter.Bytes()
+
+	streamWriter = new(bytes.Buffer)
+	err = s.config.TemplateEngine.ExecuteTemplate(streamWriter, request.TextTemplate, request.Data)
+	if err != nil {
+		return nil, err
+	}
+	text := streamWriter.Bytes()
+	return &contracts_email.RenderEmailResponse{
+		Html: string(html),
+		Text: string(text),
+	}, nil
 }

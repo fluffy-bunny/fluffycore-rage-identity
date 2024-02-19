@@ -85,6 +85,8 @@ const configDefaultJSONTemplate = `
 	"autolinkOnEmailMatch": true,
 	"emailVerificationRequired": true,
 	"emailConfig": {
+		"fromName": "[in-environment]",
+		"fromEmail": "[in-environment]@example.com",
 		"host": "localhost:25",
 		"auth": {
 			"plainAuth": {
