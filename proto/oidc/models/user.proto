@@ -39,7 +39,7 @@ message PasswordUpdate {
 }
 message Identity {
     string subject = 1;
-    string idp_hint = 2;
+    string idp_slug = 2;
     string email = 3;
     bool email_verified = 4;
 }
@@ -51,6 +51,8 @@ message LinkedIdentities{
 message IdentityUpdate {
     string subject = 1;
     google.protobuf.StringValue email = 3;
+    google.protobuf.BoolValue email_verified = 4;
+
 }
 
 

@@ -11,6 +11,9 @@ import (
 const (
 	HomePath                        = "/"
 	LoginPath                       = "/login"
+	ForgotPasswordPath              = "/forgot-password"
+	PasswordResetPath               = "/password-reset"
+	VerifyCodePath                  = "/verify-code"
 	LogoutPath                      = "/logout"
 	ProfilePath                     = "/profile"
 	OIDCLoginPath                   = "/oidc-login"
@@ -30,24 +33,30 @@ const (
 )
 
 type Paths struct {
-	Home      string
-	About     string
-	Login     string
-	Logout    string
-	Profile   string
-	OIDCLogin string
-	Signup    string
+	Home           string
+	About          string
+	Login          string
+	Logout         string
+	Profile        string
+	OIDCLogin      string
+	Signup         string
+	ForgotPassword string
+	VerifyCode     string
+	PasswordReset  string
 }
 
 func NewPaths() *Paths {
 	return &Paths{
-		Home:      HomePath,
-		About:     AboutPath,
-		Login:     LoginPath,
-		Logout:    LogoutPath,
-		Profile:   ProfilePath,
-		OIDCLogin: OIDCLoginPath,
-		Signup:    SignupPath,
+		Home:           HomePath,
+		About:          AboutPath,
+		Login:          LoginPath,
+		Logout:         LogoutPath,
+		Profile:        ProfilePath,
+		OIDCLogin:      OIDCLoginPath,
+		Signup:         SignupPath,
+		ForgotPassword: ForgotPasswordPath,
+		VerifyCode:     VerifyCodePath,
+		PasswordReset:  PasswordResetPath,
 	}
 }
 

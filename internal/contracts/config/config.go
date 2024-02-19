@@ -7,6 +7,7 @@ import (
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
 	fluffycore_contracts_config "github.com/fluffy-bunny/fluffycore/contracts/config"
 	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
+	fluffycore_echo_contracts_cookies "github.com/fluffy-bunny/fluffycore/echo/contracts/cookies"
 )
 
 type (
@@ -28,7 +29,9 @@ type (
 	}
 )
 type EchoConfig struct {
-	Port int `json:"port"`
+	Port                 int                                                    `json:"port"`
+	SecureCookies        *fluffycore_echo_contracts_cookies.SecureCookiesConfig `json:"secureCookies"`
+	DisableSecureCookies bool                                                   `json:"disableSecureCookies"`
 }
 
 const (
@@ -56,7 +59,7 @@ type Config struct {
 	OAuth2Port       int                                     `json:"oauth2Port"`
 	JWTValidators    JWTValidators                           `json:"jwtValidators"`
 	DDProfilerConfig *fluffycore_contracts_ddprofiler.Config `json:"ddProfilerConfig"`
-	Echo             EchoConfig                              `json:"echo"`
+	Echo             *EchoConfig                             `json:"echo"`
 	InMemoryClients  InMemoryClients                         `json:"inMemoryClients"`
 	// BaseUrl is the base url for the application.  Hardened as opposed to getting it from the request
 	BaseUrl                   string                       `json:"baseUrl"`
@@ -80,13 +83,13 @@ const configDefaultJSONTemplate = `
 	"customString": "some default value",
 	"someSecret": "password",
 	"GRPC_GATEWAY_ENABLED": true,
-	"baseUrl": "[in-environment]",
+	"baseUrl": "IN_ENVIRONMENT",
 	"jwtValidators": {},
 	"autolinkOnEmailMatch": true,
 	"emailVerificationRequired": true,
 	"emailConfig": {
-		"fromName": "[in-environment]",
-		"fromEmail": "[in-environment]@example.com",
+		"fromName": "IN_ENVIRONMENT",
+		"fromEmail": "IN_ENVIRONMENT@example.com",
 		"host": "localhost:25",
 		"auth": {
 			"plainAuth": {
@@ -117,7 +120,12 @@ const configDefaultJSONTemplate = `
 		"VERSION": "1.0.0"
 	},
 	"echo": {
-		"port": 9044 
+		"port": 9044,
+		"disableSecureCookies": false,
+		"secureCookies": {
+			"hashKey": "7f6a8b9c0d1e2f3a4b5c6d7e8f9a0b1c",
+			"blockKey": "1234567890abcdef1234567890abcdef"
+		}
 	},
 	"inMemoryClients": {
 		"clients": []

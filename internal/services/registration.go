@@ -14,6 +14,7 @@ import (
 	services_client_inmemory "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/client/inmemory"
 	services_codeexchanges_genericoidc "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/codeexchanges/genericoidc"
 	services_codeexchanges_github "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/codeexchanges/github"
+	services_cookies "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/cookies"
 	services_email "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/email"
 	services_emailrenderer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/emailrenderer"
 	services_identity_passwordhasher "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/identity/passwordhasher"
@@ -30,6 +31,8 @@ import (
 	services_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/util"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
 	fluffycore_contracts_jwtminter "github.com/fluffy-bunny/fluffycore/contracts/jwtminter"
+	fluffycore_echo_services_cookies_insecure "github.com/fluffy-bunny/fluffycore/echo/services/cookies/insecure"
+	fluffycore_echo_services_cookies_secure "github.com/fluffy-bunny/fluffycore/echo/services/cookies/secure"
 	fluffycore_echo_templates "github.com/fluffy-bunny/fluffycore/echo/templates"
 	fluffycore_services_eko_gocache_go_cache "github.com/fluffy-bunny/fluffycore/services/eko_gocache/go_cache"
 	fluffycore_services_jwtminter "github.com/fluffy-bunny/fluffycore/services/jwtminter"
@@ -108,10 +111,14 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	config.EmailConfig.TemplateEngine = templateEngine
 	di.AddInstance[*contracts_email.EmailConfig](builder, config.EmailConfig)
 
+	di.AddInstance[*contracts_config.EchoConfig](builder, config.Echo)
 	services_localizerbundle.AddSingletonILocalizerBundle(builder)
 	services_localizer.AddScopedILocalizer(builder)
 	services_email.AddScopedIEmailService(builder)
 	services_emailrenderer.AddSingletonIEmailRenderer(builder)
+	fluffycore_echo_services_cookies_insecure.AddCookies(builder)
+	fluffycore_echo_services_cookies_secure.AddSecureCookies(builder, config.Echo.SecureCookies)
+	services_cookies.AddSingletonIWellknownCookies(builder)
 	return nil
 }
 func OnConfigureServicesLoadIDPs(ctx context.Context, config *contracts_config.Config, builder di.ContainerBuilder) error {

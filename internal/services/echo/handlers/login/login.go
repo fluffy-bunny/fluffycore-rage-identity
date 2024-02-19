@@ -159,15 +159,16 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 	model.UserName = strings.ToLower(model.UserName)
 	// does the user exist.
-	listUserResponse, err := s.UserService().ListUser(ctx, &proto_oidc_user.ListUserRequest{
-		Filter: &proto_oidc_user.Filter{
-			RootIdentity: &proto_oidc_user.IdentityFilter{
-				Email: &proto_types.StringFilterExpression{
-					Eq: model.UserName,
+	listUserResponse, err := s.UserService().ListUser(ctx,
+		&proto_oidc_user.ListUserRequest{
+			Filter: &proto_oidc_user.Filter{
+				RootIdentity: &proto_oidc_user.IdentityFilter{
+					Email: &proto_types.StringFilterExpression{
+						Eq: model.UserName,
+					},
 				},
 			},
-		},
-	})
+		})
 	if err != nil {
 		log.Warn().Err(err).Msg("ListUser")
 		return c.Redirect(http.StatusFound, "/login")

@@ -4,8 +4,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/mail"
+	"time"
 
 	echo "github.com/labstack/echo/v4"
 	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
@@ -52,4 +54,16 @@ func GetCookieInterface(c echo.Context, name string, v any) error {
 func GetLocalizerFromEchoContext(b *i18n.Bundle, e echo.Context) *i18n.Localizer {
 	accept := e.Request().Header.Get("Accept-Language")
 	return i18n.NewLocalizer(b, accept)
+}
+
+const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
+
+func GenerateRandomAlphaNumericString(length int) string {
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[seededRand.Intn(len(charset))]
+	}
+	return string(b)
 }

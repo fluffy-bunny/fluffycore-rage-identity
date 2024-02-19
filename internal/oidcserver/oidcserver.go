@@ -14,6 +14,7 @@ import (
 	services_handlers_discovery_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/discovery_endpoint"
 	services_handlers_error "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/error"
 	services_handlers_externalidp "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/externalidp"
+	services_handlers_forgotpassword "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/forgotpassword"
 	services_handlers_healthz "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/healthz"
 	services_handlers_home "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/home"
 	services_handlers_jwks_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/jwks_endpoint"
@@ -24,6 +25,7 @@ import (
 	services_handlers_signup "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/signup"
 	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/swagger"
 	services_handlers_token_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/token_endpoint"
+	services_handlers_verifycode "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/verifycode"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
@@ -110,6 +112,8 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_authorization_endpoint.AddScopedIHandler(builder)
 	services_handlers_token_endpoint.AddScopedIHandler(builder)
 	services_handlers_oauth2_callback.AddScopedIHandler(builder)
+	services_handlers_forgotpassword.AddScopedIHandler(builder)
+	services_handlers_verifycode.AddScopedIHandler(builder)
 }
 func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 	// i.e. e.Static("/css", "./css")

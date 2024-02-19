@@ -2,7 +2,7 @@ module github.com/fluffy-bunny/fluffycore-rage-oidc
 
 go 1.22
 
-//replace github.com/fluffy-bunny/fluffycore => ../fluffycore
+replace github.com/fluffy-bunny/fluffycore => ../fluffycore
 
 //replace github.com/fluffy-bunny/viperEx => ../ViperEx
 
@@ -10,6 +10,7 @@ require (
 	github.com/ahmetb/go-linq/v3 v3.2.0
 	github.com/alexedwards/argon2id v1.0.0
 	github.com/coreos/go-oidc/v3 v3.9.0
+	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/eko/gocache/lib/v4 v4.1.5
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.1
 	github.com/fluffy-bunny/fluffycore v1.0.69
@@ -24,6 +25,7 @@ require (
 	github.com/reugn/async v0.7.0
 	github.com/rs/xid v1.5.0
 	github.com/rs/zerolog v1.32.0
+	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggo/echo-swagger v1.4.1
 	github.com/swaggo/swag v1.16.3
@@ -48,7 +50,6 @@ require (
 	github.com/DataDog/sketches-go v1.4.2 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
-	github.com/NoteToScreen/maily-go v0.0.0-20210828030214-7b4db6a4ffb5 // indirect
 	github.com/andybalholm/brotli v1.0.6 // indirect
 	github.com/auth0/go-jwt-middleware/v2 v2.2.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -56,7 +57,6 @@ require (
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.2.0 // indirect
-	github.com/domodwyer/mailyak/v3 v3.6.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/ebitengine/purego v0.5.2 // indirect
 	github.com/eko/gocache/store/go_cache/v4 v4.2.1 // indirect
@@ -82,6 +82,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/pprof v0.0.0-20231229205709-960ae82b1e42 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault-5 // indirect
@@ -133,7 +134,6 @@ require (
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
-	github.com/spf13/cobra v1.8.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.18.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect

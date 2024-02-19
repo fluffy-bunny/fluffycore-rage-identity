@@ -11,7 +11,7 @@ import (
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
-	"github.com/rs/zerolog"
+	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 )
 

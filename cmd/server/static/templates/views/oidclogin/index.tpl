@@ -45,6 +45,8 @@
             <button type="submit" class="btn btn-primary">{{ call .LocalizeMessage "login" }}</button>
         </form>
         <p><a class="nav-link active" aria-current="page" href="{{ .paths.Signup }}?state={{ $state }}&wizard_mode=true">{{ call .LocalizeMessage "signup" }}</a></p>
+        <p><a class="nav-link active" aria-current="page" href="{{ .paths.ForgotPassword }}?state={{ $state }}">{{ call .LocalizeMessage "forgot_password" }}</a></p>
+
         <div class="text-center mt-5" class="alert alert-success" role="alert">
         {{range $idx,$idp := .idps}}
             <form action="/external-idp" method="post">

@@ -11,6 +11,7 @@ import (
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/identity"
 	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
+	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/shared"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user"
@@ -159,17 +160,6 @@ func (s *service) DoGet(c echo.Context) error {
 		})
 }
 
-type Error struct {
-	Key   string `json:"key"`
-	Value string `json:"msg"`
-}
-
-func NewErrorF(key string, value string, args ...interface{}) *Error {
-	return &Error{
-		Key:   key,
-		Value: fmt.Sprintf(value, args...),
-	}
-}
 func (s *service) DoPost(c echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
@@ -184,11 +174,11 @@ func (s *service) DoPost(c echo.Context) error {
 
 	model.UserName = strings.ToLower(model.UserName)
 
-	var errors []*Error
-	errors = append(errors, NewErrorF("state", model.State))
+	var errors []*services_handlers_shared.Error
+	errors = append(errors, services_handlers_shared.NewErrorF("state", model.State))
 	idps, err := s.GetIDPs(ctx)
 	if err != nil {
-		errors = append(errors, NewErrorF("error", err.Error()))
+		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 	}
 
 	// does the user exist.
@@ -202,7 +192,7 @@ func (s *service) DoPost(c echo.Context) error {
 		},
 	})
 	if len(listUserResponse.Users) == 0 {
-		errors = append(errors, NewErrorF("username", "username:%s not found", model.UserName))
+		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s not found", model.UserName))
 		return s.Render(c, http.StatusBadRequest, "views/oidclogin/index",
 			map[string]interface{}{
 				"state":     model.State,
@@ -214,7 +204,7 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 	if err != nil {
 		log.Warn().Err(err).Msg("ListUser")
-		errors = append(errors, NewErrorF("error", err.Error()))
+		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 
 		return s.Render(c, http.StatusBadRequest, "views/oidclogin/index",
 			map[string]interface{}{
@@ -226,7 +216,7 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 	user := listUserResponse.Users[0]
 	if user.Password == nil {
-		errors = append(errors, NewErrorF("username", "username:%s does not have a password", model.UserName))
+		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s does not have a password", model.UserName))
 
 		return s.Render(c, http.StatusBadRequest, "views/oidclogin/index",
 			map[string]interface{}{
@@ -243,7 +233,7 @@ func (s *service) DoPost(c echo.Context) error {
 	})
 	if err != nil {
 		log.Warn().Err(err).Msg("ComparePasswordHash")
-		errors = append(errors, NewErrorF("password", "password is invalid"))
+		errors = append(errors, services_handlers_shared.NewErrorF("password", "password is invalid"))
 		return s.Render(c, http.StatusBadRequest, "views/oidclogin/index",
 			map[string]interface{}{
 				"state":     model.State,

@@ -1,8 +1,10 @@
 package models
 
 const (
-	LoginDirective  string = "login"
-	SignupDirective string = "signup"
+	LoginDirective         string = "login"
+	SignupDirective        string = "signup"
+	PasswordResetDirective string = "password-reset"
+	VerifyEmailDirective   string = "verify-email"
 )
 const (
 	InternalError            string = "internal-error"
