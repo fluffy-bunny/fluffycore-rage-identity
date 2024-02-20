@@ -8,7 +8,10 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
+	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/cookies"
+	contracts_email "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/email"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/identity"
+	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
@@ -25,8 +28,10 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
-		config         *contracts_config.Config
-		passwordHasher contracts_identity.IPasswordHasher
+		config           *contracts_config.Config
+		passwordHasher   contracts_identity.IPasswordHasher
+		emailService     contracts_email.IEmailService
+		wellknownCookies contracts_cookies.IWellknownCookies
 	}
 )
 
@@ -40,13 +45,17 @@ func (s *service) Ctor(
 	container di.Container,
 	config *contracts_config.Config,
 	passwordHasher contracts_identity.IPasswordHasher,
+	emailService contracts_email.IEmailService,
+	wellknownCookies contracts_cookies.IWellknownCookies,
 	userService proto_oidc_user.IFluffyCoreUserServiceServer,
 ) (*service, error) {
 
 	return &service{
-		BaseHandler:    services_echo_handlers_base.NewBaseHandler(container),
-		config:         config,
-		passwordHasher: passwordHasher,
+		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
+		config:           config,
+		passwordHasher:   passwordHasher,
+		emailService:     emailService,
+		wellknownCookies: wellknownCookies,
 	}, nil
 }
 
@@ -231,7 +240,7 @@ func (s *service) DoPost(c echo.Context) error {
 		RootIdentity: &proto_oidc_models.Identity{
 			Subject:       xid.New().String(),
 			Email:         model.UserName,
-			IdpSlug:       "root-idp",
+			IdpSlug:       models.RootIdp,
 			EmailVerified: false,
 		},
 		Password: &proto_oidc_models.Password{
@@ -247,9 +256,36 @@ func (s *service) DoPost(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 	if s.config.EmailVerificationRequired {
-		// send email
-		// TODO implement email service.
-		log.Error().Msg("TODO: send email")
+		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
+		err = s.wellknownCookies.SetVerificationCodeCookie(c,
+			&contracts_cookies.SetVerificationCodeCookieRequest{
+				VerificationCode: &contracts_cookies.VerificationCode{
+					Email:   model.UserName,
+					Code:    verificationCode,
+					Subject: user.RootIdentity.Subject,
+				},
+			})
+		if err != nil {
+			log.Error().Err(err).Msg("SetVerificationCodeCookie")
+			return c.Redirect(http.StatusFound, "/error")
+		}
+		s.emailService.SendSimpleEmail(ctx,
+			&contracts_email.SendSimpleEmailRequest{
+				ToEmail:   model.UserName,
+				SubjectId: "email.verification.subject",
+				BodyId:    "email.verification..message",
+				Data: map[string]string{
+					"code": verificationCode,
+				},
+			})
+
+		redirectURL := fmt.Sprintf("%s?state=%s&email=%s&directive=%s",
+			wellknown_echo.VerifyCodePath,
+			model.State,
+			model.UserName,
+			models.VerifyEmailDirective,
+		)
+		return c.Redirect(http.StatusFound, redirectURL)
 
 	}
 	var signupGetRequest *SignupGetRequest = &SignupGetRequest{}

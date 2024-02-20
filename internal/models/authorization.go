@@ -1,6 +1,9 @@
 package models
 
 const (
+	RootIdp string = "root-idp"
+)
+const (
 	LoginDirective         string = "login"
 	SignupDirective        string = "signup"
 	PasswordResetDirective string = "password-reset"
