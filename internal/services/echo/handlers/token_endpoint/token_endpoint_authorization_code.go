@@ -3,8 +3,9 @@ package token_endpoint
 import (
 	"net/http"
 
-	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/tokenservice"
-	proto_oidc_models "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/models"
+	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/tokenservice"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
+	fluffycore_services_claims "github.com/fluffy-bunny/fluffycore/services/claims"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	oauth2 "github.com/go-oauth2/oauth2/v4"
 	status "github.com/gogo/status"
@@ -87,16 +88,24 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 		log.Warn().Err(err).Msg("GetAuthorizationFinal")
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	idClaims := map[string]interface{}{
-		//--REQUIRED--
-		"aud":   client.ClientId,
-		"nonce": authFinal.Request.Nonce,
-		"sub":   authFinal.Identity.Subject,
-		//--REQUIRED FOR US --
-		"client_id": client.ClientId,
-		"email":     authFinal.Identity.Email,
-		//--OPTIONAL--
+	idClaims := fluffycore_services_claims.NewClaims()
+	//--REQUIRED--
+	idClaims.Set("aud", client.ClientId)
+	idClaims.Set("nonce", authFinal.Request.Nonce)
+	idClaims.Set("sub", authFinal.Identity.Subject)
+	//--REQUIRED FOR US --
+	idClaims.Set("client_id", client.ClientId)
+	idClaims.Set("email", authFinal.Identity.Email)
+	idClaims.Set("email_verified", authFinal.Identity.EmailVerified)
+	if len(authFinal.Identity.ACR) > 0 {
+		if len(authFinal.Identity.ACR) > 1 {
+			idClaims.Set("acr", authFinal.Identity.ACR)
+		} else {
+			idClaims.Set("acr", authFinal.Identity.ACR[0])
+		}
 	}
+	//--OPTIONAL--
+
 	idToken, err := s.tokenService.MintToken(ctx, &contracts_tokenservice.MintTokenRequest{
 		Claims:                  idClaims,
 		DurationLifeTimeSeconds: 3600,
@@ -106,17 +115,12 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 		log.Warn().Err(err).Msg("MintToken - idToken")
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	// this one should be a token exchange to an external service, faking it for now
-	accessTokenClaims := map[string]interface{}{
-		"client_id": client.ClientId,
-		"aud":       client.ClientId,
-		"sub":       authFinal.Identity.Subject,
-		"email":     authFinal.Identity.Email,
-		"permissions": []string{
-			"read",
-			"write",
-		},
-	}
+	// this one is opaque and is only really good for calling user_info endpoint
+	accessTokenClaims := fluffycore_services_claims.NewClaims()
+	accessTokenClaims.Set("client_id", client.ClientId)
+	accessTokenClaims.Set("aud", client.ClientId)
+	accessTokenClaims.Set("sub", authFinal.Identity.Subject)
+
 	accessToken, err := s.tokenService.MintToken(ctx, &contracts_tokenservice.MintTokenRequest{
 		Claims:                  accessTokenClaims,
 		DurationLifeTimeSeconds: 3600,

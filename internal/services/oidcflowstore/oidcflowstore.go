@@ -8,8 +8,8 @@ import (
 
 	store "github.com/eko/gocache/lib/v4/store"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/eko_gocache"
-	models "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/models"
+	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/eko_gocache"
+	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 )
 
 type (
@@ -29,16 +29,16 @@ func (s *service) Ctor(oidcFlowCache contracts_eko_gocache.IOIDCFlowCache) (cont
 	}, nil
 }
 
-func AddSingletonIOIDCFlowCache(cb di.ContainerBuilder) {
+func AddSingletonIOIDCFlowStore(cb di.ContainerBuilder) {
 	di.AddSingleton[contracts_eko_gocache.IOIDCFlowStore](cb, stemService.Ctor)
 }
 
-func (s *service) StoreAuthorizationFinal(ctx context.Context, code string, value *models.AuthorizationFinal) error {
-	err := s.oidcFlowCache.Set(ctx, code, value, store.WithExpiration(30*time.Minute))
+func (s *service) StoreAuthorizationFinal(ctx context.Context, state string, value *models.AuthorizationFinal) error {
+	err := s.oidcFlowCache.Set(ctx, state, value, store.WithExpiration(30*time.Minute))
 	return err
 }
-func (s *service) GetAuthorizationFinal(ctx context.Context, code string) (*models.AuthorizationFinal, error) {
-	mm, err := s.oidcFlowCache.Get(ctx, code)
+func (s *service) GetAuthorizationFinal(ctx context.Context, state string) (*models.AuthorizationFinal, error) {
+	mm, err := s.oidcFlowCache.Get(ctx, state)
 	if err != nil {
 		// redirect to error page
 		return nil, err
@@ -54,7 +54,7 @@ func (s *service) GetAuthorizationFinal(ctx context.Context, code string) (*mode
 	}
 	return value, nil
 }
-func (s *service) DeleteAuthorizationFinal(ctx context.Context, code string) error {
-	err := s.oidcFlowCache.Delete(ctx, code)
+func (s *service) DeleteAuthorizationFinal(ctx context.Context, state string) error {
+	err := s.oidcFlowCache.Delete(ctx, state)
 	return err
 }

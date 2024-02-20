@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+option go_package = "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models;models";
+option java_multiple_files = true;
+option java_package = "com.fluffybunny.rageoidc.models";
+option csharp_namespace = "FluffyBunny.RageOidc.Oidc.Models";
+
+
+package proto.oidc.models;
+
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/wrappers.proto";
+import "proto/types/primitives.proto";
+
+message OIDCProtocol {
+    string authority = 1;
+    string client_id = 2;
+    string client_secret = 3;
+    string scope = 4;
+}
+message GithubOAuth2Protocol {
+    string client_id = 1;
+    string client_secret = 2;
+}
+message OAuth2Protocol {
+    string client_id = 1;
+    string client_secret = 2;
+    string scope = 3;
+    string authorization_endpoint = 4;
+    string token_endpoint = 5;
+}
+message Protocol {
+    oneof value {
+        OIDCProtocol            oidc = 1;
+        OAuth2Protocol          oauth2 = 2;
+        GithubOAuth2Protocol    github = 3;
+    }
+}
+message ProtocolUpdate {
+    Protocol value = 1;
+}
+
+message IDP {
+    string                                  id = 1;
+    bool                                    enabled = 2;
+    string                                  slug = 3;
+    string                                  name = 4;
+    string                                  description = 5;
+    Protocol                                protocol = 6;
+    map<string, string>                     metadata = 7;
+}
+message IDPs {
+    repeated IDP idps = 1;
+}
+message IDPUpdate {
+    string                                  id = 1;
+    google.protobuf.BoolValue               enabled = 2;
+    google.protobuf.StringValue             slug = 3;
+    google.protobuf.StringValue             name = 4;
+    google.protobuf.StringValue             description = 5;
+    ProtocolUpdate                          protocol = 6;
+    proto.types.StringMapUpdate             metadata = 7;
+
+}

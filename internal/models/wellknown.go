@@ -13,9 +13,9 @@ const (
 )
 
 const (
-	ACRPassword = "urn:hanko:loa:1fa:pwd"
-	ACR2FA      = "urn:hanko:loa:2fa"
-	ACRIdp      = "urn:hanko:loa:idp:{idp}"
+	ACRPassword = "urn:rage:loa:1fa:pwd"
+	ACR2FA      = "urn:rage:loa:2fa"
+	ACRIdp      = "urn:rage:loa:idp:{idp}"
 )
 const (
 	AMRPassword = "pwd"
@@ -43,4 +43,10 @@ const (
 	ClaimTypeAzp   = "azp"
 	ClaimTypeNonce = "nonce"
 	ClaimTypeAmr   = "amr"
+)
+
+const (
+	Wellknown_IDP_Metadata_AutoCreate                = "auto_create"
+	Wellknown_IDP_Metadata_AutoLink                  = "auto_link"
+	Wellknown_IDP_Metadata_EmailVerificationRequired = "email_verification_required"
 )

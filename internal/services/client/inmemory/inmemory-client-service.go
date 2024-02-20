@@ -5,9 +5,9 @@ import (
 	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	utils "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/utils"
-	proto_oidc_client "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/client"
-	proto_oidc_models "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/models"
+	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/identity"
+	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/client"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	zerolog "github.com/rs/zerolog"
@@ -17,8 +17,9 @@ import (
 type (
 	service struct {
 		proto_oidc_client.UnimplementedClientServiceServer
-		clientsMap map[string]*proto_oidc_models.Client
-		clients    *proto_oidc_models.Clients
+		clientsMap     map[string]*proto_oidc_models.Client
+		clients        *proto_oidc_models.Clients
+		passwordHasher contracts_identity.IPasswordHasher
 	}
 )
 
@@ -27,14 +28,16 @@ var stemService = (*service)(nil)
 func init() {
 	var _ proto_oidc_client.IFluffyCoreClientServiceServer = stemService
 }
-func (s *service) Ctor(clients *proto_oidc_models.Clients) (proto_oidc_client.IFluffyCoreClientServiceServer, error) {
+func (s *service) Ctor(clients *proto_oidc_models.Clients,
+	passwordHasher contracts_identity.IPasswordHasher) (proto_oidc_client.IFluffyCoreClientServiceServer, error) {
 	clientsMap := make(map[string]*proto_oidc_models.Client)
 	for _, client := range clients.Clients {
 		clientsMap[client.ClientId] = client
 	}
 	return &service{
-		clientsMap: clientsMap,
-		clients:    clients,
+		clientsMap:     clientsMap,
+		clients:        clients,
+		passwordHasher: passwordHasher,
 	}, nil
 }
 
@@ -114,8 +117,12 @@ func (s *service) ValidateClientSecret(ctx context.Context, request *proto_oidc_
 		if isExpired(time.Unix(clientSecrets.ExpirationUnix, 0)) {
 			continue
 		}
-		ok, err := utils.ComparePasswordHash(request.Secret, clientSecrets.Hash)
-		if err == nil && ok {
+		err = s.passwordHasher.VerifyPassword(ctx, &contracts_identity.VerifyPasswordRequest{
+			HashedPassword: clientSecrets.Hash,
+			Password:       request.Secret,
+		})
+
+		if err == nil {
 			return &proto_oidc_client.ValidateClientSecretResponse{
 				Valid: true,
 			}, nil

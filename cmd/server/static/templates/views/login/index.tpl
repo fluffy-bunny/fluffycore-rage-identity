@@ -2,11 +2,23 @@
 {{template "html_begin" .}}
 {{template "header" .}}
 {{template "navbar" .}}
+
 <body>
 <!-- Page content-->
 <div class="container">
     <div class="text-center mt-5" class="alert alert-success" role="alert">
-        <h1>Login.</h1>
+        {{range $idx,$idp := .idps}}
+            <form action="/external-idp" method="post">
+                <input type="hidden" name="redirect_url" value="/login">
+                <input type="hidden" name="idp_hint" value="{{$idp.Slug}}">
+                <button type="submit" class="btn btn-primary">{{$idp.Name}}</button>
+            </form>
+        {{end}}
+
+       
+    </div>
+    <div class="text-center mt-5" class="alert alert-success" role="alert">
+        <h1> {{ call .LocalizeMessage "login" }}</h1>
         <div class="mt-5 alert alert-success" class="alert alert-success" role="alert">
             <table class="table table-striped">
                 <thead>
@@ -39,6 +51,8 @@
             </div>
             <button type="submit" class="btn btn-primary">Login</button>
         </form>
+        <p><a class="nav-link active" aria-current="page" href="/signup?redirect_url=/login">Signup</a></p>
+
     </div>
 </div>
 </body>
