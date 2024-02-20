@@ -266,7 +266,7 @@ func (s *service) DoPost(c echo.Context) error {
 			log.Error().Err(err).Msg("SetVerificationCodeCookie")
 			return c.Redirect(http.StatusFound, "/error")
 		}
-		s.EmailService().SendSimpleEmail(ctx,
+		_, err = s.EmailService().SendSimpleEmail(ctx,
 			&contracts_email.SendSimpleEmailRequest{
 				ToEmail:   model.UserName,
 				SubjectId: "email.verification.subject",
@@ -275,7 +275,10 @@ func (s *service) DoPost(c echo.Context) error {
 					"code": verificationCode,
 				},
 			})
-
+		if err != nil {
+			log.Error().Err(err).Msg("SendSimpleEmail")
+			return c.Redirect(http.StatusFound, "/error")
+		}
 		redirectURL := fmt.Sprintf("%s?state=%s&email=%s&directive=%s",
 			wellknown_echo.VerifyCodePath,
 			model.State,
