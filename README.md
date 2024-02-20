@@ -8,7 +8,7 @@ This is a Proof-Of-Life authentication server.
 
 The use case for this proof is the github.com user experience.  
 A user is a stand-alone entity.  
-A user can be linked in N number of external IDPs.
+A user can be linked in N number of external IDPs.  
 A user can be challenged at any time against any IDP known, and the id_token must contain what idp (external or the root) wence the identity was produced.  
 External IDPs are secret.  We don't want anyone to know what external enterprises a user can be linked to.  
 
