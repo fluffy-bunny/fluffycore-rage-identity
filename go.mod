@@ -20,7 +20,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/imroc/req/v3 v3.42.3
 	github.com/labstack/echo/v4 v4.11.4
-	github.com/lestrrat-go/jwx/v2 v2.0.19
+	github.com/lestrrat-go/jwx/v2 v2.0.20
 	github.com/nicksnyder/go-i18n/v2 v2.4.0
 	github.com/reugn/async v0.7.0
 	github.com/rs/xid v1.5.0
