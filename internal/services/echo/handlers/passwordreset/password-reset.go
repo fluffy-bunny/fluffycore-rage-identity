@@ -27,7 +27,6 @@ type (
 		*services_echo_handlers_base.BaseHandler
 		wellknownCookies contracts_cookies.IWellknownCookies
 		passwordHasher   contracts_identity.IPasswordHasher
-		emailService     contracts_email.IEmailService
 	}
 )
 
@@ -41,13 +40,11 @@ func (s *service) Ctor(
 	container di.Container,
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	passwordHasher contracts_identity.IPasswordHasher,
-	emailService contracts_email.IEmailService,
 ) (*service, error) {
 	return &service{
 		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
 		wellknownCookies: wellknownCookies,
 		passwordHasher:   passwordHasher,
-		emailService:     emailService,
 	}, nil
 }
 
@@ -194,9 +191,13 @@ func (s *service) DoPost(c echo.Context) error {
 			},
 		},
 	})
+	if err != nil {
+		log.Error().Err(err).Msg("UpdateUser")
+		return c.Redirect(http.StatusFound, "/error")
+	}
 
 	// send the email
-	_, err = s.emailService.SendSimpleEmail(ctx,
+	_, err = s.EmailService().SendSimpleEmail(ctx,
 		&contracts_email.SendSimpleEmailRequest{
 			ToEmail:   getUserResponse.User.RootIdentity.Email,
 			SubjectId: "password.reset.changed.subject",

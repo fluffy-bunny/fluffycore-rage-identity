@@ -27,7 +27,6 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
-		emailService     contracts_email.IEmailService
 		wellknownCookies contracts_cookies.IWellknownCookies
 	}
 )
@@ -41,11 +40,9 @@ func init() {
 func (s *service) Ctor(
 	container di.Container,
 	wellknownCookies contracts_cookies.IWellknownCookies,
-	emailService contracts_email.IEmailService,
 ) (*service, error) {
 	return &service{
 		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
-		emailService:     emailService,
 		wellknownCookies: wellknownCookies,
 	}, nil
 }
@@ -190,7 +187,7 @@ func (s *service) DoPost(c echo.Context) error {
 	message = strings.ReplaceAll(message, "{code}", verificationCode)
 	if len(listUserResponse.Users) > 0 {
 		// send the email
-		_, err = s.emailService.SendEmail(ctx,
+		_, err = s.EmailService().SendEmail(ctx,
 			&contracts_email.SendEmailRequest{
 				ToEmail:      model.Email,
 				SubjectId:    "forgotpassword.email.subject",

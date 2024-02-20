@@ -5,6 +5,7 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/eko_gocache"
+	contracts_email "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/email"
 	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/idp"
@@ -30,6 +31,7 @@ type (
 		OIDCFlowStore           func() contracts_eko_gocache.IOIDCFlowStore
 		ExternalOauth2FlowStore func() contracts_eko_gocache.IExternalOauth2FlowStore
 		ScopedMemoryCache       func() fluffycore_contracts_common.IScopedMemoryCache
+		EmailService            func() contracts_email.IEmailService
 
 		localizer               contracts_localizer.ILocalizer
 		claimsPrincipal         fluffycore_contracts_common.IClaimsPrincipal
@@ -39,6 +41,7 @@ type (
 		oidcFlowStore           contracts_eko_gocache.IOIDCFlowStore
 		externalOauth2FlowStore contracts_eko_gocache.IExternalOauth2FlowStore
 		scopedMemoryCache       fluffycore_contracts_common.IScopedMemoryCache
+		emailService            contracts_email.IEmailService
 	}
 )
 
@@ -53,8 +56,15 @@ func NewBaseHandler(container di.Container) *BaseHandler {
 	obj.OIDCFlowStore = obj.getOIDCFlowStore
 	obj.ExternalOauth2FlowStore = obj.getExternalOauth2FlowStore
 	obj.ScopedMemoryCache = obj.getScopedMemoryCache
+	obj.EmailService = obj.getEmailService
 	return obj
 
+}
+func (b *BaseHandler) getEmailService() contracts_email.IEmailService {
+	if b.emailService == nil {
+		b.emailService = di.Get[contracts_email.IEmailService](b.Container)
+	}
+	return b.emailService
 }
 func (b *BaseHandler) getScopedMemoryCache() fluffycore_contracts_common.IScopedMemoryCache {
 	if b.scopedMemoryCache == nil {

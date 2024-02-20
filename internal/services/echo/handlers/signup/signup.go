@@ -30,7 +30,6 @@ type (
 		*services_echo_handlers_base.BaseHandler
 		config           *contracts_config.Config
 		passwordHasher   contracts_identity.IPasswordHasher
-		emailService     contracts_email.IEmailService
 		wellknownCookies contracts_cookies.IWellknownCookies
 	}
 )
@@ -45,7 +44,6 @@ func (s *service) Ctor(
 	container di.Container,
 	config *contracts_config.Config,
 	passwordHasher contracts_identity.IPasswordHasher,
-	emailService contracts_email.IEmailService,
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	userService proto_oidc_user.IFluffyCoreUserServiceServer,
 ) (*service, error) {
@@ -54,7 +52,6 @@ func (s *service) Ctor(
 		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
 		config:           config,
 		passwordHasher:   passwordHasher,
-		emailService:     emailService,
 		wellknownCookies: wellknownCookies,
 	}, nil
 }
@@ -269,7 +266,7 @@ func (s *service) DoPost(c echo.Context) error {
 			log.Error().Err(err).Msg("SetVerificationCodeCookie")
 			return c.Redirect(http.StatusFound, "/error")
 		}
-		s.emailService.SendSimpleEmail(ctx,
+		s.EmailService().SendSimpleEmail(ctx,
 			&contracts_email.SendSimpleEmailRequest{
 				ToEmail:   model.UserName,
 				SubjectId: "email.verification.subject",
