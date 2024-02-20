@@ -2,7 +2,7 @@ package swagger
 
 import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v4"
 	echoSwagger "github.com/swaggo/echo-swagger"

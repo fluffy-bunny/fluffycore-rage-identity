@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+option go_package = "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models;models";
+option java_multiple_files = true;
+option java_package = "com.fluffybunny.rageoidc.models";
+option csharp_namespace = "FluffyBunny.RageOidc.Oidc.Models";
+
+
+package proto.oidc.models;
+
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/wrappers.proto";
+import "proto/types/primitives.proto";
+import "proto/types/filter.proto";
+
+enum UserState {
+    USER_STATE_UNSPECIFIED = 0;
+    USER_STATE_ACTIVE = 1;
+    USER_STATE_DISABLED = 2;
+    USER_STATE_DELETED = 3;
+    USER_STATE_PENDING = 4;
+}
+
+message UserStateFilterExpression {
+    option (proto.types.filter_expression) = true;
+
+    UserState eq          = 1 [(proto.types.op) = OP_EQ];
+    repeated UserState in = 2 [(proto.types.op) = OP_IN];
+}
+
+message UserStateValue {
+    UserState vale = 1;
+}
+message Password {
+    string  hash = 1;
+}
+message PasswordUpdate {
+    google.protobuf.StringValue hash = 1;
+}
+message Identity {
+    string subject = 1;
+    string idp_slug = 2;
+    string email = 3;
+    bool email_verified = 4;
+}
+
+message LinkedIdentities{
+    repeated Identity identities = 1;
+}
+
+message IdentityUpdate {
+    string subject = 1;
+    google.protobuf.StringValue email = 3;
+    google.protobuf.BoolValue email_verified = 4;
+
+}
+
+
+message LinkedIdentitiesUpdate {
+    message Granular{
+        repeated Identity add = 1;
+        repeated Identity remove = 2;
+     }
+    oneof update {
+        Granular            granular = 1;
+        LinkedIdentities    replace = 2;
+    }
+}
+message Recovery{
+    proto.types.StringValues emails = 1;
+}
+message RecoveryUpdate{
+    proto.types.StringArrayUpdate emails = 1;
+}
+message User {
+    Identity            root_identity = 1;
+    LinkedIdentities    linked_identities = 2;
+    Recovery            recovery = 3;
+    Password            password = 4;
+    UserState           state = 5;
+}
+
+message UserUpdate {
+    IdentityUpdate          root_identity = 1;
+    LinkedIdentitiesUpdate  linked_identities = 2;
+    RecoveryUpdate          recovery = 3;
+    PasswordUpdate          password = 4;
+    UserStateValue          state = 5;
+}
+

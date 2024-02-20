@@ -4,16 +4,21 @@ package authorization_endpoint
 reference: https://developers.onelogin.com/openid-connect/api/authorization-code
 */
 import (
+	"fmt"
 	"net/http"
+	"regexp"
+	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/eko_gocache"
-	contracts_util "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/contracts/util"
-	models "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/models"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-hanko-oidc/internal/wellknown/echo"
-	proto_oidc_client "github.com/fluffy-bunny/fluffycore-hanko-oidc/proto/oidc/client"
+	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/eko_gocache"
+	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
+	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/client"
+	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/idp"
+	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
+	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
 	xid "github.com/rs/xid"
 	zerolog "github.com/rs/zerolog"
@@ -21,10 +26,11 @@ import (
 
 type (
 	service struct {
-		someUtil            contracts_util.ISomeUtil
 		scopedMemoryCache   fluffycore_contracts_common.IScopedMemoryCache
 		oidcFlowStore       contracts_eko_gocache.IOIDCFlowStore
 		clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer
+		idpServiceServer    proto_oidc_idp.IFluffyCoreIDPServiceServer
+		userService         proto_oidc_user.IFluffyCoreUserServiceServer
 	}
 )
 
@@ -34,15 +40,19 @@ func init() {
 	var _ contracts_handler.IHandler = stemService
 }
 
-func (s *service) Ctor(scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
+func (s *service) Ctor(
+	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
+	userService proto_oidc_user.IFluffyCoreUserServiceServer,
+
+	scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
 	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
-	oidcFlowStore contracts_eko_gocache.IOIDCFlowStore,
-	someUtil contracts_util.ISomeUtil) (*service, error) {
+	oidcFlowStore contracts_eko_gocache.IOIDCFlowStore) (*service, error) {
 	return &service{
-		someUtil:            someUtil,
 		scopedMemoryCache:   scopedMemoryCache,
 		oidcFlowStore:       oidcFlowStore,
 		clientServiceServer: clientServiceServer,
+		idpServiceServer:    idpServiceServer,
+		userService:         userService,
 	}, nil
 }
 
@@ -78,6 +88,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Param       audience     	 		query     string  false  "audience requested"
 // @Param       code_challenge   		query     string  false  "PKCE challenge code"
 // @Param       code_challenge_method 	query     string  false  "PKCE challenge method" default("S256")
+// @Param       acr_values 				query     string  false  "acr_values requested"
 // @Success 200 {object} string
 // @Router /oidc/v1/auth [get]
 func (s *service) Do(c echo.Context) error {
@@ -88,27 +99,136 @@ func (s *service) Do(c echo.Context) error {
 	if err := c.Bind(model); err != nil {
 		return err
 	}
+	log.Debug().Interface("model", model).Msg("AuthorizationRequest")
 	// TODO: validate the request
 	// does the client have the permissions to do this?
 	code := xid.New().String()
+	model.Code = code
 	// store the model in the cache.  Redis in production.
 	authorizationFinal := &models.AuthorizationFinal{
 		Request: model,
 	}
 
-	err := s.oidcFlowStore.StoreAuthorizationFinal(ctx, code, authorizationFinal)
+	if !fluffycore_utils.IsEmptyOrNil(model.ACRValues) {
+		acrValues := strings.Split(model.ACRValues, " ")
+
+		idpHint := ""
+		candidateUserID := ""
+		for _, acrValue := range acrValues {
+			d, err := extractIdpSlug(acrValue)
+			if err == nil {
+				v, ok := d["idp_hint"]
+				if ok {
+					idpHint = v
+				}
+			}
+			d, err = extractRootCandidate(acrValue)
+			if err == nil {
+				v, ok := d["user_id"]
+				if ok {
+					candidateUserID = v
+				}
+			}
+		}
+
+		log.Info().Str("idpHint", idpHint).Str("rootCandidate", candidateUserID).Msg("acrValues")
+		if !fluffycore_utils.IsEmptyOrNil(idpHint) {
+			getIDPBySlugResponse, err := s.idpServiceServer.GetIDPBySlug(ctx, &proto_oidc_idp.GetIDPBySlugRequest{
+				Slug: idpHint,
+			})
+			if err != nil ||
+				getIDPBySlugResponse == nil ||
+				getIDPBySlugResponse.Idp == nil {
+				idpHint = ""
+				c.Redirect(http.StatusFound, "/error&error=invalid_idp_hint")
+			}
+			model.IDPHint = idpHint
+		}
+		if !fluffycore_utils.IsEmptyOrNil(candidateUserID) {
+			getUserResponse, err := s.userService.GetUser(ctx, &proto_oidc_user.GetUserRequest{
+				Subject: candidateUserID,
+			})
+			if err != nil || getUserResponse == nil || getUserResponse.User == nil {
+				candidateUserID = ""
+				c.Redirect(http.StatusFound, "/error&error=invalid_root_candidate")
+			}
+			model.CandidateUserID = candidateUserID
+		}
+
+	}
+
+	err := s.oidcFlowStore.StoreAuthorizationFinal(ctx, model.State, authorizationFinal)
 	if err != nil {
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")
 	}
 
-	mm, err := s.oidcFlowStore.GetAuthorizationFinal(ctx, code)
+	mm, err := s.oidcFlowStore.GetAuthorizationFinal(ctx, model.State)
 	if err != nil {
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")
 	}
 	log.Info().Interface("mm", mm).Msg("mm")
 	// redirect to the server Auth login pages.
-	//
-	return c.Redirect(http.StatusTemporaryRedirect, "/login?code="+code)
+	//s
+	finalOIDCPath := ""
+	if fluffycore_utils.IsEmptyOrNil(model.IDPHint) {
+		finalOIDCPath = fmt.Sprintf("%s?state=%s", wellknown_echo.OIDCLoginPath, model.State)
+	} else {
+		finalOIDCPath = fmt.Sprintf("%s?state=%s&idp_hint=%s&directive=%s", wellknown_echo.ExternalIDPPath,
+			model.State,
+			model.IDPHint,
+			models.LoginDirective)
+
+	}
+	// url enocde the redirect_uri
+	//encodedRedirect := url.QueryEscape(finalOIDCPath)
+
+	//redirectPath := fmt.Sprintf("%s?redirect_uri=%s", wellknown_echo.OIDCLoginPath, encodedRedirect)
+	return c.Redirect(http.StatusFound, finalOIDCPath)
+}
+
+func extractIdpSlug(template string) (map[string]string, error) {
+	// Define the regular expression pattern
+	pattern := `^urn:mastodon:idp:([^:]+)?$`
+
+	// Compile the regular expression
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	// Match the template against the regular expression
+	match := re.FindStringSubmatch(template)
+	if match == nil {
+		return nil, fmt.Errorf("invalid template format")
+	}
+
+	// Extract and store the values
+	info := make(map[string]string)
+	info["idp_hint"] = match[1]
+
+	return info, nil
+}
+func extractRootCandidate(template string) (map[string]string, error) {
+	// Define the regular expression pattern
+	pattern := `^urn:mastodon:root_candidate:([^:]+)?$`
+
+	// Compile the regular expression
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return nil, err
+	}
+
+	// Match the template against the regular expression
+	match := re.FindStringSubmatch(template)
+	if match == nil {
+		return nil, fmt.Errorf("invalid template format")
+	}
+
+	// Extract and store the values
+	info := make(map[string]string)
+	info["user_id"] = match[1]
+
+	return info, nil
 }
