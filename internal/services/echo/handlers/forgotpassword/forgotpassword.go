@@ -8,7 +8,7 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/cookies"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/email"
-	"github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
+	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/shared"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"

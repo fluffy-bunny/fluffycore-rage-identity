@@ -3,6 +3,7 @@ package email
 import (
 	"context"
 	"net/smtp"
+	"strings"
 
 	mailyak "github.com/domodwyer/mailyak/v3"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
@@ -115,4 +116,48 @@ func (s *service) SendEmail(ctx context.Context, request *contracts_email.SendEm
 	}
 
 	return &contracts_email.SendEmailResponse{}, nil
+}
+func (s *service) validateSendSimpleEmailRequest(request *contracts_email.SendSimpleEmailRequest) error {
+	if request == nil {
+		return status.Error(codes.InvalidArgument, "request is nil")
+	}
+	if fluffycore_utils.IsEmptyOrNil(request.BodyId) {
+		return status.Error(codes.InvalidArgument, "BodyId is empty")
+	}
+	if fluffycore_utils.IsEmptyOrNil(request.SubjectId) {
+		return status.Error(codes.InvalidArgument, "Subject is empty")
+	}
+	if fluffycore_utils.IsEmptyOrNil(request.ToEmail) {
+		return status.Error(codes.InvalidArgument, "ToEmail is empty")
+	}
+	return nil
+
+}
+func (s *service) SendSimpleEmail(ctx context.Context, request *contracts_email.SendSimpleEmailRequest) (*contracts_email.SendSimpleEmailResponse, error) {
+	log := zerolog.Ctx(ctx).With().Logger()
+	err := s.validateSendSimpleEmailRequest(request)
+	if err != nil {
+		return nil, err
+	}
+	localizer := s.localizer.GetLocalizer()
+	message, err := localizer.LocalizeMessage(&i18n.Message{ID: request.BodyId})
+	if err != nil {
+		log.Error().Err(err).Msg("failed to localize message")
+		return nil, err
+	}
+	for key, value := range request.Data {
+		message = strings.ReplaceAll(message, "{"+key+"}", value)
+	}
+	_, err = s.SendEmail(ctx, &contracts_email.SendEmailRequest{
+		ToEmail:      request.ToEmail,
+		SubjectId:    request.SubjectId,
+		HtmlTemplate: "emails/generic/index",
+		TextTemplate: "emails/generic/txt",
+		Data:         map[string]interface{}{"body": message},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &contracts_email.SendSimpleEmailResponse{}, nil
+
 }

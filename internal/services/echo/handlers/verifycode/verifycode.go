@@ -207,8 +207,18 @@ func (s *service) DoPost(c echo.Context) error {
 	redirectURL := ""
 	switch model.Directive {
 	case models.PasswordResetDirective:
+		err = s.wellknownCookies.SetPasswordResetCookie(c,
+			&contracts_cookies.SetPasswordResetCookieRequest{
+				PasswordReset: &contracts_cookies.PasswordReset{
+					Subject: verificationCode.Subject,
+				},
+			})
+		if err != nil {
+			log.Error().Err(err).Msg("SetPasswordResetCookie")
+			return c.Redirect(http.StatusFound, "/error")
+		}
 		redirectURL = fmt.Sprintf("%s?state=%s&email=%s",
-			wellknown_echo.OIDCLoginPath,
+			wellknown_echo.PasswordResetPath,
 			model.State,
 			model.Email)
 	case models.VerifyEmailDirective:

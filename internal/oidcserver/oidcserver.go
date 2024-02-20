@@ -22,6 +22,7 @@ import (
 	services_handlers_logout "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/logout"
 	services_handlers_oauth2_callback "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/oauth2/callback"
 	services_handlers_oidclogin "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/oidclogin"
+	services_handlers_passwordreset "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/passwordreset"
 	services_handlers_signup "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/signup"
 	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/swagger"
 	services_handlers_token_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/token_endpoint"
@@ -114,6 +115,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_oauth2_callback.AddScopedIHandler(builder)
 	services_handlers_forgotpassword.AddScopedIHandler(builder)
 	services_handlers_verifycode.AddScopedIHandler(builder)
+	services_handlers_passwordreset.AddScopedIHandler(builder)
 }
 func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 	// i.e. e.Static("/css", "./css")

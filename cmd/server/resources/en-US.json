@@ -5,8 +5,11 @@
   "signup": "Sign Up",
   "verifycode": "Verify Code",
   "forgot_password": "Forgot Password?",
+  "password_reset": "Reset Password",
   "email/account/footer/message": "You received this email because you have a Rage Identity account. Manage your account at <a href=\"http://localhost:9044\">fluffycore.rage.identity</a>. You can also reach out to <a href=\"mailto:rage@test.com\">rageidentidy admin</a> for no help at all.",
   "email/account/verificationCode": "Verification Code",
   "forgotpassword.email.subject": "Your Reset Password Code",
-  "password.reset.message": "Your reset password code is: {code}"
+  "password.reset.message": "Your reset password code is: {code}",
+  "password.reset.changed.subject": "Your Password Has Been Changed",
+  "password.reset.changed.message": "Your password has been changed. If you did not make this change, please contact us immediately."
 }

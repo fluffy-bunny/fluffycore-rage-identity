@@ -103,6 +103,11 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_oidc_user.Updat
 	if request.User.RootIdentity.EmailVerified != nil {
 		getUserResp.User.RootIdentity.EmailVerified = request.User.RootIdentity.EmailVerified.Value
 	}
+	if request.User.Password != nil {
+		if request.User.Password.Hash != nil {
+			getUserResp.User.Password.Hash = request.User.Password.Hash.Value
+		}
+	}
 	return &proto_oidc_user.UpdateUserResponse{
 		User: getUserResp.User,
 	}, nil

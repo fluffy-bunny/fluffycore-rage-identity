@@ -13,10 +13,17 @@ type (
 		TextTemplate string
 		Data         map[string]interface{}
 	}
-	SendEmailResponse struct {
+	SendEmailResponse      struct{}
+	SendSimpleEmailRequest struct {
+		ToEmail   string
+		SubjectId string
+		BodyId    string
+		Data      map[string]string
 	}
-	IEmailService interface {
+	SendSimpleEmailResponse struct{}
+	IEmailService           interface {
 		SendEmail(ctx context.Context, request *SendEmailRequest) (*SendEmailResponse, error)
+		SendSimpleEmail(ctx context.Context, request *SendSimpleEmailRequest) (*SendSimpleEmailResponse, error)
 	}
 	RenderEmailRequest struct {
 		HtmlTemplate string

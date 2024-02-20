@@ -27,7 +27,7 @@
                 "jwtValidators__jwksUrls": "http://localhost:50053/.well-known/jwks,http://host.docker.internal:50053/.well-known/jwks",
                 "emailConfig__fromName": "The Perfect Corp Team",
                 "emailConfig__fromEmail": "noreply@perfectcorp.com",
-                "echo__disableSecureCookies": "false",
+                "echo__disableSecureCookies": "true",
             },
             "args": [ "serve" ]        
         },

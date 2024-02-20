@@ -33,10 +33,10 @@
             </table>
         </div>
         <form action="/oidc-login" method="post">
-            <input type="hidden" name="state" value="{{ $state  }}">
+            <input type="hidden" name="state" value="{{ $state }}">
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username" name="username" required>
+                <input type="text" class="form-control" id="username" name="username" value="{{ .email }}" required>
             </div>
             <div class="mb-3">
                 <label for="password" class="form-label">Password</label>

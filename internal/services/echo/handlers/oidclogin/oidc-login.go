@@ -66,6 +66,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 
 type LoginGetRequest struct {
 	State     string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
+	Email     string `param:"email" query:"email" form:"email" json:"email" xml:"email"`
 	Error     string `param:"error" query:"error" form:"error" json:"error" xml:"error"`
 	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
 }
@@ -156,6 +157,7 @@ func (s *service) DoGet(c echo.Context) error {
 			"defs":      rows,
 			"idps":      idps,
 			"state":     model.State,
+			"email":     model.Email,
 			"directive": models.LoginDirective,
 		})
 }
