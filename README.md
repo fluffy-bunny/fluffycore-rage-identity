@@ -1,6 +1,6 @@
 # Mastodon Identity
 
-## A simple and opinionated OIDC authorization server
+## A simple and opinionated OIDC Authentication Service
 
 ![Alt text](docs/mastodon-identity.jpg?raw=true "Title")
 
