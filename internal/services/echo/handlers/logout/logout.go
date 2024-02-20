@@ -79,7 +79,7 @@ func (s *service) DoGet(c echo.Context) error {
 	echo_utils.DeleteCookie(c, "_auth")
 	echo_utils.DeleteCookie(c, "_login_request")
 
-	return s.Render(c, http.StatusOK, "views/logout/index",
+	return s.Render(c, http.StatusOK, "oidc/logout/index",
 		map[string]interface{}{
 			"url": model.RedirectURL,
 		})

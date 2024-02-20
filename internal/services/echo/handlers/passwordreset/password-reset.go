@@ -99,7 +99,7 @@ func (s *service) DoGet(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 
-	err = s.Render(c, http.StatusOK, "views/passwordreset/index",
+	err = s.Render(c, http.StatusOK, "oidc/passwordreset/index",
 		map[string]interface{}{
 			"state": model.State,
 		})
@@ -139,7 +139,7 @@ func (s *service) DoPost(c echo.Context) error {
 
 	errors, err := s.validatePasswordResetPostRequest(model)
 	if err != nil {
-		return s.Render(c, http.StatusBadRequest, "views/passwordreset/index",
+		return s.Render(c, http.StatusBadRequest, "oidc/passwordreset/index",
 			map[string]interface{}{
 				"state": model.State,
 				"defs":  errors,

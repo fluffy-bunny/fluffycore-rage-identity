@@ -1,9 +1,12 @@
 package token_endpoint
 
 import (
+	"fmt"
 	"net/http"
+	"regexp"
 
 	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/tokenservice"
+	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
 	fluffycore_services_claims "github.com/fluffy-bunny/fluffycore/services/claims"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
@@ -41,6 +44,24 @@ func (s *service) validateTokenEndpointAuthorizationCodeRequest(req *TokenEndpoi
 	}
 	return nil
 }
+func extractIdpSlug(template string) (string, error) {
+	// Define the regular expression pattern
+	pattern := `^urn:mastodon:idp:([^:]+)?$`
+
+	// Compile the regular expression
+	re, err := regexp.Compile(pattern)
+	if err != nil {
+		return "", err
+	}
+
+	// Match the template against the regular expression
+	match := re.FindStringSubmatch(template)
+	if match == nil {
+		return "", fmt.Errorf("invalid template format")
+	}
+	return match[1], nil
+}
+
 func (s *service) handleAuthorizationCode(c echo.Context) error {
 	r := c.Request()
 	ctx := r.Context()
@@ -97,13 +118,26 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 	idClaims.Set("client_id", client.ClientId)
 	idClaims.Set("email", authFinal.Identity.Email)
 	idClaims.Set("email_verified", authFinal.Identity.EmailVerified)
-	if len(authFinal.Identity.ACR) > 0 {
-		if len(authFinal.Identity.ACR) > 1 {
-			idClaims.Set("acr", authFinal.Identity.ACR)
-		} else {
-			idClaims.Set("acr", authFinal.Identity.ACR[0])
-		}
+	acrClaims := []string{
+		// always true
+		models.ACRIdpRoot,
 	}
+	if len(authFinal.Identity.ACR) > 0 {
+		acrClaims = append(acrClaims, authFinal.Identity.ACR...)
+	}
+	idpClaims := []string{}
+	for _, acrValue := range acrClaims {
+		idp, err := extractIdpSlug(acrValue)
+		if err != nil {
+			continue
+		}
+		idpClaims = append(idpClaims, idp)
+	}
+	amrClaims := authFinal.Identity.AMR
+
+	idClaims.Set("acr", acrClaims)
+	idClaims.Set("amr", amrClaims)
+	idClaims.Set("idp", idpClaims)
 	//--OPTIONAL--
 
 	idToken, err := s.tokenService.MintToken(ctx, &contracts_tokenservice.MintTokenRequest{
@@ -131,11 +165,12 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 	response := &TokenEndpointAuthorizationCodeResponse{
-		AccessToken:  accessToken.Token,
-		TokenType:    "bearer",
-		ExpiresIn:    3600,
-		RefreshToken: "refresh_token",
-		IDToken:      idToken.Token,
+		AccessToken: accessToken.Token,
+		TokenType:   "bearer",
+		ExpiresIn:   3600,
+		// TODO: Not something we want to support for an authentication only service.
+		//RefreshToken: "refresh_token",
+		IDToken: idToken.Token,
 	}
 	// return as json
 	defer func() {

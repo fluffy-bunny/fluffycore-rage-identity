@@ -1,7 +1,6 @@
-{{define "views/logout/index"}}
+{{define "oidc/autoredirect/index"}}
 {{template "html_begin" .}}
 {{template "header" .}}
-{{template "navbar" .}}
 <body>
 <!-- Page content-->
  
@@ -11,15 +10,12 @@
  {{ $url := .url }}
 <script>
     function getMyRedirectURL() {
-       document.write("It will redirect within 1 seconds.....please wait...");//it will redirect after 3 seconds
        setTimeout(function() {
             window.location = {{$url}};
-       }, 1000);
+       }, 100);
     }
     getMyRedirectURL();
 </script>
 </body>
-    
-{{template "footer" .}}
 {{template "html_end" .}}
 {{end}}

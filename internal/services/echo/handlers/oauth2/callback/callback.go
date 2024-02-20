@@ -217,6 +217,9 @@ func (s *service) Do(c echo.Context) error {
 			ACR: []string{
 				fmt.Sprintf("urn:mastodon:idp:%s", externalOAuth2State.Request.IDPHint),
 			},
+			AMR: []string{
+				models.AMRIdp,
+			},
 			EmailVerified: emailVerified,
 		}
 		getUserByEmail := func(email string) (*proto_oidc_models.User, error) {
@@ -247,6 +250,9 @@ func (s *service) Do(c echo.Context) error {
 				Email:   user.RootIdentity.Email,
 				ACR: []string{
 					fmt.Sprintf("urn:mastodon:idp:%s", externalOAuth2State.Request.IDPHint),
+				},
+				AMR: []string{
+					models.AMRIdp,
 				},
 			}
 			err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, parentState, oidcFinalState)

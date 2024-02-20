@@ -1,4 +1,4 @@
-{{define "views/forgotpassword/index"}}
+{{define "oidc/forgotpassword/index"}}
 {{template "html_begin" .}}
 {{template "header" .}}
 

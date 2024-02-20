@@ -114,7 +114,7 @@ func (s *service) Do(c echo.Context) error {
 		return i.(row).Path
 	}).ToSlice(&rows)
 
-	return s.Render(c, http.StatusOK, "views/about/index",
+	return s.Render(c, http.StatusOK, "account/about/index",
 		map[string]interface{}{
 			"defs": rows,
 		})

@@ -1,4 +1,4 @@
-{{define "views/error/index"}}
+{{define "oidc/error/index"}}
 {{template "html_begin" .}}
 {{template "header" .}}
 {{template "navbar" .}}

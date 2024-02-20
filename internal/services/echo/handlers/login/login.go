@@ -120,7 +120,7 @@ func (s *service) DoGet(c echo.Context) error {
 	}
 	loginMsg, _ := s.Localizer().GetLocalizer().LocalizeMessage(&i18n.Message{ID: "login"})
 
-	return s.Render(c, http.StatusOK, "views/login/index",
+	return s.Render(c, http.StatusOK, "oidc/login/index",
 		map[string]interface{}{
 			"login": loginMsg,
 			"idps":  listIDPResponse.Idps,
@@ -174,7 +174,7 @@ func (s *service) DoPost(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/login")
 	}
 	if len(listUserResponse.Users) == 0 {
-		return s.Render(c, http.StatusBadRequest, "views/login/index",
+		return s.Render(c, http.StatusBadRequest, "oidc/login/index",
 			map[string]interface{}{
 				"defs": []*Error{NewErrorF("username", "username:%s does not exist", model.UserName)},
 			})
@@ -182,7 +182,7 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 	user := listUserResponse.Users[0]
 	if user.Password == nil {
-		return s.Render(c, http.StatusBadRequest, "views/login/index",
+		return s.Render(c, http.StatusBadRequest, "oidc/login/index",
 			map[string]interface{}{
 				"defs": []*Error{NewErrorF("username", "username:%s does not have a password", model.UserName)},
 			})

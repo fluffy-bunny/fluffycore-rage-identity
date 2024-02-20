@@ -1,4 +1,4 @@
-{{define "views/about/index"}}
+{{define "account/about/index"}}
 {{template "html_begin" .}}
 {{template "header" .}}
 {{template "navbar" .}}

@@ -98,7 +98,7 @@ func (s *service) DoGet(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 
-	err = s.Render(c, http.StatusOK, "views/forgotpassword/index",
+	err = s.Render(c, http.StatusOK, "oidc/forgotpassword/index",
 		map[string]interface{}{
 			"state": model.State,
 			"email": model.Email,
@@ -136,7 +136,7 @@ func (s *service) DoPost(c echo.Context) error {
 
 	errors, err := s.validateForgotPasswordPostRequest(model)
 	if err != nil {
-		return s.Render(c, http.StatusBadRequest, "views/forgotpassword/index",
+		return s.Render(c, http.StatusBadRequest, "oidc/forgotpassword/index",
 			map[string]interface{}{
 				"state": model.State,
 				"email": model.Email,

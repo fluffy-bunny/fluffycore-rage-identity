@@ -157,7 +157,7 @@ func (s *service) DoGet(c echo.Context) error {
 		rows = append(rows, row{Key: "error", Value: err.Error()})
 	}
 
-	return s.Render(c, http.StatusOK, "views/oidclogin/index",
+	return s.Render(c, http.StatusOK, "oidc/oidclogin/index",
 		map[string]interface{}{
 			"defs":      rows,
 			"idps":      idps,
@@ -200,7 +200,7 @@ func (s *service) DoPost(c echo.Context) error {
 	})
 	if len(listUserResponse.Users) == 0 {
 		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s not found", model.UserName))
-		return s.Render(c, http.StatusBadRequest, "views/oidclogin/index",
+		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"state":     model.State,
 				"idps":      idps,
@@ -213,7 +213,7 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Warn().Err(err).Msg("ListUser")
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 
-		return s.Render(c, http.StatusBadRequest, "views/oidclogin/index",
+		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"state":     model.State,
 				"idps":      idps,
@@ -258,7 +258,7 @@ func (s *service) DoPost(c echo.Context) error {
 	if user.Password == nil {
 		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s does not have a password", model.UserName))
 
-		return s.Render(c, http.StatusBadRequest, "views/oidclogin/index",
+		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"state":     model.State,
 				"idps":      idps,
@@ -274,7 +274,7 @@ func (s *service) DoPost(c echo.Context) error {
 	if err != nil {
 		log.Warn().Err(err).Msg("ComparePasswordHash")
 		errors = append(errors, services_handlers_shared.NewErrorF("password", "password is invalid"))
-		return s.Render(c, http.StatusBadRequest, "views/oidclogin/index",
+		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"state":     model.State,
 				"idps":      idps,
@@ -300,7 +300,15 @@ func (s *service) DoPost(c echo.Context) error {
 	mm.Identity = &models.Identity{
 		Subject: user.RootIdentity.Subject,
 		Email:   user.RootIdentity.Email,
-		ACR:     []string{"urn:mastodon:password", "urn:mastodon:idp:root"},
+		ACR: []string{
+			models.ACRPassword,
+			models.ACRIdpRoot,
+		},
+		AMR: []string{
+			models.AMRPassword,
+			// always true, as we are the root idp
+			models.AMRIdp,
+		},
 	}
 
 	// "urn:mastodon:idp:google", "urn:mastodon:idp:spacex", "urn:mastodon:idp:github-enterprise", etc.

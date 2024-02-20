@@ -44,13 +44,30 @@ var (
 	}
 )
 
+func dedupStringArray(arr []string) []string {
+	encountered := map[string]bool{}
+	result := []string{}
+	for v := range arr {
+		if !encountered[arr[v]] {
+			encountered[arr[v]] = true
+			result = append(result, arr[v])
+		}
+	}
+	return result
+}
 func (s *service) sanitizeClaims(claims fluffycore_contracts_claims.IClaims) fluffycore_contracts_claims.IClaims {
 	// remove any claims that are not strings
 	newClaims := fluffycore_services_claims.NewClaims()
 	for _, v := range claims.Claims() {
 		claimType := v.Type()
 		if _, ok := notAllowedClaims[claimType]; !ok {
-			newClaims.Set(claimType, v.Value())
+			// is string array
+			value := v.Value()
+			va, ok := value.([]string)
+			if ok {
+				value = dedupStringArray(va)
+			}
+			newClaims.Set(claimType, value)
 		}
 	}
 	return newClaims
