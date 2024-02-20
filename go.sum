@@ -431,6 +431,8 @@ github.com/refraction-networking/utls v1.6.0 h1:X5vQMqVx7dY7ehxxqkFER/W6DSjy8TMq
 github.com/refraction-networking/utls v1.6.0/go.mod h1:kHJ6R9DFFA0WsRgBM35iiDku4O7AqPR6y79iuzW7b10=
 github.com/reugn/async v0.7.0 h1:Me9X9a9zhvYRnCgy4qaYF2yQC8gnSvCZ/K5QCUwNd9Y=
 github.com/reugn/async v0.7.0/go.mod h1:DeWMb1afOLRJjetJq+gVVII9jD3njyndoLbfpj9pr0M=
+github.com/reugn/async v0.8.0 h1:XnIZE0CkON5T65zFIdNI0vpmt0Z/z+XLVW4OFkMB2VQ=
+github.com/reugn/async v0.8.0/go.mod h1:DeWMb1afOLRJjetJq+gVVII9jD3njyndoLbfpj9pr0M=
 github.com/richardartoul/molecule v1.0.1-0.20221107223329-32cfee06a052 h1:Qp27Idfgi6ACvFQat5+VJvlYToylpM/hcyLBI3WaKPA=
 github.com/richardartoul/molecule v1.0.1-0.20221107223329-32cfee06a052/go.mod h1:uvX/8buq8uVeiZiFht+0lqSLBHF+uGV8BrTv8W/SIwk=
 github.com/rivo/uniseg v0.2.0/go.mod h1:J6wj4VEh+S6ZtnVlnTBMWIodfgj8LQOQFoIToxlJtxc=

@@ -22,7 +22,7 @@ require (
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/lestrrat-go/jwx/v2 v2.0.19
 	github.com/nicksnyder/go-i18n/v2 v2.4.0
-	github.com/reugn/async v0.7.0
+	github.com/reugn/async v0.8.0
 	github.com/rs/xid v1.5.0
 	github.com/rs/zerolog v1.32.0
 	github.com/spf13/cobra v1.8.0
