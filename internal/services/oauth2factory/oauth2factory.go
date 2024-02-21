@@ -96,7 +96,7 @@ func (s *service) GetConfig(ctx context.Context, request *contracts_oauth2factor
 					ClientID:     v.Github.ClientId,
 					ClientSecret: v.Github.ClientSecret,
 					Scopes:       GithubScopes,
-					RedirectURL:  s.config.BaseUrl + wellknown_echo.OAuth2CallbackPath,
+					RedirectURL:  s.config.OIDCConfig.BaseUrl + wellknown_echo.OAuth2CallbackPath,
 					Endpoint: oauth2.Endpoint{
 						AuthURL:  GithubAuthURL,
 						TokenURL: GithubTokenURL,
@@ -128,7 +128,7 @@ func (s *service) GetConfig(ctx context.Context, request *contracts_oauth2factor
 						ClientID:     v.Oidc.ClientId,
 						ClientSecret: v.Oidc.ClientSecret,
 						Scopes:       scopes,
-						RedirectURL:  s.config.BaseUrl + wellknown_echo.OAuth2CallbackPath,
+						RedirectURL:  s.config.OIDCConfig.BaseUrl + wellknown_echo.OAuth2CallbackPath,
 						Endpoint: oauth2.Endpoint{
 							AuthURL:  oidcProvider.Endpoint().AuthURL,
 							TokenURL: oidcProvider.Endpoint().TokenURL,

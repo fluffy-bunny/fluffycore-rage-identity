@@ -13,3 +13,5 @@ services:
       options:
         max-size: "${CONTAINER_LOG_SIZE}"
         max-file: "${CONTAINER_LOG_COUNT}"
+    networks:
+      - rage

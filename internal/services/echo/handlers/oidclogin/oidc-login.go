@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
@@ -92,7 +91,7 @@ type row struct {
 func (s *service) handleIdentityFound(c echo.Context, state string) error {
 	r := c.Request()
 	// is the request get or post?
-	rootPath := s.config.BaseUrl
+	rootPath := s.config.OIDCConfig.BaseUrl
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 	mm, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, state)
@@ -107,14 +106,16 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 		return c.Redirect(http.StatusFound, redirectUrl)
 	}
 
-	echo_utils.SetCookieInterface(c, &http.Cookie{
-		Name:     "_auth",
-		Path:     "/",
-		Expires:  time.Now().Add(24 * time.Hour),
-		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
-		HttpOnly: true,
-	}, mm.Identity)
+	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
+		AuthCookie: &contracts_cookies.AuthCookie{
+			Identity: mm.Identity,
+		},
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("SetAuthCookie")
+		// redirect to error page
+		return c.Redirect(http.StatusFound, "/error")
+	}
 
 	err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, mm.Request.Code, mm)
 	if err != nil {
@@ -282,14 +283,20 @@ func (s *service) DoPost(c echo.Context) error {
 				"directive": models.LoginDirective,
 			})
 	}
-	echo_utils.SetCookieInterface(c, &http.Cookie{
-		Name:     "_auth",
-		Path:     "/",
-		Expires:  time.Now().Add(24 * time.Hour),
-		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
-		HttpOnly: true,
-	}, user.RootIdentity)
+	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
+		AuthCookie: &contracts_cookies.AuthCookie{
+			Identity: &models.Identity{
+				Subject:       user.RootIdentity.Subject,
+				Email:         user.RootIdentity.Email,
+				EmailVerified: user.RootIdentity.EmailVerified,
+			},
+		},
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("SetAuthCookie")
+		// redirect to error page
+		return c.Redirect(http.StatusFound, "/error")
+	}
 
 	mm, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, model.State)
 	if err != nil {

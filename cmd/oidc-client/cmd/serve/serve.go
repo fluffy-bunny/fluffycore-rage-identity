@@ -62,7 +62,7 @@ func setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value strin
 		Value:    value,
 		MaxAge:   int(time.Hour.Seconds()),
 		Secure:   r.TLS != nil,
-		HttpOnly: true,
+		HttpOnly: false,
 	}
 	http.SetCookie(w, c)
 }

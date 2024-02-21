@@ -5,17 +5,18 @@ import (
 	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
 	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/tokenservice"
 	fluffycore_contracts_claims "github.com/fluffy-bunny/fluffycore/contracts/claims"
 	fluffycore_contracts_jwtminter "github.com/fluffy-bunny/fluffycore/contracts/jwtminter"
 	fluffycore_services_claims "github.com/fluffy-bunny/fluffycore/services/claims"
-
 	xid "github.com/rs/xid"
 )
 
 type (
 	service struct {
-		jwtMinter fluffycore_contracts_jwtminter.IJWTMinter
+		jwtMinter  fluffycore_contracts_jwtminter.IJWTMinter
+		oidcConfig *contracts_config.OIDCConfig
 	}
 )
 
@@ -24,9 +25,13 @@ var stemService = (*service)(nil)
 func init() {
 	var _ contracts_tokenservice.ITokenService = stemService
 }
-func (s *service) Ctor(jwtMinter fluffycore_contracts_jwtminter.IJWTMinter) (contracts_tokenservice.ITokenService, error) {
+func (s *service) Ctor(
+	oidcConfig *contracts_config.OIDCConfig,
+	jwtMinter fluffycore_contracts_jwtminter.IJWTMinter,
+) (contracts_tokenservice.ITokenService, error) {
 	return &service{
-		jwtMinter: jwtMinter,
+		jwtMinter:  jwtMinter,
+		oidcConfig: oidcConfig,
 	}, nil
 }
 
@@ -93,7 +98,7 @@ func (s *service) MintToken(ctx context.Context, request *contracts_tokenservice
 		exp = nbfTime.Add(time.Duration(request.DurationLifeTimeSeconds) * time.Second).Unix()
 	}
 	claims.Set("exp", exp)
-	claims.Set("iss", "http://localhost:9044")
+	claims.Set("iss", s.oidcConfig.BaseUrl)
 	claims.Set("jti", xid.New().String())
 	token, err := s.jwtMinter.MintToken(ctx, claims)
 	if err != nil {

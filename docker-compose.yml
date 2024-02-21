@@ -12,6 +12,7 @@ services:
       - "50052:50052"
       - "50053:50053"
       - "9044:9044"
+
     environment:
       ENABLE_GRPC_SERVER_REFLECTION: "true"
       APPLICATION_NAME: "starterkit"
@@ -28,20 +29,38 @@ services:
       jwtValidators__jwksUrls: "http://starterkit:50053/.well-known/jwks"
       configFiles__mockOAuth2ClientPath: "/config/mockOAuth2Clients.json"
       configFiles__oidcClientPath: "/config/oidcClients.json"
+      configFiles__idpsPath: "/config/idps.json"
+      configFiles__signingKeyJsonPath: "/config/signing-keys.json"
+      emailConfig__host: "${RAGE_SMTP_HOST}:25"
+      emailConfig__auth__plainAuth__host: "${RAGE_SMTP_HOST}"
+      emailConfig__auth__plainAuth__username: "${SMTP4DEV_SMTP_CONFIG__USER}"
+      emailConfig__auth__plainAuth__password: "${SMTP4DEV_SMTP_CONFIG__PASSWORD}"
+      emailConfig__auth__plainAuth__identity: "${RAGE_SMTP_HOST}"
+
+      selfIDPConfig__redirectUrl: "${BASE_URL}/auth/callback"
+      selfIDPConfig__authority: "${BASE_URL}"
+      oidcConfig__baseUrl: "${BASE_URL}"
+      emailConfig__justLogIt: "true"
+      cookieConfig__domain: "${DOMAIN}"
+      cookieConfig__secure: "false"
+      echo__disableSecureCookies: "true"
+
     volumes:
       - ./cmd/server/config/mockOAuth2Clients.json:/config/mockOAuth2Clients.json
       - ./cmd/server/config/oidcClients.json:/config/oidcClients.json
+      - ./cmd/server/config/idps.json:/config/idps.json
+      - ./cmd/server/config/signing-keys.json:/config/signing-keys.json
+
     entrypoint: ["/app/server", "serve"]
   smtp4dev:
     extends:
       file: ./docker-compose-common.yml
       service: micro
-    container_name: smtp4dev-fluffycore
     image: rnwood/smtp4dev:v3
     restart: always
     ports:
       # Change the number before : to the port the web interface should be accessible on
-      - "5000:80"
+      - "${SMTP4DEV_WEB_PORT}:80"
       # Change the number before : to the port the SMTP server should be accessible on
       - "25:25"
       # Change the number before : to the port the IMAP server should be accessible on
@@ -71,7 +90,7 @@ services:
       #- ServerOptions__NumberOfSessionsToKeep=100
 
       #Specifies the TLS mode to use. None=Off. StartTls=On demand if client supports STARTTLS. ImplicitTls=TLS as soon as connection is established.
-      #- ServerOptions__TlsMode=None
+      - ServerOptions__TlsMode=STARTTLS
 
       #Specifies the TLS certificate to use if TLS is enabled/requested. Specify "" to use an auto-generated self-signed certificate (then see console output on first startup)
       #- ServerOptions__TlsCertificate=
@@ -107,6 +126,14 @@ services:
     depends_on:
       rage:
         condition: service_healthy
+#====================================================
+# NETWORKS
+#====================================================
+networks:
+  rage:
 
+#====================================================
+# VOLUMES
+#====================================================
 volumes:
   smtp4dev-data:

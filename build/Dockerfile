@@ -60,7 +60,8 @@ WORKDIR /app
 COPY --from=build /build/${THEBINARY} ./
 RUN mkdir /static
 COPY ./cmd/server/static ./static/
-
+RUN mkdir /resources
+COPY ./cmd/server/resources ./resources/
 
 ENV PATH=/app:${PATH}
 ENV PORT="50051"

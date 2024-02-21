@@ -1,6 +1,7 @@
 package cookies
 
 import (
+	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	echo "github.com/labstack/echo/v4"
 )
 
@@ -25,6 +26,25 @@ type (
 	GetPasswordResetCookieResponse struct {
 		PasswordReset *PasswordReset `json:"passwordReset"`
 	}
+	AccountStateCookie struct {
+		State string `json:"state"`
+		Nonce string `json:"nonce"`
+	}
+	SetAccountStateCookieRequest struct {
+		AccountStateCookie *AccountStateCookie `json:"accountStateCookie"`
+	}
+	GetAccountStateCookieResponse struct {
+		AccountStateCookie *AccountStateCookie `json:"accountStateCookie"`
+	}
+	AuthCookie struct {
+		Identity *models.Identity `json:"identity"`
+	}
+	SetAuthCookieRequest struct {
+		AuthCookie *AuthCookie `json:"authCookie"`
+	}
+	GetAuthCookieResponse struct {
+		AuthCookie *AuthCookie `json:"authCookie"`
+	}
 	IWellknownCookies interface {
 		SetVerificationCodeCookie(c echo.Context, request *SetVerificationCodeCookieRequest) error
 		DeleteVerificationCodeCookie(c echo.Context)
@@ -32,5 +52,11 @@ type (
 		SetPasswordResetCookie(c echo.Context, request *SetPasswordResetCookieRequest) error
 		DeletePasswordResetCookie(c echo.Context)
 		GetPasswordResetCookie(c echo.Context) (*GetPasswordResetCookieResponse, error)
+		SetAccountStateCookie(c echo.Context, request *SetAccountStateCookieRequest) error
+		DeleteAccountStateCookie(c echo.Context)
+		GetAccountStateCookie(c echo.Context) (*GetAccountStateCookieResponse, error)
+		SetAuthCookie(c echo.Context, request *SetAuthCookieRequest) error
+		DeleteAuthCookie(c echo.Context)
+		GetAuthCookie(c echo.Context) (*GetAuthCookieResponse, error)
 	}
 )

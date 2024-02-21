@@ -26,6 +26,7 @@ import (
 	services_oauth2flowstore "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/oauth2flowstore"
 	services_oidcflowstore "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/oidcflowstore"
 	services_oidcproviderfactory "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/oidcproviderfactory"
+	services_selfoauth2provider "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/selfoauth2provider"
 	services_tokenservice "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/tokenservice"
 	services_user_inmemory "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/user/inmemory"
 	services_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/util"
@@ -83,11 +84,18 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	services_oidcflowstore.AddSingletonIOIDCFlowStore(builder)
 	services_oauth2flowstore.AddSingletonIExternalOauth2FlowStore(builder)
 	di.AddInstance[*contracts_config.Config](builder, config)
+	di.AddInstance[*contracts_config.OIDCConfig](builder, config.OIDCConfig)
+	di.AddInstance[*contracts_config.SelfIDPConfig](builder, config.SelfIDPConfig)
+	di.AddInstance[*contracts_email.EmailConfig](builder, config.EmailConfig)
+	di.AddInstance[*contracts_config.EchoConfig](builder, config.Echo)
+	di.AddInstance[*contracts_config.BackingCacheConfig](builder, config.BackingCache)
+	di.AddInstance[*contracts_config.CookieConfig](builder, config.CookieConfig)
+
 	OnConfigureServicesLoadOIDCClients(ctx, config, builder)
 	OnConfigureServicesLoadIDPs(ctx, config, builder)
 	addJwtMinter := func() {
 		signingKeys := []*fluffycore_contracts_jwtminter.SigningKey{}
-		fileContent, err := os.ReadFile(config.SigningKeyJsonPath)
+		fileContent, err := os.ReadFile(config.ConfigFiles.SigningKeyJsonPath)
 		if err != nil {
 			log.Fatal().Err(err).Msg("failed to read signing key file")
 		}
@@ -109,9 +117,7 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 		return err
 	}
 	config.EmailConfig.TemplateEngine = templateEngine
-	di.AddInstance[*contracts_email.EmailConfig](builder, config.EmailConfig)
 
-	di.AddInstance[*contracts_config.EchoConfig](builder, config.Echo)
 	services_localizerbundle.AddSingletonILocalizerBundle(builder)
 	services_localizer.AddScopedILocalizer(builder)
 	services_email.AddScopedIEmailService(builder)
@@ -119,6 +125,8 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	fluffycore_echo_services_cookies_insecure.AddCookies(builder)
 	fluffycore_echo_services_cookies_secure.AddSecureCookies(builder, config.Echo.SecureCookies)
 	services_cookies.AddSingletonIWellknownCookies(builder)
+
+	services_selfoauth2provider.AddSingletonISelfOAuth2Provider(builder)
 	return nil
 }
 func OnConfigureServicesLoadIDPs(ctx context.Context, config *contracts_config.Config, builder di.ContainerBuilder) error {

@@ -106,7 +106,7 @@ func (s *service) Do(c echo.Context) error {
 	if err := c.Bind(model); err != nil {
 		return err
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log = log.With().Interface("model", model).Logger()
 
 	externalOAuth2State, err := s.ExternalOauth2FlowStore().GetExternalOauth2Final(ctx, model.State)
 	if err != nil {
