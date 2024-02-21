@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/cookies"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
-	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
@@ -16,6 +16,7 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
+		wellknownCookies contracts_cookies.IWellknownCookies
 	}
 )
 
@@ -26,9 +27,12 @@ func init() {
 }
 
 func (s *service) Ctor(
-	container di.Container) (*service, error) {
+	container di.Container,
+	wellknownCookies contracts_cookies.IWellknownCookies,
+) (*service, error) {
 	return &service{
-		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
+		wellknownCookies: wellknownCookies,
 	}, nil
 }
 
@@ -76,8 +80,7 @@ func (s *service) DoGet(c echo.Context) error {
 		log.Error().Err(err).Msg("validateLoginGetRequest")
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	echo_utils.DeleteCookie(c, "_auth")
-	echo_utils.DeleteCookie(c, "_login_request")
+	s.wellknownCookies.DeleteAuthCookie(c)
 
 	return s.Render(c, http.StatusOK, "oidc/logout/index",
 		map[string]interface{}{
