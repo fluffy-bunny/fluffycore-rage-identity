@@ -279,12 +279,25 @@ func (s *service) DoPost(c echo.Context) error {
 			log.Error().Err(err).Msg("SendSimpleEmail")
 			return c.Redirect(http.StatusFound, "/error")
 		}
-		redirectURL := fmt.Sprintf("%s?state=%s&email=%s&directive=%s",
-			wellknown_echo.VerifyCodePath,
-			model.State,
-			model.UserName,
-			models.VerifyEmailDirective,
-		)
+		redirectURL := ""
+		if s.config.SystemConfig.DeveloperMode {
+			redirectURL = fmt.Sprintf("%s?state=%s&email=%s&directive=%s&code=%s",
+				wellknown_echo.VerifyCodePath,
+				model.State,
+				model.UserName,
+				models.VerifyEmailDirective,
+				verificationCode,
+			)
+
+		} else {
+			redirectURL = fmt.Sprintf("%s?state=%s&email=%s&directive=%s",
+				wellknown_echo.VerifyCodePath,
+				model.State,
+				model.UserName,
+				models.VerifyEmailDirective,
+			)
+
+		}
 		return c.Redirect(http.StatusFound, redirectURL)
 
 	}

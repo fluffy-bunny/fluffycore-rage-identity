@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/cookies"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/email"
 	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
@@ -28,6 +29,7 @@ type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
 		wellknownCookies contracts_cookies.IWellknownCookies
+		config           *contracts_config.Config
 	}
 )
 
@@ -39,11 +41,13 @@ func init() {
 
 func (s *service) Ctor(
 	container di.Container,
+	config *contracts_config.Config,
 	wellknownCookies contracts_cookies.IWellknownCookies,
 ) (*service, error) {
 	return &service{
 		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
 		wellknownCookies: wellknownCookies,
+		config:           config,
 	}, nil
 }
 
@@ -202,13 +206,22 @@ func (s *service) DoPost(c echo.Context) error {
 			return c.Redirect(http.StatusFound, "/error")
 		}
 	}
-
 	redirectURL := fmt.Sprintf("%s?state=%s&email=%s&directive=%s",
 		wellknown_echo.VerifyCodePath,
 		model.State,
 		model.Email,
 		models.PasswordResetDirective,
 	)
+	if s.config.SystemConfig.DeveloperMode {
+		redirectURL = fmt.Sprintf("%s?state=%s&email=%s&directive=%s&code=%s",
+			wellknown_echo.VerifyCodePath,
+			model.State,
+			model.Email,
+			models.PasswordResetDirective,
+			verificationCode,
+		)
+	}
+
 	return c.Redirect(http.StatusFound, redirectURL)
 
 }

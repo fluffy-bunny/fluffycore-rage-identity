@@ -253,6 +253,15 @@ func (s *service) DoPost(c echo.Context) error {
 			model.UserName,
 			models.VerifyEmailDirective,
 		)
+		if s.config.SystemConfig.DeveloperMode {
+			redirectURL = fmt.Sprintf("%s?state=%s&email=%s&directive=%s&code=%s",
+				wellknown_echo.VerifyCodePath,
+				model.State,
+				model.UserName,
+				models.VerifyEmailDirective,
+				verificationCode,
+			)
+		}
 		return c.Redirect(http.StatusFound, redirectURL)
 	}
 

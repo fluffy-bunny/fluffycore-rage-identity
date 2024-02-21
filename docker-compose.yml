@@ -44,6 +44,7 @@ services:
       cookieConfig__domain: "${DOMAIN}"
       cookieConfig__secure: "false"
       echo__disableSecureCookies: "true"
+      systemConfig__developerMode: "true"
 
     volumes:
       - ./cmd/server/config/mockOAuth2Clients.json:/config/mockOAuth2Clients.json

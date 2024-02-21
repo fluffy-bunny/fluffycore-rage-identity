@@ -65,6 +65,9 @@ type OIDCConfig struct {
 type CookieConfig struct {
 	Domain string `json:"domain"`
 }
+type SystemConfig struct {
+	DeveloperMode bool `json:"developerMode"`
+}
 type Config struct {
 	fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
 
@@ -83,6 +86,7 @@ type Config struct {
 	EmailConfig               *contracts_email.EmailConfig            `json:"emailConfig"`
 	SelfIDPConfig             *SelfIDPConfig                          `json:"selfIDPConfig"`
 	CookieConfig              *CookieConfig                           `json:"cookieConfig"`
+	SystemConfig              *SystemConfig                           `json:"systemConfig"`
 }
 
 // ConfigDefaultJSON default json
@@ -98,6 +102,9 @@ const configDefaultJSONTemplate = `
 	"customString": "some default value",
 	"someSecret": "password",
 	"GRPC_GATEWAY_ENABLED": true,
+	"systemConfig": {
+		"developerMode": false
+	},
 	"oidcConfig": {
 		"baseUrl": "IN_ENVIRONMENT"
 	},
