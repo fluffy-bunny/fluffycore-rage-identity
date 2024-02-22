@@ -28,6 +28,8 @@ services:
       file: ./docker-compose-common-rage.yml
       service: micro
     image: fluffycore.rage.oidc:latest
+    dns:
+      - 8.8.8.8
     ports:
       - "50051:50051"
       - "50052:50052"

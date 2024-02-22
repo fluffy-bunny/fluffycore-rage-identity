@@ -39,6 +39,26 @@
       }
     },
     {
+      "id": "microsoft-social",
+      "enabled": true,
+      "slug": "microsoft-social",
+      "name": "Microsoft",
+      "description": "Microsoft",
+      "protocol": {
+        "oidc": {
+          "authority": "https://login.microsoftonline.com/9188040d-6c67-4c5b-b112-36a304b66dad/v2.0",
+          "client_id": "0f81aa6c-b280-4503-b130-adc0567bfbe4",
+          "client_secret": "${AZUREAD_0f81aa6c-b280-4503-b130-adc0567bfbe4_CLIENT_SECRET}",
+          "scope": "openid profile email User.Read"
+        }
+      },
+      "metadata": {
+        "hidden": "false",
+        "email_verification_required": "true",
+        "image_ref": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
+      }
+    },
+    {
       "id": "mapped-enterprise",
       "enabled": true,
       "slug": "mapped-enterprise",
