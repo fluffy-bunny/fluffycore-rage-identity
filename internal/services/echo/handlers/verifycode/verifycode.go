@@ -50,7 +50,8 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
 		stemService.Ctor,
 		[]contracts_handler.HTTPVERB{
-			contracts_handler.GET,
+			// do auto post
+			//contracts_handler.GET,
 			contracts_handler.POST,
 		},
 		wellknown_echo.VerifyCodePath,
@@ -73,6 +74,7 @@ type VerifyCodePostRequest struct {
 	Email     string `param:"email" query:"email" form:"email" json:"email" xml:"email"`
 	Code      string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
 	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
+	Type      string `param:"type" query:"type" form:"type" json:"type" xml:"type"`
 }
 
 func (s *service) validateVerifyCodeGetRequest(model *VerifyCodeGetRequest) error {
@@ -160,7 +162,9 @@ func (s *service) DoPost(c echo.Context) error {
 				"defs":      errors,
 			})
 	}
-
+	if model.Type == "GET" {
+		return s.DoGet(c)
+	}
 	getVerificationCodeCookieResponse, err := s.wellknownCookies.GetVerificationCodeCookie(c)
 	if err != nil {
 		log.Error().Err(err).Msg("GetVerificationCodeCookie")

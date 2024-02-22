@@ -1,7 +1,6 @@
 package forgotpassword
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -206,24 +205,32 @@ func (s *service) DoPost(c echo.Context) error {
 			return c.Redirect(http.StatusFound, "/error")
 		}
 	}
-	redirectURL := fmt.Sprintf("%s?state=%s&email=%s&directive=%s",
-		wellknown_echo.VerifyCodePath,
-		model.State,
-		model.Email,
-		models.PasswordResetDirective,
-	)
-	if s.config.SystemConfig.DeveloperMode {
-		redirectURL = fmt.Sprintf("%s?state=%s&email=%s&directive=%s&code=%s",
-			wellknown_echo.VerifyCodePath,
-			model.State,
-			model.Email,
-			models.PasswordResetDirective,
-			verificationCode,
-		)
+	formParams := []models.FormParam{
+		{
+			Name:  "state",
+			Value: model.State,
+		},
+		{
+			Name:  "email",
+			Value: model.Email,
+		},
+		{
+			Name:  "directive",
+			Value: models.PasswordResetDirective,
+		},
+		{
+			Name:  "type",
+			Value: "GET",
+		},
 	}
 
-	return c.Redirect(http.StatusFound, redirectURL)
-
+	if s.config.SystemConfig.DeveloperMode {
+		formParams = append(formParams, models.FormParam{
+			Name:  "code",
+			Value: verificationCode,
+		})
+	}
+	return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
 }
 
 // HealthCheck godoc

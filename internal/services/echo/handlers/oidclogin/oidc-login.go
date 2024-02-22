@@ -252,22 +252,32 @@ func (s *service) DoPost(c echo.Context) error {
 					"code": verificationCode,
 				},
 			})
-		redirectURL := fmt.Sprintf("%s?state=%s&email=%s&directive=%s",
-			wellknown_echo.VerifyCodePath,
-			model.State,
-			model.UserName,
-			models.VerifyEmailDirective,
-		)
-		if s.config.SystemConfig.DeveloperMode {
-			redirectURL = fmt.Sprintf("%s?state=%s&email=%s&directive=%s&code=%s",
-				wellknown_echo.VerifyCodePath,
-				model.State,
-				model.UserName,
-				models.VerifyEmailDirective,
-				verificationCode,
-			)
+		formParams := []models.FormParam{
+			{
+				Name:  "state",
+				Value: model.State,
+			},
+			{
+				Name:  "email",
+				Value: model.UserName,
+			},
+			{
+				Name:  "directive",
+				Value: models.VerifyEmailDirective,
+			},
+			{
+				Name:  "type",
+				Value: "GET",
+			},
 		}
-		return c.Redirect(http.StatusFound, redirectURL)
+
+		if s.config.SystemConfig.DeveloperMode {
+			formParams = append(formParams, models.FormParam{
+				Name:  "code",
+				Value: verificationCode,
+			})
+		}
+		return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
 	}
 
 	if user.Password == nil {

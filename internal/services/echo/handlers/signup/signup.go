@@ -279,26 +279,33 @@ func (s *service) DoPost(c echo.Context) error {
 			log.Error().Err(err).Msg("SendSimpleEmail")
 			return c.Redirect(http.StatusFound, "/error")
 		}
-		redirectURL := ""
-		if s.config.SystemConfig.DeveloperMode {
-			redirectURL = fmt.Sprintf("%s?state=%s&email=%s&directive=%s&code=%s",
-				wellknown_echo.VerifyCodePath,
-				model.State,
-				model.UserName,
-				models.VerifyEmailDirective,
-				verificationCode,
-			)
+		formParams := []models.FormParam{
+			{
+				Name:  "state",
+				Value: model.State,
+			},
+			{
+				Name:  "email",
+				Value: model.UserName,
+			},
+			{
+				Name:  "directive",
+				Value: models.VerifyEmailDirective,
+			},
+			{
+				Name:  "type",
+				Value: "GET",
+			},
+		}
 
-		} else {
-			redirectURL = fmt.Sprintf("%s?state=%s&email=%s&directive=%s",
-				wellknown_echo.VerifyCodePath,
-				model.State,
-				model.UserName,
-				models.VerifyEmailDirective,
-			)
+		if s.config.SystemConfig.DeveloperMode {
+			formParams = append(formParams, models.FormParam{
+				Name:  "code",
+				Value: verificationCode,
+			})
 
 		}
-		return c.Redirect(http.StatusFound, redirectURL)
+		return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
 
 	}
 	var signupGetRequest *SignupGetRequest = &SignupGetRequest{}
