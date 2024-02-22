@@ -32,6 +32,7 @@
                 "cookieConfig__domain": "localhost",
                 "cookieConfig__secure": "true",
                 "systemConfig__developerMode": "true",
+                "GITHUB_CLIENT_ID": "bdbe2f2235eb3a02065c",
             },
             "args": [ "serve" ]        
         },

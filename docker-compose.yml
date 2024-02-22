@@ -1,10 +1,31 @@
 version: "3.8"
 
 services:
+  reverse-proxy:
+    extends:
+      file: ./docker-compose-common-proxy.yml
+      service: micro
+    image: traefik:latest
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      # Web
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Map the static configuration into the container
+      - ./config/static.yml:/etc/traefik/traefik.yml:ro
+      # Map the dynamic configuration into the container
+      - ./config/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      # Map the certificats into the container
+      - ./certs:/etc/certs:ro
   rage:
     container_name: rage
     extends:
-      file: ./docker-compose-common.yml
+      file: ./docker-compose-common-rage.yml
       service: micro
     image: fluffycore.rage.oidc:latest
     ports:
@@ -12,7 +33,9 @@ services:
       - "50052:50052"
       - "50053:50053"
       - "9044:9044"
-
+    env_file:
+      - .env
+      - .env.secrets
     environment:
       ENABLE_GRPC_SERVER_REFLECTION: "true"
       APPLICATION_NAME: "starterkit"
@@ -36,26 +59,58 @@ services:
       emailConfig__auth__plainAuth__username: "${SMTP4DEV_SMTP_CONFIG__USER}"
       emailConfig__auth__plainAuth__password: "${SMTP4DEV_SMTP_CONFIG__PASSWORD}"
       emailConfig__auth__plainAuth__identity: "${RAGE_SMTP_HOST}"
-
-      selfIDPConfig__redirectUrl: "${BASE_URL}/auth/callback"
-      selfIDPConfig__authority: "${BASE_URL}"
-      oidcConfig__baseUrl: "${BASE_URL}"
+      selfIDPConfig__redirectUrl: "https://rage.localhost.dev/auth/callback"
+      selfIDPConfig__authority: "https://rage.localhost.dev"
+      oidcConfig__baseUrl: "https://rage.localhost.dev"
       emailConfig__justLogIt: "true"
-      cookieConfig__domain: "${DOMAIN}"
+      cookieConfig__domain: "rage.localhost.dev"
       cookieConfig__secure: "false"
       echo__disableSecureCookies: "true"
       systemConfig__developerMode: "true"
-
+    labels:
+      # Enable this container to be mapped by traefik
+      # For more information, see: https://docs.traefik.io/providers/docker/#exposedbydefault
+      - "traefik.enable=true"
+      # Define the network that should be used
+      - "traefik.docker.network=proxy"
+      # URL to reach this container
+      - "traefik.http.routers.rage.rule=Host(`rage.localhost.dev`)"
+      # Activation of TLS
+      - "traefik.http.routers.rage.tls=true"
+      # If port is different than 80, use the following service:
+      # - "traefik.http.services.<service_name>.loadbalancer.server.port=<port>"
+      - "traefik.http.services.rage.loadbalancer.server.port=9044"
     volumes:
       - ./cmd/server/config/mockOAuth2Clients.json:/config/mockOAuth2Clients.json
       - ./cmd/server/config/oidcClients.json:/config/oidcClients.json
-      - ./cmd/server/config/idps.json:/config/idps.json
+      - ./cmd/server/config/idps.docker.json:/config/idps.json
       - ./cmd/server/config/signing-keys.json:/config/signing-keys.json
 
     entrypoint: ["/app/server", "serve"]
+
+  whoami:
+    extends:
+      file: ./docker-compose-common-rage.yml
+      service: micro
+    image: containous/whoami
+    container_name: whoami
+    security_opt:
+      - no-new-privileges:true
+    labels:
+      # Enable this container to be mapped by traefik
+      # For more information, see: https://docs.traefik.io/providers/docker/#exposedbydefault
+      - "traefik.enable=true"
+      # Define the network that should be used
+      - "traefik.docker.network=proxy"
+      # URL to reach this container
+      - "traefik.http.routers.whoami.rule=Host(`whoami.localhost.dev`)"
+      # Activation of TLS
+      - "traefik.http.routers.whoami.tls=true"
+      # If port is different than 80, use the following service:
+      # - "traefik.http.services.<service_name>.loadbalancer.server.port=<port>"
   smtp4dev:
     extends:
-      file: ./docker-compose-common.yml
+      file: ./docker-compose-common-rage.yml
       service: micro
     image: rnwood/smtp4dev:v3
     restart: always
@@ -116,21 +171,12 @@ services:
 
       #Specifies the port the IMAP server will listen on - allows standard email clients to view/retrieve messages
       #"ServerOptions__ImapPort"=143
-  whoami:
-    container_name: whoami
-    extends:
-      file: ./docker-compose-common.yml
-      service: micro
-    image: containous/whoami
-    security_opt:
-      - no-new-privileges:true
-    depends_on:
-      rage:
-        condition: service_healthy
+
 #====================================================
 # NETWORKS
 #====================================================
 networks:
+  proxy:
   rage:
 
 #====================================================

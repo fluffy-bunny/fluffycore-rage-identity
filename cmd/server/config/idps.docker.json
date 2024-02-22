@@ -28,8 +28,8 @@
       "description": "Github",
       "protocol": {
         "github": {
-          "client_id": "bdbe2f2235eb3a02065c",
-          "client_secret": "${GITHUB_bdbe2f2235eb3a02065c_CLIENT_SECRET}"
+          "client_id": "68863c06bc5c9bd0c2f9",
+          "client_secret": "${GITHUB_68863c06bc5c9bd0c2f9_CLIENT_SECRET}"
         }
       },
       "metadata": {
