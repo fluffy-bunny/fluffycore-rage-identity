@@ -93,7 +93,11 @@ func (s *service) SendEmail(ctx context.Context, request *contracts_email.SendEm
 	if err != nil {
 		return nil, err
 	}
-
+	if s.config.JustLogIt {
+		log.Info().Str("to", request.ToEmail).
+			Str("subject", subject).Msg(renderedEmail.Text)
+		return &contracts_email.SendEmailResponse{}, nil
+	}
 	mail := mailyak.New(
 		s.config.Host,
 		smtp.PlainAuth(

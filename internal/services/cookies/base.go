@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
 	fluffycore_contracts_cookies "github.com/fluffy-bunny/fluffycore/echo/contracts/cookies"
 	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
@@ -34,6 +35,7 @@ func GetCookie[T any](c echo.Context,
 	return err
 }
 func SetCookie[T any](c echo.Context,
+	config *contracts_config.CookieConfig,
 	cookies fluffycore_contracts_cookies.ICookies, name string, data T) error {
 	b, err := json.Marshal(data)
 	if err != nil {
@@ -48,10 +50,10 @@ func SetCookie[T any](c echo.Context,
 		&fluffycore_contracts_cookies.SetCookieRequest{
 			Name:     name,
 			Value:    value,
-			Secure:   true,
-			HttpOnly: true,
+			HttpOnly: false,
 			Expires:  time.Now().Add(30 * time.Minute),
 			Path:     "/",
+			Domain:   config.Domain,
 		})
 	if err != nil {
 		return err

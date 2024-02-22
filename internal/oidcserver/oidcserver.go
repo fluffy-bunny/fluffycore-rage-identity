@@ -9,17 +9,18 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
 	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
 	services "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services"
-	services_handlers_about "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/about"
+	services_handlers_account_about "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/about"
+	services_handlers_account_callback "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/callback"
+	services_handlers_account_home "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/home"
+	services_handlers_account_login "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/login"
+	services_handlers_account_logout "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/logout"
 	services_handlers_authorization_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/authorization_endpoint"
 	services_handlers_discovery_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/discovery_endpoint"
 	services_handlers_error "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/error"
 	services_handlers_externalidp "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/externalidp"
 	services_handlers_forgotpassword "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/forgotpassword"
 	services_handlers_healthz "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/healthz"
-	services_handlers_home "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/home"
 	services_handlers_jwks_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/jwks_endpoint"
-	services_handlers_login "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/login"
-	services_handlers_logout "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/logout"
 	services_handlers_oauth2_callback "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/oauth2/callback"
 	services_handlers_oidclogin "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/oidclogin"
 	services_handlers_passwordreset "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/passwordreset"
@@ -97,14 +98,22 @@ func (s *startup) PreShutdownHook(echo *echo.Echo) error {
 	return nil
 }
 func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
-	// add your handlers here
+	// App Handlers
+	//--------------------------------------------------------
 	services_handlers_healthz.AddScopedIHandler(builder)
-	services_handlers_home.AddScopedIHandler(builder)
-	services_handlers_about.AddScopedIHandler(builder)
+
+	// Account Handlers
+	//--------------------------------------------------------
+	services_handlers_account_home.AddScopedIHandler(builder)
+	services_handlers_account_about.AddScopedIHandler(builder)
+	services_handlers_account_callback.AddScopedIHandler(builder)
+	services_handlers_account_login.AddScopedIHandler(builder)
+	services_handlers_account_logout.AddScopedIHandler(builder)
+
+	// OIDC Handlers
+	//--------------------------------------------------------
 	services_handlers_signup.AddScopedIHandler(builder)
 	services_handlers_error.AddScopedIHandler(builder)
-	services_handlers_login.AddScopedIHandler(builder)
-	services_handlers_logout.AddScopedIHandler(builder)
 	services_handlers_oidclogin.AddScopedIHandler(builder)
 	services_handlers_externalidp.AddScopedIHandler(builder)
 	services_handlers_swagger.AddScopedIHandler(builder)

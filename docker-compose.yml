@@ -1,10 +1,31 @@
 version: "3.8"
 
 services:
-  starterkit:
-    container_name: starterkit
+  reverse-proxy:
     extends:
-      file: ./docker-compose-common.yml
+      file: ./docker-compose-common-proxy.yml
+      service: micro
+    image: traefik:latest
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      # Web
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # Map the static configuration into the container
+      - ./config/static.yml:/etc/traefik/traefik.yml:ro
+      # Map the dynamic configuration into the container
+      - ./config/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      # Map the certificats into the container
+      - ./certs:/etc/certs:ro
+  rage:
+    container_name: rage
+    extends:
+      file: ./docker-compose-common-rage.yml
       service: micro
     image: fluffycore.rage.oidc:latest
     ports:
@@ -12,6 +33,9 @@ services:
       - "50052:50052"
       - "50053:50053"
       - "9044:9044"
+    env_file:
+      - .env
+      - .env.secrets
     environment:
       ENABLE_GRPC_SERVER_REFLECTION: "true"
       APPLICATION_NAME: "starterkit"
@@ -28,27 +52,78 @@ services:
       jwtValidators__jwksUrls: "http://starterkit:50053/.well-known/jwks"
       configFiles__mockOAuth2ClientPath: "/config/mockOAuth2Clients.json"
       configFiles__oidcClientPath: "/config/oidcClients.json"
+      configFiles__idpsPath: "/config/idps.json"
+      configFiles__signingKeyJsonPath: "/config/signing-keys.json"
+      emailConfig__host: "${RAGE_SMTP_HOST}:25"
+      emailConfig__auth__plainAuth__host: "${RAGE_SMTP_HOST}"
+      emailConfig__auth__plainAuth__username: "${SMTP4DEV_SMTP_CONFIG__USER}"
+      emailConfig__auth__plainAuth__password: "${SMTP4DEV_SMTP_CONFIG__PASSWORD}"
+      emailConfig__auth__plainAuth__identity: "${RAGE_SMTP_HOST}"
+      selfIDPConfig__redirectUrl: "https://rage.localhost.dev/auth/callback"
+      selfIDPConfig__authority: "https://rage.localhost.dev"
+      oidcConfig__baseUrl: "https://rage.localhost.dev"
+      emailConfig__justLogIt: "true"
+      cookieConfig__domain: "rage.localhost.dev"
+      cookieConfig__secure: "false"
+      echo__disableSecureCookies: "true"
+      systemConfig__developerMode: "true"
+    labels:
+      # Enable this container to be mapped by traefik
+      # For more information, see: https://docs.traefik.io/providers/docker/#exposedbydefault
+      - "traefik.enable=true"
+      # Define the network that should be used
+      - "traefik.docker.network=proxy"
+      # URL to reach this container
+      - "traefik.http.routers.rage.rule=Host(`rage.localhost.dev`)"
+      # Activation of TLS
+      - "traefik.http.routers.rage.tls=true"
+      # If port is different than 80, use the following service:
+      # - "traefik.http.services.<service_name>.loadbalancer.server.port=<port>"
+      - "traefik.http.services.rage.loadbalancer.server.port=9044"
     volumes:
       - ./cmd/server/config/mockOAuth2Clients.json:/config/mockOAuth2Clients.json
       - ./cmd/server/config/oidcClients.json:/config/oidcClients.json
+      - ./cmd/server/config/idps.docker.json:/config/idps.json
+      - ./cmd/server/config/signing-keys.json:/config/signing-keys.json
+
     entrypoint: ["/app/server", "serve"]
+
+  whoami:
+    extends:
+      file: ./docker-compose-common-rage.yml
+      service: micro
+    image: containous/whoami
+    container_name: whoami
+    security_opt:
+      - no-new-privileges:true
+    labels:
+      # Enable this container to be mapped by traefik
+      # For more information, see: https://docs.traefik.io/providers/docker/#exposedbydefault
+      - "traefik.enable=true"
+      # Define the network that should be used
+      - "traefik.docker.network=proxy"
+      # URL to reach this container
+      - "traefik.http.routers.whoami.rule=Host(`whoami.localhost.dev`)"
+      # Activation of TLS
+      - "traefik.http.routers.whoami.tls=true"
+      # If port is different than 80, use the following service:
+      # - "traefik.http.services.<service_name>.loadbalancer.server.port=<port>"
   smtp4dev:
     extends:
-      file: ./docker-compose-common.yml
+      file: ./docker-compose-common-rage.yml
       service: micro
-    container_name: smtp4dev-fluffycore
     image: rnwood/smtp4dev:v3
     restart: always
     ports:
       # Change the number before : to the port the web interface should be accessible on
-      - '5000:80'
+      - "${SMTP4DEV_WEB_PORT}:80"
       # Change the number before : to the port the SMTP server should be accessible on
-      - '25:25'
+      - "25:25"
       # Change the number before : to the port the IMAP server should be accessible on
-      - '143:143'
+      - "143:143"
     volumes:
       # This is where smtp4dev stores the database..
-        - smtp4dev-data:/smtp4dev
+      - smtp4dev-data:/smtp4dev
     environment:
       # Uncomment to customise these settings
 
@@ -71,7 +146,7 @@ services:
       #- ServerOptions__NumberOfSessionsToKeep=100
 
       #Specifies the TLS mode to use. None=Off. StartTls=On demand if client supports STARTTLS. ImplicitTls=TLS as soon as connection is established.
-      #- ServerOptions__TlsMode=None
+      - ServerOptions__TlsMode=STARTTLS
 
       #Specifies the TLS certificate to use if TLS is enabled/requested. Specify "" to use an auto-generated self-signed certificate (then see console output on first startup)
       #- ServerOptions__TlsCertificate=
@@ -96,18 +171,16 @@ services:
 
       #Specifies the port the IMAP server will listen on - allows standard email clients to view/retrieve messages
       #"ServerOptions__ImapPort"=143
-  whoami:
-    container_name: whoami
-    extends:
-      file: ./docker-compose-common.yml
-      service: micro
-    image: containous/whoami
-    security_opt:
-      - no-new-privileges:true
-    depends_on:
-      starterkit:
-        condition: service_healthy
 
+#====================================================
+# NETWORKS
+#====================================================
+networks:
+  proxy:
+  rage:
+
+#====================================================
+# VOLUMES
+#====================================================
 volumes:
   smtp4dev-data:
-  

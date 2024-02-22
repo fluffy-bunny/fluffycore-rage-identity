@@ -7,11 +7,11 @@
 This is a Proof-Of-Life authentication server.
 
 The use case for this proof is the github.com user experience.  
+
 1. A user is a stand-alone entity.
 2. A user can be linked in N number of external IDPs.
 3. A user can be challenged at any time against any known IDP , and the id_token must contain what idp (external or the root) wence the identity was produced.
 4. External IDPs are secret.  We don't want anyone to know what external enterprises a user can be linked to.  
-
 
 No calls to the userinfo endpoint are supported. id_token is the only thing returned that is useful. It is meant to use that id_token as an argument to an internal token_exchange that knows more about the user in the context of that system.
 
@@ -129,7 +129,7 @@ curl --location 'http://localhost:50053/oauth/token' --header 'Content-Type: app
 ## Docker Build
 
 ```bash
- docker build --file .\build\Dockerfile . --tag fluffycore.hanko.oidc:latest
+ docker build --file .\build\Dockerfile . --tag fluffycore.rage.oidc:latest
 ```
 
 ## Health check

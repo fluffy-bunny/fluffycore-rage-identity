@@ -57,7 +57,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Success 200 {object} string
 // @Router /.well-known/openid-configuration [get]
 func (s *service) Do(c echo.Context) error {
-	rootPath := s.config.BaseUrl
+	rootPath := s.config.OIDCConfig.BaseUrl
 
 	discovery := models.DiscoveryDocument{
 		Issuer:                rootPath,
