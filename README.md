@@ -1,9 +1,8 @@
-# Mastodon Identity
+# FluffyCore Identity
 
 ## A simple and opinionated OIDC Authentication Service
 
-![Alt text](docs/mastodon-identity.jpg?raw=true "Title")
-
+![alt text](image-2.png)
 This is a Proof-Of-Life authentication server.
 
 The use case for this proof is the github.com user experience.  
