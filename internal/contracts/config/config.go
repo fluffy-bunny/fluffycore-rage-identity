@@ -19,6 +19,7 @@ type (
 		MockOAuth2ClientPath string `json:"mockOAuth2ClientPath"`
 		OIDCClientPath       string `json:"oidcClientPath"`
 		IDPsPath             string `json:"idpsPath"`
+		SigningKeyJsonPath   string `json:"signingKeyJsonPath"`
 	}
 	InMemoryClient struct {
 		Secret   string `json:"secret"`
@@ -50,24 +51,42 @@ type (
 	}
 )
 
+type SelfIDPConfig struct {
+	ClientID     string   `json:"clientId"`
+	ClientSecret string   `json:"clientSecret"`
+	RedirectURL  string   `json:"redirectUrl"`
+	Authority    string   `json:"authority"`
+	Scopes       []string `json:"scopes"`
+}
+
+type OIDCConfig struct {
+	BaseUrl string `json:"baseUrl"`
+}
+type CookieConfig struct {
+	Domain string `json:"domain"`
+}
+type SystemConfig struct {
+	DeveloperMode bool `json:"developerMode"`
+}
 type Config struct {
 	fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
 
-	ConfigFiles      ConfigFiles                             `json:"configFiles"`
-	CustomString     string                                  `json:"customString"`
-	SomeSecret       string                                  `json:"someSecret" redact:"true"`
-	OAuth2Port       int                                     `json:"oauth2Port"`
-	JWTValidators    JWTValidators                           `json:"jwtValidators"`
-	DDProfilerConfig *fluffycore_contracts_ddprofiler.Config `json:"ddProfilerConfig"`
-	Echo             *EchoConfig                             `json:"echo"`
-	InMemoryClients  InMemoryClients                         `json:"inMemoryClients"`
-	// BaseUrl is the base url for the application.  Hardened as opposed to getting it from the request
-	BaseUrl                   string                       `json:"baseUrl"`
-	BackingCache              BackingCacheConfig           `json:"backingCache"`
-	AutolinkOnEmailMatch      bool                         `json:"autolinkOnEmailMatch"`
-	EmailVerificationRequired bool                         `json:"emailVerificationRequired"`
-	SigningKeyJsonPath        string                       `json:"signingKeyJsonPath"`
-	EmailConfig               *contracts_email.EmailConfig `json:"emailConfig"`
+	ConfigFiles               ConfigFiles                             `json:"configFiles"`
+	CustomString              string                                  `json:"customString"`
+	SomeSecret                string                                  `json:"someSecret" redact:"true"`
+	OAuth2Port                int                                     `json:"oauth2Port"`
+	JWTValidators             JWTValidators                           `json:"jwtValidators"`
+	DDProfilerConfig          *fluffycore_contracts_ddprofiler.Config `json:"ddProfilerConfig"`
+	Echo                      *EchoConfig                             `json:"echo"`
+	InMemoryClients           InMemoryClients                         `json:"inMemoryClients"`
+	OIDCConfig                *OIDCConfig                             `json:"oidcConfig"`
+	BackingCache              *BackingCacheConfig                     `json:"backingCache"`
+	AutolinkOnEmailMatch      bool                                    `json:"autolinkOnEmailMatch"`
+	EmailVerificationRequired bool                                    `json:"emailVerificationRequired"`
+	EmailConfig               *contracts_email.EmailConfig            `json:"emailConfig"`
+	SelfIDPConfig             *SelfIDPConfig                          `json:"selfIDPConfig"`
+	CookieConfig              *CookieConfig                           `json:"cookieConfig"`
+	SystemConfig              *SystemConfig                           `json:"systemConfig"`
 }
 
 // ConfigDefaultJSON default json
@@ -83,11 +102,27 @@ const configDefaultJSONTemplate = `
 	"customString": "some default value",
 	"someSecret": "password",
 	"GRPC_GATEWAY_ENABLED": true,
-	"baseUrl": "IN_ENVIRONMENT",
+	"systemConfig": {
+		"developerMode": false
+	},
+	"oidcConfig": {
+		"baseUrl": "IN_ENVIRONMENT"
+	},
+	"cookieConfig": {
+		"domain": "localhost"
+	},
 	"jwtValidators": {},
 	"autolinkOnEmailMatch": true,
 	"emailVerificationRequired": true,
+	"selfIDPConfig": {
+		"clientId": "self-client",
+		"clientSecret": "secret",
+		"redirectUrl": "http://localhost:9044/auth/callback",
+		"authority": "http://localhost:9044",
+		"scopes": ["openid", "profile", "email"]
+	},
 	"emailConfig": {
+		"justLogIt": false,
 		"fromName": "IN_ENVIRONMENT",
 		"fromEmail": "IN_ENVIRONMENT@example.com",
 		"host": "localhost:25",
@@ -110,8 +145,8 @@ const configDefaultJSONTemplate = `
 	"configFiles": {
 		"mockOAuth2ClientPath": "./config/mockOAuth2Clients.json",
 		"oidcClientPath": "./config/oidcClients.json",
-		"idpsPath": "./config/idps.json"
-
+		"idpsPath": "./config/idps.json",
+		"signingKeyJsonPath": "./config/signing-keys.json"
 	},
 	"ddProfilerConfig": {
 		"ENABLED": false,
@@ -129,8 +164,7 @@ const configDefaultJSONTemplate = `
 	},
 	"inMemoryClients": {
 		"clients": []
-	},
-	"signingKeyJsonPath": "./config/signing-keys.json"
+	}  
 
 
   }

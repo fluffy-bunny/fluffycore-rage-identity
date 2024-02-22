@@ -106,7 +106,7 @@ func (s *service) DoGet(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 
-	err = s.Render(c, http.StatusOK, "views/verifycode/index",
+	err = s.Render(c, http.StatusOK, "oidc/verifycode/index",
 		map[string]interface{}{
 			"state":     model.State,
 			"email":     model.Email,
@@ -151,7 +151,7 @@ func (s *service) DoPost(c echo.Context) error {
 
 	errors, err := s.validateVerifyCodePostRequest(model)
 	if err != nil {
-		return s.Render(c, http.StatusBadRequest, "views/verifycode/index",
+		return s.Render(c, http.StatusBadRequest, "oidc/verifycode/index",
 			map[string]interface{}{
 				"state":     model.State,
 				"email":     model.Email,
@@ -174,7 +174,7 @@ func (s *service) DoPost(c echo.Context) error {
 	code := verificationCode.Code
 
 	if code != model.Code {
-		return s.Render(c, http.StatusBadRequest, "views/verifycode/index",
+		return s.Render(c, http.StatusBadRequest, "oidc/verifycode/index",
 			map[string]interface{}{
 				"state":     model.State,
 				"email":     model.Email,

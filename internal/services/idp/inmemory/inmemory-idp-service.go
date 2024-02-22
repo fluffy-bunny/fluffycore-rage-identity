@@ -138,6 +138,6 @@ func (s *service) ListIDP(ctx context.Context, request *proto_oidc_idp.ListIDPRe
 	}).ToSlice(&idps)
 
 	return &proto_oidc_idp.ListIDPResponse{
-		Idps: s.idps.Idps,
+		Idps: idps,
 	}, nil
 }

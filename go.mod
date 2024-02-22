@@ -2,7 +2,7 @@ module github.com/fluffy-bunny/fluffycore-rage-oidc
 
 go 1.22
 
-replace github.com/fluffy-bunny/fluffycore => ../fluffycore
+//replace github.com/fluffy-bunny/fluffycore => ../fluffycore
 
 //replace github.com/fluffy-bunny/viperEx => ../ViperEx
 
@@ -13,16 +13,16 @@ require (
 	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/eko/gocache/lib/v4 v4.1.5
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.1
-	github.com/fluffy-bunny/fluffycore v1.0.69
+	github.com/fluffy-bunny/fluffycore v1.0.76
 	github.com/go-oauth2/oauth2/v4 v4.5.2
 	github.com/gogo/status v1.1.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/imroc/req/v3 v3.42.3
 	github.com/labstack/echo/v4 v4.11.4
-	github.com/lestrrat-go/jwx/v2 v2.0.19
+	github.com/lestrrat-go/jwx/v2 v2.0.20
 	github.com/nicksnyder/go-i18n/v2 v2.4.0
-	github.com/reugn/async v0.7.0
+	github.com/reugn/async v0.8.0
 	github.com/rs/xid v1.5.0
 	github.com/rs/zerolog v1.32.0
 	github.com/spf13/cobra v1.8.0

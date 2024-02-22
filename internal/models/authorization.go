@@ -57,6 +57,7 @@ type (
 		Subject       string
 		Email         string
 		ACR           []string
+		AMR           []string
 		EmailVerified bool
 	}
 	AuthorizationFinal struct {

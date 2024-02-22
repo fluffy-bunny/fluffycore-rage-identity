@@ -13,7 +13,8 @@ const (
 )
 
 const (
-	ACRPassword = "urn:rage:loa:1fa:pwd"
+	ACRPassword = "urn:mastodon:password"
+	ACRIdpRoot  = "urn:mastodon:idp:root"
 	ACR2FA      = "urn:rage:loa:2fa"
 	ACRIdp      = "urn:rage:loa:idp:{idp}"
 )

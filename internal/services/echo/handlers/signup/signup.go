@@ -120,7 +120,7 @@ func (s *service) DoGet(c echo.Context) error {
 	var rows []row
 	//	rows = append(rows, row{Key: "code", Value: model.Code})
 
-	return s.Render(c, http.StatusOK, "views/signup/index",
+	return s.Render(c, http.StatusOK, "oidc/signup/index",
 		map[string]interface{}{
 			"defs": rows,
 			"idps": idps,
@@ -176,7 +176,7 @@ func (s *service) DoPost(c echo.Context) error {
 	model := &SignupPostRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Debug().Err(err).Msg("Bind")
-		return s.Render(c, http.StatusBadRequest, "views/signup/index",
+		return s.Render(c, http.StatusBadRequest, "oidc/signup/index",
 			map[string]interface{}{
 				"defs": []*Error{NewErrorF("model", "model is invalid")},
 				"isWizardMode": func() bool {
@@ -192,7 +192,7 @@ func (s *service) DoPost(c echo.Context) error {
 		return err
 	}
 	if len(errors) > 0 {
-		return s.Render(c, http.StatusBadRequest, "views/signup/index",
+		return s.Render(c, http.StatusBadRequest, "oidc/signup/index",
 			map[string]interface{}{
 				"defs": errors,
 				"isWizardMode": func() bool {
@@ -217,7 +217,7 @@ func (s *service) DoPost(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 	if len(listUserResponse.Users) > 0 {
-		return s.Render(c, http.StatusBadRequest, "views/signup/index",
+		return s.Render(c, http.StatusBadRequest, "oidc/signup/index",
 			map[string]interface{}{
 				"defs": []*Error{NewErrorF("username", "username:%s already exists", model.UserName)},
 				"isWizardMode": func() bool {
@@ -266,7 +266,7 @@ func (s *service) DoPost(c echo.Context) error {
 			log.Error().Err(err).Msg("SetVerificationCodeCookie")
 			return c.Redirect(http.StatusFound, "/error")
 		}
-		s.EmailService().SendSimpleEmail(ctx,
+		_, err = s.EmailService().SendSimpleEmail(ctx,
 			&contracts_email.SendSimpleEmailRequest{
 				ToEmail:   model.UserName,
 				SubjectId: "email.verification.subject",
@@ -275,13 +275,29 @@ func (s *service) DoPost(c echo.Context) error {
 					"code": verificationCode,
 				},
 			})
+		if err != nil {
+			log.Error().Err(err).Msg("SendSimpleEmail")
+			return c.Redirect(http.StatusFound, "/error")
+		}
+		redirectURL := ""
+		if s.config.SystemConfig.DeveloperMode {
+			redirectURL = fmt.Sprintf("%s?state=%s&email=%s&directive=%s&code=%s",
+				wellknown_echo.VerifyCodePath,
+				model.State,
+				model.UserName,
+				models.VerifyEmailDirective,
+				verificationCode,
+			)
 
-		redirectURL := fmt.Sprintf("%s?state=%s&email=%s&directive=%s",
-			wellknown_echo.VerifyCodePath,
-			model.State,
-			model.UserName,
-			models.VerifyEmailDirective,
-		)
+		} else {
+			redirectURL = fmt.Sprintf("%s?state=%s&email=%s&directive=%s",
+				wellknown_echo.VerifyCodePath,
+				model.State,
+				model.UserName,
+				models.VerifyEmailDirective,
+			)
+
+		}
 		return c.Redirect(http.StatusFound, redirectURL)
 
 	}

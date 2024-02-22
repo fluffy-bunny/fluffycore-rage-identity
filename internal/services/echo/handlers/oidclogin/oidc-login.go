@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
@@ -92,7 +91,7 @@ type row struct {
 func (s *service) handleIdentityFound(c echo.Context, state string) error {
 	r := c.Request()
 	// is the request get or post?
-	rootPath := s.config.BaseUrl
+	rootPath := s.config.OIDCConfig.BaseUrl
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 	mm, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, state)
@@ -107,14 +106,16 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 		return c.Redirect(http.StatusFound, redirectUrl)
 	}
 
-	echo_utils.SetCookieInterface(c, &http.Cookie{
-		Name:     "_auth",
-		Path:     "/",
-		Expires:  time.Now().Add(24 * time.Hour),
-		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
-		HttpOnly: true,
-	}, mm.Identity)
+	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
+		AuthCookie: &contracts_cookies.AuthCookie{
+			Identity: mm.Identity,
+		},
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("SetAuthCookie")
+		// redirect to error page
+		return c.Redirect(http.StatusFound, "/error")
+	}
 
 	err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, mm.Request.Code, mm)
 	if err != nil {
@@ -157,7 +158,7 @@ func (s *service) DoGet(c echo.Context) error {
 		rows = append(rows, row{Key: "error", Value: err.Error()})
 	}
 
-	return s.Render(c, http.StatusOK, "views/oidclogin/index",
+	return s.Render(c, http.StatusOK, "oidc/oidclogin/index",
 		map[string]interface{}{
 			"defs":      rows,
 			"idps":      idps,
@@ -200,7 +201,7 @@ func (s *service) DoPost(c echo.Context) error {
 	})
 	if len(listUserResponse.Users) == 0 {
 		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s not found", model.UserName))
-		return s.Render(c, http.StatusBadRequest, "views/oidclogin/index",
+		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"state":     model.State,
 				"idps":      idps,
@@ -213,7 +214,7 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Warn().Err(err).Msg("ListUser")
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 
-		return s.Render(c, http.StatusBadRequest, "views/oidclogin/index",
+		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"state":     model.State,
 				"idps":      idps,
@@ -252,13 +253,22 @@ func (s *service) DoPost(c echo.Context) error {
 			model.UserName,
 			models.VerifyEmailDirective,
 		)
+		if s.config.SystemConfig.DeveloperMode {
+			redirectURL = fmt.Sprintf("%s?state=%s&email=%s&directive=%s&code=%s",
+				wellknown_echo.VerifyCodePath,
+				model.State,
+				model.UserName,
+				models.VerifyEmailDirective,
+				verificationCode,
+			)
+		}
 		return c.Redirect(http.StatusFound, redirectURL)
 	}
 
 	if user.Password == nil {
 		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s does not have a password", model.UserName))
 
-		return s.Render(c, http.StatusBadRequest, "views/oidclogin/index",
+		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"state":     model.State,
 				"idps":      idps,
@@ -274,7 +284,7 @@ func (s *service) DoPost(c echo.Context) error {
 	if err != nil {
 		log.Warn().Err(err).Msg("ComparePasswordHash")
 		errors = append(errors, services_handlers_shared.NewErrorF("password", "password is invalid"))
-		return s.Render(c, http.StatusBadRequest, "views/oidclogin/index",
+		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"state":     model.State,
 				"idps":      idps,
@@ -282,14 +292,20 @@ func (s *service) DoPost(c echo.Context) error {
 				"directive": models.LoginDirective,
 			})
 	}
-	echo_utils.SetCookieInterface(c, &http.Cookie{
-		Name:     "_auth",
-		Path:     "/",
-		Expires:  time.Now().Add(24 * time.Hour),
-		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
-		HttpOnly: true,
-	}, user.RootIdentity)
+	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
+		AuthCookie: &contracts_cookies.AuthCookie{
+			Identity: &models.Identity{
+				Subject:       user.RootIdentity.Subject,
+				Email:         user.RootIdentity.Email,
+				EmailVerified: user.RootIdentity.EmailVerified,
+			},
+		},
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("SetAuthCookie")
+		// redirect to error page
+		return c.Redirect(http.StatusFound, "/error")
+	}
 
 	mm, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, model.State)
 	if err != nil {
@@ -300,7 +316,15 @@ func (s *service) DoPost(c echo.Context) error {
 	mm.Identity = &models.Identity{
 		Subject: user.RootIdentity.Subject,
 		Email:   user.RootIdentity.Email,
-		ACR:     []string{"urn:mastodon:password", "urn:mastodon:idp:root"},
+		ACR: []string{
+			models.ACRPassword,
+			models.ACRIdpRoot,
+		},
+		AMR: []string{
+			models.AMRPassword,
+			// always true, as we are the root idp
+			models.AMRIdp,
+		},
 	}
 
 	// "urn:mastodon:idp:google", "urn:mastodon:idp:spacex", "urn:mastodon:idp:github-enterprise", etc.
