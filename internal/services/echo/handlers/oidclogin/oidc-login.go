@@ -15,6 +15,7 @@ import (
 	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/shared"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
+	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/idp"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -26,6 +27,7 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
+
 		config           *contracts_config.Config
 		wellknownCookies contracts_cookies.IWellknownCookies
 		passwordHasher   contracts_identity.IPasswordHasher
@@ -140,15 +142,70 @@ func (s *service) DoPost(c echo.Context) error {
 		fluffycore_utils.IsEmptyOrNil(model.Password) {
 		return s.DoGet(c)
 	}
-	model.UserName = strings.ToLower(model.UserName)
-
+	idps, err := s.GetIDPs(ctx)
 	var errors []*services_handlers_shared.Error
 	errors = append(errors, services_handlers_shared.NewErrorF("state", model.State))
-	idps, err := s.GetIDPs(ctx)
 	if err != nil {
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 	}
 
+	model.UserName = strings.ToLower(model.UserName)
+
+	email, ok := echo_utils.IsValidEmailAddress(model.UserName)
+	if !ok {
+		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s is not a valid email address", model.UserName))
+		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
+			map[string]interface{}{
+				"state":     model.State,
+				"idps":      idps,
+				"defs":      errors,
+				"directive": models.LoginDirective,
+			})
+	}
+	// get the domain from the email
+	parts := strings.Split(email, "@")
+	domainPart := parts[1]
+
+	// first lets see if this domain has been claimed.
+	listIDPRequest, err := s.IdpServiceServer().ListIDP(ctx, &proto_oidc_idp.ListIDPRequest{
+		Filter: &proto_oidc_idp.Filter{
+			ClaimedDomain: &proto_types.StringArrayFilterExpression{
+				Eq: domainPart,
+			},
+		},
+	})
+	if err != nil {
+		log.Warn().Err(err).Msg("ListIDP")
+		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
+			map[string]interface{}{
+				"state":     model.State,
+				"idps":      idps,
+				"defs":      errors,
+				"directive": models.LoginDirective,
+			})
+	}
+	if len(listIDPRequest.Idps) > 0 {
+		// an idp has claimed this domain.
+		// post to the externalIDP
+
+		return s.RenderAutoPost(c, wellknown_echo.ExternalIDPPath,
+			[]models.FormParam{
+				{
+					Name:  "state",
+					Value: model.State,
+				},
+				{
+					Name:  "idp_hint",
+					Value: listIDPRequest.Idps[0].Slug,
+				},
+				{
+					Name:  "directive",
+					Value: models.LoginDirective,
+				},
+			})
+
+	}
 	// does the user exist.
 	listUserResponse, err := s.UserService().ListUser(ctx, &proto_oidc_user.ListUserRequest{
 		Filter: &proto_oidc_user.Filter{

@@ -15,7 +15,6 @@ import (
 	services_greeter "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/greeter"
 	services_health "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/health"
 	services_mystream "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/mystream"
-	services_somedisposable "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/somedisposable"
 	internal_version "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/version"
 	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
 	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
@@ -81,13 +80,11 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 	config.DDProfilerConfig.ServiceName = config.ApplicationName
 	config.DDProfilerConfig.Version = internal_version.Version()
 	di.AddInstance[*fluffycore_contracts_ddprofiler.Config](builder, config.DDProfilerConfig)
-	di.AddInstance[*contracts_config.Config](builder, config)
 
 	services.ConfigureServices(ctx, config, builder)
 	fluffycore_services_ddprofiler.AddSingletonIProfiler(builder)
 	services_health.AddHealthService(builder)
 	services_greeter.AddGreeterService(builder)
-	services_somedisposable.AddScopedSomeDisposable(builder)
 	services_mystream.AddMyStreamService(builder)
 	issuerConfigs := &fluffycore_contracts_middleware_auth_jwt.IssuerConfigs{}
 	for idx := range s.config.JWTValidators.Issuers {

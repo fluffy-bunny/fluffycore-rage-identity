@@ -56,7 +56,8 @@
         "hidden": "true",
         "email_verification_required": "false",
         "auto_create": "true"
-      }
+      },
+      "claimedDomains": ["mapped.com"]
     }
   ]
 }

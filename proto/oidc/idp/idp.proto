@@ -21,6 +21,7 @@ message Filter {
     proto.types.StringFilterExpression              description = 3;
     proto.types.StringMapStringFilterExpression     metadata = 4;
     proto.types.BoolFilterExpression                enabled = 5;
+    proto.types.StringArrayFilterExpression         claimed_domain =  6;
 
     // AST
     repeated Filter and = 100;
