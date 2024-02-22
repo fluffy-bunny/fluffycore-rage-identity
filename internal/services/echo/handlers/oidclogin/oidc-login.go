@@ -18,6 +18,7 @@ import (
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
+	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
 )
@@ -56,7 +57,8 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
 		stemService.Ctor,
 		[]contracts_handler.HTTPVERB{
-			contracts_handler.GET,
+			// Using only auto post here so that our arguments are present in the URL
+			//	contracts_handler.GET,
 			contracts_handler.POST,
 		},
 		wellknown_echo.OIDCLoginPath,
@@ -179,7 +181,10 @@ func (s *service) DoPost(c echo.Context) error {
 		return err
 	}
 	log.Info().Interface("model", model).Msg("model")
-
+	if fluffycore_utils.IsEmptyOrNil(model.UserName) &&
+		fluffycore_utils.IsEmptyOrNil(model.Password) {
+		return s.DoGet(c)
+	}
 	model.UserName = strings.ToLower(model.UserName)
 
 	var errors []*services_handlers_shared.Error
@@ -247,22 +252,32 @@ func (s *service) DoPost(c echo.Context) error {
 					"code": verificationCode,
 				},
 			})
-		redirectURL := fmt.Sprintf("%s?state=%s&email=%s&directive=%s",
-			wellknown_echo.VerifyCodePath,
-			model.State,
-			model.UserName,
-			models.VerifyEmailDirective,
-		)
-		if s.config.SystemConfig.DeveloperMode {
-			redirectURL = fmt.Sprintf("%s?state=%s&email=%s&directive=%s&code=%s",
-				wellknown_echo.VerifyCodePath,
-				model.State,
-				model.UserName,
-				models.VerifyEmailDirective,
-				verificationCode,
-			)
+		formParams := []models.FormParam{
+			{
+				Name:  "state",
+				Value: model.State,
+			},
+			{
+				Name:  "email",
+				Value: model.UserName,
+			},
+			{
+				Name:  "directive",
+				Value: models.VerifyEmailDirective,
+			},
+			{
+				Name:  "type",
+				Value: "GET",
+			},
 		}
-		return c.Redirect(http.StatusFound, redirectURL)
+
+		if s.config.SystemConfig.DeveloperMode {
+			formParams = append(formParams, models.FormParam{
+				Name:  "code",
+				Value: verificationCode,
+			})
+		}
+		return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
 	}
 
 	if user.Password == nil {

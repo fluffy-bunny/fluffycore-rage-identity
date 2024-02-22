@@ -34,6 +34,7 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
+
 		clientServiceServer     proto_oidc_client.IFluffyCoreClientServiceServer
 		githubCodeExchange      contracts_codeexchange.IGithubCodeExchange
 		genericOIDCCodeExchange contracts_codeexchange.IGenericOIDCCodeExchange
@@ -118,13 +119,49 @@ func (s *service) Do(c echo.Context) error {
 	defer func() {
 		s.ExternalOauth2FlowStore().DeleteExternalOauth2Final(ctx, model.State)
 	}()
+	doInternalErrorPost := func() error {
+		formParams := []models.FormParam{
+			{
+				Name:  "state",
+				Value: parentState,
+			},
+			{
+				Name:  "error",
+				Value: models.InternalError,
+			},
+		}
+		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
+
+	}
+	doSignupFirstBounceBack := func() error {
+		formParams := []models.FormParam{
+			{
+				Name:  "state",
+				Value: parentState,
+			},
+		}
+		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
+
+	}
+	doLoginBounceBack := func() error {
+		formParams := []models.FormParam{
+			{
+				Name:  "state",
+				Value: parentState,
+			},
+			{
+				Name:  "directive",
+				Value: models.IdentityFound,
+			},
+		}
+		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
+
+	}
+
 	oidcFinalState, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, parentState)
 	if err != nil {
 		log.Error().Err(err).Msg("GetAuthorizationFinal")
-		redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
-			wellknown_echo.OIDCLoginPath,
-			parentState, models.InternalError)
-		return c.Redirect(http.StatusFound, redirectURL)
+		return doInternalErrorPost()
 	}
 
 	getIDPBySlugResponse, err := s.IdpServiceServer().GetIDPBySlug(ctx,
@@ -258,14 +295,10 @@ func (s *service) Do(c echo.Context) error {
 			err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, parentState, oidcFinalState)
 			if err != nil {
 				log.Error().Err(err).Msg("StoreAuthorizationFinal")
-				redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
-					wellknown_echo.OIDCLoginPath,
-					parentState, models.InternalError)
-				return c.Redirect(http.StatusFound, redirectURL)
+				return doInternalErrorPost()
 			}
 			// redirect back
-			redirectURL := fmt.Sprintf("%s?state=%s&directive=%s", wellknown_echo.OIDCLoginPath, parentState, models.IdentityFound)
-			return c.Redirect(http.StatusFound, redirectURL)
+			return doLoginBounceBack()
 		}
 
 		// is this user already linked.
@@ -280,10 +313,7 @@ func (s *service) Do(c echo.Context) error {
 		})
 		if err != nil {
 			log.Error().Err(err).Msg("ListUser")
-			redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
-				wellknown_echo.OIDCLoginPath,
-				parentState, models.InternalError)
-			return c.Redirect(http.StatusFound, redirectURL)
+			return doInternalErrorPost()
 		}
 
 		if len(listUserResponse.Users) > 0 {
@@ -296,18 +326,12 @@ func (s *service) Do(c echo.Context) error {
 			})
 			if err != nil {
 				log.Error().Err(err).Msg("GetUser")
-				redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
-					wellknown_echo.OIDCLoginPath,
-					parentState, models.InternalError)
-				return c.Redirect(http.StatusFound, redirectURL)
+				return doInternalErrorPost()
 			}
 			user := getUserResponse.User
 			if user == nil {
 				log.Error().Msg("user not found")
-				redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
-					wellknown_echo.OIDCLoginPath,
-					parentState, models.InternalError)
-				return c.Redirect(http.StatusFound, redirectURL)
+				return doInternalErrorPost()
 			}
 			_, err = s.UserService().LinkUsers(ctx, &proto_oidc_user.LinkUsersRequest{
 				RootSubject: candidateUserID,
@@ -320,11 +344,7 @@ func (s *service) Do(c echo.Context) error {
 			})
 			if err != nil {
 				log.Error().Err(err).Msg("LinkUsers")
-				redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
-					wellknown_echo.OIDCLoginPath,
-					parentState, models.InternalError)
-
-				return c.Redirect(http.StatusFound, redirectURL)
+				return doInternalErrorPost()
 			}
 			return loginLinkedUser(user)
 		}
@@ -382,18 +402,12 @@ func (s *service) Do(c echo.Context) error {
 						})
 					if err != nil {
 						log.Error().Err(err).Msg("CreateUser")
-						redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
-							wellknown_echo.OIDCLoginPath,
-							parentState, models.InternalError)
-						return c.Redirect(http.StatusFound, redirectURL)
+						return doInternalErrorPost()
 					}
 					return loginLinkedUser(createUserResponse.User)
 				}
 				// we bounce the user back to go through a sigunup flow
-				redirectURL := fmt.Sprintf("%s?state=%s&error=%s",
-					wellknown_echo.OIDCLoginPath,
-					parentState, models.ExternalIDPNotLinked)
-				return c.Redirect(http.StatusFound, redirectURL)
+				return doInternalErrorPost()
 			}
 
 		}
@@ -406,8 +420,7 @@ func (s *service) Do(c echo.Context) error {
 				return c.Redirect(http.StatusTemporaryRedirect, "/login?error=store_authorization_final")
 			}
 			// we don't store the external identity on a missed match.  User has to go through the trouble of a signup
-			redirectURL := fmt.Sprintf("%s?state=%s", wellknown_echo.OIDCLoginPath, parentState)
-			return c.Redirect(http.StatusFound, redirectURL)
+			return doSignupFirstBounceBack()
 		}
 
 	}
