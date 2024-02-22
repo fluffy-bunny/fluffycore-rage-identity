@@ -48,6 +48,7 @@ message IDP {
     string                                  description = 5;
     Protocol                                protocol = 6;
     map<string, string>                     metadata = 7;
+    repeated string                         claimed_domains = 8;
 }
 message IDPs {
     repeated IDP idps = 1;
@@ -60,5 +61,7 @@ message IDPUpdate {
     google.protobuf.StringValue             description = 5;
     ProtocolUpdate                          protocol = 6;
     proto.types.StringMapUpdate             metadata = 7;
+    proto.types.StringArrayUpdate           claimed_domains = 8;
+
 
 }

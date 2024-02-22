@@ -24,6 +24,7 @@ const (
 	OAuth2TokenEndpointPath         = "/token"
 	OIDCAuthorizationEndpointPath   = "/oidc/v1/auth"
 	OIDCLoginPath                   = "/oidc-login"
+	OIDCLoginPasswordPath           = "/oidc-login-password"
 	ReadyPath                       = "/ready"
 	SignupPath                      = "/signup"
 	SwaggerPath                     = "/swagger/*"
@@ -34,30 +35,32 @@ const (
 )
 
 type Paths struct {
-	Home           string
-	About          string
-	Login          string
-	Logout         string
-	Profile        string
-	OIDCLogin      string
-	Signup         string
-	ForgotPassword string
-	VerifyCode     string
-	PasswordReset  string
+	Home              string
+	About             string
+	Login             string
+	Logout            string
+	Profile           string
+	OIDCLogin         string
+	OIDCLoginPassword string
+	Signup            string
+	ForgotPassword    string
+	VerifyCode        string
+	PasswordReset     string
 }
 
 func NewPaths() *Paths {
 	return &Paths{
-		Home:           HomePath,
-		About:          AboutPath,
-		Login:          LoginPath,
-		Logout:         LogoutPath,
-		Profile:        ProfilePath,
-		OIDCLogin:      OIDCLoginPath,
-		Signup:         SignupPath,
-		ForgotPassword: ForgotPasswordPath,
-		VerifyCode:     VerifyCodePath,
-		PasswordReset:  PasswordResetPath,
+		Home:              HomePath,
+		About:             AboutPath,
+		Login:             LoginPath,
+		Logout:            LogoutPath,
+		Profile:           ProfilePath,
+		OIDCLogin:         OIDCLoginPath,
+		OIDCLoginPassword: OIDCLoginPasswordPath,
+		Signup:            SignupPath,
+		ForgotPassword:    ForgotPasswordPath,
+		VerifyCode:        VerifyCodePath,
+		PasswordReset:     PasswordResetPath,
 	}
 }
 

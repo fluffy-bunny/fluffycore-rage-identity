@@ -2,6 +2,7 @@ package inmemory
 
 import (
 	"context"
+	"strings"
 
 	linq "github.com/ahmetb/go-linq/v3"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
@@ -27,6 +28,17 @@ func init() {
 }
 func (s *service) Ctor(idps *proto_oidc_models.IDPs) (proto_oidc_idp.IFluffyCoreIDPServiceServer, error) {
 
+	for _, idp := range idps.Idps {
+		if idp.ClaimedDomains == nil {
+			idp.ClaimedDomains = make([]string, 0)
+		}
+		tolowerDomains := make([]string, 0)
+		for _, v := range idp.ClaimedDomains {
+			tolowerDomains = append(tolowerDomains, strings.ToLower(v))
+		}
+		idp.ClaimedDomains = tolowerDomains
+
+	}
 	return &service{
 		idps: idps,
 	}, nil
@@ -100,6 +112,16 @@ func (s *service) validateListIDPRequest(request *proto_oidc_idp.ListIDPRequest)
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is required")
 	}
+	if request.Filter != nil {
+		if request.Filter.ClaimedDomain != nil {
+			request.Filter.ClaimedDomain.Eq = strings.ToLower(request.Filter.ClaimedDomain.Eq)
+			if !fluffycore_utils.IsEmptyOrNil(request.Filter.ClaimedDomain.In) {
+				for i, v := range request.Filter.ClaimedDomain.In {
+					request.Filter.ClaimedDomain.In[i] = strings.ToLower(v)
+				}
+			}
+		}
+	}
 	return nil
 
 }
@@ -126,6 +148,31 @@ func (s *service) ListIDP(ctx context.Context, request *proto_oidc_idp.ListIDPRe
 				}
 				if metadataValue != request.Filter.Metadata.Value.Eq {
 					return false
+				}
+			}
+			if request.Filter.ClaimedDomain != nil {
+				claimedDomainsMap := make(map[string]bool)
+				for _, v := range c.ClaimedDomains {
+					claimedDomainsMap[v] = true
+				}
+				if !fluffycore_utils.IsEmptyOrNil(request.Filter.ClaimedDomain.Eq) {
+					_, ok := claimedDomainsMap[request.Filter.ClaimedDomain.Eq]
+					if !ok {
+						return false
+					}
+				}
+				if !fluffycore_utils.IsEmptyOrNil(request.Filter.ClaimedDomain.In) {
+					gotHit := false
+					for _, v := range request.Filter.ClaimedDomain.In {
+						_, ok := claimedDomainsMap[v]
+						if ok {
+							gotHit = true
+							break
+						}
+					}
+					if !gotHit {
+						return false
+					}
 				}
 			}
 			return true

@@ -65,6 +65,9 @@ COPY ./cmd/server/resources ./resources/
 
 COPY ./certs /etc/ssl/certs/
 
+COPY --from=stage1 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=stage1 /etc/passwd /etc/passwd
+
 ENV PATH=/app:${PATH}
 ENV PORT="50051"
 ENV REST_PORT="50052"

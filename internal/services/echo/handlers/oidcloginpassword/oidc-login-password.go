@@ -1,4 +1,4 @@
-package oidclogin
+package oidcloginpassword
 
 import (
 	"fmt"
@@ -15,7 +15,6 @@ import (
 	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/shared"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
-	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/idp"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -63,7 +62,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 			//	contracts_handler.GET,
 			contracts_handler.POST,
 		},
-		wellknown_echo.OIDCLoginPath,
+		wellknown_echo.OIDCLoginPasswordPath,
 	)
 
 }
@@ -78,12 +77,11 @@ type LoginGetRequest struct {
 	Error     string `param:"error" query:"error" form:"error" json:"error" xml:"error"`
 	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
 }
-type ExternalIDPAuthRequest struct {
-	IDPHint string `param:"idp_hint" query:"idp_hint" form:"idp_hint" json:"idp_hint" xml:"idp_hint"`
-}
-type LoginPostRequest struct {
+
+type LoginPasswordPostRequest struct {
 	State    string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 	UserName string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
+	Password string `param:"password" query:"password" form:"password" json:"password" xml:"password"`
 }
 
 type row struct {
@@ -116,7 +114,7 @@ func (s *service) DoGet(c echo.Context) error {
 		rows = append(rows, row{Key: "error", Value: err.Error()})
 	}
 
-	return s.Render(c, http.StatusOK, "oidc/oidclogin/index",
+	return s.Render(c, http.StatusOK, "oidc/oidcloginpassword/index",
 		map[string]interface{}{
 			"defs":      rows,
 			"idps":      idps,
@@ -129,80 +127,32 @@ func (s *service) DoGet(c echo.Context) error {
 func (s *service) DoPost(c echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
-
+	rootPath := echo_utils.GetMyRootPath(c)
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
-	model := &LoginPostRequest{}
+	model := &LoginPasswordPostRequest{}
 	if err := c.Bind(model); err != nil {
 		return err
 	}
 	log.Info().Interface("model", model).Msg("model")
-	if fluffycore_utils.IsEmptyOrNil(model.UserName) {
+	if fluffycore_utils.IsEmptyOrNil(model.Password) {
 		return s.DoGet(c)
 	}
-	idps, err := s.GetIDPs(ctx)
+
 	var errors []*services_handlers_shared.Error
 	errors = append(errors, services_handlers_shared.NewErrorF("state", model.State))
-	if err != nil {
-		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
-	}
 
 	model.UserName = strings.ToLower(model.UserName)
 
-	email, ok := echo_utils.IsValidEmailAddress(model.UserName)
-	if !ok {
-		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s is not a valid email address", model.UserName))
-		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
+	renderError := func(errors []*services_handlers_shared.Error) error {
+		return s.Render(c, http.StatusBadRequest,
+			"oidc/oidcloginpassword/index",
 			map[string]interface{}{
 				"state":     model.State,
-				"idps":      idps,
+				"email":     model.UserName,
 				"defs":      errors,
 				"directive": models.LoginDirective,
 			})
-	}
-	// get the domain from the email
-	parts := strings.Split(email, "@")
-	domainPart := parts[1]
-
-	// first lets see if this domain has been claimed.
-	listIDPRequest, err := s.IdpServiceServer().ListIDP(ctx, &proto_oidc_idp.ListIDPRequest{
-		Filter: &proto_oidc_idp.Filter{
-			ClaimedDomain: &proto_types.StringArrayFilterExpression{
-				Eq: domainPart,
-			},
-		},
-	})
-	if err != nil {
-		log.Warn().Err(err).Msg("ListIDP")
-		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
-		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
-			map[string]interface{}{
-				"state":     model.State,
-				"idps":      idps,
-				"defs":      errors,
-				"directive": models.LoginDirective,
-			})
-	}
-	if len(listIDPRequest.Idps) > 0 {
-		// an idp has claimed this domain.
-		// post to the externalIDP
-
-		return s.RenderAutoPost(c, wellknown_echo.ExternalIDPPath,
-			[]models.FormParam{
-				{
-					Name:  "state",
-					Value: model.State,
-				},
-				{
-					Name:  "idp_hint",
-					Value: listIDPRequest.Idps[0].Slug,
-				},
-				{
-					Name:  "directive",
-					Value: models.LoginDirective,
-				},
-			})
-
 	}
 	// does the user exist.
 	listUserResponse, err := s.UserService().ListUser(ctx, &proto_oidc_user.ListUserRequest{
@@ -214,31 +164,23 @@ func (s *service) DoPost(c echo.Context) error {
 			},
 		},
 	})
-	if len(listUserResponse.Users) == 0 {
-		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s not found", model.UserName))
-		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
-			map[string]interface{}{
-				"state":     model.State,
-				"idps":      idps,
-				"defs":      errors,
-				"directive": models.LoginDirective,
-			})
 
-	}
 	if err != nil {
 		log.Warn().Err(err).Msg("ListUser")
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 
-		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
-			map[string]interface{}{
-				"state":     model.State,
-				"idps":      idps,
-				"defs":      errors,
-				"directive": models.LoginDirective,
-			})
+		if len(listUserResponse.Users) == 0 {
+			errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s not found", model.UserName))
+			return renderError(errors)
+		}
+	}
+	if len(listUserResponse.Users) == 0 {
+		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s not found", model.UserName))
+		return renderError(errors)
 	}
 	user := listUserResponse.Users[0]
 	if s.config.EmailVerificationRequired && !user.RootIdentity.EmailVerified {
+
 		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
 		err = s.wellknownCookies.SetVerificationCodeCookie(c,
 			&contracts_cookies.SetVerificationCodeCookieRequest{
@@ -288,21 +230,85 @@ func (s *service) DoPost(c echo.Context) error {
 		}
 		return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
 	}
-	return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPasswordPath,
-		[]models.FormParam{
-			{
-				Name:  "state",
-				Value: model.State,
+
+	if user.Password == nil {
+		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s does not have a password", model.UserName))
+
+		if len(listUserResponse.Users) == 0 {
+			errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s not found", model.UserName))
+			return renderError(errors)
+		}
+	}
+
+	err = s.passwordHasher.VerifyPassword(ctx, &contracts_identity.VerifyPasswordRequest{
+		Password:       model.Password,
+		HashedPassword: user.Password.Hash,
+	})
+	if err != nil {
+		log.Warn().Err(err).Msg("ComparePasswordHash")
+		errors = append(errors, services_handlers_shared.NewErrorF("password", "password is invalid"))
+		return renderError(errors)
+	}
+	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
+		AuthCookie: &contracts_cookies.AuthCookie{
+			Identity: &models.Identity{
+				Subject:       user.RootIdentity.Subject,
+				Email:         user.RootIdentity.Email,
+				EmailVerified: user.RootIdentity.EmailVerified,
 			},
-			{
-				Name:  "email",
-				Value: model.UserName,
-			},
-			{
-				Name:  "directive",
-				Value: models.LoginDirective,
-			},
-		})
+		},
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("SetAuthCookie")
+		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+		// redirect to error page
+		return renderError(errors)
+	}
+
+	mm, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, model.State)
+	if err != nil {
+		log.Warn().Err(err).Msg("GetAuthorizationFinal")
+		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+		return renderError(errors)
+	}
+	mm.Identity = &models.Identity{
+		Subject: user.RootIdentity.Subject,
+		Email:   user.RootIdentity.Email,
+		ACR: []string{
+			models.ACRPassword,
+			models.ACRIdpRoot,
+		},
+		AMR: []string{
+			models.AMRPassword,
+			// always true, as we are the root idp
+			models.AMRIdp,
+		},
+	}
+
+	// "urn:mastodon:idp:google", "urn:mastodon:idp:spacex", "urn:mastodon:idp:github-enterprise", etc.
+	// "urn:mastodon:password", "urn:mastodon:2fa", "urn:mastodon:email", etc.
+	// we are done with the state now.  Lets map it to the code so it can be looked up by the client.
+	err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, mm.Request.Code, mm)
+	if err != nil {
+		log.Warn().Err(err).Msg("StoreAuthorizationFinal")
+		// redirect to error page
+		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+		return renderError(errors)
+	}
+	s.OIDCFlowStore().DeleteAuthorizationFinal(ctx, model.State)
+
+	err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, model.State, mm)
+	if err != nil {
+		// redirect to error page
+		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+		return renderError(errors)
+	}
+	// redirect to the client with the code.
+	redirectUri := mm.Request.RedirectURI +
+		"?code=" + mm.Request.Code +
+		"&state=" + mm.Request.State +
+		"&iss=" + rootPath
+	return c.Redirect(http.StatusFound, redirectUri)
 
 }
 

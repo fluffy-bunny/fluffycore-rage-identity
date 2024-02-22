@@ -1,4 +1,4 @@
-{{define "oidc/oidclogin/index"}}
+{{define "oidc/oidcloginpassword/index"}}
 {{template "html_begin" .}}
 {{template "header" .}}
 
@@ -32,11 +32,15 @@
             </tbody>
             </table>
         </div>
-        <form action="{{ .paths.OIDCLogin }}" method="post">
+        <form action="{{ .paths.OIDCLoginPassword }}" method="post">
             <input type="hidden" name="state" value="{{ $state }}">
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username" name="username" value="{{ .email }}" required>
+                <input type="text" class="form-control" id="username" name="username" value="{{ .email }}" required readonly>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
             </div>
             <button type="submit" class="btn btn-primary">{{ call .LocalizeMessage "login" }}</button>
         </form>
@@ -51,16 +55,7 @@
             <input type="hidden" name="type"       value="GET">          
             <button type="submit" class="btn btn-primary">{{ call .LocalizeMessage "forgot_password" }}</button>
         </form>
-        <div class="text-center mt-5" class="alert alert-success" role="alert">
-        {{range $idx,$idp := .idps}}
-            <form action="/external-idp" method="post">
-                <input type="hidden" name="state"       value="{{ $state }}">
-                <input type="hidden" name="directive"   value="{{ $directive }}">
-                <input type="hidden" name="idp_hint"    value="{{$idp.Slug}}">
-                <button type="submit" class="btn btn-primary">{{$idp.Name}}</button>
-            </form>
-        {{end}}
-        </div>
+ 
     </div>
 </div>
 </body>

@@ -5,7 +5,6 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
-	fluffycore_contracts_somedisposable "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/somedisposable"
 	proto_helloworld "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/helloworld"
 	endpoint "github.com/fluffy-bunny/fluffycore/contracts/endpoint"
 	grpc_gateway_runtime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -17,8 +16,7 @@ type (
 	service struct {
 		proto_helloworld.GreeterFluffyCoreServer
 
-		config               *contracts_config.Config
-		scopedSomeDisposable fluffycore_contracts_somedisposable.IScopedSomeDisposable
+		config *contracts_config.Config
 	}
 )
 
@@ -33,10 +31,9 @@ func init() {
 
 func (s *service) Ctor(
 	config *contracts_config.Config,
-	scopedSomeDisposable fluffycore_contracts_somedisposable.IScopedSomeDisposable) proto_helloworld.IFluffyCoreGreeterServer {
+) proto_helloworld.IFluffyCoreGreeterServer {
 	return &service{
-		config:               config,
-		scopedSomeDisposable: scopedSomeDisposable,
+		config: config,
 	}
 }
 func (s *service) RegisterFluffyCoreHandler(gwmux *grpc_gateway_runtime.ServeMux, conn *grpc.ClientConn) {

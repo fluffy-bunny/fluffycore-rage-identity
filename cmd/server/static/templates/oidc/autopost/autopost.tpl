@@ -10,7 +10,7 @@
     {{range $idx,$formParam := .form_params}}
     <input type="hidden" name="{{ $formParam.Name }}" value="{{ $formParam.Value }}">
     {{ end }}
-    <input type="submit" value="Submit">
+    <input type="submit" value="Submit" hidden>
 </form>
 <script>
     // Automatically submit the form when the page loads

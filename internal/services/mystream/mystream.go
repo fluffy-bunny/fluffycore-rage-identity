@@ -8,7 +8,6 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
-	fluffycore_contracts_somedisposable "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/somedisposable"
 	proto_helloworld "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/helloworld"
 	endpoint "github.com/fluffy-bunny/fluffycore/contracts/endpoint"
 	grpc_gateway_runtime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -20,18 +19,16 @@ type (
 	service struct {
 		proto_helloworld.MyStreamServiceFluffyCoreServer
 
-		config               *contracts_config.Config
-		scopedSomeDisposable fluffycore_contracts_somedisposable.IScopedSomeDisposable
+		config *contracts_config.Config
 	}
 )
 
 var stemService = (*service)(nil)
 
 func (s *service) Ctor(config *contracts_config.Config,
-	scopedSomeDisposable fluffycore_contracts_somedisposable.IScopedSomeDisposable) proto_helloworld.IFluffyCoreMyStreamServiceServer {
+) proto_helloworld.IFluffyCoreMyStreamServiceServer {
 	return &service{
-		config:               config,
-		scopedSomeDisposable: scopedSomeDisposable,
+		config: config,
 	}
 }
 
