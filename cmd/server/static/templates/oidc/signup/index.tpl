@@ -1,29 +1,14 @@
 {{define "oidc/signup/index"}}
 {{template "html_begin" .}}
 {{template "header" .}}
-{{ if (call .isWizardMode ) }}
-{{ else }}
-    {{template "navbar" .}}
-{{end}}
-
+ 
 {{ $state       := .state }}
 {{ $directive   := .directive }}
 
 <body>  
 <!-- Page content-->
 <div class="container">
-    <div class="text-center mt-5" class="alert alert-success" role="alert">
-        {{range $idx,$idp := .idps}}
-            <form action="/external-idp" method="post">
-                <input type="hidden" name="state"       value="{{ $state }}">
-                <input type="hidden" name="directive"   value="{{ $directive }}">
-                <input type="hidden" name="idp_hint" value="{{$idp.Slug}}">
-                <button type="submit" class="btn btn-primary">{{$idp.Name}}</button>
-            </form>
-        {{end}}
-
-       
-    </div>
+ 
     <div class="text-center mt-5" class="alert alert-success" role="alert">
         <h1> {{ call .LocalizeMessage "signup" }}</h1>
 
@@ -40,16 +25,15 @@
 
             {{range $idx,$def := .defs}}
                 <tr>
-                <th class="text-start" scope="row">{{$idx}}</th>
-                <td class="text-start">{{$def.Key}}</td>
-                <td class="text-start">{{$def.Value}}</td>
+                <th class="text-start" scope="row">{{ $idx }}</th>
+                <td class="text-start">{{ $def.Key }}</td>
+                <td class="text-start">{{ $def.Value }}</td>
                 </tr>
             {{end}}
             </tbody>
             </table>
         </div>
         <form action="/signup" method="post">
-            <input type="hidden" name="wizard_mode" value="{{ (call .isWizardMode ) }}">
             <input type="hidden" name="state" value="{{ $state  }}">
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
@@ -61,6 +45,16 @@
             </div>
             <button type="submit" class="btn btn-primary">Signup</button>
         </form>
+        <div class="text-center mt-5" class="alert alert-success" role="alert">
+        {{range $idx,$idp := .idps}}
+            <form action="/external-idp" method="post">
+                <input type="hidden" name="state"       value="{{ $state }}">
+                <input type="hidden" name="directive"   value="{{ $directive }}">
+                <input type="hidden" name="idp_hint"    value="{{ $idp.Slug }}">
+                <button type="submit" class="btn btn-primary">{{ $idp.Name }}</button>
+            </form>
+        {{end}}
+        </div>
     </div>
 </div>
 </body>

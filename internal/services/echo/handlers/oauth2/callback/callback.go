@@ -13,9 +13,12 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_codeexchange "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/codeexchange"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
+	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/cookies"
+	contracts_email "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/email"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/identity"
 	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
+	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
 	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/client"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/idp"
@@ -40,6 +43,7 @@ type (
 		genericOIDCCodeExchange contracts_codeexchange.IGenericOIDCCodeExchange
 		config                  *contracts_config.Config
 		userIdGenerator         contracts_identity.IUserIdGenerator
+		wellknownCookies        contracts_cookies.IWellknownCookies
 	}
 )
 
@@ -55,6 +59,7 @@ func (s *service) Ctor(
 	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
 	githubCodeExchange contracts_codeexchange.IGithubCodeExchange,
 	userIdGenerator contracts_identity.IUserIdGenerator,
+	wellknownCookies contracts_cookies.IWellknownCookies,
 	genericOIDCCodeExchange contracts_codeexchange.IGenericOIDCCodeExchange) (*service, error) {
 	return &service{
 		BaseHandler:             services_echo_handlers_base.NewBaseHandler(container),
@@ -63,6 +68,7 @@ func (s *service) Ctor(
 		genericOIDCCodeExchange: genericOIDCCodeExchange,
 		config:                  config,
 		userIdGenerator:         userIdGenerator,
+		wellknownCookies:        wellknownCookies,
 	}, nil
 }
 
@@ -133,16 +139,7 @@ func (s *service) Do(c echo.Context) error {
 		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
 
 	}
-	doSignupFirstBounceBack := func() error {
-		formParams := []models.FormParam{
-			{
-				Name:  "state",
-				Value: parentState,
-			},
-		}
-		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
 
-	}
 	doLoginBounceBack := func() error {
 		formParams := []models.FormParam{
 			{
@@ -157,7 +154,61 @@ func (s *service) Do(c echo.Context) error {
 		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
 
 	}
+	doEmailVerification := func(user *proto_oidc_models.User) error {
+		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
+		err = s.wellknownCookies.SetVerificationCodeCookie(c,
+			&contracts_cookies.SetVerificationCodeCookieRequest{
+				VerificationCode: &contracts_cookies.VerificationCode{
+					Subject: user.RootIdentity.Subject,
+					Email:   user.RootIdentity.Email,
+					Code:    verificationCode,
+				},
+			})
+		if err != nil {
+			log.Error().Err(err).Msg("SetVerificationCodeCookie")
+			return c.Redirect(http.StatusFound, "/error")
+		}
+		_, err = s.EmailService().SendSimpleEmail(ctx,
+			&contracts_email.SendSimpleEmailRequest{
+				ToEmail:   user.RootIdentity.Email,
+				SubjectId: "email.verification.subject",
+				BodyId:    "email.verification..message",
+				Data: map[string]string{
+					"code": verificationCode,
+				},
+			})
+		if err != nil {
+			log.Error().Err(err).Msg("SendSimpleEmail")
+			return c.Redirect(http.StatusFound, "/error")
+		}
+		formParams := []models.FormParam{
+			{
+				Name:  "state",
+				Value: parentState,
+			},
+			{
+				Name:  "email",
+				Value: user.RootIdentity.Email,
+			},
+			{
+				Name:  "directive",
+				Value: models.VerifyEmailDirective,
+			},
+			{
+				Name:  "type",
+				Value: "GET",
+			},
+		}
 
+		if s.config.SystemConfig.DeveloperMode {
+			formParams = append(formParams, models.FormParam{
+				Name:  "code",
+				Value: verificationCode,
+			})
+
+		}
+		return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
+	}
 	oidcFinalState, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, parentState)
 	if err != nil {
 		log.Error().Err(err).Msg("GetAuthorizationFinal")
@@ -259,6 +310,7 @@ func (s *service) Do(c echo.Context) error {
 			},
 			EmailVerified: emailVerified,
 		}
+
 		getUserByEmail := func(email string) (*proto_oidc_models.User, error) {
 			// is this user already linked.
 			listUserResponse, err := s.UserService().ListUser(ctx, &proto_oidc_user.ListUserRequest{
@@ -281,7 +333,9 @@ func (s *service) Do(c echo.Context) error {
 
 		}
 		loginLinkedUser := func(user *proto_oidc_models.User) error {
-
+			if !user.RootIdentity.EmailVerified {
+				return doEmailVerification(user)
+			}
 			oidcFinalState.Identity = &models.Identity{
 				Subject: user.RootIdentity.Subject,
 				Email:   user.RootIdentity.Email,
@@ -320,18 +374,19 @@ func (s *service) Do(c echo.Context) error {
 			user := listUserResponse.Users[0]
 			return loginLinkedUser(user)
 		}
-		linkUserAndLogin := func(candidateUserID string, externalIdentity *models.Identity) error {
+
+		linkUser := func(candidateUserID string, externalIdentity *models.Identity) (*proto_oidc_models.User, error) {
 			getUserResponse, err := s.UserService().GetUser(ctx, &proto_oidc_user.GetUserRequest{
 				Subject: candidateUserID,
 			})
 			if err != nil {
 				log.Error().Err(err).Msg("GetUser")
-				return doInternalErrorPost()
+				return nil, err
 			}
 			user := getUserResponse.User
 			if user == nil {
 				log.Error().Msg("user not found")
-				return doInternalErrorPost()
+				return nil, err
 			}
 			_, err = s.UserService().LinkUsers(ctx, &proto_oidc_user.LinkUsersRequest{
 				RootSubject: candidateUserID,
@@ -344,9 +399,58 @@ func (s *service) Do(c echo.Context) error {
 			})
 			if err != nil {
 				log.Error().Err(err).Msg("LinkUsers")
+				return nil, err
+			}
+			return user, nil
+		}
+		linkUserAndLogin := func(candidateUserID string, externalIdentity *models.Identity) error {
+			user, err := linkUser(candidateUserID, externalIdentity)
+			if err != nil {
+				log.Error().Err(err).Msg("LinkUsers")
 				return doInternalErrorPost()
 			}
 			return loginLinkedUser(user)
+		}
+		doAutoCreateUser := func() (*proto_oidc_models.User, error) {
+			emailVerified := false
+			emailVerificationRequired := isMetadataBoolSet(models.Wellknown_IDP_Metadata_EmailVerificationRequired, idp)
+			if emailVerificationRequired {
+				emailVerified = false
+				/*
+					the external IDP may say its been verified, but we don't trust it, we want our own verification
+					if externalIdentity.EmailVerified {
+						emailVerified = true
+					}
+				*/
+			} else {
+				emailVerified = true
+			}
+			createUserResponse, err := s.UserService().CreateUser(ctx,
+				&proto_oidc_user.CreateUserRequest{
+					User: &proto_oidc_models.User{
+						RootIdentity: &proto_oidc_models.Identity{
+							Subject:       s.userIdGenerator.GenerateUserId(),
+							IdpSlug:       models.WellknownIdpRoot,
+							Email:         externalIdentity.Email,
+							EmailVerified: emailVerified,
+						},
+						LinkedIdentities: &proto_oidc_models.LinkedIdentities{
+							Identities: []*proto_oidc_models.Identity{
+								{
+									Subject:       externalIdentity.Subject,
+									Email:         externalIdentity.Email,
+									IdpSlug:       externalOAuth2State.Request.IDPHint,
+									EmailVerified: externalIdentity.EmailVerified,
+								},
+							},
+						},
+					},
+				})
+			if err != nil {
+				log.Error().Err(err).Msg("CreateUser")
+				return nil, err
+			}
+			return createUserResponse.User, nil
 		}
 		// not found, redirect to OIDC LoginPage telling the user to do the signup dance
 		if externalOAuth2State.Request.Directive == models.LoginDirective {
@@ -370,57 +474,33 @@ func (s *service) Do(c echo.Context) error {
 
 				// is AUTO-ACCOUNT creation enabled for this IDP?
 				if isMetadataBoolSet(models.Wellknown_IDP_Metadata_AutoCreate, idp) {
-					emailVerified := false
-					emailVerificationRequired := isMetadataBoolSet(models.Wellknown_IDP_Metadata_EmailVerificationRequired, idp)
-					if emailVerificationRequired {
-						if externalIdentity.EmailVerified {
-							emailVerified = true
-						}
-					} else {
-						emailVerified = true
-					}
-					createUserResponse, err := s.UserService().CreateUser(ctx,
-						&proto_oidc_user.CreateUserRequest{
-							User: &proto_oidc_models.User{
-								RootIdentity: &proto_oidc_models.Identity{
-									Subject:       s.userIdGenerator.GenerateUserId(),
-									IdpSlug:       models.WellknownIdpRoot,
-									Email:         externalIdentity.Email,
-									EmailVerified: emailVerified,
-								},
-								LinkedIdentities: &proto_oidc_models.LinkedIdentities{
-									Identities: []*proto_oidc_models.Identity{
-										{
-											Subject:       externalIdentity.Subject,
-											Email:         externalIdentity.Email,
-											IdpSlug:       externalOAuth2State.Request.IDPHint,
-											EmailVerified: externalIdentity.EmailVerified,
-										},
-									},
-								},
-							},
-						})
+					user, err := doAutoCreateUser()
 					if err != nil {
-						log.Error().Err(err).Msg("CreateUser")
+						log.Error().Err(err).Msg("doAutoCreateUser")
 						return doInternalErrorPost()
 					}
-					return loginLinkedUser(createUserResponse.User)
+					return loginLinkedUser(user)
+
 				}
 				// we bounce the user back to go through a sigunup flow
 				return doInternalErrorPost()
 			}
 
 		}
+
 		if externalOAuth2State.Request.Directive == models.SignupDirective {
-			oidcFinalState.Directive = models.SignupDirective
-			oidcFinalState.ExternalIdentity = externalIdentity
-			err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, parentState, oidcFinalState)
+
+			user, err := doAutoCreateUser()
 			if err != nil {
-				log.Error().Err(err).Msg("StoreAuthorizationFinal")
-				return c.Redirect(http.StatusTemporaryRedirect, "/login?error=store_authorization_final")
+				log.Error().Err(err).Msg("doAutoCreateUser")
+				return doInternalErrorPost()
 			}
-			// we don't store the external identity on a missed match.  User has to go through the trouble of a signup
-			return doSignupFirstBounceBack()
+			emailVerificationRequired := isMetadataBoolSet(models.Wellknown_IDP_Metadata_EmailVerificationRequired, idp)
+			if !emailVerificationRequired {
+				return loginLinkedUser(user)
+			}
+			return doEmailVerification(user)
+
 		}
 
 	}

@@ -75,18 +75,16 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type SignupGetRequest struct {
-	WizardMode bool   `param:"wizard_mode" query:"wizard_mode" form:"wizard_mode" json:"wizard_mode" xml:"wizard_mode"`
-	State      string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
+	State string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 }
 type ExternalIDPAuthRequest struct {
 	IDPHint string `param:"idp_hint" query:"idp_hint" form:"idp_hint" json:"idp_hint" xml:"idp_hint"`
 }
 type SignupPostRequest struct {
-	WizardMode bool   `param:"wizard_mode" query:"wizard_mode" form:"wizard_mode" json:"wizard_mode" xml:"wizard_mode"`
-	State      string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
-	UserName   string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
-	Password   string `param:"password" query:"password" form:"password" json:"password" xml:"password"`
-	Type       string `param:"type" query:"type" form:"type" json:"type" xml:"type"`
+	State    string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
+	UserName string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
+	Password string `param:"password" query:"password" form:"password" json:"password" xml:"password"`
+	Type     string `param:"type" query:"type" form:"type" json:"type" xml:"type"`
 }
 
 func (s *service) DoGet(c echo.Context) error {
@@ -124,12 +122,10 @@ func (s *service) DoGet(c echo.Context) error {
 
 	return s.Render(c, http.StatusOK, "oidc/signup/index",
 		map[string]interface{}{
-			"defs": rows,
-			"idps": idps,
-			"isWizardMode": func() bool {
-				return model.WizardMode
-			},
-			"state": model.State,
+			"defs":      rows,
+			"idps":      idps,
+			"state":     model.State,
+			"directive": models.SignupDirective,
 		})
 }
 
@@ -180,12 +176,10 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Debug().Err(err).Msg("Bind")
 		return s.Render(c, http.StatusBadRequest, "oidc/signup/index",
 			map[string]interface{}{
-				"defs": []*Error{NewErrorF("model", "model is invalid")},
-				"isWizardMode": func() bool {
-					return model.WizardMode
-				},
-				"idps":  idps,
-				"state": model.State,
+				"defs":      []*Error{NewErrorF("model", "model is invalid")},
+				"idps":      idps,
+				"state":     model.State,
+				"directive": models.SignupDirective,
 			})
 	}
 	log.Info().Interface("model", model).Msg("model")
@@ -199,11 +193,10 @@ func (s *service) DoPost(c echo.Context) error {
 	if len(errors) > 0 {
 		return s.Render(c, http.StatusBadRequest, "oidc/signup/index",
 			map[string]interface{}{
-				"defs": errors,
-				"isWizardMode": func() bool {
-					return model.WizardMode
-				},
-				"idps": idps,
+				"defs":      errors,
+				"idps":      idps,
+				"state":     model.State,
+				"directive": models.SignupDirective,
 			})
 	}
 	model.UserName = strings.ToLower(model.UserName)
@@ -224,11 +217,10 @@ func (s *service) DoPost(c echo.Context) error {
 	if len(listUserResponse.Users) > 0 {
 		return s.Render(c, http.StatusBadRequest, "oidc/signup/index",
 			map[string]interface{}{
-				"defs": []*Error{NewErrorF("username", "username:%s already exists", model.UserName)},
-				"isWizardMode": func() bool {
-					return model.WizardMode
-				},
-				"idps": idps,
+				"defs":      []*Error{NewErrorF("username", "username:%s already exists", model.UserName)},
+				"idps":      idps,
+				"state":     model.State,
+				"directive": models.SignupDirective,
 			})
 	}
 	hashPasswordResponse, err := s.passwordHasher.HashPassword(ctx, &contracts_identity.HashPasswordRequest{
