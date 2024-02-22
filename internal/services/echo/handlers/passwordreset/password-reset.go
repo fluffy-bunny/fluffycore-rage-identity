@@ -1,13 +1,13 @@
 package passwordreset
 
 import (
-	"fmt"
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/cookies"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/email"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/identity"
+	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/shared"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
@@ -25,6 +25,7 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
+
 		wellknownCookies contracts_cookies.IWellknownCookies
 		passwordHasher   contracts_identity.IPasswordHasher
 	}
@@ -208,12 +209,17 @@ func (s *service) DoPost(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 
-	redirectURL := fmt.Sprintf("%s?state=%s&email=%s",
-		wellknown_echo.OIDCLoginPath,
-		model.State,
-		getUserResponse.User.RootIdentity.Email,
-	)
-	return c.Redirect(http.StatusFound, redirectURL)
+	return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath,
+		[]models.FormParam{
+			{
+				Name:  "state",
+				Value: model.State,
+			},
+			{
+				Name:  "email",
+				Value: getUserResponse.User.RootIdentity.Email,
+			},
+		})
 
 }
 

@@ -61,7 +61,8 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
 		stemService.Ctor,
 		[]contracts_handler.HTTPVERB{
-			contracts_handler.GET,
+			// do auto post
+			//contracts_handler.GET,
 			contracts_handler.POST,
 		},
 		wellknown_echo.SignupPath,
@@ -85,6 +86,7 @@ type SignupPostRequest struct {
 	State      string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 	UserName   string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
 	Password   string `param:"password" query:"password" form:"password" json:"password" xml:"password"`
+	Type       string `param:"type" query:"type" form:"type" json:"type" xml:"type"`
 }
 
 func (s *service) DoGet(c echo.Context) error {
@@ -187,6 +189,9 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 	}
 	log.Info().Interface("model", model).Msg("model")
+	if model.Type == "GET" {
+		return s.DoGet(c)
+	}
 	errors, err := s.validateSignupPostRequest(model)
 	if err != nil {
 		return err
@@ -279,26 +284,33 @@ func (s *service) DoPost(c echo.Context) error {
 			log.Error().Err(err).Msg("SendSimpleEmail")
 			return c.Redirect(http.StatusFound, "/error")
 		}
-		redirectURL := ""
-		if s.config.SystemConfig.DeveloperMode {
-			redirectURL = fmt.Sprintf("%s?state=%s&email=%s&directive=%s&code=%s",
-				wellknown_echo.VerifyCodePath,
-				model.State,
-				model.UserName,
-				models.VerifyEmailDirective,
-				verificationCode,
-			)
+		formParams := []models.FormParam{
+			{
+				Name:  "state",
+				Value: model.State,
+			},
+			{
+				Name:  "email",
+				Value: model.UserName,
+			},
+			{
+				Name:  "directive",
+				Value: models.VerifyEmailDirective,
+			},
+			{
+				Name:  "type",
+				Value: "GET",
+			},
+		}
 
-		} else {
-			redirectURL = fmt.Sprintf("%s?state=%s&email=%s&directive=%s",
-				wellknown_echo.VerifyCodePath,
-				model.State,
-				model.UserName,
-				models.VerifyEmailDirective,
-			)
+		if s.config.SystemConfig.DeveloperMode {
+			formParams = append(formParams, models.FormParam{
+				Name:  "code",
+				Value: verificationCode,
+			})
 
 		}
-		return c.Redirect(http.StatusFound, redirectURL)
+		return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
 
 	}
 	var signupGetRequest *SignupGetRequest = &SignupGetRequest{}
@@ -308,8 +320,15 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("Unmarshal")
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	redirectUrl := fmt.Sprintf("%s?state=%s", wellknown_echo.OIDCLoginPath, model.State)
-	return c.Redirect(http.StatusFound, redirectUrl)
+
+	return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath,
+		[]models.FormParam{
+			{
+				Name:  "state",
+				Value: model.State,
+			},
+		})
+
 }
 
 // HealthCheck godoc

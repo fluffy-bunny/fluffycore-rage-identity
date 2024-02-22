@@ -2,11 +2,13 @@ package base
 
 import (
 	"context"
+	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/eko_gocache"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/email"
 	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
+	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
@@ -114,6 +116,14 @@ func (b *BaseHandler) getExternalOauth2FlowStore() contracts_eko_gocache.IExtern
 		b.externalOauth2FlowStore = di.Get[contracts_eko_gocache.IExternalOauth2FlowStore](b.Container)
 	}
 	return b.externalOauth2FlowStore
+}
+
+func (b *BaseHandler) RenderAutoPost(c echo.Context, action string, formData []models.FormParam) error {
+	data := map[string]interface{}{
+		"form_params": formData,
+		"action":      action,
+	}
+	return b.Render(c, http.StatusFound, "oidc/autopost/index", data)
 }
 
 func (b *BaseHandler) Render(c echo.Context, code int, name string, data map[string]interface{}) error {
