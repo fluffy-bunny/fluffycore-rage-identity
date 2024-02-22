@@ -90,51 +90,6 @@ type row struct {
 	Value string
 }
 
-func (s *service) handleIdentityFound(c echo.Context, state string) error {
-	r := c.Request()
-	// is the request get or post?
-	rootPath := s.config.OIDCConfig.BaseUrl
-	ctx := r.Context()
-	log := zerolog.Ctx(ctx).With().Logger()
-	mm, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, state)
-	if err != nil {
-		log.Error().Err(err).Msg("GetAuthorizationFinal")
-		// redirect to error page
-		redirectUrl := fmt.Sprintf("%s?state=%s&error=%s", wellknown_echo.OIDCLoginPath, state, models.InternalError)
-		return c.Redirect(http.StatusFound, redirectUrl)
-	}
-	if mm.Identity == nil {
-		redirectUrl := fmt.Sprintf("%s?state=%s&error=%s", wellknown_echo.OIDCLoginPath, state, models.InternalError)
-		return c.Redirect(http.StatusFound, redirectUrl)
-	}
-
-	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
-		AuthCookie: &contracts_cookies.AuthCookie{
-			Identity: mm.Identity,
-		},
-	})
-	if err != nil {
-		log.Error().Err(err).Msg("SetAuthCookie")
-		// redirect to error page
-		return c.Redirect(http.StatusFound, "/error")
-	}
-
-	err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, mm.Request.Code, mm)
-	if err != nil {
-		log.Warn().Err(err).Msg("StoreAuthorizationFinal")
-		// redirect to error page
-		return c.Redirect(http.StatusFound, "/error")
-	}
-	s.OIDCFlowStore().DeleteAuthorizationFinal(ctx, state)
-
-	// redirect to the client with the code.
-	redirectUri := mm.Request.RedirectURI +
-		"?code=" + mm.Request.Code +
-		"&state=" + mm.Request.State +
-		"&iss=" + rootPath
-	return c.Redirect(http.StatusFound, redirectUri)
-
-}
 func (s *service) DoGet(c echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
@@ -388,4 +343,49 @@ func (s *service) Do(c echo.Context) error {
 	}
 	// return not found
 	return c.NoContent(http.StatusNotFound)
+}
+func (s *service) handleIdentityFound(c echo.Context, state string) error {
+	r := c.Request()
+	// is the request get or post?
+	rootPath := s.config.OIDCConfig.BaseUrl
+	ctx := r.Context()
+	log := zerolog.Ctx(ctx).With().Logger()
+	mm, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, state)
+	if err != nil {
+		log.Error().Err(err).Msg("GetAuthorizationFinal")
+		// redirect to error page
+		redirectUrl := fmt.Sprintf("%s?state=%s&error=%s", wellknown_echo.OIDCLoginPath, state, models.InternalError)
+		return c.Redirect(http.StatusFound, redirectUrl)
+	}
+	if mm.Identity == nil {
+		redirectUrl := fmt.Sprintf("%s?state=%s&error=%s", wellknown_echo.OIDCLoginPath, state, models.InternalError)
+		return c.Redirect(http.StatusFound, redirectUrl)
+	}
+
+	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
+		AuthCookie: &contracts_cookies.AuthCookie{
+			Identity: mm.Identity,
+		},
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("SetAuthCookie")
+		// redirect to error page
+		return c.Redirect(http.StatusFound, "/error")
+	}
+
+	err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, mm.Request.Code, mm)
+	if err != nil {
+		log.Warn().Err(err).Msg("StoreAuthorizationFinal")
+		// redirect to error page
+		return c.Redirect(http.StatusFound, "/error")
+	}
+	s.OIDCFlowStore().DeleteAuthorizationFinal(ctx, state)
+
+	// redirect to the client with the code.
+	redirectUri := mm.Request.RedirectURI +
+		"?code=" + mm.Request.Code +
+		"&state=" + mm.Request.State +
+		"&iss=" + rootPath
+	return c.Redirect(http.StatusFound, redirectUri)
+
 }

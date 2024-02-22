@@ -17,7 +17,8 @@
       "metadata": {
         "hidden": "false",
         "email_verification_required": "true",
-        "icon": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
+        "icon": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png",
+        "auto_create": "true"
       }
     },
     {
