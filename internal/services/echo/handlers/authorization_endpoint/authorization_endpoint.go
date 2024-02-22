@@ -177,29 +177,32 @@ func (s *service) Do(c echo.Context) error {
 	log.Info().Interface("mm", mm).Msg("mm")
 	// redirect to the server Auth login pages.
 	//s
-	finalOIDCPath := ""
 	if fluffycore_utils.IsEmptyOrNil(model.IDPHint) {
-		formParams := []models.FormParam{
+		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath,
+			[]models.FormParam{
+				{
+					Name:  "state",
+					Value: model.State,
+				},
+			})
+
+	}
+	return s.RenderAutoPost(c, wellknown_echo.ExternalIDPPath,
+		[]models.FormParam{
 			{
 				Name:  "state",
 				Value: model.State,
 			},
-		}
-		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
+			{
+				Name:  "idp_hint",
+				Value: model.IDPHint,
+			},
+			{
+				Name:  "directive",
+				Value: models.LoginDirective,
+			},
+		})
 
-		//		finalOIDCPath = fmt.Sprintf("%s?state=%s", wellknown_echo.OIDCLoginPath, model.State)
-	} else {
-		finalOIDCPath = fmt.Sprintf("%s?state=%s&idp_hint=%s&directive=%s", wellknown_echo.ExternalIDPPath,
-			model.State,
-			model.IDPHint,
-			models.LoginDirective)
-
-	}
-	// url enocde the redirect_uri
-	//encodedRedirect := url.QueryEscape(finalOIDCPath)
-
-	//redirectPath := fmt.Sprintf("%s?redirect_uri=%s", wellknown_echo.OIDCLoginPath, encodedRedirect)
-	return c.Redirect(http.StatusFound, finalOIDCPath)
 }
 
 func extractIdpSlug(template string) (map[string]string, error) {

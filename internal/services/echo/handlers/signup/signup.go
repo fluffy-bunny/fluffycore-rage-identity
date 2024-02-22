@@ -61,7 +61,8 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
 		stemService.Ctor,
 		[]contracts_handler.HTTPVERB{
-			contracts_handler.GET,
+			// do auto post
+			//contracts_handler.GET,
 			contracts_handler.POST,
 		},
 		wellknown_echo.SignupPath,
@@ -85,6 +86,7 @@ type SignupPostRequest struct {
 	State      string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 	UserName   string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
 	Password   string `param:"password" query:"password" form:"password" json:"password" xml:"password"`
+	Type       string `param:"type" query:"type" form:"type" json:"type" xml:"type"`
 }
 
 func (s *service) DoGet(c echo.Context) error {
@@ -187,6 +189,9 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 	}
 	log.Info().Interface("model", model).Msg("model")
+	if model.Type == "GET" {
+		return s.DoGet(c)
+	}
 	errors, err := s.validateSignupPostRequest(model)
 	if err != nil {
 		return err
