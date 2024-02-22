@@ -105,7 +105,10 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_oidc_user.Updat
 	}
 	if request.User.Password != nil {
 		if request.User.Password.Hash != nil {
-			getUserResp.User.Password.Hash = request.User.Password.Hash.Value
+
+			getUserResp.User.Password = &proto_oidc_models.Password{
+				Hash: request.User.Password.Hash.Value,
+			}
 		}
 	}
 	return &proto_oidc_user.UpdateUserResponse{

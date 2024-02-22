@@ -46,7 +46,6 @@
         </form>
         <form action="{{ .paths.Signup }}" method="post">
             <input type="hidden" name="state"       value="{{ $state }}">
-            <input type="hidden" name="wizard_mode" value="true">
             <input type="hidden" name="type"        value="GET">          
           
             <button type="submit" class="btn btn-primary">{{ call .LocalizeMessage "signup" }}</button>
