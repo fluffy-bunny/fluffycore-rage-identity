@@ -23,6 +23,7 @@ import (
 	services_handlers_jwks_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/jwks_endpoint"
 	services_handlers_oauth2_callback "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/oauth2/callback"
 	services_handlers_oidclogin "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/oidclogin"
+	services_handlers_oidcloginpassword "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/oidcloginpassword"
 	services_handlers_passwordreset "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/passwordreset"
 	services_handlers_signup "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/signup"
 	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/swagger"
@@ -115,6 +116,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_signup.AddScopedIHandler(builder)
 	services_handlers_error.AddScopedIHandler(builder)
 	services_handlers_oidclogin.AddScopedIHandler(builder)
+	services_handlers_oidcloginpassword.AddScopedIHandler(builder)
 	services_handlers_externalidp.AddScopedIHandler(builder)
 	services_handlers_swagger.AddScopedIHandler(builder)
 	services_handlers_discovery_endpoint.AddScopedIHandler(builder)
