@@ -12,6 +12,7 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/eko_gocache"
 	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
+	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
 	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/client"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/idp"
@@ -26,6 +27,8 @@ import (
 
 type (
 	service struct {
+		*services_echo_handlers_base.BaseHandler
+
 		scopedMemoryCache   fluffycore_contracts_common.IScopedMemoryCache
 		oidcFlowStore       contracts_eko_gocache.IOIDCFlowStore
 		clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer
@@ -41,6 +44,7 @@ func init() {
 }
 
 func (s *service) Ctor(
+	container di.Container,
 	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
 	userService proto_oidc_user.IFluffyCoreUserServiceServer,
 
@@ -48,6 +52,8 @@ func (s *service) Ctor(
 	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
 	oidcFlowStore contracts_eko_gocache.IOIDCFlowStore) (*service, error) {
 	return &service{
+		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
+
 		scopedMemoryCache:   scopedMemoryCache,
 		oidcFlowStore:       oidcFlowStore,
 		clientServiceServer: clientServiceServer,
@@ -173,7 +179,15 @@ func (s *service) Do(c echo.Context) error {
 	//s
 	finalOIDCPath := ""
 	if fluffycore_utils.IsEmptyOrNil(model.IDPHint) {
-		finalOIDCPath = fmt.Sprintf("%s?state=%s", wellknown_echo.OIDCLoginPath, model.State)
+		formParams := []models.FormParam{
+			{
+				Name:  "state",
+				Value: model.State,
+			},
+		}
+		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
+
+		//		finalOIDCPath = fmt.Sprintf("%s?state=%s", wellknown_echo.OIDCLoginPath, model.State)
 	} else {
 		finalOIDCPath = fmt.Sprintf("%s?state=%s&idp_hint=%s&directive=%s", wellknown_echo.ExternalIDPPath,
 			model.State,

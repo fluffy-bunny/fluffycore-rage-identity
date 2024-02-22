@@ -70,4 +70,9 @@ type (
 		Request  *ExternalOauth2Request
 		Identity *Identity
 	}
+
+	FormParam struct {
+		Name  string `json:"name"`
+		Value string `json:"value"`
+	}
 )

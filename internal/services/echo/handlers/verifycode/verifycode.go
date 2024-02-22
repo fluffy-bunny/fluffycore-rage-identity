@@ -222,10 +222,17 @@ func (s *service) DoPost(c echo.Context) error {
 			model.State,
 			model.Email)
 	case models.VerifyEmailDirective:
-		redirectURL = fmt.Sprintf("%s?state=%s&email=%s",
-			wellknown_echo.OIDCLoginPath,
-			model.State,
-			model.Email)
+		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath,
+			[]models.FormParam{
+				{
+					Name:  "state",
+					Value: model.State,
+				},
+				{
+					Name:  "email",
+					Value: model.Email,
+				},
+			})
 	}
 
 	return c.Redirect(http.StatusFound, redirectURL)

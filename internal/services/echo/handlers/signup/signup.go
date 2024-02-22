@@ -308,8 +308,15 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("Unmarshal")
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	redirectUrl := fmt.Sprintf("%s?state=%s", wellknown_echo.OIDCLoginPath, model.State)
-	return c.Redirect(http.StatusFound, redirectUrl)
+
+	return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath,
+		[]models.FormParam{
+			{
+				Name:  "state",
+				Value: model.State,
+			},
+		})
+
 }
 
 // HealthCheck godoc
