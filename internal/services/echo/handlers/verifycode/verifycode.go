@@ -168,11 +168,21 @@ func (s *service) DoPost(c echo.Context) error {
 	getVerificationCodeCookieResponse, err := s.wellknownCookies.GetVerificationCodeCookie(c)
 	if err != nil {
 		log.Error().Err(err).Msg("GetVerificationCodeCookie")
-		redirectUrl := fmt.Sprintf("%s?state=%s&email=%s",
-			wellknown_echo.ForgotPasswordPath,
-			model.State,
-			model.Email)
-		return c.Redirect(http.StatusFound, redirectUrl)
+		return s.RenderAutoPost(c, wellknown_echo.ForgotPasswordPath,
+			[]models.FormParam{
+				{
+					Name:  "state",
+					Value: model.State,
+				},
+				{
+					Name:  "email",
+					Value: model.Email,
+				},
+				{
+					Name:  "type",
+					Value: "GET",
+				},
+			})
 	}
 	verificationCode := getVerificationCodeCookieResponse.VerificationCode
 	code := verificationCode.Code

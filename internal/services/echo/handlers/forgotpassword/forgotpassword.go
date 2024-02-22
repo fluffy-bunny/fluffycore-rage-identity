@@ -55,7 +55,8 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
 		stemService.Ctor,
 		[]contracts_handler.HTTPVERB{
-			contracts_handler.GET,
+			// do auto post
+			//contracts_handler.GET,
 			contracts_handler.POST,
 		},
 		wellknown_echo.ForgotPasswordPath,
@@ -74,6 +75,7 @@ type ForgotPasswordGetRequest struct {
 type ForgotPasswordPostRequest struct {
 	State string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 	Email string `param:"email" query:"email" form:"email" json:"email" xml:"email"`
+	Type  string `param:"type" query:"type" form:"type" json:"type" xml:"type"`
 }
 
 func (s *service) validateForgotPasswordGetRequest(model *ForgotPasswordGetRequest) error {
@@ -146,7 +148,9 @@ func (s *service) DoPost(c echo.Context) error {
 				"defs":  errors,
 			})
 	}
-
+	if model.Type == "GET" {
+		return s.DoGet(c)
+	}
 	// NOTE: We don't want to give bots the ability to probe our service to see if an email exists.
 	// we check here and we redirect to the enter code in all cases.
 	// we just don't send the email, but we drop the cookie with a verification code just for the fun of it.
@@ -164,7 +168,7 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("ListUser")
 		return c.Redirect(http.StatusFound, "/Error")
 	}
-	subject := ""
+	subject := "NA"
 	if listUserResponse != nil && len(listUserResponse.Users) > 0 {
 		subject = listUserResponse.Users[0].RootIdentity.Subject
 	}
@@ -204,6 +208,9 @@ func (s *service) DoPost(c echo.Context) error {
 			log.Error().Err(err).Msg("SendEmail")
 			return c.Redirect(http.StatusFound, "/error")
 		}
+	} else {
+		// no user found, is a probe.
+		verificationCode = "NA"
 	}
 	formParams := []models.FormParam{
 		{
