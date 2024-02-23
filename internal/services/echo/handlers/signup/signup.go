@@ -1,10 +1,8 @@
 package signup
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
@@ -13,8 +11,10 @@ import (
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/identity"
 	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
+	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/shared"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
+	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/types"
@@ -109,14 +109,6 @@ func (s *service) DoGet(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 
-	echo_utils.SetCookieInterface(c, &http.Cookie{
-		Name:     "_signup_request",
-		Path:     "/",
-		Expires:  time.Now().Add(24 * time.Hour),
-		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
-	}, model)
-
 	var rows []row
 	//	rows = append(rows, row{Key: "code", Value: model.Code})
 
@@ -129,32 +121,21 @@ func (s *service) DoGet(c echo.Context) error {
 		})
 }
 
-type Error struct {
-	Key   string `json:"key"`
-	Value string `json:"msg"`
-}
-
-func NewErrorF(key string, value string, args ...interface{}) *Error {
-	return &Error{
-		Key:   key,
-		Value: fmt.Sprintf(value, args...),
-	}
-}
-func (s *service) validateSignupPostRequest(request *SignupPostRequest) ([]*Error, error) {
+func (s *service) validateSignupPostRequest(request *SignupPostRequest) ([]*services_handlers_shared.Error, error) {
 	var err error
-	errors := make([]*Error, 0)
+	errors := make([]*services_handlers_shared.Error, 0)
 
 	if fluffycore_utils.IsEmptyOrNil(request.UserName) {
 
-		errors = append(errors, NewErrorF("username", "username is empty"))
+		errors = append(errors, services_handlers_shared.NewErrorF("username", "username is empty"))
 	} else {
 		_, ok := echo_utils.IsValidEmailAddress(request.UserName)
 		if !ok {
-			errors = append(errors, NewErrorF("username", "username:%s is not a valid email address", request.UserName))
+			errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s is not a valid email address", request.UserName))
 		}
 	}
 	if fluffycore_utils.IsEmptyOrNil(request.Password) {
-		errors = append(errors, NewErrorF("password", "password is empty"))
+		errors = append(errors, services_handlers_shared.NewErrorF("password", "password is empty"))
 	}
 
 	return errors, err
@@ -170,17 +151,23 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("getIDPs")
 		return c.Redirect(http.StatusFound, "/error")
 	}
+	doError := func(state string, errors []*services_handlers_shared.Error) error {
+		return s.Render(c, http.StatusBadRequest, "oidc/signup/index",
+			map[string]interface{}{
+				"errors":    errors,
+				"idps":      idps,
+				"state":     state,
+				"directive": models.SignupDirective,
+			})
+
+	}
 	// is the request get or post?
 	model := &SignupPostRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Debug().Err(err).Msg("Bind")
-		return s.Render(c, http.StatusBadRequest, "oidc/signup/index",
-			map[string]interface{}{
-				"errors":    []*Error{NewErrorF("model", "model is invalid")},
-				"idps":      idps,
-				"state":     model.State,
-				"directive": models.SignupDirective,
-			})
+		return doError(model.State, []*services_handlers_shared.Error{
+			services_handlers_shared.NewErrorF("model", "model is invalid"),
+		})
 	}
 	log.Info().Interface("model", model).Msg("model")
 	if model.Type == "GET" {
@@ -191,15 +178,44 @@ func (s *service) DoPost(c echo.Context) error {
 		return err
 	}
 	if len(errors) > 0 {
-		return s.Render(c, http.StatusBadRequest, "oidc/signup/index",
-			map[string]interface{}{
-				"errors":    errors,
-				"idps":      idps,
-				"state":     model.State,
-				"directive": models.SignupDirective,
-			})
+		return doError(model.State, errors)
 	}
 	model.UserName = strings.ToLower(model.UserName)
+	// get the domain from the email
+	parts := strings.Split(model.UserName, "@")
+	domainPart := parts[1]
+	// first lets see if this domain has been claimed.
+	listIDPRequest, err := s.IdpServiceServer().ListIDP(ctx, &proto_oidc_idp.ListIDPRequest{
+		Filter: &proto_oidc_idp.Filter{
+			ClaimedDomain: &proto_types.StringArrayFilterExpression{
+				Eq: domainPart,
+			},
+		},
+	})
+	if err != nil {
+		log.Warn().Err(err).Msg("ListIDP")
+		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+		return doError(model.State, errors)
+	}
+	if len(listIDPRequest.Idps) > 0 {
+		// an idp has claimed this domain.
+		// post to the externalIDP
+		return s.RenderAutoPost(c, wellknown_echo.ExternalIDPPath,
+			[]models.FormParam{
+				{
+					Name:  "state",
+					Value: model.State,
+				},
+				{
+					Name:  "idp_hint",
+					Value: listIDPRequest.Idps[0].Slug,
+				},
+				{
+					Name:  "directive",
+					Value: models.LoginDirective,
+				},
+			})
+	}
 	// does the user exist.
 	listUserResponse, err := s.UserService().ListUser(ctx, &proto_oidc_user.ListUserRequest{
 		Filter: &proto_oidc_user.Filter{
@@ -215,13 +231,9 @@ func (s *service) DoPost(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 	if len(listUserResponse.Users) > 0 {
-		return s.Render(c, http.StatusBadRequest, "oidc/signup/index",
-			map[string]interface{}{
-				"errors":    []*Error{NewErrorF("username", "username:%s already exists", model.UserName)},
-				"idps":      idps,
-				"state":     model.State,
-				"directive": models.SignupDirective,
-			})
+		return doError(model.State, []*services_handlers_shared.Error{
+			services_handlers_shared.NewErrorF("username", "username:%s already exists", model.UserName),
+		})
 	}
 	hashPasswordResponse, err := s.passwordHasher.HashPassword(ctx, &contracts_identity.HashPasswordRequest{
 		Password: model.Password,
@@ -304,13 +316,6 @@ func (s *service) DoPost(c echo.Context) error {
 		}
 		return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
 
-	}
-	var signupGetRequest *SignupGetRequest = &SignupGetRequest{}
-	err = echo_utils.GetCookieInterface(c, "_signup_request", signupGetRequest)
-
-	if err != nil {
-		log.Error().Err(err).Msg("Unmarshal")
-		return c.Redirect(http.StatusFound, "/error")
 	}
 
 	return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath,
