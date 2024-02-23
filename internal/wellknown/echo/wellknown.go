@@ -18,13 +18,13 @@ const (
 	HomePath                        = "/"
 	LoginPath                       = "/login"
 	LogoutPath                      = "/logout"
-	PasswordResetPath               = "/password-reset"
-	ProfilePath                     = "/profile"
 	OAuth2CallbackPath              = "/oauth2/callback"
 	OAuth2TokenEndpointPath         = "/token"
 	OIDCAuthorizationEndpointPath   = "/oidc/v1/auth"
 	OIDCLoginPath                   = "/oidc-login"
 	OIDCLoginPasswordPath           = "/oidc-login-password"
+	PasswordResetPath               = "/password-reset"
+	ProfilePath                     = "/profile"
 	ReadyPath                       = "/ready"
 	SignupPath                      = "/signup"
 	SwaggerPath                     = "/swagger/*"
@@ -35,8 +35,9 @@ const (
 )
 
 type Paths struct {
-	Home              string
 	About             string
+	ExternalIDP       string
+	Home              string
 	Login             string
 	Logout            string
 	Profile           string
@@ -50,8 +51,9 @@ type Paths struct {
 
 func NewPaths() *Paths {
 	return &Paths{
-		Home:              HomePath,
 		About:             AboutPath,
+		ExternalIDP:       ExternalIDPPath,
+		Home:              HomePath,
 		Login:             LoginPath,
 		Logout:            LogoutPath,
 		Profile:           ProfilePath,

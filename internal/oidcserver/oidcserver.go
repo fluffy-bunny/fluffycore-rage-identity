@@ -14,6 +14,7 @@ import (
 	services_handlers_account_home "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/home"
 	services_handlers_account_login "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/login"
 	services_handlers_account_logout "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/logout"
+	services_handlers_account_profile "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/profile"
 	services_handlers_authorization_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/authorization_endpoint"
 	services_handlers_discovery_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/discovery_endpoint"
 	services_handlers_error "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/error"
@@ -110,6 +111,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_account_callback.AddScopedIHandler(builder)
 	services_handlers_account_login.AddScopedIHandler(builder)
 	services_handlers_account_logout.AddScopedIHandler(builder)
+	services_handlers_account_profile.AddScopedIHandler(builder)
 
 	// OIDC Handlers
 	//--------------------------------------------------------
