@@ -56,9 +56,9 @@ type (
 	Identity struct {
 		Subject       string
 		Email         string
+		EmailVerified bool
 		ACR           []string
 		AMR           []string
-		EmailVerified bool
 	}
 	AuthorizationFinal struct {
 		Request          *AuthorizationRequest

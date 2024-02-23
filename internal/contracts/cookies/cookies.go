@@ -60,3 +60,10 @@ type (
 		GetAuthCookie(c echo.Context) (*GetAuthCookieResponse, error)
 	}
 )
+
+const (
+	CookieNameVerificationCode = "verificationCode"
+	CookieNamePasswordReset    = "passwordReset"
+	CookieNameAccountState     = "accountState"
+	CookieNameAuth             = "_auth"
+)

@@ -7,6 +7,7 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
+	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/cookies"
 	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
 	services "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services"
 	services_handlers_account_about "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/about"
@@ -30,8 +31,6 @@ import (
 	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/swagger"
 	services_handlers_token_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/token_endpoint"
 	services_handlers_verifycode "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/verifycode"
-	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
-	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
 	contracts_startup "github.com/fluffy-bunny/fluffycore/echo/contracts/startup"
@@ -171,15 +170,17 @@ func EnsureCookieClaimsPrincipal(_ di.Container) echo.MiddlewareFunc {
 			if !ok {
 				return next(c)
 			}
+			wellknownCookies := di.Get[contracts_cookies.IWellknownCookies](subContainer)
 			claimsPrincipal := di.Get[fluffycore_contracts_common.IClaimsPrincipal](subContainer)
-			if claimsPrincipal == nil {
-				panic("claimsPrincipal is nil")
-			}
-			rootIdentity := &proto_oidc_models.Identity{}
-			err := echo_utils.GetCookieInterface(c, "_auth", rootIdentity)
-			if err != nil || rootIdentity == nil {
+
+			getAuthCookieResponse, err := wellknownCookies.GetAuthCookie(c)
+			if err != nil ||
+				getAuthCookieResponse == nil ||
+				getAuthCookieResponse.AuthCookie == nil ||
+				getAuthCookieResponse.AuthCookie.Identity == nil {
 				return next(c)
 			}
+			rootIdentity := getAuthCookieResponse.AuthCookie.Identity
 
 			claimsPrincipal.AddClaim(
 				fluffycore_contracts_common.Claim{
@@ -189,9 +190,6 @@ func EnsureCookieClaimsPrincipal(_ di.Container) echo.MiddlewareFunc {
 				fluffycore_contracts_common.Claim{
 					Type:  fluffycore_echo_wellknown.ClaimTypeSubject,
 					Value: rootIdentity.Subject,
-				}, fluffycore_contracts_common.Claim{
-					Type:  "idp_hint",
-					Value: rootIdentity.IdpSlug,
 				}, fluffycore_contracts_common.Claim{
 					Type:  "email",
 					Value: rootIdentity.Email,
