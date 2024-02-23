@@ -76,7 +76,9 @@
       "emailVerificationRequired": false,
       "autoCreate": true,
       "metadata": {},
-      "claimedDomains": ["mapped.com"]
+      "claimedDomains": [
+        "mapped.com"
+      ]
     }
   ]
 }
