@@ -14,10 +14,10 @@
           "scope": "openid email profile"
         }
       },
+      "hidden": false,
+      "emailVerificationRequired": true,
       "metadata": {
-        "hidden": "false",
-        "email_verification_required": "true",
-        "icon": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
+        "image_ref": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
       }
     },
     {
@@ -32,9 +32,9 @@
           "client_secret": "${GITHUB_68863c06bc5c9bd0c2f9_CLIENT_SECRET}"
         }
       },
+      "hidden": false,
+      "emailVerificationRequired": true,
       "metadata": {
-        "hidden": "false",
-        "email_verification_required": "true",
         "image_ref": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
       }
     },
@@ -52,9 +52,9 @@
           "scope": "openid profile email User.Read"
         }
       },
+      "hidden": false,
+      "emailVerificationRequired": true,
       "metadata": {
-        "hidden": "false",
-        "email_verification_required": "true",
         "image_ref": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
       }
     },
@@ -72,11 +72,10 @@
           "scope": "openid email profile"
         }
       },
-      "metadata": {
-        "hidden": "true",
-        "email_verification_required": "false",
-        "auto_create": "true"
-      },
+      "hidden": true,
+      "emailVerificationRequired": false,
+      "autoCreate": true,
+      "metadata": {},
       "claimedDomains": ["mapped.com"]
     }
   ]

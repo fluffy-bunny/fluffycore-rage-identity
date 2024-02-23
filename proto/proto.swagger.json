@@ -248,6 +248,15 @@
         "claimedDomain": {
           "$ref": "#/definitions/typesStringArrayFilterExpression"
         },
+        "hidden": {
+          "$ref": "#/definitions/typesBoolFilterExpression"
+        },
+        "emailVerificationRequired": {
+          "$ref": "#/definitions/typesBoolFilterExpression"
+        },
+        "autoCreate": {
+          "$ref": "#/definitions/typesBoolFilterExpression"
+        },
         "and": {
           "type": "array",
           "items": {
@@ -376,6 +385,15 @@
           "items": {
             "type": "string"
           }
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "emailVerificationRequired": {
+          "type": "boolean"
+        },
+        "autoCreate": {
+          "type": "boolean"
         }
       }
     },
@@ -405,6 +423,15 @@
         },
         "claimedDomains": {
           "$ref": "#/definitions/typesStringArrayUpdate"
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "emailVerificationRequired": {
+          "type": "boolean"
+        },
+        "autoCreate": {
+          "type": "boolean"
         }
       }
     },
