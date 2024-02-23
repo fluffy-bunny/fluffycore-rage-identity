@@ -5,12 +5,12 @@
 ![alt text](image-2.png)
 This is a Proof-Of-Life authentication server.
 
-The use case for this proof is the github.com user experience.  
+The use case for this proof is the github.com user experience.
 
 1. A user is a stand-alone entity.
 2. A user can be linked in N number of external IDPs.
 3. A user can be challenged at any time against any known IDP , and the id_token must contain what idp (external or the root) wence the identity was produced.
-4. External IDPs are secret.  We don't want anyone to know what external enterprises a user can be linked to.  
+4. External IDPs are secret. We don't want anyone to know what external enterprises a user can be linked to.
 
 No calls to the userinfo endpoint are supported. id_token is the only thing returned that is useful. It is meant to use that id_token as an argument to an internal token_exchange that knows more about the user in the context of that system.
 
@@ -87,6 +87,8 @@ protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gat
 
 protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/types/pagination.proto
 
+protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/types/phone_number.proto
+
 protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/oidc/models/client.proto
 
 protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/oidc/models/idp.proto
@@ -98,6 +100,7 @@ protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gat
 protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/oidc/models/user.proto
 
 protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/oidc/user/user.proto
+
 ```
 
 ## Private OAuth2 server
