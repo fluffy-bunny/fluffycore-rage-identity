@@ -25,25 +25,12 @@
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="openidConfigLink">
                         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOpenID" aria-expanded="false" aria-controls="collapseOpenID">
-                            OpenID Configuration
+                             {{ call .LocalizeMessage "security_settings" }}
                         </button>
                     </h2>
                     <div id="collapseOpenID" class="accordion-collapse collapse" aria-labelledby="openidConfigLink" data-bs-parent="#linkAccordion">
                         <div class="accordion-body">
                             <a class="nav-link active" aria-current="page" href="/.well-known/openid-configuration">Go to OpenID Configuration</a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="jwksLink">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseJWKS" aria-expanded="false" aria-controls="collapseJWKS">
-                            JWKS
-                        </button>
-                    </h2>
-                    <div id="collapseJWKS" class="accordion-collapse collapse" aria-labelledby="jwksLink" data-bs-parent="#linkAccordion">
-                        <div class="accordion-body">
-                            <a class="nav-link active" aria-current="page" href="/.well-known/jwks">Go to JWKS</a>
                         </div>
                     </div>
                 </div>
