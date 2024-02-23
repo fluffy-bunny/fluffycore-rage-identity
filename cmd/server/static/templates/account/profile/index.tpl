@@ -2,6 +2,8 @@
 {{template "html_begin" .}}
 {{template "header" .}}
 {{template "navbar" .}}
+
+{{ $paths       := .paths }}
 <body>
     <!-- Page content -->
     <div class="container">
@@ -30,7 +32,10 @@
                     </h2>
                     <div id="collapseOpenID" class="accordion-collapse collapse" aria-labelledby="openidConfigLink" data-bs-parent="#linkAccordion">
                         <div class="accordion-body">
-                            <a class="nav-link active" aria-current="page" href="/.well-known/openid-configuration">Go to OpenID Configuration</a>
+                            <form action="{{ $paths.Profile }}" method="post">
+                                <input type="hidden" name="action" value="password-reset">
+                                <button type="submit" class="btn btn-primary btn-block">{{ call .LocalizeMessage "password_reset" }}</button>
+                            </form>
                         </div>
                     </div>
                 </div>
