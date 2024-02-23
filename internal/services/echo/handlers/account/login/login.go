@@ -7,6 +7,7 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/cookies"
 	contracts_selfoauth2provider "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/selfoauth2provider"
+	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -58,13 +59,22 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 func (s *service) Do(c echo.Context) error {
-
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
+	model := &models.LoginGetRequest{}
+	if err := c.Bind(model); err != nil {
+		return err
+	}
+
+	err := s.wellknownCookies.SetInsecureCookie(c, contracts_cookies.LoginRequest, model)
+	if err != nil {
+		return c.Redirect(http.StatusFound, "/error")
+	}
+
 	state := xid.New().String()
 	nonce := xid.New().String()
-	err := s.wellknownCookies.SetAccountStateCookie(c, &contracts_cookies.SetAccountStateCookieRequest{
+	err = s.wellknownCookies.SetAccountStateCookie(c, &contracts_cookies.SetAccountStateCookieRequest{
 		AccountStateCookie: &contracts_cookies.AccountStateCookie{
 			State: state,
 			Nonce: nonce,

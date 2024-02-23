@@ -58,5 +58,17 @@ type (
 		SetAuthCookie(c echo.Context, request *SetAuthCookieRequest) error
 		DeleteAuthCookie(c echo.Context)
 		GetAuthCookie(c echo.Context) (*GetAuthCookieResponse, error)
+
+		SetInsecureCookie(c echo.Context, name string, value interface{}) error
+		DeleteInsecureCookie(c echo.Context, name string)
+		GetInsecureCookie(c echo.Context, name string) (interface{}, error)
 	}
+)
+
+const (
+	CookieNameVerificationCode = "verificationCode"
+	CookieNamePasswordReset    = "passwordReset"
+	CookieNameAccountState     = "accountState"
+	CookieNameAuth             = "_auth"
+	LoginRequest               = "_loginRequest"
 )

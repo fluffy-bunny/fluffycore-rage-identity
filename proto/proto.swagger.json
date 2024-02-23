@@ -1,12 +1,12 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "proto/oidc/idp/idp.proto",
+    "title": "proto/oidc/user/user.proto",
     "version": "version not set"
   },
   "tags": [
     {
-      "name": "IDPService"
+      "name": "UserService"
     }
   ],
   "consumes": [
@@ -16,15 +16,15 @@
     "application/json"
   ],
   "paths": {
-    "/api/v1/idp/_create": {
+    "/api/v1/user/_create": {
       "post": {
-        "summary": "Create idp",
-        "operationId": "IDPService_CreateIDP",
+        "summary": "Create user",
+        "operationId": "UserService_CreateUser",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/idpCreateIDPResponse"
+              "$ref": "#/definitions/userCreateUserResponse"
             }
           },
           "default": {
@@ -40,24 +40,23 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/idpCreateIDPRequest"
+              "$ref": "#/definitions/userCreateUserRequest"
             }
           }
         ],
         "tags": [
-          "IDPService"
+          "UserService"
         ]
       }
     },
-    "/api/v1/idp/_search": {
+    "/api/v1/user/_link": {
       "post": {
-        "summary": "List idps",
-        "operationId": "IDPService_ListIDP",
+        "operationId": "UserService_LinkUsers",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/idpListIDPResponse"
+              "$ref": "#/definitions/userLinkUsersResponse"
             }
           },
           "default": {
@@ -73,24 +72,24 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/idpListIDPRequest"
+              "$ref": "#/definitions/userLinkUsersRequest"
             }
           }
         ],
         "tags": [
-          "IDPService"
+          "UserService"
         ]
       }
     },
-    "/api/v1/idp/_update": {
+    "/api/v1/user/_search": {
       "post": {
-        "summary": "Update idp",
-        "operationId": "IDPService_UpdateIDP",
+        "summary": "List users",
+        "operationId": "UserService_ListUser",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/idpUpdateIDPResponse"
+              "$ref": "#/definitions/userListUserResponse"
             }
           },
           "default": {
@@ -106,24 +105,89 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/idpUpdateIDPRequest"
+              "$ref": "#/definitions/userListUserRequest"
             }
           }
         ],
         "tags": [
-          "IDPService"
+          "UserService"
         ]
       }
     },
-    "/api/v1/idp/id/{id}": {
+    "/api/v1/user/_unlink": {
+      "post": {
+        "operationId": "UserService_UnlinkUsers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/userUnlinkUsersResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/userUnlinkUsersRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/api/v1/user/_update": {
+      "post": {
+        "summary": "Update user",
+        "operationId": "UserService_UpdateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/userUpdateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/userUpdateUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/api/v1/user/subject/{subject}": {
       "get": {
-        "summary": "Get idp",
-        "operationId": "IDPService_GetIDP",
+        "summary": "Get user",
+        "operationId": "UserService_GetUser",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/idpGetIDPResponse"
+              "$ref": "#/definitions/userGetUserResponse"
             }
           },
           "default": {
@@ -135,24 +199,24 @@
         },
         "parameters": [
           {
-            "name": "id",
+            "name": "subject",
             "in": "path",
             "required": true,
             "type": "string"
           }
         ],
         "tags": [
-          "IDPService"
+          "UserService"
         ]
       },
       "delete": {
-        "summary": "Delete idp",
-        "operationId": "IDPService_DeleteIDP",
+        "summary": "Delete user",
+        "operationId": "UserService_DeleteUser",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/idpDeleteIDPResponse"
+              "$ref": "#/definitions/userDeleteUserResponse"
             }
           },
           "default": {
@@ -164,306 +228,282 @@
         },
         "parameters": [
           {
-            "name": "id",
+            "name": "subject",
             "in": "path",
             "required": true,
             "type": "string"
           }
         ],
         "tags": [
-          "IDPService"
-        ]
-      }
-    },
-    "/api/v1/idp/slug/{slug}": {
-      "get": {
-        "summary": "Get idp",
-        "operationId": "IDPService_GetIDPBySlug",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/idpGetIDPBySlugResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "slug",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "IDPService"
+          "UserService"
         ]
       }
     }
   },
   "definitions": {
-    "idpCreateIDPRequest": {
+    "modelsAddress": {
       "type": "object",
       "properties": {
-        "idp": {
-          "$ref": "#/definitions/modelsIDP"
-        }
-      }
-    },
-    "idpCreateIDPResponse": {
-      "type": "object",
-      "properties": {
-        "idp": {
-          "$ref": "#/definitions/modelsIDP"
-        }
-      }
-    },
-    "idpDeleteIDPResponse": {
-      "type": "object"
-    },
-    "idpFilter": {
-      "type": "object",
-      "properties": {
-        "slug": {
-          "$ref": "#/definitions/typesStringFilterExpression"
-        },
-        "name": {
-          "$ref": "#/definitions/typesStringFilterExpression"
-        },
-        "description": {
-          "$ref": "#/definitions/typesStringFilterExpression"
-        },
-        "metadata": {
-          "$ref": "#/definitions/typesStringMapStringFilterExpression"
-        },
-        "enabled": {
-          "$ref": "#/definitions/typesBoolFilterExpression"
-        },
-        "claimedDomain": {
-          "$ref": "#/definitions/typesStringArrayFilterExpression"
-        },
-        "and": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/idpFilter"
-          },
-          "title": "AST"
-        },
-        "or": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/idpFilter"
-          }
-        },
-        "not": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/idpFilter"
-          }
-        }
-      }
-    },
-    "idpGetIDPBySlugResponse": {
-      "type": "object",
-      "properties": {
-        "idp": {
-          "$ref": "#/definitions/modelsIDP"
-        }
-      }
-    },
-    "idpGetIDPResponse": {
-      "type": "object",
-      "properties": {
-        "idp": {
-          "$ref": "#/definitions/modelsIDP"
-        }
-      }
-    },
-    "idpListIDPRequest": {
-      "type": "object",
-      "properties": {
-        "filter": {
-          "$ref": "#/definitions/idpFilter",
-          "title": "Filter"
-        },
-        "pagination": {
-          "$ref": "#/definitions/typesPagination",
-          "title": "Pagination"
-        }
-      }
-    },
-    "idpListIDPResponse": {
-      "type": "object",
-      "properties": {
-        "idps": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/modelsIDP"
-          }
-        },
-        "pagination": {
-          "$ref": "#/definitions/typesPaginationResponse",
-          "title": "Pagination details"
-        }
-      }
-    },
-    "idpUpdateIDPRequest": {
-      "type": "object",
-      "properties": {
-        "idp": {
-          "$ref": "#/definitions/modelsIDPUpdate"
-        }
-      }
-    },
-    "idpUpdateIDPResponse": {
-      "type": "object",
-      "properties": {
-        "idp": {
-          "$ref": "#/definitions/modelsIDP"
-        }
-      }
-    },
-    "modelsGithubOAuth2Protocol": {
-      "type": "object",
-      "properties": {
-        "clientId": {
+        "street": {
           "type": "string"
         },
-        "clientSecret": {
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "postalCode": {
+          "type": "string"
+        },
+        "country": {
           "type": "string"
         }
       }
     },
-    "modelsIDP": {
+    "modelsAddressUpdate": {
       "type": "object",
       "properties": {
-        "id": {
+        "street": {
           "type": "string"
         },
-        "enabled": {
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "postalCode": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        }
+      }
+    },
+    "modelsIdentity": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "type": "string"
+        },
+        "idpSlug": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "emailVerified": {
           "type": "boolean"
-        },
-        "slug": {
+        }
+      }
+    },
+    "modelsIdentityUpdate": {
+      "type": "object",
+      "properties": {
+        "subject": {
           "type": "string"
         },
-        "name": {
+        "email": {
           "type": "string"
         },
-        "description": {
-          "type": "string"
-        },
-        "protocol": {
-          "$ref": "#/definitions/modelsProtocol"
-        },
-        "metadata": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "claimedDomains": {
+        "emailVerified": {
+          "type": "boolean"
+        }
+      }
+    },
+    "modelsLinkedIdentities": {
+      "type": "object",
+      "properties": {
+        "identities": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "object",
+            "$ref": "#/definitions/modelsIdentity"
           }
         }
       }
     },
-    "modelsIDPUpdate": {
+    "modelsLinkedIdentitiesUpdate": {
       "type": "object",
       "properties": {
-        "id": {
+        "granular": {
+          "$ref": "#/definitions/modelsLinkedIdentitiesUpdateGranular"
+        },
+        "replace": {
+          "$ref": "#/definitions/modelsLinkedIdentities"
+        }
+      }
+    },
+    "modelsLinkedIdentitiesUpdateGranular": {
+      "type": "object",
+      "properties": {
+        "add": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/modelsIdentity"
+          }
+        },
+        "remove": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/modelsIdentity"
+          }
+        }
+      }
+    },
+    "modelsPassword": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string"
+        }
+      }
+    },
+    "modelsPasswordUpdate": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string"
+        }
+      }
+    },
+    "modelsProfile": {
+      "type": "object",
+      "properties": {
+        "givenName": {
           "type": "string"
         },
-        "enabled": {
-          "type": "boolean"
-        },
-        "slug": {
+        "familyName": {
           "type": "string"
         },
-        "name": {
+        "phoneNumbers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/typesPhoneNumber"
+          }
+        },
+        "address": {
+          "$ref": "#/definitions/modelsAddress"
+        }
+      }
+    },
+    "modelsProfileUpdate": {
+      "type": "object",
+      "properties": {
+        "givenName": {
           "type": "string"
         },
-        "description": {
+        "familyName": {
           "type": "string"
         },
-        "protocol": {
-          "$ref": "#/definitions/modelsProtocolUpdate"
+        "phoneNumbers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/typesPhoneNumberUpdate"
+          }
         },
-        "metadata": {
-          "$ref": "#/definitions/typesStringMapUpdate"
-        },
-        "claimedDomains": {
+        "address": {
+          "$ref": "#/definitions/modelsAddressUpdate"
+        }
+      }
+    },
+    "modelsRecovery": {
+      "type": "object",
+      "properties": {
+        "emails": {
+          "$ref": "#/definitions/typesStringValues"
+        }
+      }
+    },
+    "modelsRecoveryUpdate": {
+      "type": "object",
+      "properties": {
+        "emails": {
           "$ref": "#/definitions/typesStringArrayUpdate"
         }
       }
     },
-    "modelsOAuth2Protocol": {
+    "modelsUser": {
       "type": "object",
       "properties": {
-        "clientId": {
-          "type": "string"
+        "rootIdentity": {
+          "$ref": "#/definitions/modelsIdentity"
         },
-        "clientSecret": {
-          "type": "string"
+        "linkedIdentities": {
+          "$ref": "#/definitions/modelsLinkedIdentities"
         },
-        "scope": {
-          "type": "string"
+        "recovery": {
+          "$ref": "#/definitions/modelsRecovery"
         },
-        "authorizationEndpoint": {
-          "type": "string"
+        "password": {
+          "$ref": "#/definitions/modelsPassword"
         },
-        "tokenEndpoint": {
-          "type": "string"
+        "state": {
+          "$ref": "#/definitions/modelsUserState"
+        },
+        "profile": {
+          "$ref": "#/definitions/modelsProfile"
         }
       }
     },
-    "modelsOIDCProtocol": {
+    "modelsUserState": {
+      "type": "string",
+      "enum": [
+        "USER_STATE_UNSPECIFIED",
+        "USER_STATE_ACTIVE",
+        "USER_STATE_DISABLED",
+        "USER_STATE_DELETED",
+        "USER_STATE_PENDING"
+      ],
+      "default": "USER_STATE_UNSPECIFIED"
+    },
+    "modelsUserStateFilterExpression": {
       "type": "object",
       "properties": {
-        "authority": {
-          "type": "string"
+        "eq": {
+          "$ref": "#/definitions/modelsUserState"
         },
-        "clientId": {
-          "type": "string"
-        },
-        "clientSecret": {
-          "type": "string"
-        },
-        "scope": {
-          "type": "string"
+        "in": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/modelsUserState"
+          }
         }
       }
     },
-    "modelsProtocol": {
+    "modelsUserStateValue": {
       "type": "object",
       "properties": {
-        "oidc": {
-          "$ref": "#/definitions/modelsOIDCProtocol"
-        },
-        "oauth2": {
-          "$ref": "#/definitions/modelsOAuth2Protocol"
-        },
-        "github": {
-          "$ref": "#/definitions/modelsGithubOAuth2Protocol"
+        "vale": {
+          "$ref": "#/definitions/modelsUserState"
         }
       }
     },
-    "modelsProtocolUpdate": {
+    "modelsUserUpdate": {
       "type": "object",
       "properties": {
-        "value": {
-          "$ref": "#/definitions/modelsProtocol"
+        "rootIdentity": {
+          "$ref": "#/definitions/modelsIdentityUpdate"
+        },
+        "linkedIdentities": {
+          "$ref": "#/definitions/modelsLinkedIdentitiesUpdate"
+        },
+        "recovery": {
+          "$ref": "#/definitions/modelsRecoveryUpdate"
+        },
+        "password": {
+          "$ref": "#/definitions/modelsPasswordUpdate"
+        },
+        "state": {
+          "$ref": "#/definitions/modelsUserStateValue"
+        },
+        "profile": {
+          "$ref": "#/definitions/modelsProfileUpdate"
         }
       }
     },
@@ -495,15 +535,17 @@
         }
       }
     },
-    "typesBoolFilterExpression": {
+    "typesIDFilterExpression": {
       "type": "object",
       "properties": {
         "eq": {
-          "type": "boolean"
+          "type": "string"
         },
-        "isDefined": {
-          "type": "boolean",
-          "title": "This is to distinguish explicitly defined value from its default value. The filter is not effective unless _is_defined == true"
+        "in": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -558,20 +600,54 @@
       },
       "description": "PaginationResponse ..."
     },
-    "typesStringArrayFilterExpression": {
+    "typesPhoneNumber": {
       "type": "object",
       "properties": {
-        "eq": {
+        "countryCode": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "number": {
           "type": "string"
         },
-        "in": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "ne": {
+        "type": {
+          "$ref": "#/definitions/typesPhoneType"
+        }
+      }
+    },
+    "typesPhoneNumberUpdate": {
+      "type": "object",
+      "properties": {
+        "id": {
           "type": "string"
+        },
+        "countryCode": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "number": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/typesPhoneTypeValue"
+        }
+      }
+    },
+    "typesPhoneType": {
+      "type": "string",
+      "enum": [
+        "PHONE_TYPE_UNSPECIFIED",
+        "PHONE_TYPE_MOBILE",
+        "PHONE_TYPE_HOME",
+        "PHONE_TYPE_WORK"
+      ],
+      "default": "PHONE_TYPE_UNSPECIFIED"
+    },
+    "typesPhoneTypeValue": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "$ref": "#/definitions/typesPhoneType"
         }
       }
     },
@@ -623,78 +699,6 @@
         }
       }
     },
-    "typesStringMapStringFilterExpression": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "value": {
-          "$ref": "#/definitions/typesStringFilterExpression"
-        },
-        "and": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/typesStringMapStringFilterExpression"
-          },
-          "title": "AST"
-        },
-        "or": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/typesStringMapStringFilterExpression"
-          }
-        },
-        "not": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/typesStringMapStringFilterExpression"
-          }
-        }
-      }
-    },
-    "typesStringMapUpdate": {
-      "type": "object",
-      "properties": {
-        "granular": {
-          "$ref": "#/definitions/typesStringMapUpdateGranular"
-        },
-        "replace": {
-          "$ref": "#/definitions/typesStringMapValue"
-        }
-      }
-    },
-    "typesStringMapUpdateGranular": {
-      "type": "object",
-      "properties": {
-        "add": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "remove": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "typesStringMapValue": {
-      "type": "object",
-      "properties": {
-        "value": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        }
-      }
-    },
     "typesStringValues": {
       "type": "object",
       "properties": {
@@ -703,6 +707,166 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "userCreateUserRequest": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/modelsUser"
+        }
+      }
+    },
+    "userCreateUserResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/modelsUser"
+        }
+      }
+    },
+    "userDeleteUserResponse": {
+      "type": "object"
+    },
+    "userFilter": {
+      "type": "object",
+      "properties": {
+        "rootIdentity": {
+          "$ref": "#/definitions/userIdentityFilter"
+        },
+        "linkedIdentity": {
+          "$ref": "#/definitions/userIdentityFilter"
+        },
+        "state": {
+          "$ref": "#/definitions/modelsUserStateFilterExpression"
+        },
+        "and": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/userFilter"
+          },
+          "title": "AST"
+        },
+        "or": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/userFilter"
+          }
+        },
+        "not": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/userFilter"
+          }
+        }
+      }
+    },
+    "userGetUserResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/modelsUser"
+        }
+      }
+    },
+    "userIdentityFilter": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "$ref": "#/definitions/typesIDFilterExpression"
+        },
+        "idpSlug": {
+          "$ref": "#/definitions/typesIDFilterExpression"
+        },
+        "email": {
+          "$ref": "#/definitions/typesStringFilterExpression"
+        }
+      }
+    },
+    "userLinkUsersRequest": {
+      "type": "object",
+      "properties": {
+        "rootSubject": {
+          "type": "string"
+        },
+        "externalIdentity": {
+          "$ref": "#/definitions/modelsIdentity"
+        }
+      }
+    },
+    "userLinkUsersResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/modelsUser"
+        }
+      }
+    },
+    "userListUserRequest": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "$ref": "#/definitions/userFilter",
+          "title": "Filter"
+        },
+        "pagination": {
+          "$ref": "#/definitions/typesPagination",
+          "title": "Pagination"
+        }
+      }
+    },
+    "userListUserResponse": {
+      "type": "object",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/modelsUser"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/typesPaginationResponse",
+          "title": "Pagination details"
+        }
+      }
+    },
+    "userUnlinkUsersRequest": {
+      "type": "object",
+      "properties": {
+        "rootSubject": {
+          "type": "string"
+        },
+        "externalIdentity": {
+          "$ref": "#/definitions/modelsIdentity"
+        }
+      }
+    },
+    "userUnlinkUsersResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/modelsUser"
+        }
+      }
+    },
+    "userUpdateUserRequest": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/modelsUserUpdate"
+        }
+      }
+    },
+    "userUpdateUserResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/modelsUser"
         }
       }
     }

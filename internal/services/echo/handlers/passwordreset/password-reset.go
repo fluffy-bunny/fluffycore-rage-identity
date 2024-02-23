@@ -54,7 +54,8 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
 		stemService.Ctor,
 		[]contracts_handler.HTTPVERB{
-			contracts_handler.GET,
+			// do auto post
+			//contracts_handler.GET,
 			contracts_handler.POST,
 		},
 		wellknown_echo.PasswordResetPath,
@@ -66,11 +67,13 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type PasswordResetGetRequest struct {
-	State string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
+	State     string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
+	ReturnUrl string `param:"returnUrl" query:"returnUrl" form:"returnUrl" json:"returnUrl" xml:"returnUrl"`
 }
 
 type PasswordResetPostRequest struct {
 	State           string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
+	ReturnUrl       string `param:"returnUrl" query:"returnUrl" form:"returnUrl" json:"returnUrl" xml:"returnUrl"`
 	Password        string `param:"password" query:"password" form:"password" json:"password" xml:"password"`
 	ConfirmPassword string `param:"confirmPassword" query:"confirmPassword" form:"confirmPassword" json:"confirmPassword" xml:"confirmPassword"`
 }
@@ -102,7 +105,9 @@ func (s *service) DoGet(c echo.Context) error {
 
 	err = s.Render(c, http.StatusOK, "oidc/passwordreset/index",
 		map[string]interface{}{
-			"state": model.State,
+			"state":     model.State,
+			"returnUrl": model.ReturnUrl,
+			"errors":    []*services_handlers_shared.Error{},
 		})
 	return err
 }
@@ -138,13 +143,20 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 	log.Info().Interface("model", model).Msg("model")
 
+	if fluffycore_utils.IsEmptyOrNil(model.Password) || fluffycore_utils.IsEmptyOrNil(model.ConfirmPassword) {
+		return s.DoGet(c)
+	}
 	errors, err := s.validatePasswordResetPostRequest(model)
-	if err != nil {
+	doErrorReturn := func() error {
 		return s.Render(c, http.StatusBadRequest, "oidc/passwordreset/index",
 			map[string]interface{}{
-				"state": model.State,
-				"defs":  errors,
+				"state":     model.State,
+				"returnUrl": model.ReturnUrl,
+				"errors":    errors,
 			})
+	}
+	if err != nil {
+		return doErrorReturn()
 	}
 
 	getPasswordResetCookieResponse, err := s.wellknownCookies.GetPasswordResetCookie(c)
@@ -208,7 +220,9 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("SendEmail")
 		return c.Redirect(http.StatusFound, "/error")
 	}
-
+	if !fluffycore_utils.IsEmptyOrNil(model.ReturnUrl) {
+		return c.Redirect(http.StatusFound, model.ReturnUrl)
+	}
 	return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath,
 		[]models.FormParam{
 			{
@@ -237,8 +251,6 @@ func (s *service) Do(c echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 	switch r.Method {
-	case http.MethodGet:
-		return s.DoGet(c)
 	case http.MethodPost:
 		return s.DoPost(c)
 	}

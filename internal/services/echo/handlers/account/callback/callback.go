@@ -60,6 +60,11 @@ type CallbackRequest struct {
 	State string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 }
 
+var validReturnUrlPaths = map[string]bool{
+	wellknown_echo.ProfilePath: true,
+	wellknown_echo.HomePath:    true,
+}
+
 func (s *service) Do(c echo.Context) error {
 
 	ctx := c.Request().Context()
@@ -70,6 +75,27 @@ func (s *service) Do(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 	log.Info().Interface("model", model).Msg("model")
+
+	mm, err := s.wellknownCookies.GetInsecureCookie(c, contracts_cookies.LoginRequest)
+	if err != nil {
+		log.Error().Err(err).Msg("LoginRequest cookie not found")
+		return c.Redirect(http.StatusFound, "/error")
+	}
+	var loginRequest models.LoginGetRequest
+	err = models.ConvertFromInterface[models.LoginGetRequest](mm, &loginRequest)
+	if err != nil {
+		log.Error().Err(err).Msg("Could not convert LoginRequest")
+		return c.Redirect(http.StatusFound, "/error")
+	}
+
+	isValidPath := func(path string) bool {
+		_, ok := validReturnUrlPaths[path]
+		return ok
+	}
+	if !isValidPath(loginRequest.ReturnUrl) {
+		loginRequest.ReturnUrl = wellknown_echo.HomePath
+	}
+	log.Info().Interface("loginRequest", loginRequest).Msg("loginRequest")
 
 	getAccountStateCookieResponse, err := s.wellknownCookies.GetAccountStateCookie(c)
 	if err != nil {
@@ -135,5 +161,5 @@ func (s *service) Do(c echo.Context) error {
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	return c.Redirect(http.StatusFound, "/")
+	return c.Redirect(http.StatusFound, loginRequest.ReturnUrl)
 }

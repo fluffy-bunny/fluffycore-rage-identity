@@ -7,6 +7,7 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
+	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/cookies"
 	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
 	services "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services"
 	services_handlers_account_about "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/about"
@@ -14,6 +15,7 @@ import (
 	services_handlers_account_home "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/home"
 	services_handlers_account_login "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/login"
 	services_handlers_account_logout "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/logout"
+	services_handlers_account_profile "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/profile"
 	services_handlers_authorization_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/authorization_endpoint"
 	services_handlers_discovery_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/discovery_endpoint"
 	services_handlers_error "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/error"
@@ -29,8 +31,6 @@ import (
 	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/swagger"
 	services_handlers_token_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/token_endpoint"
 	services_handlers_verifycode "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/verifycode"
-	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
-	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
 	contracts_startup "github.com/fluffy-bunny/fluffycore/echo/contracts/startup"
@@ -110,6 +110,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_account_callback.AddScopedIHandler(builder)
 	services_handlers_account_login.AddScopedIHandler(builder)
 	services_handlers_account_logout.AddScopedIHandler(builder)
+	services_handlers_account_profile.AddScopedIHandler(builder)
 
 	// OIDC Handlers
 	//--------------------------------------------------------
@@ -138,6 +139,7 @@ func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 	e.Use(EnsureCookieClaimsPrincipal(root))
 	e.Use(EnsureLocalizer(root))
+	e.Use(EnsureAuth(root))
 	return nil
 }
 func EnsureLocalizer(_ di.Container) echo.MiddlewareFunc {
@@ -169,15 +171,17 @@ func EnsureCookieClaimsPrincipal(_ di.Container) echo.MiddlewareFunc {
 			if !ok {
 				return next(c)
 			}
+			wellknownCookies := di.Get[contracts_cookies.IWellknownCookies](subContainer)
 			claimsPrincipal := di.Get[fluffycore_contracts_common.IClaimsPrincipal](subContainer)
-			if claimsPrincipal == nil {
-				panic("claimsPrincipal is nil")
-			}
-			rootIdentity := &proto_oidc_models.Identity{}
-			err := echo_utils.GetCookieInterface(c, "_auth", rootIdentity)
-			if err != nil || rootIdentity == nil {
+
+			getAuthCookieResponse, err := wellknownCookies.GetAuthCookie(c)
+			if err != nil ||
+				getAuthCookieResponse == nil ||
+				getAuthCookieResponse.AuthCookie == nil ||
+				getAuthCookieResponse.AuthCookie.Identity == nil {
 				return next(c)
 			}
+			rootIdentity := getAuthCookieResponse.AuthCookie.Identity
 
 			claimsPrincipal.AddClaim(
 				fluffycore_contracts_common.Claim{
@@ -187,9 +191,6 @@ func EnsureCookieClaimsPrincipal(_ di.Container) echo.MiddlewareFunc {
 				fluffycore_contracts_common.Claim{
 					Type:  fluffycore_echo_wellknown.ClaimTypeSubject,
 					Value: rootIdentity.Subject,
-				}, fluffycore_contracts_common.Claim{
-					Type:  "idp_hint",
-					Value: rootIdentity.IdpSlug,
 				}, fluffycore_contracts_common.Claim{
 					Type:  "email",
 					Value: rootIdentity.Email,

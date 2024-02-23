@@ -1,0 +1,43 @@
+
+syntax = "proto3";
+
+package proto.types;
+
+option go_package = "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/types;types";
+option java_multiple_files = true;
+option java_package = "com.fluffybunny.rageoidc.types";
+option csharp_namespace = "FluffyBunny.RageOidc.Types";
+
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/wrappers.proto";
+
+
+enum PhoneType {
+  PHONE_TYPE_UNSPECIFIED = 0;
+  PHONE_TYPE_MOBILE = 1;
+  PHONE_TYPE_HOME = 2;
+  PHONE_TYPE_WORK = 3;
+}
+
+message PhoneTypeValue {
+  PhoneType value = 1;
+}
+message PhoneNumber {
+    uint32 countryCode = 1;
+    string number = 2;
+    PhoneType type = 3;
+}
+message PhoneNumberDTO {
+  string id = 1;
+  uint32 countryCode = 2;
+  string number = 3;
+  PhoneType type = 4;
+}
+
+
+message PhoneNumberUpdate {
+  string id = 1;
+  google.protobuf.UInt32Value countryCode = 2;
+  google.protobuf.StringValue number = 3;
+  PhoneTypeValue type = 4;
+}
