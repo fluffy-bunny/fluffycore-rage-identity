@@ -238,3 +238,22 @@ func (s *service) GetAuthCookie(c echo.Context) (*contracts_cookies.GetAuthCooki
 		AuthCookie: &value,
 	}, nil
 }
+func (s *service) SetInsecureCookie(c echo.Context, name string, value interface{}) error {
+	return SetCookie(c, s.cookieConfig, s.insecureCookies, name, value)
+}
+func (s *service) DeleteInsecureCookie(c echo.Context, name string) {
+	s.insecureCookies.DeleteCookie(c,
+		&fluffycore_contracts_cookies.DeleteCookieRequest{
+			Name:   name,
+			Path:   "/",
+			Domain: s.cookieConfig.Domain,
+		})
+}
+func (s *service) GetInsecureCookie(c echo.Context, name string) (interface{}, error) {
+	var value interface{}
+	err := GetCookie(c, s.insecureCookies, name, &value)
+	if err != nil {
+		return nil, err
+	}
+	return value, nil
+}

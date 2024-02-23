@@ -139,6 +139,7 @@ func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 	e.Use(EnsureCookieClaimsPrincipal(root))
 	e.Use(EnsureLocalizer(root))
+	e.Use(EnsureAuth(root))
 	return nil
 }
 func EnsureLocalizer(_ di.Container) echo.MiddlewareFunc {
