@@ -226,20 +226,6 @@ func (s *service) Do(c echo.Context) error {
 	var exchangeCodeResponse *contracts_codeexchange.ExchangeCodeResponse
 	idp := getIDPBySlugResponse.Idp
 
-	isMetadataBoolSet := func(key string, idp *proto_oidc_models.IDP) bool {
-		if fluffycore_utils.IsEmptyOrNil(idp.Metadata) {
-			return false
-		}
-		v, ok := idp.Metadata[key]
-		if ok {
-			// convert string to boolean
-			bVal, err := strconv.ParseBool(v)
-			if err == nil {
-				return bVal
-			}
-		}
-		return false
-	}
 	if idp.Protocol != nil {
 		log.Info().Interface("getIDPBySlugResponse", getIDPBySlugResponse).Msg("getIDPBySlugResponse")
 		switch idp.Protocol.Value.(type) {
@@ -413,7 +399,7 @@ func (s *service) Do(c echo.Context) error {
 		}
 		doAutoCreateUser := func() (*proto_oidc_models.User, error) {
 			emailVerified := false
-			emailVerificationRequired := isMetadataBoolSet(models.Wellknown_IDP_Metadata_EmailVerificationRequired, idp)
+			emailVerificationRequired := idp.EmailVerificationRequired
 			if emailVerificationRequired {
 				emailVerified = false
 				/*
@@ -473,7 +459,7 @@ func (s *service) Do(c echo.Context) error {
 				}
 
 				// is AUTO-ACCOUNT creation enabled for this IDP?
-				if isMetadataBoolSet(models.Wellknown_IDP_Metadata_AutoCreate, idp) {
+				if idp.AutoCreate {
 					user, err := doAutoCreateUser()
 					if err != nil {
 						log.Error().Err(err).Msg("doAutoCreateUser")
@@ -495,7 +481,7 @@ func (s *service) Do(c echo.Context) error {
 				log.Error().Err(err).Msg("doAutoCreateUser")
 				return doInternalErrorPost()
 			}
-			emailVerificationRequired := isMetadataBoolSet(models.Wellknown_IDP_Metadata_EmailVerificationRequired, idp)
+			emailVerificationRequired := idp.EmailVerificationRequired
 			if !emailVerificationRequired {
 				return loginLinkedUser(user)
 			}
@@ -505,4 +491,20 @@ func (s *service) Do(c echo.Context) error {
 
 	}
 	return c.Redirect(http.StatusTemporaryRedirect, "/error?state="+parentState)
+}
+
+// IsMetadataBoolSet checks if the key is set in the metadata and if the value is a boolean
+func IsMetadataBoolSet(key string, idp *proto_oidc_models.IDP) bool {
+	if fluffycore_utils.IsEmptyOrNil(idp.Metadata) {
+		return false
+	}
+	v, ok := idp.Metadata[key]
+	if ok {
+		// convert string to boolean
+		bVal, err := strconv.ParseBool(v)
+		if err == nil {
+			return bVal
+		}
+	}
+	return false
 }

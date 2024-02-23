@@ -166,11 +166,8 @@ func (b *BaseHandler) GetIDPs(ctx context.Context) ([]*proto_oidc_models.IDP, er
 			Enabled: &proto_types.BoolFilterExpression{
 				Eq: true,
 			},
-			Metadata: &proto_types.StringMapStringFilterExpression{
-				Key: "hidden",
-				Value: &proto_types.StringFilterExpression{
-					Eq: "false",
-				},
+			Hidden: &proto_types.BoolFilterExpression{
+				Eq: false,
 			},
 		},
 	})

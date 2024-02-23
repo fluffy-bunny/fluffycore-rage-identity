@@ -24,13 +24,6 @@ type (
 	}
 )
 
-const (
-	CookieNameVerificationCode = "verificationCode"
-	CookieNamePasswordReset    = "passwordReset"
-	CookieNameAccountState     = "accountState"
-	CookieNameAuth             = "_auth"
-)
-
 var stemService = (*service)(nil)
 
 func init() {
@@ -84,13 +77,13 @@ func (s *service) SetVerificationCodeCookie(c echo.Context, request *contracts_c
 	if err != nil {
 		return err
 	}
-	return SetCookie(c, s.cookieConfig, s.secureCookies, CookieNameVerificationCode, request.VerificationCode)
+	return SetCookie(c, s.cookieConfig, s.secureCookies, contracts_cookies.CookieNameVerificationCode, request.VerificationCode)
 
 }
 func (s *service) DeleteVerificationCodeCookie(c echo.Context) {
 	s.secureCookies.DeleteCookie(c,
 		&fluffycore_contracts_cookies.DeleteCookieRequest{
-			Name:   CookieNameVerificationCode,
+			Name:   contracts_cookies.CookieNameVerificationCode,
 			Path:   "/",
 			Domain: s.cookieConfig.Domain,
 		})
@@ -98,7 +91,7 @@ func (s *service) DeleteVerificationCodeCookie(c echo.Context) {
 func (s *service) GetVerificationCodeCookie(c echo.Context) (*contracts_cookies.GetVerificationCodeCookieResponse, error) {
 
 	var value contracts_cookies.VerificationCode
-	err := GetCookie(c, s.secureCookies, CookieNameVerificationCode, &value)
+	err := GetCookie(c, s.secureCookies, contracts_cookies.CookieNameVerificationCode, &value)
 	if err != nil {
 		return nil, err
 	}
@@ -121,12 +114,12 @@ func (s *service) SetPasswordResetCookie(c echo.Context, request *contracts_cook
 	if err != nil {
 		return err
 	}
-	return SetCookie(c, s.cookieConfig, s.secureCookies, CookieNamePasswordReset, request.PasswordReset)
+	return SetCookie(c, s.cookieConfig, s.secureCookies, contracts_cookies.CookieNamePasswordReset, request.PasswordReset)
 }
 func (s *service) DeletePasswordResetCookie(c echo.Context) {
 	s.secureCookies.DeleteCookie(c,
 		&fluffycore_contracts_cookies.DeleteCookieRequest{
-			Name:   CookieNamePasswordReset,
+			Name:   contracts_cookies.CookieNamePasswordReset,
 			Path:   "/",
 			Domain: s.cookieConfig.Domain,
 		})
@@ -135,7 +128,7 @@ func (s *service) DeletePasswordResetCookie(c echo.Context) {
 func (s *service) GetPasswordResetCookie(c echo.Context) (*contracts_cookies.GetPasswordResetCookieResponse, error) {
 
 	var value contracts_cookies.PasswordReset
-	err := GetCookie(c, s.secureCookies, CookieNamePasswordReset, &value)
+	err := GetCookie(c, s.secureCookies, contracts_cookies.CookieNamePasswordReset, &value)
 	if err != nil {
 		return nil, err
 	}
@@ -164,12 +157,12 @@ func (s *service) SetAccountStateCookie(c echo.Context, request *contracts_cooki
 	if err != nil {
 		return err
 	}
-	return SetCookie(c, s.cookieConfig, s.secureCookies, CookieNameAccountState, request.AccountStateCookie)
+	return SetCookie(c, s.cookieConfig, s.secureCookies, contracts_cookies.CookieNameAccountState, request.AccountStateCookie)
 }
 func (s *service) DeleteAccountStateCookie(c echo.Context) {
 	s.secureCookies.DeleteCookie(c,
 		&fluffycore_contracts_cookies.DeleteCookieRequest{
-			Name:   CookieNameAccountState,
+			Name:   contracts_cookies.CookieNameAccountState,
 			Path:   "/",
 			Domain: s.cookieConfig.Domain,
 		})
@@ -177,7 +170,7 @@ func (s *service) DeleteAccountStateCookie(c echo.Context) {
 }
 func (s *service) GetAccountStateCookie(c echo.Context) (*contracts_cookies.GetAccountStateCookieResponse, error) {
 	var value contracts_cookies.AccountStateCookie
-	err := GetCookie(c, s.secureCookies, CookieNameAccountState, &value)
+	err := GetCookie(c, s.secureCookies, contracts_cookies.CookieNameAccountState, &value)
 	if err != nil {
 		return nil, err
 	}
@@ -204,7 +197,7 @@ func (s *service) SetAuthCookie(c echo.Context, request *contracts_cookies.SetAu
 	if err != nil {
 		return err
 	}
-	b, err := json.Marshal(request.AuthCookie.Identity)
+	b, err := json.Marshal(request.AuthCookie)
 	if err != nil {
 		return err
 	}
@@ -215,7 +208,7 @@ func (s *service) SetAuthCookie(c echo.Context, request *contracts_cookies.SetAu
 	}
 	_, err = s.secureCookies.SetCookie(c,
 		&fluffycore_contracts_cookies.SetCookieRequest{
-			Name:     CookieNameAuth,
+			Name:     contracts_cookies.CookieNameAuth,
 			Value:    value,
 			HttpOnly: false,
 			Expires:  time.Now().Add(30 * time.Minute),
@@ -230,18 +223,37 @@ func (s *service) SetAuthCookie(c echo.Context, request *contracts_cookies.SetAu
 func (s *service) DeleteAuthCookie(c echo.Context) {
 	s.secureCookies.DeleteCookie(c,
 		&fluffycore_contracts_cookies.DeleteCookieRequest{
-			Name:   CookieNameAuth,
+			Name:   contracts_cookies.CookieNameAuth,
 			Path:   "/",
 			Domain: s.cookieConfig.Domain,
 		})
 }
 func (s *service) GetAuthCookie(c echo.Context) (*contracts_cookies.GetAuthCookieResponse, error) {
 	var value contracts_cookies.AuthCookie
-	err := GetCookie(c, s.secureCookies, CookieNameAuth, &value)
+	err := GetCookie(c, s.secureCookies, contracts_cookies.CookieNameAuth, &value)
 	if err != nil {
 		return nil, err
 	}
 	return &contracts_cookies.GetAuthCookieResponse{
 		AuthCookie: &value,
 	}, nil
+}
+func (s *service) SetInsecureCookie(c echo.Context, name string, value interface{}) error {
+	return SetCookie(c, s.cookieConfig, s.insecureCookies, name, value)
+}
+func (s *service) DeleteInsecureCookie(c echo.Context, name string) {
+	s.insecureCookies.DeleteCookie(c,
+		&fluffycore_contracts_cookies.DeleteCookieRequest{
+			Name:   name,
+			Path:   "/",
+			Domain: s.cookieConfig.Domain,
+		})
+}
+func (s *service) GetInsecureCookie(c echo.Context, name string) (interface{}, error) {
+	var value interface{}
+	err := GetCookie(c, s.insecureCookies, name, &value)
+	if err != nil {
+		return nil, err
+	}
+	return value, nil
 }

@@ -1,7 +1,6 @@
 package forgotpassword
 
 import (
-	"fmt"
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
@@ -114,6 +113,7 @@ func (s *service) DoGet(c echo.Context) error {
 			"email":     model.Email,
 			"code":      model.Code,
 			"directive": model.Directive,
+			"errors":    make([]*services_handlers_shared.Error, 0),
 		})
 	return err
 }
@@ -159,7 +159,7 @@ func (s *service) DoPost(c echo.Context) error {
 				"email":     model.Email,
 				"code":      model.Code,
 				"directive": model.Directive,
-				"defs":      errors,
+				"errors":    errors,
 			})
 	}
 	if model.Type == "GET" {
@@ -194,7 +194,7 @@ func (s *service) DoPost(c echo.Context) error {
 				"email":     model.Email,
 				"code":      model.Code,
 				"directive": model.Directive,
-				"defs": []*services_handlers_shared.Error{
+				"errors": []*services_handlers_shared.Error{
 					services_handlers_shared.NewErrorF("code", "Code is invalid"),
 				},
 			})
@@ -218,7 +218,7 @@ func (s *service) DoPost(c echo.Context) error {
 	// one time only
 	s.wellknownCookies.DeleteVerificationCodeCookie(c)
 
-	redirectURL := ""
+	redirectURL := "/"
 	switch model.Directive {
 	case models.PasswordResetDirective:
 		err = s.wellknownCookies.SetPasswordResetCookie(c,
@@ -231,10 +231,13 @@ func (s *service) DoPost(c echo.Context) error {
 			log.Error().Err(err).Msg("SetPasswordResetCookie")
 			return c.Redirect(http.StatusFound, "/error")
 		}
-		redirectURL = fmt.Sprintf("%s?state=%s&email=%s",
-			wellknown_echo.PasswordResetPath,
-			model.State,
-			model.Email)
+		return s.RenderAutoPost(c, wellknown_echo.PasswordResetPath,
+			[]models.FormParam{
+				{
+					Name:  "state",
+					Value: model.State,
+				},
+			})
 	case models.VerifyEmailDirective:
 		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath,
 			[]models.FormParam{

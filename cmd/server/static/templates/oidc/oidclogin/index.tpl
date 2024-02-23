@@ -4,65 +4,79 @@
 
 {{ $state       := .state }}
 {{ $directive   := .directive }}
+{{ $paths       := .paths }}
 
-<body>
-<!-- Page content-->
-<div class="container">
-   
-    <div class="text-center mt-5" class="alert alert-success" role="alert">
-        <h1>{{ .login }}</h1>
-        <div class="mt-5 alert alert-success" class="alert alert-success" role="alert">
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                <th class="text-start" scope="col">#</th>
-                <th class="text-start" scope="col">Key</th>
-                <th class="text-start" scope="col">Value</th>
-                </tr>
-            </thead>
-            <tbody>
-
-            {{range $idx,$def := .defs}}
-                <tr>
-                <th class="text-start" scope="row">{{$idx}}</th>
-                <td class="text-start">{{$def.Key}}</td>
-                <td class="text-start">{{$def.Value}}</td>
-                </tr>
-            {{end}}
-            </tbody>
-            </table>
-        </div>
-        <form action="{{ .paths.OIDCLogin }}" method="post">
-            <input type="hidden" name="state" value="{{ $state }}">
-            <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
-                <input type="text" class="form-control" id="username" name="username" value="{{ .email }}" required>
-            </div>
-            <button type="submit" class="btn btn-primary">{{ call .LocalizeMessage "login" }}</button>
-        </form>
-        <form action="{{ .paths.Signup }}" method="post">
-            <input type="hidden" name="state"       value="{{ $state }}">
-            <input type="hidden" name="type"        value="GET">          
+<body class="bg-light d-flex align-items-center min-vh-100">
+    <div class="container">
+    
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                {{ if len .defs }}
+                
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {{range $idx,$def := .defs}}
+                        <tr>
+                            <th class="text-start" scope="row">{{$idx}}</th>
+                            <td class="text-start">{{$def.Key}}</td>
+                            <td class="text-start">{{$def.Value}}</td>
+                        </tr>
+                        
+                        {{end}}
+                    </tbody>
+                </table>
           
-            <button type="submit" class="btn btn-primary">{{ call .LocalizeMessage "signup" }}</button>
-        </form>
-        <form action="{{ .paths.ForgotPassword }}" method="post">
-            <input type="hidden" name="state"      value="{{ $state }}">
-            <input type="hidden" name="type"       value="GET">          
-            <button type="submit" class="btn btn-primary">{{ call .LocalizeMessage "forgot_password" }}</button>
-        </form>
-        <div class="text-center mt-5" class="alert alert-success" role="alert">
-        {{range $idx,$idp := .idps}}
-            <form action="/external-idp" method="post">
-                <input type="hidden" name="state"       value="{{ $state }}">
-                <input type="hidden" name="directive"   value="{{ $directive }}">
-                <input type="hidden" name="idp_hint"    value="{{$idp.Slug}}">
-                <button type="submit" class="btn btn-primary">{{$idp.Name}}</button>
-            </form>
-        {{end}}
+                {{ end }}
+                <div class="card shadow">
+                    <div class="card-body p-4">
+                        <h2 class="card-title text-center mb-4">{{ call .LocalizeMessage "login" }}</h2>
+                        <form action="{{ $paths.OIDCLogin }}" method="post">
+                            <input type="hidden" name="state" value="{{ $state }}">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Email address</label>
+                                <input type="email" class="form-control" id="username" name="username" placeholder="Enter your email" value="{{ .email }}" required>
+                            </div>
+              
+                            <button type="submit" class="btn btn-primary btn-block">{{ call .LocalizeMessage "next" }}</button>
+                        </form>
+                        <p class="mt-0 text-center">
+                            <form action="{{ $paths.ForgotPassword }}" method="post">
+                                <input type="hidden" name="state"      value="{{ $state }}">
+                                <input type="hidden" name="type"       value="GET">          
+                                <button type="submit" class="btn btn-link text-muted">{{ call .LocalizeMessage "forgot_password" }}</button>
+                            </form>
+                            <form action="{{ $paths.Signup }}" method="post">
+                                <input type="hidden" name="state"      value="{{ $state }}">
+                                <input type="hidden" name="type"       value="GET">          
+                                <button type="submit" class="btn btn-link text-muted">{{ call .LocalizeMessage "signup" }}</button>
+                            </form>    
+                         </p>
+                         <hr>
+                        <p class="text-center">{{ call .LocalizeMessage "or_signin_with" }}</p>
+                        <div class="d-flex justify-content-center">
+                            {{range $idx,$idp := .idps}}
+                                <form action="{{ $paths.ExternalIDP }}" method="post">
+                                    <input type="hidden" name="state"       value="{{ $state }}">
+                                    <input type="hidden" name="directive"   value="{{ $directive }}">
+                                    <input type="hidden" name="idp_hint"    value="{{$idp.Slug}}">
+                                    <button type="submit" class="btn btn-outline-primary me-2 ">{{$idp.Name}}</button>
+                                </form>
+                            {{end}}
+                          
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+ 
 </body>
     
 {{template "footer" .}}

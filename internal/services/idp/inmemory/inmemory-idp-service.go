@@ -112,7 +112,16 @@ func (s *service) validateListIDPRequest(request *proto_oidc_idp.ListIDPRequest)
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is required")
 	}
+
 	if request.Filter != nil {
+		if request.Filter.Slug != nil {
+			request.Filter.Slug.Eq = strings.ToLower(request.Filter.Slug.Eq)
+			if !fluffycore_utils.IsEmptyOrNil(request.Filter.Slug.In) {
+				for i, v := range request.Filter.Slug.In {
+					request.Filter.Slug.In[i] = strings.ToLower(v)
+				}
+			}
+		}
 		if request.Filter.ClaimedDomain != nil {
 			request.Filter.ClaimedDomain.Eq = strings.ToLower(request.Filter.ClaimedDomain.Eq)
 			if !fluffycore_utils.IsEmptyOrNil(request.Filter.ClaimedDomain.In) {
@@ -138,6 +147,38 @@ func (s *service) ListIDP(ctx context.Context, request *proto_oidc_idp.ListIDPRe
 		if request.Filter != nil {
 			if request.Filter.Enabled != nil {
 				if request.Filter.Enabled.Eq != c.Enabled {
+					return false
+				}
+			}
+			if request.Filter.Slug != nil {
+				if request.Filter.Slug.Eq != c.Slug {
+					return false
+				}
+				if !fluffycore_utils.IsEmptyOrNil(request.Filter.Slug.In) {
+					gotHit := false
+					for _, v := range request.Filter.Slug.In {
+						if v == c.Slug {
+							gotHit = true
+							break
+						}
+					}
+					if !gotHit {
+						return false
+					}
+				}
+			}
+			if request.Filter.EmailVerificationRequired != nil {
+				if request.Filter.EmailVerificationRequired.Eq != c.EmailVerificationRequired {
+					return false
+				}
+			}
+			if request.Filter.AutoCreate != nil {
+				if request.Filter.AutoCreate.Eq != c.AutoCreate {
+					return false
+				}
+			}
+			if request.Filter.Hidden != nil {
+				if request.Filter.Hidden.Eq != c.Hidden {
 					return false
 				}
 			}

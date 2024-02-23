@@ -22,6 +22,10 @@ message Filter {
     proto.types.StringMapStringFilterExpression     metadata = 4;
     proto.types.BoolFilterExpression                enabled = 5;
     proto.types.StringArrayFilterExpression         claimed_domain =  6;
+    proto.types.BoolFilterExpression                hidden = 7;
+    proto.types.BoolFilterExpression                email_verification_required = 8;
+    proto.types.BoolFilterExpression                auto_create = 9;
+    
 
     // AST
     repeated Filter and = 100;
