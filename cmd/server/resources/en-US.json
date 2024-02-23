@@ -6,6 +6,8 @@
   "verifycode": "Verify Code",
   "forgot_password": "Forgot Password?",
   "next": "Next",
+  "password": "Password",
+  "confirm_password": "Confirm Password",
   "password_reset": "Reset Password",
   "or_signin_with": "Or sign in with:",
   "security_settings": "Security Settings",

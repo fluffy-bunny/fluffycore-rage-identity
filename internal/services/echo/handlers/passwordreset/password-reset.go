@@ -54,7 +54,8 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
 		stemService.Ctor,
 		[]contracts_handler.HTTPVERB{
-			contracts_handler.GET,
+			// do auto post
+			//contracts_handler.GET,
 			contracts_handler.POST,
 		},
 		wellknown_echo.PasswordResetPath,
@@ -102,7 +103,8 @@ func (s *service) DoGet(c echo.Context) error {
 
 	err = s.Render(c, http.StatusOK, "oidc/passwordreset/index",
 		map[string]interface{}{
-			"state": model.State,
+			"state":  model.State,
+			"errors": []*services_handlers_shared.Error{},
 		})
 	return err
 }
@@ -138,12 +140,15 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 	log.Info().Interface("model", model).Msg("model")
 
+	if fluffycore_utils.IsEmptyOrNil(model.Password) || fluffycore_utils.IsEmptyOrNil(model.ConfirmPassword) {
+		return s.DoGet(c)
+	}
 	errors, err := s.validatePasswordResetPostRequest(model)
 	if err != nil {
 		return s.Render(c, http.StatusBadRequest, "oidc/passwordreset/index",
 			map[string]interface{}{
-				"state": model.State,
-				"defs":  errors,
+				"state":  model.State,
+				"errors": errors,
 			})
 	}
 
@@ -237,8 +242,6 @@ func (s *service) Do(c echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 	switch r.Method {
-	case http.MethodGet:
-		return s.DoGet(c)
 	case http.MethodPost:
 		return s.DoPost(c)
 	}
