@@ -114,6 +114,7 @@ func (s *service) DoGet(c echo.Context) error {
 			"email":     model.Email,
 			"code":      model.Code,
 			"directive": model.Directive,
+			"errors":    make([]*services_handlers_shared.Error, 0),
 		})
 	return err
 }
@@ -159,7 +160,7 @@ func (s *service) DoPost(c echo.Context) error {
 				"email":     model.Email,
 				"code":      model.Code,
 				"directive": model.Directive,
-				"defs":      errors,
+				"errors":    errors,
 			})
 	}
 	if model.Type == "GET" {
@@ -194,7 +195,7 @@ func (s *service) DoPost(c echo.Context) error {
 				"email":     model.Email,
 				"code":      model.Code,
 				"directive": model.Directive,
-				"defs": []*services_handlers_shared.Error{
+				"errors": []*services_handlers_shared.Error{
 					services_handlers_shared.NewErrorF("code", "Code is invalid"),
 				},
 			})

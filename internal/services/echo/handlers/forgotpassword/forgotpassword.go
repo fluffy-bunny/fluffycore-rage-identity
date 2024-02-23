@@ -105,8 +105,9 @@ func (s *service) DoGet(c echo.Context) error {
 
 	err = s.Render(c, http.StatusOK, "oidc/forgotpassword/index",
 		map[string]interface{}{
-			"state": model.State,
-			"email": model.Email,
+			"state":  model.State,
+			"email":  model.Email,
+			"errors": make([]*services_handlers_shared.Error, 0),
 		})
 	return err
 }
@@ -143,9 +144,9 @@ func (s *service) DoPost(c echo.Context) error {
 	if err != nil {
 		return s.Render(c, http.StatusBadRequest, "oidc/forgotpassword/index",
 			map[string]interface{}{
-				"state": model.State,
-				"email": model.Email,
-				"defs":  errors,
+				"state":  model.State,
+				"email":  model.Email,
+				"errors": errors,
 			})
 	}
 	if model.Type == "GET" {

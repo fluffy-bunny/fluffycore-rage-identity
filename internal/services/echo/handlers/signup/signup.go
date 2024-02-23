@@ -122,7 +122,7 @@ func (s *service) DoGet(c echo.Context) error {
 
 	return s.Render(c, http.StatusOK, "oidc/signup/index",
 		map[string]interface{}{
-			"defs":      rows,
+			"errors":    rows,
 			"idps":      idps,
 			"state":     model.State,
 			"directive": models.SignupDirective,
@@ -176,7 +176,7 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Debug().Err(err).Msg("Bind")
 		return s.Render(c, http.StatusBadRequest, "oidc/signup/index",
 			map[string]interface{}{
-				"defs":      []*Error{NewErrorF("model", "model is invalid")},
+				"errors":    []*Error{NewErrorF("model", "model is invalid")},
 				"idps":      idps,
 				"state":     model.State,
 				"directive": models.SignupDirective,
@@ -193,7 +193,7 @@ func (s *service) DoPost(c echo.Context) error {
 	if len(errors) > 0 {
 		return s.Render(c, http.StatusBadRequest, "oidc/signup/index",
 			map[string]interface{}{
-				"defs":      errors,
+				"errors":    errors,
 				"idps":      idps,
 				"state":     model.State,
 				"directive": models.SignupDirective,
@@ -217,7 +217,7 @@ func (s *service) DoPost(c echo.Context) error {
 	if len(listUserResponse.Users) > 0 {
 		return s.Render(c, http.StatusBadRequest, "oidc/signup/index",
 			map[string]interface{}{
-				"defs":      []*Error{NewErrorF("username", "username:%s already exists", model.UserName)},
+				"errors":    []*Error{NewErrorF("username", "username:%s already exists", model.UserName)},
 				"idps":      idps,
 				"state":     model.State,
 				"directive": models.SignupDirective,
