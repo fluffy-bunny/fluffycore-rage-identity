@@ -19,7 +19,11 @@
                     </h2>
                     <div id="collapseSwagger" class="accordion-collapse collapse show" aria-labelledby="swaggerLink" data-bs-parent="#linkAccordion">
                         <div class="accordion-body">
-                            <a class="nav-link active" aria-current="page" href="/swagger/">Go to Swagger</a>
+                            <div class="row justify-content-center">
+                                <div class="col-md-6">
+                                {{template "personal_information_panel" .}}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

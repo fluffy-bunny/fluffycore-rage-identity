@@ -22,11 +22,7 @@ enum PhoneType {
 message PhoneTypeValue {
   PhoneType value = 1;
 }
-message PhoneNumber {
-    uint32 countryCode = 1;
-    string number = 2;
-    PhoneType type = 3;
-}
+
 message PhoneNumberDTO {
   string id = 1;
   uint32 countryCode = 2;
@@ -35,7 +31,7 @@ message PhoneNumberDTO {
 }
 
 
-message PhoneNumberUpdate {
+message PhoneNumberDTOUpdate {
   string id = 1;
   google.protobuf.UInt32Value countryCode = 2;
   google.protobuf.StringValue number = 3;

@@ -81,7 +81,7 @@ func (s *service) LinkUsers(ctx context.Context, request *proto_oidc_user.LinkUs
 	}
 	s.userMap[user.RootIdentity.Subject] = user
 	return &proto_oidc_user.LinkUsersResponse{
-		User: user,
+		User: s.makeUserCopy(user),
 	}, nil
 
 }
