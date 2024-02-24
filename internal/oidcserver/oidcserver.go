@@ -15,6 +15,7 @@ import (
 	services_handlers_account_home "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/home"
 	services_handlers_account_login "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/login"
 	services_handlers_account_logout "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/logout"
+	services_handlers_account_personal_information "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/personal_information"
 	services_handlers_account_profile "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/profile"
 	services_handlers_authorization_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/authorization_endpoint"
 	services_handlers_discovery_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/discovery_endpoint"
@@ -111,6 +112,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_account_login.AddScopedIHandler(builder)
 	services_handlers_account_logout.AddScopedIHandler(builder)
 	services_handlers_account_profile.AddScopedIHandler(builder)
+	services_handlers_account_personal_information.AddScopedIHandler(builder)
 
 	// OIDC Handlers
 	//--------------------------------------------------------
@@ -173,7 +175,7 @@ func EnsureCookieClaimsPrincipal(_ di.Container) echo.MiddlewareFunc {
 			}
 			wellknownCookies := di.Get[contracts_cookies.IWellknownCookies](subContainer)
 			claimsPrincipal := di.Get[fluffycore_contracts_common.IClaimsPrincipal](subContainer)
-
+			scopedMemoryCache := di.Get[fluffycore_contracts_common.IScopedMemoryCache](subContainer)
 			getAuthCookieResponse, err := wellknownCookies.GetAuthCookie(c)
 			if err != nil ||
 				getAuthCookieResponse == nil ||
@@ -182,7 +184,7 @@ func EnsureCookieClaimsPrincipal(_ di.Container) echo.MiddlewareFunc {
 				return next(c)
 			}
 			rootIdentity := getAuthCookieResponse.AuthCookie.Identity
-
+			scopedMemoryCache.Set("rootIdentity", rootIdentity)
 			claimsPrincipal.AddClaim(
 				fluffycore_contracts_common.Claim{
 					Type:  fluffycore_echo_wellknown.ClaimTypeAuthenticated,

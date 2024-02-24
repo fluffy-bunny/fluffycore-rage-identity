@@ -383,7 +383,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/typesPhoneNumber"
+            "$ref": "#/definitions/typesPhoneNumberDTO"
           }
         },
         "address": {
@@ -404,7 +404,7 @@
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/typesPhoneNumberUpdate"
+            "$ref": "#/definitions/typesPhoneNumberDTOUpdate"
           }
         },
         "address": {
@@ -600,9 +600,12 @@
       },
       "description": "PaginationResponse ..."
     },
-    "typesPhoneNumber": {
+    "typesPhoneNumberDTO": {
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string"
+        },
         "countryCode": {
           "type": "integer",
           "format": "int64"
@@ -615,7 +618,7 @@
         }
       }
     },
-    "typesPhoneNumberUpdate": {
+    "typesPhoneNumberDTOUpdate": {
       "type": "object",
       "properties": {
         "id": {

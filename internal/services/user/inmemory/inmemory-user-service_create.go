@@ -60,8 +60,7 @@ func (s *service) CreateUser(ctx context.Context, request *proto_oidc_user.Creat
 
 	// create the user
 	s.userMap[user.RootIdentity.Subject] = user
-	s.users = append(s.users, user)
 	return &proto_oidc_user.CreateUserResponse{
-		User: user,
+		User: s.makeUserCopy(user),
 	}, nil
 }

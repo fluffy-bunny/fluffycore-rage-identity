@@ -11,8 +11,8 @@ import (
 type (
 	service struct {
 		proto_oidc_user.UnimplementedUserServiceServer
+
 		userMap map[string]*proto_oidc_models.User
-		users   []*proto_oidc_models.User
 		rwLock  sync.RWMutex
 	}
 )
@@ -22,7 +22,7 @@ var stemService = (*service)(nil)
 func init() {
 	var _ proto_oidc_user.IFluffyCoreUserServiceServer = stemService
 }
-func (s *service) Ctor(clients *proto_oidc_models.Clients) (proto_oidc_user.IFluffyCoreUserServiceServer, error) {
+func (s *service) Ctor() (proto_oidc_user.IFluffyCoreUserServiceServer, error) {
 	return &service{
 		userMap: make(map[string]*proto_oidc_models.User),
 	}, nil
