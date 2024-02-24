@@ -1,14 +1,18 @@
 package profile
 
 import (
+	"fmt"
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/cookies"
-	"github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
+	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
+	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
+	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
 )
@@ -55,7 +59,57 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 func (s *service) DoGet(c echo.Context) error {
-	return s.Render(c, http.StatusOK, "account/profile/index", map[string]interface{}{})
+	r := c.Request()
+	ctx := r.Context()
+	log := zerolog.Ctx(ctx).With().Logger()
+
+	memCache := s.ScopedMemoryCache()
+	cachedItem, err := memCache.Get("rootIdentity")
+	if err != nil {
+		log.Error().Err(err).Msg("memCache.Get")
+		return c.Redirect(http.StatusFound, "/error")
+	}
+	rootIdentity := cachedItem.(*models.Identity)
+	if rootIdentity == nil {
+		log.Error().Msg("rootIdentity is nil")
+		return c.Redirect(http.StatusFound, "/error")
+	}
+
+	userService := s.UserService()
+	// get the user
+	getUserResponse, err := userService.GetUser(ctx,
+		&proto_oidc_user.GetUserRequest{
+			Subject: rootIdentity.Subject,
+		})
+	if err != nil {
+		log.Error().Err(err).Msg("userService.GetUser")
+		return c.Redirect(http.StatusFound, "/error")
+	}
+	user := getUserResponse.User
+	if user.Profile == nil {
+		user.Profile = &proto_oidc_models.Profile{}
+	}
+	phoneNumber := ""
+	if !fluffycore_utils.IsEmptyOrNil(user.Profile.PhoneNumbers) {
+		phoneNumber = user.Profile.PhoneNumbers[0].Number
+	}
+	return s.Render(c, http.StatusOK,
+		"account/profile/index",
+		map[string]interface{}{
+			"displayOnly":  true,
+			"formAction":   wellknown_echo.ProfilePath,
+			"action":       "pi.edit",
+			"email":        rootIdentity.Email,
+			"given_name":   user.Profile.GivenName,
+			"family_name":  user.Profile.FamilyName,
+			"phone_number": phoneNumber,
+		})
+}
+func (s *service) DoPersonalInformationEdit(c echo.Context) error {
+	redirectUrl := fmt.Sprintf("%s?action=edit&returnUrl=%s",
+		wellknown_echo.PersonalInformationPath,
+		wellknown_echo.ProfilePath)
+	return c.Redirect(http.StatusFound, redirectUrl)
 }
 func (s *service) DoPasswordReset(c echo.Context) error {
 	r := c.Request()
@@ -113,6 +167,8 @@ func (s *service) Do(c echo.Context) error {
 		switch model.Action {
 		case "password-reset":
 			return s.DoPasswordReset(c)
+		case "pi.edit":
+			return s.DoPersonalInformationEdit(c)
 		}
 		return s.DoGet(c)
 	}

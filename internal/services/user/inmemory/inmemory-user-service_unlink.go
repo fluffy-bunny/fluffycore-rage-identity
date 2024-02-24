@@ -51,7 +51,7 @@ func (s *service) UnlinkUsers(ctx context.Context, request *proto_oidc_user.Unli
 
 	linkedIdentities := make([]*proto_oidc_models.Identity, 0)
 
-	linq.From(s.users).WhereT(func(c *proto_oidc_models.Identity) bool {
+	linq.From(s.userMap).WhereT(func(c *proto_oidc_models.Identity) bool {
 		if c.Subject == request.ExternalIdentity.Subject &&
 			c.IdpSlug == request.ExternalIdentity.IdpSlug {
 			// cull it
@@ -64,7 +64,7 @@ func (s *service) UnlinkUsers(ctx context.Context, request *proto_oidc_user.Unli
 	user.LinkedIdentities.Identities = linkedIdentities
 	s.userMap[user.RootIdentity.Subject] = user
 	return &proto_oidc_user.UnlinkUsersResponse{
-		User: user,
+		User: s.makeUserCopy(user),
 	}, nil
 
 }

@@ -25,6 +25,7 @@ const (
 	OIDCLoginPasswordPath           = "/oidc-login-password"
 	PasswordResetPath               = "/password-reset"
 	ProfilePath                     = "/profile"
+	PersonalInformationPath         = "/profile/personal-information"
 	ReadyPath                       = "/ready"
 	SignupPath                      = "/signup"
 	SwaggerPath                     = "/swagger/*"
@@ -35,34 +36,36 @@ const (
 )
 
 type Paths struct {
-	About             string
-	ExternalIDP       string
-	Home              string
-	Login             string
-	Logout            string
-	Profile           string
-	OIDCLogin         string
-	OIDCLoginPassword string
-	Signup            string
-	ForgotPassword    string
-	VerifyCode        string
-	PasswordReset     string
+	About               string
+	ExternalIDP         string
+	Home                string
+	Login               string
+	Logout              string
+	PersonalInformation string
+	Profile             string
+	OIDCLogin           string
+	OIDCLoginPassword   string
+	Signup              string
+	ForgotPassword      string
+	VerifyCode          string
+	PasswordReset       string
 }
 
 func NewPaths() *Paths {
 	return &Paths{
-		About:             AboutPath,
-		ExternalIDP:       ExternalIDPPath,
-		Home:              HomePath,
-		Login:             LoginPath,
-		Logout:            LogoutPath,
-		Profile:           ProfilePath,
-		OIDCLogin:         OIDCLoginPath,
-		OIDCLoginPassword: OIDCLoginPasswordPath,
-		Signup:            SignupPath,
-		ForgotPassword:    ForgotPasswordPath,
-		VerifyCode:        VerifyCodePath,
-		PasswordReset:     PasswordResetPath,
+		About:               AboutPath,
+		ExternalIDP:         ExternalIDPPath,
+		Home:                HomePath,
+		Login:               LoginPath,
+		Logout:              LogoutPath,
+		PersonalInformation: PersonalInformationPath,
+		Profile:             ProfilePath,
+		OIDCLogin:           OIDCLoginPath,
+		OIDCLoginPassword:   OIDCLoginPasswordPath,
+		Signup:              SignupPath,
+		ForgotPassword:      ForgotPasswordPath,
+		VerifyCode:          VerifyCodePath,
+		PasswordReset:       PasswordResetPath,
 	}
 }
 

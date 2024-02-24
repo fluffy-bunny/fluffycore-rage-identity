@@ -92,13 +92,13 @@ message AddressUpdate {
 message Profile{
     string given_name = 1;
     string family_name = 2;
-    repeated proto.types.PhoneNumber phone_numbers = 3;
+    repeated proto.types.PhoneNumberDTO phone_numbers = 3;
     Address address = 4;
 }
 message ProfileUpdate{
     google.protobuf.StringValue given_name = 1;
     google.protobuf.StringValue family_name = 2;
-    repeated proto.types.PhoneNumberUpdate phone_numbers = 3;
+    repeated proto.types.PhoneNumberDTOUpdate phone_numbers = 3;
     AddressUpdate address = 4;
 }
 message User {

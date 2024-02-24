@@ -61,8 +61,9 @@ type CallbackRequest struct {
 }
 
 var validReturnUrlPaths = map[string]bool{
-	wellknown_echo.ProfilePath: true,
-	wellknown_echo.HomePath:    true,
+	wellknown_echo.ProfilePath:             true,
+	wellknown_echo.HomePath:                true,
+	wellknown_echo.PersonalInformationPath: true,
 }
 
 func (s *service) Do(c echo.Context) error {

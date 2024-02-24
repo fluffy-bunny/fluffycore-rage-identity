@@ -41,7 +41,7 @@ func (s *service) ListUser(ctx context.Context, request *proto_oidc_user.ListUse
 	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
 	users := make([]*proto_oidc_models.User, 0)
 
-	linq.From(s.users).WhereT(func(c *proto_oidc_models.User) bool {
+	linq.From(s.userMap).WhereT(func(c *proto_oidc_models.User) bool {
 		if request.Filter != nil {
 			if request.Filter.State != nil {
 				if request.Filter.State.Eq != c.State {
@@ -90,7 +90,7 @@ func (s *service) ListUser(ctx context.Context, request *proto_oidc_user.ListUse
 		}
 
 	}).SelectT(func(c *proto_oidc_models.User) *proto_oidc_models.User {
-		return c
+		return s.makeUserCopy(c)
 	}).ToSlice(&users)
 
 	return &proto_oidc_user.ListUserResponse{
