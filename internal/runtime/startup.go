@@ -15,6 +15,7 @@ import (
 	services_greeter "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/greeter"
 	services_health "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/health"
 	services_mystream "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/mystream"
+	services_webauthn "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/webauthn"
 	internal_version "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/version"
 	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
 	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
@@ -85,6 +86,7 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 	fluffycore_services_ddprofiler.AddSingletonIProfiler(builder)
 	services_health.AddHealthService(builder)
 	services_greeter.AddGreeterService(builder)
+	services_webauthn.AddWebAuthNServiceServer(builder)
 	services_mystream.AddMyStreamService(builder)
 	issuerConfigs := &fluffycore_contracts_middleware_auth_jwt.IssuerConfigs{}
 	for idx := range s.config.JWTValidators.Issuers {

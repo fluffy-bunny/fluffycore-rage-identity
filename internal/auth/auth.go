@@ -1,7 +1,9 @@
 package auth
 
 import (
+	proto_auth_webauthn "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/auth/webauthn"
 	proto_helloworld "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/helloworld"
+
 	contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	services_common_claimsprincipal "github.com/fluffy-bunny/fluffycore/services/common/claimsprincipal"
 )
@@ -14,6 +16,7 @@ var noAuthEndpoints = []string{
 	proto_helloworld.Greeter_SayHello_FullMethodName,
 	proto_helloworld.MyStreamService_RequestPoints_FullMethodName,
 	proto_helloworld.MyStreamService_StreamPoints_FullMethodName,
+	proto_auth_webauthn.WebAuthNService_GetCredentialCreateOptions_FullMethodName,
 }
 
 func BuildGrpcEntrypointPermissionsClaimsMap() map[string]contracts_common.IEntryPointConfig {

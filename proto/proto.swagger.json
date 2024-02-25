@@ -1,12 +1,12 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "proto/oidc/user/user.proto",
+    "title": "proto/auth/webauthn/webauthn.proto",
     "version": "version not set"
   },
   "tags": [
     {
-      "name": "UserService"
+      "name": "WebAuthNService"
     }
   ],
   "consumes": [
@@ -16,178 +16,15 @@
     "application/json"
   ],
   "paths": {
-    "/api/v1/user/_create": {
-      "post": {
-        "summary": "Create user",
-        "operationId": "UserService_CreateUser",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/userCreateUserResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/userCreateUserRequest"
-            }
-          }
-        ],
-        "tags": [
-          "UserService"
-        ]
-      }
-    },
-    "/api/v1/user/_link": {
-      "post": {
-        "operationId": "UserService_LinkUsers",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/userLinkUsersResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/userLinkUsersRequest"
-            }
-          }
-        ],
-        "tags": [
-          "UserService"
-        ]
-      }
-    },
-    "/api/v1/user/_search": {
-      "post": {
-        "summary": "List users",
-        "operationId": "UserService_ListUser",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/userListUserResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/userListUserRequest"
-            }
-          }
-        ],
-        "tags": [
-          "UserService"
-        ]
-      }
-    },
-    "/api/v1/user/_unlink": {
-      "post": {
-        "operationId": "UserService_UnlinkUsers",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/userUnlinkUsersResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/userUnlinkUsersRequest"
-            }
-          }
-        ],
-        "tags": [
-          "UserService"
-        ]
-      }
-    },
-    "/api/v1/user/_update": {
-      "post": {
-        "summary": "Update user",
-        "operationId": "UserService_UpdateUser",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/userUpdateUserResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/userUpdateUserRequest"
-            }
-          }
-        ],
-        "tags": [
-          "UserService"
-        ]
-      }
-    },
-    "/api/v1/user/subject/{subject}": {
+    "/webauthn/register/get_credential_creation_options": {
       "get": {
-        "summary": "Get user",
-        "operationId": "UserService_GetUser",
+        "summary": "Create idp",
+        "operationId": "WebAuthNService_GetCredentialCreateOptions",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/userGetUserResponse"
+              "$ref": "#/definitions/idpGetCredentialCreateOptionsResponse"
             }
           },
           "default": {
@@ -199,311 +36,266 @@
         },
         "parameters": [
           {
-            "name": "subject",
-            "in": "path",
-            "required": true,
+            "name": "username",
+            "in": "query",
+            "required": false,
             "type": "string"
           }
         ],
         "tags": [
-          "UserService"
-        ]
-      },
-      "delete": {
-        "summary": "Delete user",
-        "operationId": "UserService_DeleteUser",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/userDeleteUserResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "subject",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "UserService"
+          "WebAuthNService"
         ]
       }
     }
   },
   "definitions": {
-    "modelsAddress": {
-      "type": "object",
-      "properties": {
-        "street": {
-          "type": "string"
-        },
-        "city": {
-          "type": "string"
-        },
-        "state": {
-          "type": "string"
-        },
-        "postalCode": {
-          "type": "string"
-        },
-        "country": {
-          "type": "string"
-        }
-      }
-    },
-    "modelsAddressUpdate": {
-      "type": "object",
-      "properties": {
-        "street": {
-          "type": "string"
-        },
-        "city": {
-          "type": "string"
-        },
-        "state": {
-          "type": "string"
-        },
-        "postalCode": {
-          "type": "string"
-        },
-        "country": {
-          "type": "string"
-        }
-      }
-    },
-    "modelsIdentity": {
-      "type": "object",
-      "properties": {
-        "subject": {
-          "type": "string"
-        },
-        "idpSlug": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        },
-        "emailVerified": {
-          "type": "boolean"
-        }
-      }
-    },
-    "modelsIdentityUpdate": {
-      "type": "object",
-      "properties": {
-        "subject": {
-          "type": "string"
-        },
-        "email": {
-          "type": "string"
-        },
-        "emailVerified": {
-          "type": "boolean"
-        }
-      }
-    },
-    "modelsLinkedIdentities": {
-      "type": "object",
-      "properties": {
-        "identities": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/modelsIdentity"
-          }
-        }
-      }
-    },
-    "modelsLinkedIdentitiesUpdate": {
-      "type": "object",
-      "properties": {
-        "granular": {
-          "$ref": "#/definitions/modelsLinkedIdentitiesUpdateGranular"
-        },
-        "replace": {
-          "$ref": "#/definitions/modelsLinkedIdentities"
-        }
-      }
-    },
-    "modelsLinkedIdentitiesUpdateGranular": {
-      "type": "object",
-      "properties": {
-        "add": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/modelsIdentity"
-          }
-        },
-        "remove": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/modelsIdentity"
-          }
-        }
-      }
-    },
-    "modelsPassword": {
-      "type": "object",
-      "properties": {
-        "hash": {
-          "type": "string"
-        }
-      }
-    },
-    "modelsPasswordUpdate": {
-      "type": "object",
-      "properties": {
-        "hash": {
-          "type": "string"
-        }
-      }
-    },
-    "modelsProfile": {
-      "type": "object",
-      "properties": {
-        "givenName": {
-          "type": "string"
-        },
-        "familyName": {
-          "type": "string"
-        },
-        "phoneNumbers": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/typesPhoneNumberDTO"
-          }
-        },
-        "address": {
-          "$ref": "#/definitions/modelsAddress"
-        }
-      }
-    },
-    "modelsProfileUpdate": {
-      "type": "object",
-      "properties": {
-        "givenName": {
-          "type": "string"
-        },
-        "familyName": {
-          "type": "string"
-        },
-        "phoneNumbers": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/typesPhoneNumberDTOUpdate"
-          }
-        },
-        "address": {
-          "$ref": "#/definitions/modelsAddressUpdate"
-        }
-      }
-    },
-    "modelsRecovery": {
-      "type": "object",
-      "properties": {
-        "emails": {
-          "$ref": "#/definitions/typesStringValues"
-        }
-      }
-    },
-    "modelsRecoveryUpdate": {
-      "type": "object",
-      "properties": {
-        "emails": {
-          "$ref": "#/definitions/typesStringArrayUpdate"
-        }
-      }
-    },
-    "modelsUser": {
-      "type": "object",
-      "properties": {
-        "rootIdentity": {
-          "$ref": "#/definitions/modelsIdentity"
-        },
-        "linkedIdentities": {
-          "$ref": "#/definitions/modelsLinkedIdentities"
-        },
-        "recovery": {
-          "$ref": "#/definitions/modelsRecovery"
-        },
-        "password": {
-          "$ref": "#/definitions/modelsPassword"
-        },
-        "state": {
-          "$ref": "#/definitions/modelsUserState"
-        },
-        "profile": {
-          "$ref": "#/definitions/modelsProfile"
-        }
-      }
-    },
-    "modelsUserState": {
+    "fidoAttestationConveyancePreference": {
       "type": "string",
       "enum": [
-        "USER_STATE_UNSPECIFIED",
-        "USER_STATE_ACTIVE",
-        "USER_STATE_DISABLED",
-        "USER_STATE_DELETED",
-        "USER_STATE_PENDING"
+        "NONE_ATTESTATION_PREFERENCE",
+        "INDIRECT",
+        "DIRECT",
+        "ENTERPRISE"
       ],
-      "default": "USER_STATE_UNSPECIFIED"
+      "default": "NONE_ATTESTATION_PREFERENCE",
+      "description": "- ENTERPRISE: A non-standard addition that we hope will become standard. This indicates\nthat the RP desires individual attestaion from the device.",
+      "title": "See https://w3c.github.io/webauthn/#enumdef-attestationconveyancepreference"
     },
-    "modelsUserStateFilterExpression": {
+    "fidoAuthenticatorAttachment": {
+      "type": "string",
+      "enum": [
+        "NO_PREFERENCE",
+        "PLATFORM",
+        "CROSS_PLATFORM"
+      ],
+      "default": "NO_PREFERENCE",
+      "description": "https://w3c.github.io/webauthn/#enumdef-authenticatorattachment."
+    },
+    "fidoAuthenticatorSelectionCriteria": {
       "type": "object",
       "properties": {
-        "eq": {
-          "$ref": "#/definitions/modelsUserState"
+        "authenticatorAttachment": {
+          "$ref": "#/definitions/fidoAuthenticatorAttachment",
+          "description": "Filter authenticators by attachment type."
         },
-        "in": {
+        "requireResidentKey": {
+          "type": "boolean",
+          "description": "Whether the authenticator should store the created key so that the key\ncan later be selected given only an RP ID (e.g. when |allow_credentials|\nis empty)."
+        },
+        "userVerification": {
+          "$ref": "#/definitions/fidoUserVerificationRequirement",
+          "description": "Indicates the relying party's need for a user-verifying authenticator."
+        }
+      },
+      "description": "See https://w3c.github.io/webauthn/#dictdef-authenticatorselectioncriteria."
+    },
+    "fidoAuthenticatorTransport": {
+      "type": "string",
+      "enum": [
+        "USB",
+        "NFC",
+        "BLE",
+        "CABLE",
+        "INTERNAL"
+      ],
+      "default": "USB"
+    },
+    "fidoCableRegistration": {
+      "type": "object",
+      "properties": {
+        "versions": {
+          "type": "string",
+          "format": "byte",
+          "description": "The caBLE versions supported by the relying party."
+        },
+        "relyingPartyPublicKey": {
+          "type": "string",
+          "format": "byte",
+          "description": "The 65-byte ECDSA ephemeral public key belonging to the relying party\nfor use in establishing an encrypted caBLE channel with an authenticator."
+        }
+      },
+      "description": "Cloud-assisted BLE extension data for makeCredential."
+    },
+    "fidoProtectionPolicy": {
+      "type": "string",
+      "enum": [
+        "UNSPECIFIED",
+        "NONE_PROTECTION_POLICY",
+        "UV_OR_CRED_ID_REQUIRED",
+        "UV_REQUIRED"
+      ],
+      "default": "UNSPECIFIED",
+      "description": " - UNSPECIFIED: UNSPECIFIED means that no value was given at the Javascript level."
+    },
+    "fidoPublicKeyCredentialCreationOptions": {
+      "type": "object",
+      "properties": {
+        "relyingParty": {
+          "$ref": "#/definitions/fidoPublicKeyCredentialRpEntity",
+          "description": "Information about the relying party and user entities, respectively.\nUsed by the authenticator to create or retrieve an appropriate public key\ncredential for the requested account."
+        },
+        "user": {
+          "$ref": "#/definitions/fidoPublicKeyCredentialUserEntity"
+        },
+        "challenge": {
+          "type": "string",
+          "format": "byte",
+          "description": "An indefinite-length blob passed from the the relying party server,\nto be sent to an authenticator to make a credential."
+        },
+        "publicKeyParameters": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/modelsUserState"
+            "type": "object",
+            "$ref": "#/definitions/fidoPublicKeyCredentialParameters"
+          },
+          "description": "Parameters defining the type of created credential that the relying\nparty would accept."
+        },
+        "adjustedTimeout": {
+          "type": "string",
+          "format": "int64",
+          "description": "Time in ms to wait for an authenticator to complete an operation.\nAdjusted to fall within a client-defined range."
+        },
+        "excludeCredentials": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/fidoPublicKeyCredentialDescriptor"
+          },
+          "title": "A list of credentials the relying party knows about. If an\nauthenticator has one of these credentials, it should not\ncreate a new one"
+        },
+        "authenticatorSelection": {
+          "$ref": "#/definitions/fidoAuthenticatorSelectionCriteria",
+          "description": "Specify the relying party's authenticator attribute requirements."
+        },
+        "attestation": {
+          "$ref": "#/definitions/fidoAttestationConveyancePreference",
+          "description": "Specifies whether the RP wants attestation information for the created\ncredential."
+        },
+        "cableRegistrationData": {
+          "$ref": "#/definitions/fidoCableRegistration",
+          "description": "The contents of the cloud assisted BLE extension for makeCredential\nrequests, if any. This extension permits browsers and authenticator\ndevices to establish a pairingless BLE connection.\nTODO(crbug.com/842371): Add link to spec when available."
+        },
+        "hmacCreateSecret": {
+          "type": "boolean",
+          "title": "The contents of the hmacCreateSecret extension, if any. See\nhttps://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#sctn-hmac-secret-extension"
+        },
+        "protectionPolicy": {
+          "$ref": "#/definitions/fidoProtectionPolicy",
+          "title": "The value of the `credentialProtectionPolicy` extension, or UNSPECIFIED if\nnone was provided"
+        },
+        "enforceProtectionPolicy": {
+          "type": "boolean",
+          "title": "The value of the `enforceCredentialProtectionPolicy`, or false if none was\nprovided"
+        },
+        "appidExclude": {
+          "type": "string"
+        }
+      },
+      "description": "Parameters passed into calls to MakeCredential."
+    },
+    "fidoPublicKeyCredentialDescriptor": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/fidoPublicKeyCredentialType"
+        },
+        "id": {
+          "type": "string",
+          "format": "byte",
+          "description": "Blob representing a credential key handle. Up to 255 bytes for\nU2F authenticators."
+        },
+        "transports": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/fidoAuthenticatorTransport"
           }
         }
-      }
+      },
+      "description": "Describes the credentials that the relying party already knows about for\nthe given account. If any of these are known to the authenticator,\nit should not create a new credential."
     },
-    "modelsUserStateValue": {
+    "fidoPublicKeyCredentialParameters": {
       "type": "object",
       "properties": {
-        "vale": {
-          "$ref": "#/definitions/modelsUserState"
+        "type": {
+          "$ref": "#/definitions/fidoPublicKeyCredentialType"
+        },
+        "algorithmIdentifier": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "description": "Parameters that are used to generate an appropriate public key credential."
+    },
+    "fidoPublicKeyCredentialRpEntity": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "An ASCII serialization of an origin."
+        },
+        "name": {
+          "type": "string",
+          "description": "Friendly name associated with the relying party intended for display.\ne.g. \"Acme Corporation\"."
+        },
+        "icon": {
+          "$ref": "#/definitions/fidoUrl",
+          "description": "Image associated with the entity. e.g. a relying party's logo."
+        }
+      },
+      "description": "Information about the relying party. These fields take arbitrary input."
+    },
+    "fidoPublicKeyCredentialType": {
+      "type": "string",
+      "enum": [
+        "PUBLIC_KEY"
+      ],
+      "default": "PUBLIC_KEY"
+    },
+    "fidoPublicKeyCredentialUserEntity": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "byte",
+          "description": "Unique identifier for a user account An opaque byte sequence with a\nmaximum size of 64 bytes."
+        },
+        "name": {
+          "type": "string",
+          "description": "Friendly name associated with the entity intended for display.\ne.g.\"john.p.smith@example.com\" or \"+14255551234\" for a user."
+        },
+        "icon": {
+          "$ref": "#/definitions/fidoUrl",
+          "description": "Image associated with the entity. For example, a user's avatar."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Contains a friendly name for the user account (e.g., \"John P. Smith\")."
+        }
+      },
+      "description": "Information about the account held by the user. These fields take\narbitrary input."
+    },
+    "fidoUrl": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
         }
       }
     },
-    "modelsUserUpdate": {
+    "fidoUserVerificationRequirement": {
+      "type": "string",
+      "enum": [
+        "REQUIRED",
+        "PREFERRED",
+        "DISCOURAGED"
+      ],
+      "default": "REQUIRED"
+    },
+    "idpGetCredentialCreateOptionsResponse": {
       "type": "object",
       "properties": {
-        "rootIdentity": {
-          "$ref": "#/definitions/modelsIdentityUpdate"
-        },
-        "linkedIdentities": {
-          "$ref": "#/definitions/modelsLinkedIdentitiesUpdate"
-        },
-        "recovery": {
-          "$ref": "#/definitions/modelsRecoveryUpdate"
-        },
-        "password": {
-          "$ref": "#/definitions/modelsPasswordUpdate"
-        },
-        "state": {
-          "$ref": "#/definitions/modelsUserStateValue"
-        },
-        "profile": {
-          "$ref": "#/definitions/modelsProfileUpdate"
+        "publicKey": {
+          "$ref": "#/definitions/fidoPublicKeyCredentialCreationOptions"
         }
       }
     },
@@ -532,344 +324,6 @@
             "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
-        }
-      }
-    },
-    "typesIDFilterExpression": {
-      "type": "object",
-      "properties": {
-        "eq": {
-          "type": "string"
-        },
-        "in": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "typesOrder": {
-      "type": "string",
-      "enum": [
-        "ORDER_UNSPECIFIED",
-        "ASC",
-        "DESC"
-      ],
-      "default": "ORDER_UNSPECIFIED",
-      "title": "- ORDER_UNSPECIFIED: Conventional default for enums. Do not use this.\n - ASC: Ascending order\n - DESC: Descending order"
-    },
-    "typesPagination": {
-      "type": "object",
-      "properties": {
-        "limit": {
-          "type": "integer",
-          "format": "int64",
-          "title": "Maximum number of entries to retrieve"
-        },
-        "iterator": {
-          "type": "string"
-        },
-        "order": {
-          "$ref": "#/definitions/typesOrder"
-        }
-      }
-    },
-    "typesPaginationResponse": {
-      "type": "object",
-      "properties": {
-        "iterator": {
-          "type": "string"
-        },
-        "prevIterator": {
-          "type": "string"
-        },
-        "totalAvailable": {
-          "type": "boolean",
-          "title": "Is a total count of records available?"
-        },
-        "total": {
-          "type": "string",
-          "format": "uint64",
-          "title": "Total number of records available (if totalAvailable = true)"
-        },
-        "noMoreData": {
-          "type": "boolean",
-          "title": "There is no more data"
-        }
-      },
-      "description": "PaginationResponse ..."
-    },
-    "typesPhoneNumberDTO": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "countryCode": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "number": {
-          "type": "string"
-        },
-        "type": {
-          "$ref": "#/definitions/typesPhoneType"
-        }
-      }
-    },
-    "typesPhoneNumberDTOUpdate": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "countryCode": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "number": {
-          "type": "string"
-        },
-        "type": {
-          "$ref": "#/definitions/typesPhoneTypeValue"
-        }
-      }
-    },
-    "typesPhoneType": {
-      "type": "string",
-      "enum": [
-        "PHONE_TYPE_UNSPECIFIED",
-        "PHONE_TYPE_MOBILE",
-        "PHONE_TYPE_HOME",
-        "PHONE_TYPE_WORK"
-      ],
-      "default": "PHONE_TYPE_UNSPECIFIED"
-    },
-    "typesPhoneTypeValue": {
-      "type": "object",
-      "properties": {
-        "value": {
-          "$ref": "#/definitions/typesPhoneType"
-        }
-      }
-    },
-    "typesStringArrayUpdate": {
-      "type": "object",
-      "properties": {
-        "granular": {
-          "$ref": "#/definitions/typesStringArrayUpdateGranular"
-        },
-        "replace": {
-          "$ref": "#/definitions/typesStringValues"
-        }
-      }
-    },
-    "typesStringArrayUpdateGranular": {
-      "type": "object",
-      "properties": {
-        "add": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "remove": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "typesStringFilterExpression": {
-      "type": "object",
-      "properties": {
-        "eq": {
-          "type": "string"
-        },
-        "contains": {
-          "type": "string"
-        },
-        "in": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "ne": {
-          "type": "string"
-        }
-      }
-    },
-    "typesStringValues": {
-      "type": "object",
-      "properties": {
-        "values": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "userCreateUserRequest": {
-      "type": "object",
-      "properties": {
-        "user": {
-          "$ref": "#/definitions/modelsUser"
-        }
-      }
-    },
-    "userCreateUserResponse": {
-      "type": "object",
-      "properties": {
-        "user": {
-          "$ref": "#/definitions/modelsUser"
-        }
-      }
-    },
-    "userDeleteUserResponse": {
-      "type": "object"
-    },
-    "userFilter": {
-      "type": "object",
-      "properties": {
-        "rootIdentity": {
-          "$ref": "#/definitions/userIdentityFilter"
-        },
-        "linkedIdentity": {
-          "$ref": "#/definitions/userIdentityFilter"
-        },
-        "state": {
-          "$ref": "#/definitions/modelsUserStateFilterExpression"
-        },
-        "and": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/userFilter"
-          },
-          "title": "AST"
-        },
-        "or": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/userFilter"
-          }
-        },
-        "not": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/userFilter"
-          }
-        }
-      }
-    },
-    "userGetUserResponse": {
-      "type": "object",
-      "properties": {
-        "user": {
-          "$ref": "#/definitions/modelsUser"
-        }
-      }
-    },
-    "userIdentityFilter": {
-      "type": "object",
-      "properties": {
-        "subject": {
-          "$ref": "#/definitions/typesIDFilterExpression"
-        },
-        "idpSlug": {
-          "$ref": "#/definitions/typesIDFilterExpression"
-        },
-        "email": {
-          "$ref": "#/definitions/typesStringFilterExpression"
-        }
-      }
-    },
-    "userLinkUsersRequest": {
-      "type": "object",
-      "properties": {
-        "rootSubject": {
-          "type": "string"
-        },
-        "externalIdentity": {
-          "$ref": "#/definitions/modelsIdentity"
-        }
-      }
-    },
-    "userLinkUsersResponse": {
-      "type": "object",
-      "properties": {
-        "user": {
-          "$ref": "#/definitions/modelsUser"
-        }
-      }
-    },
-    "userListUserRequest": {
-      "type": "object",
-      "properties": {
-        "filter": {
-          "$ref": "#/definitions/userFilter",
-          "title": "Filter"
-        },
-        "pagination": {
-          "$ref": "#/definitions/typesPagination",
-          "title": "Pagination"
-        }
-      }
-    },
-    "userListUserResponse": {
-      "type": "object",
-      "properties": {
-        "users": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/modelsUser"
-          }
-        },
-        "pagination": {
-          "$ref": "#/definitions/typesPaginationResponse",
-          "title": "Pagination details"
-        }
-      }
-    },
-    "userUnlinkUsersRequest": {
-      "type": "object",
-      "properties": {
-        "rootSubject": {
-          "type": "string"
-        },
-        "externalIdentity": {
-          "$ref": "#/definitions/modelsIdentity"
-        }
-      }
-    },
-    "userUnlinkUsersResponse": {
-      "type": "object",
-      "properties": {
-        "user": {
-          "$ref": "#/definitions/modelsUser"
-        }
-      }
-    },
-    "userUpdateUserRequest": {
-      "type": "object",
-      "properties": {
-        "user": {
-          "$ref": "#/definitions/modelsUserUpdate"
-        }
-      }
-    },
-    "userUpdateUserResponse": {
-      "type": "object",
-      "properties": {
-        "user": {
-          "$ref": "#/definitions/modelsUser"
         }
       }
     }

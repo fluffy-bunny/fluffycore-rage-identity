@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option go_package = "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/auth/webauthn;webauthn";
+ 
+package proto.oidc.idp;
+
+import "google/protobuf/descriptor.proto";
+import "proto/auth/models/fido.proto";
+import "google/api/annotations.proto";
+
+message GetCredentialCreateOptionsRequest {
+    string username = 1;
+ }
+message GetCredentialCreateOptionsResponse {
+    cryptohome.fido.PublicKeyCredentialCreationOptions public_key = 1;
+}
+service WebAuthNService {
+    // Create idp
+    rpc GetCredentialCreateOptions (GetCredentialCreateOptionsRequest) returns (GetCredentialCreateOptionsResponse) {
+        option (google.api.http) = {
+            get: "/webauthn/register/get_credential_creation_options"
+        };
+    }
+}
