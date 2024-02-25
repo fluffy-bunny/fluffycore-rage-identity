@@ -8,6 +8,7 @@ import (
 	fluffycore_contracts_config "github.com/fluffy-bunny/fluffycore/contracts/config"
 	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
 	fluffycore_echo_contracts_cookies "github.com/fluffy-bunny/fluffycore/echo/contracts/cookies"
+	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 )
 
 type (
@@ -71,6 +72,7 @@ type SystemConfig struct {
 type Config struct {
 	fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
 
+	Domain                    string                                  `json:"domain"`
 	ConfigFiles               ConfigFiles                             `json:"configFiles"`
 	CustomString              string                                  `json:"customString"`
 	SomeSecret                string                                  `json:"someSecret" redact:"true"`
@@ -87,11 +89,13 @@ type Config struct {
 	SelfIDPConfig             *SelfIDPConfig                          `json:"selfIDPConfig"`
 	CookieConfig              *CookieConfig                           `json:"cookieConfig"`
 	SystemConfig              *SystemConfig                           `json:"systemConfig"`
+	SessionConfig             *contracts_sessions.SessionConfig       `json:"sessionConfig"`
 }
 
 // ConfigDefaultJSON default json
 const configDefaultJSONTemplate = `
 {
+	"domain": "localhost",
 	"APPLICATION_NAME": "in-environment",
 	"APPLICATION_ENVIRONMENT": "in-environment",
 	"PRETTY_LOG": false,
@@ -109,8 +113,7 @@ const configDefaultJSONTemplate = `
 		"baseUrl": "IN_ENVIRONMENT"
 	},
 	"cookieConfig": {
-		"domain": "localhost"
-	},
+ 	},
 	"jwtValidators": {},
 	"autolinkOnEmailMatch": true,
 	"emailVerificationRequired": true,
@@ -164,7 +167,13 @@ const configDefaultJSONTemplate = `
 	},
 	"inMemoryClients": {
 		"clients": []
-	}  
+	},
+	"sessionConfig": {
+		"sessionName": "_session",
+		"authenticationKey": "7f6a8b9c0d1e2f3a4b5c6d7e8f9a0b1c",
+		"encryptionKey": "1234567890abcdef1234567890abcdef",
+		"maxAge": 86400
+	}
 
 
   }

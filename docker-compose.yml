@@ -65,8 +65,7 @@ services:
       selfIDPConfig__authority: "https://rage.localhost.dev"
       oidcConfig__baseUrl: "https://rage.localhost.dev"
       emailConfig__justLogIt: "true"
-      cookieConfig__domain: "rage.localhost.dev"
-      cookieConfig__secure: "false"
+      domain: "rage.localhost.dev"
       echo__disableSecureCookies: "true"
       systemConfig__developerMode: "true"
     labels:

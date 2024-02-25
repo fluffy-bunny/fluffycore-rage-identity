@@ -35,6 +35,11 @@ import (
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
 	contracts_startup "github.com/fluffy-bunny/fluffycore/echo/contracts/startup"
+	fluffycore_echo_services_sessions_cookie_session "github.com/fluffy-bunny/fluffycore/echo/services/sessions/cookie_session"
+	fluffycore_echo_services_sessions_cookie_session_store "github.com/fluffy-bunny/fluffycore/echo/services/sessions/cookie_session_store"
+	fluffycore_echo_services_sessions_memory_session "github.com/fluffy-bunny/fluffycore/echo/services/sessions/memory_session"
+	fluffycore_echo_services_sessions_memory_session_store "github.com/fluffy-bunny/fluffycore/echo/services/sessions/memory_session_store"
+	fluffycore_echo_services_sessions_session_factory "github.com/fluffy-bunny/fluffycore/echo/services/sessions/session_factory"
 	services_startup "github.com/fluffy-bunny/fluffycore/echo/services/startup"
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	echo "github.com/labstack/echo/v4"
@@ -130,6 +135,15 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_forgotpassword.AddScopedIHandler(builder)
 	services_handlers_verifycode.AddScopedIHandler(builder)
 	services_handlers_passwordreset.AddScopedIHandler(builder)
+
+	// sessions
+	//----------------
+	fluffycore_echo_services_sessions_memory_session_store.AddSingletonBackendSessionStore(builder)
+	fluffycore_echo_services_sessions_cookie_session_store.AddSingletonCookieSessionStore(builder)
+	fluffycore_echo_services_sessions_memory_session.AddTransientBackendSession(builder)
+	fluffycore_echo_services_sessions_cookie_session.AddTransientCookieSession(builder)
+	fluffycore_echo_services_sessions_session_factory.AddScopedSessionFactory(builder)
+
 }
 func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 	// i.e. e.Static("/css", "./css")
