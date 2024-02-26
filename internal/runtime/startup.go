@@ -15,6 +15,7 @@ import (
 	services_greeter "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/greeter"
 	services_health "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/health"
 	services_mystream "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/mystream"
+	internal_types "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/types"
 	internal_version "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/version"
 	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
 	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
@@ -51,14 +52,26 @@ type (
 		ddProfiler             fluffycore_contracts_ddprofiler.IDataDogProfiler
 		oidcserverFuture       async.Future[fluffycore_async.AsyncResponse]
 		oidcserverRuntime      *core_echo_runtime.Runtime
+		ext                    internal_types.ConfigureServices
 	}
 )
+type WithOption func(startup *startup)
 
-func NewStartup() fluffycore_contracts_runtime.IStartup {
-	return &startup{}
+func WithConfigureServices(ext internal_types.ConfigureServices) WithOption {
+	return func(startup *startup) {
+		startup.ext = ext
+	}
+}
+func NewStartup(options ...WithOption) fluffycore_contracts_runtime.IStartup {
+	var s = &startup{}
+	for _, option := range options {
+		option(s)
+	}
+	return s
 }
 func (s *startup) SetRootContainer(container di.Container) {
 	s.RootContainer = container
+
 }
 func (s *startup) GetConfigOptions() *fluffycore_contracts_runtime.ConfigOptions {
 	s.config = &contracts_config.Config{}
@@ -155,7 +168,9 @@ func (s *startup) OnPreServerStartup(ctx context.Context) error {
 	s.mockOAuth2Server = mocks_oauth2_echo.NewOAuth2TestServer(&mocks_contracts_oauth2.MockOAuth2Config{
 		Clients: mockOauth2Clients,
 	})
-	s.oidcserverRuntime = core_echo_runtime.New(oidcserver.NewStartup())
+	s.oidcserverRuntime = core_echo_runtime.New(oidcserver.NewStartup(
+		oidcserver.WithConfigureServices(s.ext),
+	))
 	s.oidcserverFuture = fluffycore_async.ExecuteWithPromiseAsync(func(promise async.Promise[fluffycore_async.AsyncResponse]) {
 		var err error
 		defer func() {
