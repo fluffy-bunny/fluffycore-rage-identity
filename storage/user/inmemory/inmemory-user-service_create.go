@@ -3,7 +3,7 @@ package inmemory
 import (
 	"context"
 
-	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user"
+	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	"github.com/gogo/status"
 	"github.com/rs/zerolog"

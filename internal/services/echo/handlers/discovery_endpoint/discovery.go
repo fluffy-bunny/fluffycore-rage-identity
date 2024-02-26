@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
-	contracts_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/util"
-	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/config"
+	contracts_util "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/util"
+	models "github.com/fluffy-bunny/fluffycore-rage-identity/internal/models"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/internal/wellknown/echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v4"
 )

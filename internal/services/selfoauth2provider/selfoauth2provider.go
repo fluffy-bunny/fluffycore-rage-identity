@@ -6,8 +6,8 @@ import (
 
 	oidc "github.com/coreos/go-oidc/v3/oidc"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
-	contracts_selfoauth2provider "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/selfoauth2provider"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/config"
+	contracts_selfoauth2provider "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/selfoauth2provider"
 	status "github.com/gogo/status"
 	zerolog "github.com/rs/zerolog"
 	oauth2 "golang.org/x/oauth2"

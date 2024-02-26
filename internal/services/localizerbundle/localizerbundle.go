@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
+	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/localizer"
 	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
 	language "golang.org/x/text/language"
 )

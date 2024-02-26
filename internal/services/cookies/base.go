@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/config"
 	fluffycore_contracts_cookies "github.com/fluffy-bunny/fluffycore/echo/contracts/cookies"
 	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"

@@ -6,33 +6,34 @@ import (
 	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
-	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/cookies"
-	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
-	services "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services"
-	services_handlers_account_about "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/about"
-	services_handlers_account_callback "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/callback"
-	services_handlers_account_home "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/home"
-	services_handlers_account_login "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/login"
-	services_handlers_account_logout "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/logout"
-	services_handlers_account_personal_information "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/personal_information"
-	services_handlers_account_profile "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/account/profile"
-	services_handlers_authorization_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/authorization_endpoint"
-	services_handlers_discovery_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/discovery_endpoint"
-	services_handlers_error "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/error"
-	services_handlers_externalidp "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/externalidp"
-	services_handlers_forgotpassword "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/forgotpassword"
-	services_handlers_healthz "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/healthz"
-	services_handlers_jwks_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/jwks_endpoint"
-	services_handlers_oauth2_callback "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/oauth2/callback"
-	services_handlers_oidclogin "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/oidclogin"
-	services_handlers_oidcloginpassword "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/oidcloginpassword"
-	services_handlers_passwordreset "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/passwordreset"
-	services_handlers_signup "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/signup"
-	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/swagger"
-	services_handlers_token_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/token_endpoint"
-	services_handlers_verifycode "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/verifycode"
-	services_oidc_session "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/oidc_session"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/config"
+	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/cookies"
+	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/localizer"
+	services "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services"
+	services_handlers_account_about "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/account/about"
+	services_handlers_account_callback "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/account/callback"
+	services_handlers_account_home "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/account/home"
+	services_handlers_account_login "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/account/login"
+	services_handlers_account_logout "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/account/logout"
+	services_handlers_account_personal_information "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/account/personal_information"
+	services_handlers_account_profile "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/account/profile"
+	services_handlers_authorization_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/authorization_endpoint"
+	services_handlers_discovery_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/discovery_endpoint"
+	services_handlers_error "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/error"
+	services_handlers_externalidp "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/externalidp"
+	services_handlers_forgotpassword "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/forgotpassword"
+	services_handlers_healthz "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/healthz"
+	services_handlers_jwks_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/jwks_endpoint"
+	services_handlers_oauth2_callback "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/oauth2/callback"
+	services_handlers_oidclogin "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/oidclogin"
+	services_handlers_oidcloginpassword "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/oidcloginpassword"
+	services_handlers_passwordreset "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/passwordreset"
+	services_handlers_signup "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/signup"
+	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/swagger"
+	services_handlers_token_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/token_endpoint"
+	services_handlers_verifycode "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/verifycode"
+	services_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/oidc_session"
+	internal_types "github.com/fluffy-bunny/fluffycore-rage-identity/internal/types"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
 	contracts_startup "github.com/fluffy-bunny/fluffycore/echo/contracts/startup"
@@ -53,11 +54,20 @@ type (
 		services_startup.StartupBase
 		config *contracts_config.Config
 		log    zerolog.Logger
+		ext    internal_types.ConfigureServices
 	}
 )
 
 func init() {
 	var _ contracts_startup.IStartup = (*startup)(nil)
+}
+
+type WithOption func(startup *startup)
+
+func WithConfigureServices(ext internal_types.ConfigureServices) WithOption {
+	return func(startup *startup) {
+		startup.ext = ext
+	}
 }
 
 // GetConfigOptions ...
@@ -67,7 +77,7 @@ func (s *startup) GetConfigOptions() *fluffycore_contracts_runtime.ConfigOptions
 		Destination: s.config,
 	}
 }
-func NewStartup() contracts_startup.IStartup {
+func NewStartup(options ...WithOption) contracts_startup.IStartup {
 	myStartup := &startup{
 		config: &contracts_config.Config{},
 		log:    zlog.With().Str("runtime", "oidcserver").Caller().Logger(),
@@ -79,16 +89,23 @@ func NewStartup() contracts_startup.IStartup {
 	}
 
 	myStartup.AddHooks(hooks)
+	for _, option := range options {
+		option(myStartup)
+	}
 	return myStartup
 }
 
 // ConfigureServices ...
 func (s *startup) ConfigureServices(builder di.ContainerBuilder) error {
+
 	s.SetOptions(&contracts_startup.Options{
 		Port: s.config.Echo.Port,
 	})
 	s.addAppHandlers(builder)
 	services.ConfigureServices(context.TODO(), s.config, builder)
+	if s.ext != nil {
+		s.ext(context.TODO(), builder)
+	}
 	return nil
 }
 

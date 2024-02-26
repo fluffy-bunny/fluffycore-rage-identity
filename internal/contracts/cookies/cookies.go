@@ -1,7 +1,7 @@
 package cookies
 
 import (
-	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
+	models "github.com/fluffy-bunny/fluffycore-rage-identity/internal/models"
 	echo "github.com/labstack/echo/v4"
 )
 

@@ -5,8 +5,8 @@ import (
 	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
-	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/cookies"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/config"
+	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/cookies"
 	fluffycore_contracts_cookies "github.com/fluffy-bunny/fluffycore/echo/contracts/cookies"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"

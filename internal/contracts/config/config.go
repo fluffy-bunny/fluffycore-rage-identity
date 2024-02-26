@@ -3,8 +3,8 @@ package config
 import (
 	"strings"
 
-	contracts_email "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/email"
-	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
+	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/email"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	fluffycore_contracts_config "github.com/fluffy-bunny/fluffycore/contracts/config"
 	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
 	fluffycore_echo_contracts_cookies "github.com/fluffy-bunny/fluffycore/echo/contracts/cookies"

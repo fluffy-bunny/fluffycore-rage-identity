@@ -2,8 +2,8 @@ package oidc_session
 
 import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/oidc_session"
-	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
+	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/oidc_session"
+	models "github.com/fluffy-bunny/fluffycore-rage-identity/internal/models"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 )
 

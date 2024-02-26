@@ -4,8 +4,8 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package main
 
 import (
-	cmd "github.com/fluffy-bunny/fluffycore-rage-oidc/cmd/oidc-client/cmd"
-	shared "github.com/fluffy-bunny/fluffycore-rage-oidc/cmd/oidc-client/shared"
+	cmd "github.com/fluffy-bunny/fluffycore-rage-identity/cmd/oidc-client/cmd"
+	shared "github.com/fluffy-bunny/fluffycore-rage-identity/cmd/oidc-client/shared"
 	fluffycore_echo_templates "github.com/fluffy-bunny/fluffycore/echo/templates"
 )
 

@@ -2,7 +2,7 @@ package clientauthorization
 
 import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/client"
+	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/client"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	oauth2_server "github.com/go-oauth2/oauth2/v4/server"

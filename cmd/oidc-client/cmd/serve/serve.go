@@ -16,8 +16,8 @@ import (
 	"time"
 
 	oidc "github.com/coreos/go-oidc/v3/oidc"
-	shared "github.com/fluffy-bunny/fluffycore-rage-oidc/cmd/oidc-client/shared"
-	cobra_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/cobra_utils"
+	shared "github.com/fluffy-bunny/fluffycore-rage-identity/cmd/oidc-client/shared"
+	cobra_utils "github.com/fluffy-bunny/fluffycore-rage-identity/internal/cobra_utils"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	req "github.com/imroc/req/v3"
 	zerolog "github.com/rs/zerolog"
