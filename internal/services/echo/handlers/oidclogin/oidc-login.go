@@ -10,6 +10,7 @@ import (
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/cookies"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/email"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/identity"
+	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/shared"
@@ -19,6 +20,7 @@ import (
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
+	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
@@ -31,6 +33,7 @@ type (
 		config           *contracts_config.Config
 		wellknownCookies contracts_cookies.IWellknownCookies
 		passwordHasher   contracts_identity.IPasswordHasher
+		oidcSession      contracts_oidc_session.IOIDCSession
 	}
 )
 
@@ -45,12 +48,16 @@ func (s *service) Ctor(
 	container di.Container,
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	passwordHasher contracts_identity.IPasswordHasher,
+	sessionFactory contracts_sessions.ISessionFactory,
+	oidcSession contracts_oidc_session.IOIDCSession,
+
 ) (*service, error) {
 	return &service{
 		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
 		config:           config,
 		passwordHasher:   passwordHasher,
 		wellknownCookies: wellknownCookies,
+		oidcSession:      oidcSession,
 	}, nil
 }
 
@@ -73,7 +80,6 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type LoginGetRequest struct {
-	State     string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 	Email     string `param:"email" query:"email" form:"email" json:"email" xml:"email"`
 	Error     string `param:"error" query:"error" form:"error" json:"error" xml:"error"`
 	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
@@ -82,7 +88,6 @@ type ExternalIDPAuthRequest struct {
 	IDPHint string `param:"idp_hint" query:"idp_hint" form:"idp_hint" json:"idp_hint" xml:"idp_hint"`
 }
 type LoginPostRequest struct {
-	State    string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 	UserName string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
 }
 
@@ -91,6 +96,13 @@ type row struct {
 	Value string
 }
 
+func (s *service) getSession() (contracts_sessions.ISession, error) {
+	session, err := s.oidcSession.GetSession()
+	if err != nil {
+		return nil, err
+	}
+	return session, nil
+}
 func (s *service) DoGet(c echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
@@ -104,11 +116,22 @@ func (s *service) DoGet(c echo.Context) error {
 	log.Info().Interface("model", model).Msg("model")
 
 	var rows []row
-	rows = append(rows, row{Key: "state", Value: model.State})
+	session, err := s.getSession()
+	if err != nil {
+		rows = append(rows, row{Key: "error", Value: err.Error()})
+	}
+	dd, err := session.Get("request")
+	if err != nil {
+		rows = append(rows, row{Key: "error", Value: err.Error()})
+	}
+	dd2 := dd.(*models.AuthorizationRequest)
+
+	log.Info().Interface("dd2", dd).Msg("dd2")
+	rows = append(rows, row{Key: "state", Value: dd2.State})
 
 	switch model.Directive {
 	case models.IdentityFound:
-		return s.handleIdentityFound(c, model.State)
+		return s.handleIdentityFound(c, dd2.State)
 
 	}
 	idps, err := s.GetIDPs(ctx)
@@ -120,7 +143,7 @@ func (s *service) DoGet(c echo.Context) error {
 		map[string]interface{}{
 			"defs":      rows,
 			"idps":      idps,
-			"state":     model.State,
+			"state":     dd2.State,
 			"email":     model.Email,
 			"directive": models.LoginDirective,
 		})
@@ -140,12 +163,24 @@ func (s *service) DoPost(c echo.Context) error {
 	if fluffycore_utils.IsEmptyOrNil(model.UserName) {
 		return s.DoGet(c)
 	}
+
 	idps, err := s.GetIDPs(ctx)
 	var errors []*services_handlers_shared.Error
-	errors = append(errors, services_handlers_shared.NewErrorF("state", model.State))
 	if err != nil {
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 	}
+	session, err := s.getSession()
+	if err != nil {
+		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+	}
+	dd, err := session.Get("request")
+	if err != nil {
+		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+	}
+	dd2 := dd.(*models.AuthorizationRequest)
+
+	log.Info().Interface("dd2", dd).Msg("dd2")
+	errors = append(errors, services_handlers_shared.NewErrorF("state", dd2.State))
 
 	model.UserName = strings.ToLower(model.UserName)
 
@@ -154,7 +189,7 @@ func (s *service) DoPost(c echo.Context) error {
 		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s is not a valid email address", model.UserName))
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
-				"state":     model.State,
+				"state":     dd2.State,
 				"idps":      idps,
 				"defs":      errors,
 				"directive": models.LoginDirective,
@@ -177,7 +212,7 @@ func (s *service) DoPost(c echo.Context) error {
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
-				"state":     model.State,
+				"state":     dd2.State,
 				"idps":      idps,
 				"defs":      errors,
 				"directive": models.LoginDirective,
@@ -191,7 +226,7 @@ func (s *service) DoPost(c echo.Context) error {
 			[]models.FormParam{
 				{
 					Name:  "state",
-					Value: model.State,
+					Value: dd2.State,
 				},
 				{
 					Name:  "idp_hint",
@@ -218,7 +253,7 @@ func (s *service) DoPost(c echo.Context) error {
 		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s not found", model.UserName))
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
-				"state":     model.State,
+				"state":     dd2.State,
 				"idps":      idps,
 				"defs":      errors,
 				"directive": models.LoginDirective,
@@ -231,7 +266,7 @@ func (s *service) DoPost(c echo.Context) error {
 
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
-				"state":     model.State,
+				"state":     dd2.State,
 				"idps":      idps,
 				"defs":      errors,
 				"directive": models.LoginDirective,
@@ -264,7 +299,7 @@ func (s *service) DoPost(c echo.Context) error {
 		formParams := []models.FormParam{
 			{
 				Name:  "state",
-				Value: model.State,
+				Value: dd2.State,
 			},
 			{
 				Name:  "email",
@@ -292,7 +327,7 @@ func (s *service) DoPost(c echo.Context) error {
 		[]models.FormParam{
 			{
 				Name:  "state",
-				Value: model.State,
+				Value: dd2.State,
 			},
 			{
 				Name:  "email",

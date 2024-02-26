@@ -2,8 +2,7 @@
 {{template "html_begin" .}}
 {{template "header" .}}
 
-{{ $state       := .state }}
-{{ $paths       := .paths }}
+ {{ $paths       := .paths }}
 
 <body class="bg-light d-flex align-items-center min-vh-100">
     <div class="container">

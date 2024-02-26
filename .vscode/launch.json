@@ -29,7 +29,7 @@
                 "emailConfig__fromEmail": "noreply@perfectcorp.com",
                 "echo__disableSecureCookies": "true",
                 "emailConfig__justLogIt": "true",
-                "cookieConfig__domain": "localhost",
+                "domain": "localhost",
                 "cookieConfig__secure": "true",
                 "systemConfig__developerMode": "true",
                 "GITHUB_CLIENT_ID": "bdbe2f2235eb3a02065c",

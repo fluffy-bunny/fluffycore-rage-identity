@@ -28,12 +28,14 @@ import (
 	services_oidcproviderfactory "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/oidcproviderfactory"
 	services_selfoauth2provider "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/selfoauth2provider"
 	services_tokenservice "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/tokenservice"
-	services_user_inmemory "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/user/inmemory"
 	services_util "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/util"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
+	storage_user_inmemory "github.com/fluffy-bunny/fluffycore-rage-oidc/storage/user/inmemory"
 	fluffycore_contracts_jwtminter "github.com/fluffy-bunny/fluffycore/contracts/jwtminter"
+	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_echo_services_cookies_insecure "github.com/fluffy-bunny/fluffycore/echo/services/cookies/insecure"
 	fluffycore_echo_services_cookies_secure "github.com/fluffy-bunny/fluffycore/echo/services/cookies/secure"
+
 	fluffycore_echo_templates "github.com/fluffy-bunny/fluffycore/echo/templates"
 	fluffycore_services_eko_gocache_go_cache "github.com/fluffy-bunny/fluffycore/services/eko_gocache/go_cache"
 	fluffycore_services_jwtminter "github.com/fluffy-bunny/fluffycore/services/jwtminter"
@@ -51,7 +53,7 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	// this has to be added FIRST as it sets up the default inmemory version of the IClient stores
 	// it addes an empty *stores_services_client_inmemory.Clients
 	services_client_inmemory.AddSingletonIFluffyCoreClientServiceServer(builder)
-	services_user_inmemory.AddSingletonIFluffyCoreUserServiceServer(builder)
+	storage_user_inmemory.AddSingletonIFluffyCoreUserServiceServer(builder)
 	services_idp_inmemory.AddSingletonIFluffyCoreIDPServiceServer(builder)
 	services_oauth2factory.AddSingletonIOAuth2Factory(builder)
 	services_tokenservice.AddSingletonITokenService(builder)
@@ -89,7 +91,16 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	di.AddInstance[*contracts_email.EmailConfig](builder, config.EmailConfig)
 	di.AddInstance[*contracts_config.EchoConfig](builder, config.Echo)
 	di.AddInstance[*contracts_config.BackingCacheConfig](builder, config.BackingCache)
+	if config.CookieConfig == nil {
+		config.CookieConfig = &contracts_config.CookieConfig{}
+	}
+	config.CookieConfig.Domain = config.Domain
 	di.AddInstance[*contracts_config.CookieConfig](builder, config.CookieConfig)
+	config.SessionConfig.Domain = config.Domain
+	if config.SessionConfig == nil {
+		config.SessionConfig = &contracts_sessions.SessionConfig{}
+	}
+	di.AddInstance[*contracts_sessions.SessionConfig](builder, config.SessionConfig)
 
 	OnConfigureServicesLoadOIDCClients(ctx, config, builder)
 	OnConfigureServicesLoadIDPs(ctx, config, builder)

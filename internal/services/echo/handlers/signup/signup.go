@@ -75,13 +75,11 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type SignupGetRequest struct {
-	State string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 }
 type ExternalIDPAuthRequest struct {
 	IDPHint string `param:"idp_hint" query:"idp_hint" form:"idp_hint" json:"idp_hint" xml:"idp_hint"`
 }
 type SignupPostRequest struct {
-	State    string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 	UserName string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
 	Password string `param:"password" query:"password" form:"password" json:"password" xml:"password"`
 	Type     string `param:"type" query:"type" form:"type" json:"type" xml:"type"`
@@ -116,7 +114,6 @@ func (s *service) DoGet(c echo.Context) error {
 		map[string]interface{}{
 			"errors":    rows,
 			"idps":      idps,
-			"state":     model.State,
 			"directive": models.SignupDirective,
 		})
 }
@@ -151,12 +148,11 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("getIDPs")
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	doError := func(state string, errors []*services_handlers_shared.Error) error {
+	doError := func(errors []*services_handlers_shared.Error) error {
 		return s.Render(c, http.StatusBadRequest, "oidc/signup/index",
 			map[string]interface{}{
 				"errors":    errors,
 				"idps":      idps,
-				"state":     state,
 				"directive": models.SignupDirective,
 			})
 
@@ -165,7 +161,7 @@ func (s *service) DoPost(c echo.Context) error {
 	model := &SignupPostRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Debug().Err(err).Msg("Bind")
-		return doError(model.State, []*services_handlers_shared.Error{
+		return doError([]*services_handlers_shared.Error{
 			services_handlers_shared.NewErrorF("model", "model is invalid"),
 		})
 	}
@@ -178,7 +174,7 @@ func (s *service) DoPost(c echo.Context) error {
 		return err
 	}
 	if len(errors) > 0 {
-		return doError(model.State, errors)
+		return doError(errors)
 	}
 	model.UserName = strings.ToLower(model.UserName)
 	// get the domain from the email
@@ -195,17 +191,14 @@ func (s *service) DoPost(c echo.Context) error {
 	if err != nil {
 		log.Warn().Err(err).Msg("ListIDP")
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
-		return doError(model.State, errors)
+		return doError(errors)
 	}
 	if len(listIDPRequest.Idps) > 0 {
 		// an idp has claimed this domain.
 		// post to the externalIDP
 		return s.RenderAutoPost(c, wellknown_echo.ExternalIDPPath,
 			[]models.FormParam{
-				{
-					Name:  "state",
-					Value: model.State,
-				},
+
 				{
 					Name:  "idp_hint",
 					Value: listIDPRequest.Idps[0].Slug,
@@ -231,7 +224,7 @@ func (s *service) DoPost(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 	if len(listUserResponse.Users) > 0 {
-		return doError(model.State, []*services_handlers_shared.Error{
+		return doError([]*services_handlers_shared.Error{
 			services_handlers_shared.NewErrorF("username", "username:%s already exists", model.UserName),
 		})
 	}
@@ -289,10 +282,7 @@ func (s *service) DoPost(c echo.Context) error {
 			return c.Redirect(http.StatusFound, "/error")
 		}
 		formParams := []models.FormParam{
-			{
-				Name:  "state",
-				Value: model.State,
-			},
+
 			{
 				Name:  "email",
 				Value: model.UserName,
@@ -319,12 +309,7 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 
 	return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath,
-		[]models.FormParam{
-			{
-				Name:  "state",
-				Value: model.State,
-			},
-		})
+		[]models.FormParam{})
 
 }
 
