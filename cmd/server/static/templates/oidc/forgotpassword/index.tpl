@@ -2,8 +2,7 @@
 {{template "html_begin" .}}
 {{template "header" .}}
 
-{{ $state       := .state }}
-{{ $paths       := .paths }}
+ {{ $paths       := .paths }}
 
 <body class="bg-light d-flex align-items-center min-vh-100">
     <div class="container">
@@ -37,8 +36,7 @@
                     <div class="card-body p-4">
                         <h2 class="card-title text-center mb-4">{{ call .LocalizeMessage "forgot_password" }}</h2>
                         <form action="{{ $paths.ForgotPassword }}" method="post">
-                            <input type="hidden" name="state" value="{{ $state }}">
-                            <div class="mb-3">
+                             <div class="mb-3">
                                 <label for="email" class="form-label">Email address</label>
                                 <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" value="{{ .email }}" required>
                             </div>
