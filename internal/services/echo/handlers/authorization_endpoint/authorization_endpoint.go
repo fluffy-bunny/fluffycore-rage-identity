@@ -19,6 +19,7 @@ import (
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
+	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
 	xid "github.com/rs/xid"
@@ -79,6 +80,15 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 		//clientauthorization.AuthenticateOAuth2Client(),
 	}
 }
+func (s *service) newSession() (contracts_sessions.ISession, error) {
+	session, err := s.SessionFactory().
+		GetBackendSession(models.OIDCSessionName)
+	if err != nil {
+		return nil, err
+	}
+	session.New()
+	return session, nil
+}
 
 // HealthCheck godoc
 // @Summary get the home page.
@@ -106,10 +116,16 @@ func (s *service) Do(c echo.Context) error {
 		return err
 	}
 	log.Debug().Interface("model", model).Msg("AuthorizationRequest")
+	session, err := s.newSession()
+	if err != nil {
+		return err
+	}
+
 	// TODO: validate the request
 	// does the client have the permissions to do this?
 	code := xid.New().String()
 	model.Code = code
+
 	// store the model in the cache.  Redis in production.
 	authorizationFinal := &models.AuthorizationFinal{
 		Request: model,
@@ -163,11 +179,15 @@ func (s *service) Do(c echo.Context) error {
 
 	}
 
-	err := s.oidcFlowStore.StoreAuthorizationFinal(ctx, model.State, authorizationFinal)
+	err = s.oidcFlowStore.StoreAuthorizationFinal(ctx, model.State, authorizationFinal)
 	if err != nil {
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")
 	}
+	// set the code and state in the session
+	// --~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
+	session.Set("request", model)
+	session.Save()
 
 	mm, err := s.oidcFlowStore.GetAuthorizationFinal(ctx, model.State)
 	if err != nil {

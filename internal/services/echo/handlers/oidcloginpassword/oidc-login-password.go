@@ -18,6 +18,7 @@ import (
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
+	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
@@ -72,14 +73,12 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type LoginGetRequest struct {
-	State     string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 	Email     string `param:"email" query:"email" form:"email" json:"email" xml:"email"`
 	Error     string `param:"error" query:"error" form:"error" json:"error" xml:"error"`
 	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
 }
 
 type LoginPasswordPostRequest struct {
-	State    string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 	UserName string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
 	Password string `param:"password" query:"password" form:"password" json:"password" xml:"password"`
 }
@@ -89,6 +88,14 @@ type row struct {
 	Value string
 }
 
+func (s *service) getSession() (contracts_sessions.ISession, error) {
+	session, err := s.SessionFactory().
+		GetBackendSession(models.OIDCSessionName)
+	if err != nil {
+		return nil, err
+	}
+	return session, nil
+}
 func (s *service) DoGet(c echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
@@ -100,13 +107,23 @@ func (s *service) DoGet(c echo.Context) error {
 		return err
 	}
 	log.Info().Interface("model", model).Msg("model")
-
 	var rows []row
-	rows = append(rows, row{Key: "state", Value: model.State})
+
+	session, err := s.getSession()
+	if err != nil {
+		rows = append(rows, row{Key: "error", Value: err.Error()})
+	}
+	dd, err := session.Get("request")
+	if err != nil {
+		rows = append(rows, row{Key: "error", Value: err.Error()})
+	}
+	dd2 := dd.(*models.AuthorizationRequest)
+
+	rows = append(rows, row{Key: "state", Value: dd2.State})
 
 	switch model.Directive {
 	case models.IdentityFound:
-		return s.handleIdentityFound(c, model.State)
+		return s.handleIdentityFound(c, dd2.State)
 
 	}
 	idps, err := s.GetIDPs(ctx)
@@ -118,7 +135,6 @@ func (s *service) DoGet(c echo.Context) error {
 		map[string]interface{}{
 			"defs":      rows,
 			"idps":      idps,
-			"state":     model.State,
 			"email":     model.Email,
 			"directive": models.LoginDirective,
 		})
@@ -140,7 +156,17 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 
 	var errors []*services_handlers_shared.Error
-	errors = append(errors, services_handlers_shared.NewErrorF("state", model.State))
+	session, err := s.getSession()
+	if err != nil {
+		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+	}
+	dd, err := session.Get("request")
+	if err != nil {
+		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+	}
+	dd2 := dd.(*models.AuthorizationRequest)
+
+	errors = append(errors, services_handlers_shared.NewErrorF("state", dd2.State))
 
 	model.UserName = strings.ToLower(model.UserName)
 
@@ -148,7 +174,6 @@ func (s *service) DoPost(c echo.Context) error {
 		return s.Render(c, http.StatusBadRequest,
 			"oidc/oidcloginpassword/index",
 			map[string]interface{}{
-				"state":     model.State,
 				"email":     model.UserName,
 				"defs":      errors,
 				"directive": models.LoginDirective,
@@ -204,10 +229,7 @@ func (s *service) DoPost(c echo.Context) error {
 				},
 			})
 		formParams := []models.FormParam{
-			{
-				Name:  "state",
-				Value: model.State,
-			},
+
 			{
 				Name:  "email",
 				Value: model.UserName,
@@ -265,7 +287,7 @@ func (s *service) DoPost(c echo.Context) error {
 		return renderError(errors)
 	}
 
-	mm, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, model.State)
+	mm, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, dd2.State)
 	if err != nil {
 		log.Warn().Err(err).Msg("GetAuthorizationFinal")
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
@@ -295,9 +317,9 @@ func (s *service) DoPost(c echo.Context) error {
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 		return renderError(errors)
 	}
-	s.OIDCFlowStore().DeleteAuthorizationFinal(ctx, model.State)
+	s.OIDCFlowStore().DeleteAuthorizationFinal(ctx, dd2.State)
 
-	err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, model.State, mm)
+	err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, dd2.State, mm)
 	if err != nil {
 		// redirect to error page
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))

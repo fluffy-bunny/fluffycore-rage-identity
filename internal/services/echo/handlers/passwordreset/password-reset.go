@@ -67,21 +67,17 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type PasswordResetGetRequest struct {
-	State     string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 	ReturnUrl string `param:"returnUrl" query:"returnUrl" form:"returnUrl" json:"returnUrl" xml:"returnUrl"`
 }
 
 type PasswordResetPostRequest struct {
-	State           string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 	ReturnUrl       string `param:"returnUrl" query:"returnUrl" form:"returnUrl" json:"returnUrl" xml:"returnUrl"`
 	Password        string `param:"password" query:"password" form:"password" json:"password" xml:"password"`
 	ConfirmPassword string `param:"confirmPassword" query:"confirmPassword" form:"confirmPassword" json:"confirmPassword" xml:"confirmPassword"`
 }
 
 func (s *service) validatePasswordResetGetRequest(model *PasswordResetGetRequest) error {
-	if fluffycore_utils.IsEmptyOrNil(model.State) {
-		return status.Error(codes.InvalidArgument, "State is empty")
-	}
+
 	return nil
 }
 
@@ -105,7 +101,6 @@ func (s *service) DoGet(c echo.Context) error {
 
 	err = s.Render(c, http.StatusOK, "oidc/passwordreset/index",
 		map[string]interface{}{
-			"state":     model.State,
 			"returnUrl": model.ReturnUrl,
 			"errors":    []*services_handlers_shared.Error{},
 		})
@@ -114,9 +109,7 @@ func (s *service) DoGet(c echo.Context) error {
 
 func (s *service) validatePasswordResetPostRequest(request *PasswordResetPostRequest) ([]*services_handlers_shared.Error, error) {
 	errors := make([]*services_handlers_shared.Error, 0)
-	if fluffycore_utils.IsEmptyOrNil(request.State) {
-		errors = append(errors, services_handlers_shared.NewErrorF("state", "State is empty"))
-	}
+
 	if fluffycore_utils.IsEmptyOrNil(request.Password) {
 		errors = append(errors, services_handlers_shared.NewErrorF("password", "Password is empty"))
 	}
@@ -150,7 +143,6 @@ func (s *service) DoPost(c echo.Context) error {
 	doErrorReturn := func() error {
 		return s.Render(c, http.StatusBadRequest, "oidc/passwordreset/index",
 			map[string]interface{}{
-				"state":     model.State,
 				"returnUrl": model.ReturnUrl,
 				"errors":    errors,
 			})
@@ -225,10 +217,7 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 	return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath,
 		[]models.FormParam{
-			{
-				Name:  "state",
-				Value: model.State,
-			},
+
 			{
 				Name:  "email",
 				Value: getUserResponse.User.RootIdentity.Email,

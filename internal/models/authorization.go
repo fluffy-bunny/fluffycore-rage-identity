@@ -1,5 +1,19 @@
 package models
 
+import (
+	"encoding/gob"
+)
+
+func init() {
+	gob.Register(&AuthorizationRequest{})
+	gob.Register(&ExternalOauth2Request{})
+	gob.Register(&Identity{})
+	gob.Register(&AuthorizationFinal{})
+	gob.Register(&ExternalOauth2Final{})
+	gob.Register(&FormParam{})
+
+}
+
 const (
 	RootIdp string = "root-idp"
 )
@@ -22,6 +36,10 @@ const (
 	URLRootCandidate string = "urn:mastodon:root_candidate:{user_id}"
 )
 
+const (
+	OIDCSessionName = "_oidc-session"
+)
+
 type (
 	AuthorizationRequest struct {
 		ClientId            string `param:"client_id" query:"client_id" form:"client_id" json:"client_id" xml:"client_id"`
@@ -36,10 +54,10 @@ type (
 		Nonce               string `param:"nonce" query:"nonce" form:"nonce" json:"nonce" xml:"nonce"`
 		Code                string // this is the internal code that will be returned to the OIDC client
 		// IDPHint is the idp_hint of the external idp that the authorization must authenticate against
-		IDPHint string
+		IDPHint string `json:"idp_hint,omitempty"`
 		// CandidateUserID is the user_id of the candidate user that if the external IDP has no link should be linked to
 		// The candidate user must exist.
-		CandidateUserID string
+		CandidateUserID string `json:"candidate_user_id,omitempty"`
 	}
 
 	ExternalOauth2Request struct {

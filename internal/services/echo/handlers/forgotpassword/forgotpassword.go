@@ -17,11 +17,9 @@ import (
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
-	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
 	zerolog "github.com/rs/zerolog"
-	codes "google.golang.org/grpc/codes"
 )
 
 type (
@@ -68,20 +66,16 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type ForgotPasswordGetRequest struct {
-	State string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 	Email string `param:"email" query:"email" form:"email" json:"email" xml:"email"`
 }
 
 type ForgotPasswordPostRequest struct {
-	State string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 	Email string `param:"email" query:"email" form:"email" json:"email" xml:"email"`
 	Type  string `param:"type" query:"type" form:"type" json:"type" xml:"type"`
 }
 
 func (s *service) validateForgotPasswordGetRequest(model *ForgotPasswordGetRequest) error {
-	if fluffycore_utils.IsEmptyOrNil(model.State) {
-		return status.Error(codes.InvalidArgument, "State is empty")
-	}
+
 	return nil
 }
 
@@ -105,7 +99,6 @@ func (s *service) DoGet(c echo.Context) error {
 
 	err = s.Render(c, http.StatusOK, "oidc/forgotpassword/index",
 		map[string]interface{}{
-			"state":  model.State,
 			"email":  model.Email,
 			"errors": make([]*services_handlers_shared.Error, 0),
 		})
@@ -115,9 +108,7 @@ func (s *service) DoGet(c echo.Context) error {
 func (s *service) validateForgotPasswordPostRequest(request *ForgotPasswordPostRequest) ([]*services_handlers_shared.Error, error) {
 	var err error
 	errors := make([]*services_handlers_shared.Error, 0)
-	if fluffycore_utils.IsEmptyOrNil(request.State) {
-		errors = append(errors, services_handlers_shared.NewErrorF("state", "State is empty"))
-	}
+
 	if fluffycore_utils.IsEmptyOrNil(request.Email) {
 		errors = append(errors, services_handlers_shared.NewErrorF("email", "Email is empty"))
 	}
@@ -144,7 +135,6 @@ func (s *service) DoPost(c echo.Context) error {
 	if err != nil {
 		return s.Render(c, http.StatusBadRequest, "oidc/forgotpassword/index",
 			map[string]interface{}{
-				"state":  model.State,
 				"email":  model.Email,
 				"errors": errors,
 			})
@@ -214,10 +204,7 @@ func (s *service) DoPost(c echo.Context) error {
 		verificationCode = "NA"
 	}
 	formParams := []models.FormParam{
-		{
-			Name:  "state",
-			Value: model.State,
-		},
+
 		{
 			Name:  "email",
 			Value: model.Email,
