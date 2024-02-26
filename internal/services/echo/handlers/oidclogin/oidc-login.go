@@ -10,6 +10,7 @@ import (
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/cookies"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/email"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/identity"
+	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/shared"
@@ -32,6 +33,7 @@ type (
 		config           *contracts_config.Config
 		wellknownCookies contracts_cookies.IWellknownCookies
 		passwordHasher   contracts_identity.IPasswordHasher
+		oidcSession      contracts_oidc_session.IOIDCSession
 	}
 )
 
@@ -47,12 +49,15 @@ func (s *service) Ctor(
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	passwordHasher contracts_identity.IPasswordHasher,
 	sessionFactory contracts_sessions.ISessionFactory,
+	oidcSession contracts_oidc_session.IOIDCSession,
+
 ) (*service, error) {
 	return &service{
 		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
 		config:           config,
 		passwordHasher:   passwordHasher,
 		wellknownCookies: wellknownCookies,
+		oidcSession:      oidcSession,
 	}, nil
 }
 
@@ -92,8 +97,7 @@ type row struct {
 }
 
 func (s *service) getSession() (contracts_sessions.ISession, error) {
-	session, err := s.SessionFactory().
-		GetBackendSession(models.OIDCSessionName)
+	session, err := s.oidcSession.GetSession()
 	if err != nil {
 		return nil, err
 	}

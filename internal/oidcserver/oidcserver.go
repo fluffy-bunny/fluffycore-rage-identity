@@ -32,6 +32,7 @@ import (
 	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/swagger"
 	services_handlers_token_endpoint "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/token_endpoint"
 	services_handlers_verifycode "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/verifycode"
+	services_oidc_session "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/oidc_session"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
 	contracts_startup "github.com/fluffy-bunny/fluffycore/echo/contracts/startup"
@@ -143,6 +144,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	fluffycore_echo_services_sessions_memory_session.AddTransientBackendSession(builder)
 	fluffycore_echo_services_sessions_cookie_session.AddTransientCookieSession(builder)
 	fluffycore_echo_services_sessions_session_factory.AddScopedSessionFactory(builder)
+	services_oidc_session.AddScopedIOIDCSession(builder)
 
 }
 func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {

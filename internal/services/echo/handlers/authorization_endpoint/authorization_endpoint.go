@@ -82,7 +82,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 func (s *service) newSession() (contracts_sessions.ISession, error) {
 	session, err := s.SessionFactory().
-		GetBackendSession(models.OIDCSessionName)
+		GetCookieSession(models.OIDCSessionName)
 	if err != nil {
 		return nil, err
 	}
