@@ -7,8 +7,8 @@ import (
 	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
-	proto_helloworld "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/helloworld"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/config"
+	proto_helloworld "github.com/fluffy-bunny/fluffycore-rage-identity/proto/helloworld"
 	endpoint "github.com/fluffy-bunny/fluffycore/contracts/endpoint"
 	grpc_gateway_runtime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	log "github.com/rs/zerolog/log"

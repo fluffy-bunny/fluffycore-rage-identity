@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/internal/wellknown/echo"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	echo "github.com/labstack/echo/v4"

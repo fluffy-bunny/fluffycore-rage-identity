@@ -7,8 +7,8 @@ import (
 
 	mailyak "github.com/domodwyer/mailyak/v3"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_email "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/email"
-	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
+	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/email"
+	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/localizer"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
