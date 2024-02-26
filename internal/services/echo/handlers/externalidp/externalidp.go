@@ -11,6 +11,7 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
 	contracts_oauth2factory "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/oauth2factory"
+	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/services/echo/utils"
@@ -18,6 +19,7 @@ import (
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
+	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
@@ -32,6 +34,7 @@ type (
 		*services_echo_handlers_base.BaseHandler
 		oauth2Factory contracts_oauth2factory.IOAuth2Factory
 		config        *contracts_config.Config
+		oidcSession   contracts_oidc_session.IOIDCSession
 	}
 )
 
@@ -44,12 +47,15 @@ func init() {
 func (s *service) Ctor(
 	config *contracts_config.Config,
 	container di.Container,
-	oauth2Factory contracts_oauth2factory.IOAuth2Factory) (*service, error) {
+	oauth2Factory contracts_oauth2factory.IOAuth2Factory,
+	oidcSession contracts_oidc_session.IOIDCSession,
+) (*service, error) {
 
 	return &service{
 		BaseHandler:   services_echo_handlers_base.NewBaseHandler(container),
 		oauth2Factory: oauth2Factory,
 		config:        config,
+		oidcSession:   oidcSession,
 	}, nil
 }
 
@@ -71,17 +77,21 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
 
+func (s *service) getSession() (contracts_sessions.ISession, error) {
+	session, err := s.oidcSession.GetSession()
+	if err != nil {
+		return nil, err
+	}
+	return session, nil
+}
+
 type ExternalIDPAuthRequest struct {
 	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
-	State     string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 	IDPHint   string `param:"idp_hint" query:"idp_hint" form:"idp_hint" json:"idp_hint" xml:"idp_hint"`
 }
 
 func (s *service) validateLoginGetRequest(model *ExternalIDPAuthRequest) error {
 
-	if fluffycore_utils.IsEmptyOrNil(model.State) {
-		return status.Error(codes.InvalidArgument, "State is required")
-	}
 	if fluffycore_utils.IsEmptyOrNil(model.IDPHint) {
 		return status.Error(codes.InvalidArgument, "IDPHint is required")
 	}
@@ -111,7 +121,15 @@ func (s *service) DoPost(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 	log.Info().Interface("model", model).Msg("model")
-
+	session, err := s.getSession()
+	if err != nil {
+	}
+	dd, err := session.Get("request")
+	if err != nil {
+		log.Error().Err(err).Msg("session.Get")
+		return c.Redirect(http.StatusFound, "/error")
+	}
+	dd2 := dd.(*models.AuthorizationRequest)
 	getIDPBySlugResponse, err := s.IdpServiceServer().GetIDPBySlug(ctx,
 		&proto_oidc_idp.GetIDPBySlugRequest{
 			Slug: model.IDPHint,
@@ -134,12 +152,12 @@ func (s *service) DoPost(c echo.Context) error {
 						Request: &models.ExternalOauth2Request{
 							IDPHint:               model.IDPHint,
 							ClientID:              v.Github.ClientId,
-							State:                 model.State,
+							State:                 dd2.State,
 							CodeChallenge:         codeChallenge,
 							CodeChallengeMethod:   "S256",
 							CodeChallengeVerifier: verifier,
 							Directive:             model.Directive,
-							ParentState:           model.State,
+							ParentState:           dd2.State,
 						},
 					})
 				if err != nil {
@@ -172,12 +190,12 @@ func (s *service) DoPost(c echo.Context) error {
 						Request: &models.ExternalOauth2Request{
 							IDPHint:               model.IDPHint,
 							ClientID:              v.Oauth2.ClientId,
-							State:                 model.State,
+							State:                 dd2.State,
 							CodeChallenge:         codeChallenge,
 							CodeChallengeMethod:   "S256",
 							CodeChallengeVerifier: verifier,
 							Directive:             model.Directive,
-							ParentState:           model.State,
+							ParentState:           dd2.State,
 						},
 					})
 				if err != nil {
@@ -214,13 +232,13 @@ func (s *service) DoPost(c echo.Context) error {
 						Request: &models.ExternalOauth2Request{
 							IDPHint:  model.IDPHint,
 							ClientID: v.Oidc.ClientId,
-							State:    model.State,
+							State:    dd2.State,
 							//			CodeChallenge:         codeChallenge,
 							//			CodeChallengeMethod:   "S256",
 							//			CodeChallengeVerifier: verifier,
 							Nonce:       nonce,
 							Directive:   model.Directive,
-							ParentState: model.State,
+							ParentState: dd2.State,
 						},
 					})
 				if err != nil {

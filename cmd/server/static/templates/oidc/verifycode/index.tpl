@@ -2,8 +2,7 @@
 {{template "html_begin" .}}
 {{template "header" .}}
 
-{{ $state       := .state }}
-{{ $paths       := .paths }}
+ {{ $paths       := .paths }}
 
 <body class="bg-light d-flex align-items-center min-vh-100">
     <div class="container">
@@ -39,8 +38,7 @@
                         <p>A verification code has be emailed to {{.email}} If an account exists. </p>
 
                         <form action="{{ $paths.VerifyCode }}" method="post">
-                            <input type="hidden" name="state"       value="{{ $state }}">
-                            <input type="hidden" name="email"       value="{{ .email }}">
+                             <input type="hidden" name="email"       value="{{ .email }}">
                             <input type="hidden" name="directive"   value="{{ .directive }}">
 
                             <div class="mb-3">

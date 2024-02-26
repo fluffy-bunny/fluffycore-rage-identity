@@ -62,14 +62,12 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type VerifyCodeGetRequest struct {
-	State     string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 	Email     string `param:"email" query:"email" form:"email" json:"email" xml:"email"`
 	Code      string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
 	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
 }
 
 type VerifyCodePostRequest struct {
-	State     string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
 	Email     string `param:"email" query:"email" form:"email" json:"email" xml:"email"`
 	Code      string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
 	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
@@ -77,9 +75,7 @@ type VerifyCodePostRequest struct {
 }
 
 func (s *service) validateVerifyCodeGetRequest(model *VerifyCodeGetRequest) error {
-	if fluffycore_utils.IsEmptyOrNil(model.State) {
-		return status.Error(codes.InvalidArgument, "State is empty")
-	}
+
 	if fluffycore_utils.IsEmptyOrNil(model.Email) {
 		return status.Error(codes.InvalidArgument, "Email is empty")
 	}
@@ -109,7 +105,6 @@ func (s *service) DoGet(c echo.Context) error {
 
 	err = s.Render(c, http.StatusOK, "oidc/verifycode/index",
 		map[string]interface{}{
-			"state":     model.State,
 			"email":     model.Email,
 			"code":      model.Code,
 			"directive": model.Directive,
@@ -121,9 +116,7 @@ func (s *service) DoGet(c echo.Context) error {
 func (s *service) validateVerifyCodePostRequest(request *VerifyCodePostRequest) ([]*services_handlers_shared.Error, error) {
 	var err error
 	errors := make([]*services_handlers_shared.Error, 0)
-	if fluffycore_utils.IsEmptyOrNil(request.State) {
-		errors = append(errors, services_handlers_shared.NewErrorF("state", "State is empty"))
-	}
+
 	if fluffycore_utils.IsEmptyOrNil(request.Email) {
 		errors = append(errors, services_handlers_shared.NewErrorF("email", "Email is empty"))
 	}
@@ -155,7 +148,6 @@ func (s *service) DoPost(c echo.Context) error {
 	if err != nil {
 		return s.Render(c, http.StatusBadRequest, "oidc/verifycode/index",
 			map[string]interface{}{
-				"state":     model.State,
 				"email":     model.Email,
 				"code":      model.Code,
 				"directive": model.Directive,
@@ -170,10 +162,7 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("GetVerificationCodeCookie")
 		return s.RenderAutoPost(c, wellknown_echo.ForgotPasswordPath,
 			[]models.FormParam{
-				{
-					Name:  "state",
-					Value: model.State,
-				},
+
 				{
 					Name:  "email",
 					Value: model.Email,
@@ -190,7 +179,6 @@ func (s *service) DoPost(c echo.Context) error {
 	if code != model.Code {
 		return s.Render(c, http.StatusBadRequest, "oidc/verifycode/index",
 			map[string]interface{}{
-				"state":     model.State,
 				"email":     model.Email,
 				"code":      model.Code,
 				"directive": model.Directive,
@@ -232,19 +220,10 @@ func (s *service) DoPost(c echo.Context) error {
 			return c.Redirect(http.StatusFound, "/error")
 		}
 		return s.RenderAutoPost(c, wellknown_echo.PasswordResetPath,
-			[]models.FormParam{
-				{
-					Name:  "state",
-					Value: model.State,
-				},
-			})
+			[]models.FormParam{})
 	case models.VerifyEmailDirective:
 		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath,
 			[]models.FormParam{
-				{
-					Name:  "state",
-					Value: model.State,
-				},
 				{
 					Name:  "email",
 					Value: model.Email,

@@ -39,9 +39,12 @@ func (s *service) ListUser(ctx context.Context, request *proto_oidc_user.ListUse
 	s.rwLock.RLock()
 	defer s.rwLock.RUnlock()
 	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
-	users := make([]*proto_oidc_models.User, 0)
 
-	linq.From(s.userMap).WhereT(func(c *proto_oidc_models.User) bool {
+	users := make([]*proto_oidc_models.User, 0)
+	for _, v := range s.userMap {
+		users = append(users, s.makeUserCopy(v))
+	}
+	linq.From(users).WhereT(func(c *proto_oidc_models.User) bool {
 		if request.Filter != nil {
 			if request.Filter.State != nil {
 				if request.Filter.State.Eq != c.State {

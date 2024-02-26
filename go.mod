@@ -13,7 +13,7 @@ require (
 	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/eko/gocache/lib/v4 v4.1.5
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.1
-	github.com/fluffy-bunny/fluffycore v1.0.77
+	github.com/fluffy-bunny/fluffycore v1.0.79
 	github.com/go-oauth2/oauth2/v4 v4.5.2
 	github.com/gogo/status v1.1.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
@@ -83,6 +83,7 @@ require (
 	github.com/google/pprof v0.0.0-20231229205709-960ae82b1e42 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
+	github.com/gorilla/sessions v1.2.2 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault-5 // indirect
@@ -118,6 +119,7 @@ require (
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
+	github.com/quasoft/memstore v0.0.0-20191010062613-2bce066d2b0b // indirect
 	github.com/quic-go/qpack v0.4.0 // indirect
 	github.com/quic-go/qtls-go1-20 v0.4.1 // indirect
 	github.com/quic-go/quic-go v0.40.1 // indirect
