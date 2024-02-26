@@ -67,12 +67,12 @@ type CookieConfig struct {
 	Domain string `json:"domain"`
 }
 type SystemConfig struct {
-	DeveloperMode bool `json:"developerMode"`
+	DeveloperMode bool   `json:"developerMode"`
+	Domain        string `json:"domain"`
 }
 type Config struct {
 	fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
 
-	Domain                    string                                  `json:"domain"`
 	ConfigFiles               ConfigFiles                             `json:"configFiles"`
 	CustomString              string                                  `json:"customString"`
 	SomeSecret                string                                  `json:"someSecret" redact:"true"`
@@ -95,7 +95,6 @@ type Config struct {
 // ConfigDefaultJSON default json
 const configDefaultJSONTemplate = `
 {
-	"domain": "localhost",
 	"APPLICATION_NAME": "in-environment",
 	"APPLICATION_ENVIRONMENT": "in-environment",
 	"PRETTY_LOG": false,
@@ -107,6 +106,7 @@ const configDefaultJSONTemplate = `
 	"someSecret": "password",
 	"GRPC_GATEWAY_ENABLED": true,
 	"systemConfig": {
+		"domain": "@@CHANGEME@@",
 		"developerMode": false
 	},
 	"oidcConfig": {
@@ -172,7 +172,8 @@ const configDefaultJSONTemplate = `
 		"sessionName": "_session",
 		"authenticationKey": "7f6a8b9c0d1e2f3a4b5c6d7e8f9a0b1c",
 		"encryptionKey": "1234567890abcdef1234567890abcdef",
-		"maxAge": 1800
+		"maxAge": 1800,
+		"domain": "@@C"
 	}
 
 

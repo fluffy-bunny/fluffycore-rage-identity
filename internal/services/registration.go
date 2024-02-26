@@ -94,12 +94,13 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	if config.CookieConfig == nil {
 		config.CookieConfig = &contracts_config.CookieConfig{}
 	}
-	config.CookieConfig.Domain = config.Domain
+	config.CookieConfig.Domain = config.SystemConfig.Domain
 	di.AddInstance[*contracts_config.CookieConfig](builder, config.CookieConfig)
-	config.SessionConfig.Domain = config.Domain
 	if config.SessionConfig == nil {
 		config.SessionConfig = &contracts_sessions.SessionConfig{}
 	}
+	config.SessionConfig.Domain = config.SystemConfig.Domain
+
 	di.AddInstance[*contracts_sessions.SessionConfig](builder, config.SessionConfig)
 
 	OnConfigureServicesLoadOIDCClients(ctx, config, builder)

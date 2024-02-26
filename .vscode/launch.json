@@ -30,9 +30,9 @@
                 "RAGE_emailConfig__fromEmail": "noreply@perfectcorp.com",
                 "RAGE_echo__disableSecureCookies": "true",
                 "RAGE_emailConfig__justLogIt": "true",
-                "RAGE_domain": "localhost",
                 "RAGE_cookieConfig__secure": "true",
                 "RAGE_systemConfig__developerMode": "true",
+                "RAGE_systemConfig__domain": "localhost",
                 "RAGE_GITHUB_CLIENT_ID": "bdbe2f2235eb3a02065c",
             },
             "args": [ "serve" ]        

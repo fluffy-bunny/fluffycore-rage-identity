@@ -84,11 +84,10 @@ func (s *startup) GetConfigOptions() *fluffycore_contracts_runtime.ConfigOptions
 }
 func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBuilder) {
 	log := zerolog.Ctx(ctx).With().Str("method", "Configure").Logger()
-	dst, err := fluffycore_utils_redact.CloneAndRedact(s.configOptions.Destination)
+	_, err := fluffycore_utils_redact.CloneAndRedact(s.configOptions.Destination)
 	if err != nil {
 		panic(err)
 	}
-	log.Info().Interface("config", dst).Msg("config")
 	config := s.configOptions.Destination.(*contracts_config.Config)
 	config.DDProfilerConfig.ApplicationEnvironment = config.ApplicationEnvironment
 	config.DDProfilerConfig.ServiceName = config.ApplicationName
@@ -111,6 +110,7 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 			})
 	}
 	fluffycore_middleware_auth_jwt.AddValidators(builder, issuerConfigs)
+	log.Info().Interface("config", config).Msg("config")
 
 }
 func (s *startup) Configure(ctx context.Context, rootContainer di.Container, unaryServerInterceptorBuilder fluffycore_contracts_middleware.IUnaryServerInterceptorBuilder, streamServerInterceptorBuilder fluffycore_contracts_middleware.IStreamServerInterceptorBuilder) {
