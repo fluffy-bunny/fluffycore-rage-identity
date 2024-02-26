@@ -1,4 +1,4 @@
-module github.com/fluffy-bunny/fluffycore-rage-oidc
+module github.com/fluffy-bunny/fluffycore-rage-identity
 
 go 1.22
 

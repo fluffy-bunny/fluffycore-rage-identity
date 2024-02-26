@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"regexp"
 
-	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/tokenservice"
-	models "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/models"
-	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/models"
+	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/tokenservice"
+	models "github.com/fluffy-bunny/fluffycore-rage-identity/internal/models"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	fluffycore_services_claims "github.com/fluffy-bunny/fluffycore/services/claims"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	oauth2 "github.com/go-oauth2/oauth2/v4"

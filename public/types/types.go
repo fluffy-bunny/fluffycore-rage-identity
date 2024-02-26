@@ -4,7 +4,7 @@ import (
 	"context"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	internal_runtime "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/runtime"
+	internal_runtime "github.com/fluffy-bunny/fluffycore-rage-identity/internal/runtime"
 )
 
 type (

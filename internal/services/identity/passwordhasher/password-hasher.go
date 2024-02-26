@@ -4,8 +4,8 @@ import (
 	"context"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/identity"
-	utils "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/utils"
+	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/identity"
+	utils "github.com/fluffy-bunny/fluffycore-rage-identity/internal/utils"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	codes "google.golang.org/grpc/codes"

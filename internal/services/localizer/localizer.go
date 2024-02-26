@@ -2,7 +2,7 @@ package localizer
 
 import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/localizer"
+	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/localizer"
 	echo "github.com/labstack/echo/v4"
 	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
 )

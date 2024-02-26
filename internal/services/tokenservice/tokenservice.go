@@ -5,8 +5,8 @@ import (
 	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_config "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/config"
-	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/tokenservice"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/config"
+	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/tokenservice"
 	fluffycore_contracts_claims "github.com/fluffy-bunny/fluffycore/contracts/claims"
 	fluffycore_contracts_jwtminter "github.com/fluffy-bunny/fluffycore/contracts/jwtminter"
 	fluffycore_services_claims "github.com/fluffy-bunny/fluffycore/services/claims"

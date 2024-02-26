@@ -2,7 +2,7 @@ package userid
 
 import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/identity"
+	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/identity"
 	xid "github.com/rs/xid"
 )
 

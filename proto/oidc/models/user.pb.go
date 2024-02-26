@@ -7,7 +7,7 @@
 package models
 
 import (
-	types "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/types"
+	types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	_ "github.com/infobloxopen/protoc-gen-gorm/options"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"

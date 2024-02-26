@@ -3,7 +3,7 @@ syntax = "proto3";
 
 package proto.types;
 
-option go_package = "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/types;types";
+option go_package = "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types;types";
 option java_multiple_files = true;
 option java_package = "com.fluffybunny.rageoidc.types";
 option csharp_namespace = "FluffyBunny.RageOidc.Types";

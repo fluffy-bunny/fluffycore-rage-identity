@@ -6,10 +6,10 @@ package cmd
 import (
 	"os"
 
-	about "github.com/fluffy-bunny/fluffycore-rage-oidc/cmd/oidc-client/cmd/about"
-	email "github.com/fluffy-bunny/fluffycore-rage-oidc/cmd/oidc-client/cmd/email"
-	serve "github.com/fluffy-bunny/fluffycore-rage-oidc/cmd/oidc-client/cmd/serve"
-	version "github.com/fluffy-bunny/fluffycore-rage-oidc/cmd/oidc-client/cmd/version"
+	about "github.com/fluffy-bunny/fluffycore-rage-identity/cmd/oidc-client/cmd/about"
+	email "github.com/fluffy-bunny/fluffycore-rage-identity/cmd/oidc-client/cmd/email"
+	serve "github.com/fluffy-bunny/fluffycore-rage-identity/cmd/oidc-client/cmd/serve"
+	version "github.com/fluffy-bunny/fluffycore-rage-identity/cmd/oidc-client/cmd/version"
 	cobra "github.com/spf13/cobra"
 )
 

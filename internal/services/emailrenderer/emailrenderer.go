@@ -5,7 +5,7 @@ import (
 	"context"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_email "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/contracts/email"
+	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/email"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	codes "google.golang.org/grpc/codes"

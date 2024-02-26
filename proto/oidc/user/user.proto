@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/fluffy-bunny/fluffycore-rage-oidc/proto/oidc/user;user";
+option go_package = "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user;user";
 option java_multiple_files = true;
 option java_package = "com.fluffybunny.rageoidc.user";
 option csharp_namespace = "FluffyBunny.RageOidc.Oidc.User";

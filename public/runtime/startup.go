@@ -1,9 +1,9 @@
 package runtime
 
 import (
-	internal_runtime "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/runtime"
-	internal_types "github.com/fluffy-bunny/fluffycore-rage-oidc/internal/types"
-	public_types "github.com/fluffy-bunny/fluffycore-rage-oidc/public/types"
+	internal_runtime "github.com/fluffy-bunny/fluffycore-rage-identity/internal/runtime"
+	internal_types "github.com/fluffy-bunny/fluffycore-rage-identity/internal/types"
+	public_types "github.com/fluffy-bunny/fluffycore-rage-identity/public/types"
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
 )
 
