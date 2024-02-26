@@ -78,6 +78,7 @@ func (s *startup) GetConfigOptions() *fluffycore_contracts_runtime.ConfigOptions
 	s.configOptions = &fluffycore_contracts_runtime.ConfigOptions{
 		Destination: s.config,
 		RootConfig:  contracts_config.ConfigDefaultJSON,
+		EnvPrefix:   "RAGE",
 	}
 	return s.configOptions
 }
