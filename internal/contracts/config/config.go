@@ -158,7 +158,7 @@ const configDefaultJSONTemplate = `
 		"VERSION": "1.0.0"
 	},
 	"echo": {
-		"port": 9044,
+		"port": 0,
 		"disableSecureCookies": false,
 		"secureCookies": {
 			"hashKey": "7f6a8b9c0d1e2f3a4b5c6d7e8f9a0b1c",

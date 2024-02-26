@@ -31,9 +31,9 @@ services:
     dns:
       - 8.8.8.8
     ports:
-      - "50051:50051"
-      - "50052:50052"
-      - "50053:50053"
+      - "30051:30051"
+      - "30052:30052"
+      - "30053:30053"
       - "9044:9044"
     env_file:
       - .env
@@ -47,13 +47,13 @@ services:
       RAGE_APPLICATION_ENVIRONMENT: "DOCKER"
       RAGE_LOG_LEVEL": "debug"
       RAGE_PRETTY_LOG: "true"
-      RAGE_PORT: "50051"
-      RAGE_REST_PORT: "50052"
-      RAGE_oauth2Port: "50053"
+      RAGE_PORT: "30051"
+      RAGE_REST_PORT: "30052"
+      RAGE_oauth2Port: "30053"
       RAGE_customString: "In Flames"
       RAGE_someSecret: "1234567890"
-      RAGE_jwtValidators__issuers: "http://starterkit:50053"
-      RAGE_jwtValidators__jwksUrls: "http://starterkit:50053/.well-known/jwks"
+      RAGE_jwtValidators__issuers: "http://rage:30053"
+      RAGE_jwtValidators__jwksUrls: "http://rage:30053/.well-known/jwks"
       RAGE_configFiles__mockOAuth2ClientPath: "/config/mockOAuth2Clients.json"
       RAGE_configFiles__oidcClientPath: "/config/oidcClients.json"
       RAGE_configFiles__idpsPath: "/config/idps.json"
@@ -68,6 +68,7 @@ services:
       RAGE_oidcConfig__baseUrl: "https://rage.localhost.dev"
       RAGE_emailConfig__justLogIt: "true"
       RAGE_echo__disableSecureCookies: "true"
+      RAGE_echo__port: "9044"
       RAGE_systemConfig__domain: "rage.localhost.dev"
       RAGE_systemConfig__developerMode: "true"
     labels:
