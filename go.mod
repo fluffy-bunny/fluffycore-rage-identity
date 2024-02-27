@@ -13,7 +13,7 @@ require (
 	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/eko/gocache/lib/v4 v4.1.5
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.1
-	github.com/fluffy-bunny/fluffycore v1.0.79
+	github.com/fluffy-bunny/fluffycore v1.0.81
 	github.com/go-oauth2/oauth2/v4 v4.5.2
 	github.com/gogo/status v1.1.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
@@ -66,7 +66,7 @@ require (
 	github.com/eko/gocache/store/go_cache/v4 v4.2.1 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/felixge/fgprof v0.9.3 // indirect
-	github.com/fluffy-bunny/viperEx v0.0.30 // indirect
+	github.com/fluffy-bunny/viperEx v0.0.32 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.5+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
