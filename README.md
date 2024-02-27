@@ -191,6 +191,8 @@ $env:PORT = "5556";$env:OAUTH2_CLIENT_ID = "go-client";$env:OAUTH2_CLIENT_SECRET
 $env:PORT = "5556";$env:OAUTH2_CLIENT_ID = "go-client";$env:OAUTH2_CLIENT_SECRET = "secret";$env:AUTHORITY = "http://localhost:9044"; .\go-client.exe
 ```
 
+### Dev Client
+
 ```bash
 cd cmd/oidc-client
 go build .
@@ -199,7 +201,19 @@ go build .
 
 .\oidc-client.exe serve --acr_values "urn:mastodon:idp:google-social"   --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
 
-.\oidc-client.exe serve --acr_values "urn:mastodon:idp:mapped-enterprise" --acr_values "urn:mastodon:root_candidate:cn8cp8khb6334r4ri1bg"  --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
+.\oidc-client.exe serve --acr_values "urn:mastodon:idp:mapped-enterprise" --acr_values "urn:mastodon:root_candidate:cnf07331og1ecp4r680g"  --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
 
 .\oidc-client.exe serve --acr_values "urn:mastodon:idp:mapped-enterprise"  --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
+```
+
+### Docker Clients
+
+```bash
+.\oidc-client.exe serve    --authority https://rage.localhost.dev --client_id go-client --client_secret secret --port 5556
+
+.\oidc-client.exe serve --acr_values "urn:mastodon:idp:mapped-enterprise"   --authority https://rage.localhost.dev --client_id go-client --client_secret secret --port 5556
+
+.\oidc-client.exe serve --acr_values "urn:mastodon:idp:mapped-enterprise" --acr_values "urn:mastodon:root_candidate:cnf08ok1fnuu73eq91vg"   --authority https://rage.localhost.dev --client_id go-client --client_secret secret --port 5556
+
+
 ```

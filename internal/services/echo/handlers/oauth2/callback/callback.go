@@ -455,7 +455,7 @@ func (s *service) Do(c echo.Context) error {
 				if !fluffycore_utils.IsEmptyOrNil(oidcFinalState.Request.CandidateUserID) {
 					// CandidateUserID hint
 					//--------------------------------------------------------------------------------------------
-					return linkUserAndLogin(user.RootIdentity.Subject, externalIdentity)
+					return linkUserAndLogin(oidcFinalState.Request.CandidateUserID, externalIdentity)
 				}
 
 				// is AUTO-ACCOUNT creation enabled for this IDP?
