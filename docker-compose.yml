@@ -49,12 +49,10 @@ services:
       RAGE_PRETTY_LOG: "true"
       RAGE_PORT: "30051"
       RAGE_REST_PORT: "30052"
-      RAGE_oauth2Port: "30053"
       RAGE_customString: "In Flames"
       RAGE_someSecret: "1234567890"
       RAGE_jwtValidators__issuers: "http://rage:30053"
       RAGE_jwtValidators__jwksUrls: "http://rage:30053/.well-known/jwks"
-      RAGE_configFiles__mockOAuth2ClientPath: "/config/mockOAuth2Clients.json"
       RAGE_configFiles__oidcClientPath: "/config/oidcClients.json"
       RAGE_configFiles__idpsPath: "/config/idps.json"
       RAGE_configFiles__signingKeyJsonPath: "/config/signing-keys.json"
@@ -85,7 +83,6 @@ services:
       # - "traefik.http.services.<service_name>.loadbalancer.server.port=<port>"
       - "traefik.http.services.rage.loadbalancer.server.port=9044"
     volumes:
-      - ./cmd/server/config/mockOAuth2Clients.json:/config/mockOAuth2Clients.json
       - ./cmd/server/config/oidcClients.json:/config/oidcClients.json
       - ./cmd/server/config/idps.docker.json:/config/idps.json
       - ./cmd/server/config/signing-keys.json:/config/signing-keys.json

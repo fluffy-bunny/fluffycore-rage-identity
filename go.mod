@@ -19,7 +19,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/imroc/req/v3 v3.42.3
-	github.com/infobloxopen/atlas-app-toolkit v0.24.1-0.20210416193901-4c7518b07e08
+	github.com/infobloxopen/atlas-app-toolkit v1.4.0
 	github.com/infobloxopen/protoc-gen-gorm v1.1.2
 	github.com/jinzhu/gorm v1.9.16
 	github.com/labstack/echo/v4 v4.11.4

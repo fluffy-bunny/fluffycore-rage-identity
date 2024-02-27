@@ -2,19 +2,13 @@ package runtime
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"net/http"
-	"os"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	internal_auth "github.com/fluffy-bunny/fluffycore-rage-identity/internal/auth"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/config"
 	oidcserver "github.com/fluffy-bunny/fluffycore-rage-identity/internal/oidcserver"
 	services "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services"
-	services_greeter "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/greeter"
 	services_health "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/health"
-	services_mystream "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/mystream"
 	internal_types "github.com/fluffy-bunny/fluffycore-rage-identity/internal/types"
 	internal_version "github.com/fluffy-bunny/fluffycore-rage-identity/internal/version"
 	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
@@ -28,8 +22,6 @@ import (
 	fluffycore_middleware_correlation "github.com/fluffy-bunny/fluffycore/middleware/correlation"
 	fluffycore_middleware_dicontext "github.com/fluffy-bunny/fluffycore/middleware/dicontext"
 	fluffycore_middleware_logging "github.com/fluffy-bunny/fluffycore/middleware/logging"
-	mocks_contracts_oauth2 "github.com/fluffy-bunny/fluffycore/mocks/contracts/oauth2"
-	mocks_oauth2_echo "github.com/fluffy-bunny/fluffycore/mocks/oauth2/echo"
 	fluffycore_services_ddprofiler "github.com/fluffy-bunny/fluffycore/services/ddprofiler"
 	fluffycore_utils_redact "github.com/fluffy-bunny/fluffycore/utils/redact"
 	status "github.com/gogo/status"
@@ -47,12 +39,10 @@ type (
 		configOptions *fluffycore_contracts_runtime.ConfigOptions
 		config        *contracts_config.Config
 
-		mockOAuth2Server       *mocks_oauth2_echo.MockOAuth2Service
-		mockOAuth2ServerFuture async.Future[fluffycore_async.AsyncResponse]
-		ddProfiler             fluffycore_contracts_ddprofiler.IDataDogProfiler
-		oidcserverFuture       async.Future[fluffycore_async.AsyncResponse]
-		oidcserverRuntime      *core_echo_runtime.Runtime
-		ext                    internal_types.ConfigureServices
+		ddProfiler        fluffycore_contracts_ddprofiler.IDataDogProfiler
+		oidcserverFuture  async.Future[fluffycore_async.AsyncResponse]
+		oidcserverRuntime *core_echo_runtime.Runtime
+		ext               internal_types.ConfigureServices
 	}
 )
 type WithOption func(startup *startup)
@@ -97,8 +87,7 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 	services.ConfigureServices(ctx, config, builder)
 	fluffycore_services_ddprofiler.AddSingletonIProfiler(builder)
 	services_health.AddHealthService(builder)
-	services_greeter.AddGreeterService(builder)
-	services_mystream.AddMyStreamService(builder)
+
 	issuerConfigs := &fluffycore_contracts_middleware_auth_jwt.IssuerConfigs{}
 	for idx := range s.config.JWTValidators.Issuers {
 		issuerConfigs.IssuerConfigs = append(issuerConfigs.IssuerConfigs,
@@ -155,20 +144,6 @@ func (s *startup) Configure(ctx context.Context, rootContainer di.Container, una
 func (s *startup) OnPreServerStartup(ctx context.Context) error {
 	log := zerolog.Ctx(ctx).With().Str("method", "OnPreServerStartup").Logger()
 
-	mockOauth2ClientsJSON, err := os.ReadFile(s.config.ConfigFiles.MockOAuth2ClientPath)
-	var mockOauth2Clients []mocks_contracts_oauth2.Client
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(mockOauth2ClientsJSON, &mockOauth2Clients)
-	if err != nil {
-		return err
-	}
-
-	log.Info().Interface("mockOauth2ClientsJSON", mockOauth2Clients).Msg("mockOauth2ClientsJSON")
-	s.mockOAuth2Server = mocks_oauth2_echo.NewOAuth2TestServer(&mocks_contracts_oauth2.MockOAuth2Config{
-		Clients: mockOauth2Clients,
-	})
 	s.oidcserverRuntime = core_echo_runtime.New(oidcserver.NewStartup(
 		oidcserver.WithConfigureServices(s.ext),
 	))
@@ -186,23 +161,6 @@ func (s *startup) OnPreServerStartup(ctx context.Context) error {
 			log.Error().Err(err).Msg("failed to start server")
 		}
 	})
-	s.mockOAuth2ServerFuture = fluffycore_async.ExecuteWithPromiseAsync(func(promise async.Promise[fluffycore_async.AsyncResponse]) {
-		var err error
-		defer func() {
-			promise.Success(&fluffycore_async.AsyncResponse{
-				Message: "End Serve - mockOAuth2Server",
-				Error:   err,
-			})
-		}()
-		log.Info().Msg("mockOAuth2Server starting up")
-		err = s.mockOAuth2Server.Start(fmt.Sprintf(":%d", s.config.OAuth2Port))
-		if err != nil && http.ErrServerClosed == err {
-			err = nil
-		}
-		if err != nil {
-			log.Error().Err(err).Msg("failed to start server")
-		}
-	})
 
 	s.ddProfiler = di.Get[fluffycore_contracts_ddprofiler.IDataDogProfiler](s.RootContainer)
 	s.ddProfiler.Start(ctx)
@@ -212,10 +170,6 @@ func (s *startup) OnPreServerStartup(ctx context.Context) error {
 // OnPreServerShutdown ...
 func (s *startup) OnPreServerShutdown(ctx context.Context) {
 	log := zerolog.Ctx(ctx).With().Str("method", "OnPreServerShutdown").Logger()
-	log.Info().Msg("mockOAuth2Server shutting down")
-	s.mockOAuth2Server.Shutdown(ctx)
-	s.mockOAuth2ServerFuture.Join()
-	log.Info().Msg("mockOAuth2Server shutdown complete")
 
 	log.Info().Msg("oidcserverRuntime shutting down")
 	s.oidcserverRuntime.Stop()

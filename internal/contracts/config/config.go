@@ -17,7 +17,6 @@ type (
 		JWKSURLS []string `json:"jwksUrls"`
 	}
 	ConfigFiles struct {
-		MockOAuth2ClientPath string `json:"mockOAuth2ClientPath"`
 		OIDCClientPath       string `json:"oidcClientPath"`
 		IDPsPath             string `json:"idpsPath"`
 		SigningKeyJsonPath   string `json:"signingKeyJsonPath"`
@@ -76,7 +75,6 @@ type Config struct {
 	ConfigFiles               ConfigFiles                             `json:"configFiles"`
 	CustomString              string                                  `json:"customString"`
 	SomeSecret                string                                  `json:"someSecret" redact:"true"`
-	OAuth2Port                int                                     `json:"oauth2Port"`
 	JWTValidators             JWTValidators                           `json:"jwtValidators"`
 	DDProfilerConfig          *fluffycore_contracts_ddprofiler.Config `json:"ddProfilerConfig"`
 	Echo                      *EchoConfig                             `json:"echo"`
@@ -101,8 +99,7 @@ const configDefaultJSONTemplate = `
 	"LOG_LEVEL": "info",
 	"PORT": 50051,
 	"REST_PORT": 50052,
-	"oauth2Port": 50053,
-	"customString": "some default value",
+ 	"customString": "some default value",
 	"someSecret": "password",
 	"GRPC_GATEWAY_ENABLED": true,
 	"systemConfig": {
@@ -146,7 +143,6 @@ const configDefaultJSONTemplate = `
 		}
 	},
 	"configFiles": {
-		"mockOAuth2ClientPath": "./config/mockOAuth2Clients.json",
 		"oidcClientPath": "./config/oidcClients.json",
 		"idpsPath": "./config/idps.json",
 		"signingKeyJsonPath": "./config/signing-keys.json"
