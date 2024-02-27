@@ -55,6 +55,7 @@ services:
       RAGE_jwtValidators__jwksUrls: "http://rage:30053/.well-known/jwks"
       RAGE_configFiles__oidcClientPath: "/config/oidcClients.json"
       RAGE_configFiles__idpsPath: "/config/idps.json"
+      RAGE_configFiles__ragePath: "/config/rage.json"
       RAGE_configFiles__signingKeyJsonPath: "/config/signing-keys.json"
       RAGE_emailConfig__host: "${RAGE_SMTP_HOST}:25"
       RAGE_emailConfig__auth__plainAuth__host: "${RAGE_SMTP_HOST}"
@@ -67,7 +68,6 @@ services:
       RAGE_emailConfig__justLogIt: "true"
       RAGE_echo__disableSecureCookies: "true"
       RAGE_echo__port: "9044"
-      RAGE_systemConfig__domain: "rage.localhost.dev"
       RAGE_systemConfig__developerMode: "true"
     labels:
       # Enable this container to be mapped by traefik
@@ -83,6 +83,7 @@ services:
       # - "traefik.http.services.<service_name>.loadbalancer.server.port=<port>"
       - "traefik.http.services.rage.loadbalancer.server.port=9044"
     volumes:
+      - ./cmd/server/config/rage.docker.json:/config/rage.json
       - ./cmd/server/config/oidcClients.json:/config/oidcClients.json
       - ./cmd/server/config/idps.docker.json:/config/idps.json
       - ./cmd/server/config/signing-keys.json:/config/signing-keys.json

@@ -2,6 +2,9 @@ package runtime
 
 import (
 	"context"
+	"encoding/json"
+	"os"
+	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	internal_auth "github.com/fluffy-bunny/fluffycore-rage-identity/internal/auth"
@@ -10,6 +13,7 @@ import (
 	services "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services"
 	services_health "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/health"
 	internal_types "github.com/fluffy-bunny/fluffycore-rage-identity/internal/types"
+	"github.com/fluffy-bunny/fluffycore-rage-identity/internal/utils"
 	internal_version "github.com/fluffy-bunny/fluffycore-rage-identity/internal/version"
 	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
 	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
@@ -22,7 +26,9 @@ import (
 	fluffycore_middleware_correlation "github.com/fluffy-bunny/fluffycore/middleware/correlation"
 	fluffycore_middleware_dicontext "github.com/fluffy-bunny/fluffycore/middleware/dicontext"
 	fluffycore_middleware_logging "github.com/fluffy-bunny/fluffycore/middleware/logging"
+	core_runtime "github.com/fluffy-bunny/fluffycore/runtime"
 	fluffycore_services_ddprofiler "github.com/fluffy-bunny/fluffycore/services/ddprofiler"
+	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	fluffycore_utils_redact "github.com/fluffy-bunny/fluffycore/utils/redact"
 	status "github.com/gogo/status"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
@@ -63,7 +69,58 @@ func (s *startup) SetRootContainer(container di.Container) {
 	s.RootContainer = container
 
 }
+func onLoadRageConfig(ctx context.Context, ragePath string) error {
+	log := zerolog.Ctx(ctx).With().Str("method", "OnConfigureServicesLoadIDPs").Logger()
+	fileContent, err := os.ReadFile(ragePath)
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to read IDPsPath - may not be a problem if idps are comming from a DB")
+		return nil
+	}
+	fixedFileContent := fluffycore_utils.ReplaceEnv(string(fileContent), "${%s}")
+	overlay := map[string]interface{}{}
+
+	err = json.NewDecoder(strings.NewReader(fixedFileContent)).Decode(&overlay)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to unmarshal ragePath")
+		return err
+	}
+	src := map[string]interface{}{}
+
+	err = json.NewDecoder(strings.NewReader(string(contracts_config.ConfigDefaultJSON))).Decode(&src)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to unmarshal ConfigDefaultJSON")
+		return err
+	}
+	err = utils.ReplaceMergeMap(overlay, src)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to ReplaceMergeMap")
+		return err
+	}
+	bb, err := json.Marshal(overlay)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to marshal overlay")
+		return err
+	}
+	contracts_config.ConfigDefaultJSON = bb
+
+	return nil
+
+}
+
 func (s *startup) GetConfigOptions() *fluffycore_contracts_runtime.ConfigOptions {
+	initialConfigOptions := &fluffycore_contracts_runtime.ConfigOptions{
+		Destination: &contracts_config.InitialConfig{},
+		RootConfig:  contracts_config.ConfigDefaultJSON,
+		EnvPrefix:   "RAGE",
+	}
+	err := core_runtime.LoadConfig(initialConfigOptions)
+	if err != nil {
+		panic(err)
+	}
+	err = onLoadRageConfig(context.Background(), initialConfigOptions.Destination.(*contracts_config.InitialConfig).ConfigFiles.RagePath)
+	if err != nil {
+		panic(err)
+	}
 	s.config = &contracts_config.Config{}
 	s.configOptions = &fluffycore_contracts_runtime.ConfigOptions{
 		Destination: s.config,

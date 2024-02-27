@@ -17,9 +17,10 @@ type (
 		JWKSURLS []string `json:"jwksUrls"`
 	}
 	ConfigFiles struct {
-		OIDCClientPath       string `json:"oidcClientPath"`
-		IDPsPath             string `json:"idpsPath"`
-		SigningKeyJsonPath   string `json:"signingKeyJsonPath"`
+		OIDCClientPath     string `json:"oidcClientPath"`
+		IDPsPath           string `json:"idpsPath"`
+		SigningKeyJsonPath string `json:"signingKeyJsonPath"`
+		RagePath           string `json:"ragePath"`
 	}
 	InMemoryClient struct {
 		Secret   string `json:"secret"`
@@ -69,6 +70,10 @@ type SystemConfig struct {
 	DeveloperMode bool   `json:"developerMode"`
 	Domain        string `json:"domain"`
 }
+type InitialConfig struct {
+	ConfigFiles ConfigFiles `json:"configFiles"`
+}
+
 type Config struct {
 	fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
 
@@ -143,6 +148,7 @@ const configDefaultJSONTemplate = `
 		}
 	},
 	"configFiles": {
+		"ragePath": "./config/rage.json",
 		"oidcClientPath": "./config/oidcClients.json",
 		"idpsPath": "./config/idps.json",
 		"signingKeyJsonPath": "./config/signing-keys.json"

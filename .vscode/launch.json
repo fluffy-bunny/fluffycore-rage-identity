@@ -20,7 +20,6 @@
                 "RAGE_PORT": "30051",
                 "GRPC_GATEWAY_ENABLED": "true",
                 "RAGE_REST_PORT": "30052",
-                "RAGE_oauth2Port":"30053",
                 "RAGE_customString": "In Flames",
                 "RAGE_someSecret": "1234567890",
                 "RAGE_oidcConfig__baseUrl": "http://localhost:9044",
@@ -33,7 +32,6 @@
                 "RAGE_emailConfig__justLogIt": "true",
                 "RAGE_cookieConfig__secure": "true",
                 "RAGE_systemConfig__developerMode": "true",
-                "RAGE_systemConfig__domain": "localhost",
                 "RAGE_GITHUB_CLIENT_ID": "bdbe2f2235eb3a02065c",
             },
             "args": [ "serve" ]        
