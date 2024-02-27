@@ -10,7 +10,7 @@ func init() {
 	gob.Register(&proto_oidc_models.AuthorizationRequest{})
 	gob.Register(&proto_oidc_models.ExternalOauth2Request{})
 	gob.Register(&proto_oidc_models.OIDCIdentity{})
-	gob.Register(&proto_oidc_models.AuthorizationFinal{})
+	gob.Register(&proto_oidc_models.AuthorizationRequestState{})
 	gob.Register(&proto_oidc_models.ExternalOauth2Final{})
 	gob.Register(&FormParam{})
 

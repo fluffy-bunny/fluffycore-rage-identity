@@ -47,25 +47,25 @@ func AddOIDCFlowStoreServer(cb fluffy_dozm_di.ContainerBuilder, ctor any) {
 	})
 }
 
-// StoreAuthorizationFinal...
-func (s *OIDCFlowStoreFluffyCoreServer) StoreAuthorizationFinal(ctx context.Context, request *StoreAuthorizationFinalRequest) (*StoreAuthorizationFinalResponse, error) {
+// StoreAuthorizationRequestState...
+func (s *OIDCFlowStoreFluffyCoreServer) StoreAuthorizationRequestState(ctx context.Context, request *StoreAuthorizationRequestStateRequest) (*StoreAuthorizationRequestStateResponse, error) {
 	requestContainer := dicontext.GetRequestContainer(ctx)
 	downstreamService := fluffy_dozm_di.Get[IFluffyCoreOIDCFlowStoreServer](requestContainer)
-	return downstreamService.StoreAuthorizationFinal(ctx, request)
+	return downstreamService.StoreAuthorizationRequestState(ctx, request)
 }
 
-// GetAuthorizationFinal...
-func (s *OIDCFlowStoreFluffyCoreServer) GetAuthorizationFinal(ctx context.Context, request *GetAuthorizationFinalRequest) (*GetAuthorizationFinalResponse, error) {
+// GetAuthorizationRequestState...
+func (s *OIDCFlowStoreFluffyCoreServer) GetAuthorizationRequestState(ctx context.Context, request *GetAuthorizationRequestStateRequest) (*GetAuthorizationRequestStateResponse, error) {
 	requestContainer := dicontext.GetRequestContainer(ctx)
 	downstreamService := fluffy_dozm_di.Get[IFluffyCoreOIDCFlowStoreServer](requestContainer)
-	return downstreamService.GetAuthorizationFinal(ctx, request)
+	return downstreamService.GetAuthorizationRequestState(ctx, request)
 }
 
-// DeleteAuthorizationFinal...
-func (s *OIDCFlowStoreFluffyCoreServer) DeleteAuthorizationFinal(ctx context.Context, request *DeleteAuthorizationFinalRequest) (*DeleteAuthorizationFinalResponse, error) {
+// DeleteAuthorizationRequestState...
+func (s *OIDCFlowStoreFluffyCoreServer) DeleteAuthorizationRequestState(ctx context.Context, request *DeleteAuthorizationRequestStateRequest) (*DeleteAuthorizationRequestStateResponse, error) {
 	requestContainer := dicontext.GetRequestContainer(ctx)
 	downstreamService := fluffy_dozm_di.Get[IFluffyCoreOIDCFlowStoreServer](requestContainer)
-	return downstreamService.DeleteAuthorizationFinal(ctx, request)
+	return downstreamService.DeleteAuthorizationRequestState(ctx, request)
 }
 
 // IFluffyCoreExternalOauth2FlowStoreServer defines the grpc server

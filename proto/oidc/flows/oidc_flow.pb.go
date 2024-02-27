@@ -22,17 +22,17 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type StoreAuthorizationFinalRequest struct {
+type StoreAuthorizationRequestStateRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
 	State              string                     `protobuf:"bytes,1,opt,name=state,proto3" json:"state,omitempty"`
-	AuthorizationFinal *models.AuthorizationFinal `protobuf:"bytes,2,opt,name=authorization_final,json=authorizationFinal,proto3" json:"authorization_final,omitempty"`
+	AuthorizationRequestState *models.AuthorizationRequestState `protobuf:"bytes,2,opt,name=authorization_final,json=authorizationFinal,proto3" json:"authorization_final,omitempty"`
 }
 
-func (x *StoreAuthorizationFinalRequest) Reset() {
-	*x = StoreAuthorizationFinalRequest{}
+func (x *StoreAuthorizationRequestStateRequest) Reset() {
+	*x = StoreAuthorizationRequestStateRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_proto_oidc_flows_oidc_flow_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -40,13 +40,13 @@ func (x *StoreAuthorizationFinalRequest) Reset() {
 	}
 }
 
-func (x *StoreAuthorizationFinalRequest) String() string {
+func (x *StoreAuthorizationRequestStateRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*StoreAuthorizationFinalRequest) ProtoMessage() {}
+func (*StoreAuthorizationRequestStateRequest) ProtoMessage() {}
 
-func (x *StoreAuthorizationFinalRequest) ProtoReflect() protoreflect.Message {
+func (x *StoreAuthorizationRequestStateRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_oidc_flows_oidc_flow_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -58,33 +58,33 @@ func (x *StoreAuthorizationFinalRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use StoreAuthorizationFinalRequest.ProtoReflect.Descriptor instead.
-func (*StoreAuthorizationFinalRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use StoreAuthorizationRequestStateRequest.ProtoReflect.Descriptor instead.
+func (*StoreAuthorizationRequestStateRequest) Descriptor() ([]byte, []int) {
 	return file_proto_oidc_flows_oidc_flow_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *StoreAuthorizationFinalRequest) GetState() string {
+func (x *StoreAuthorizationRequestStateRequest) GetState() string {
 	if x != nil {
 		return x.State
 	}
 	return ""
 }
 
-func (x *StoreAuthorizationFinalRequest) GetAuthorizationFinal() *models.AuthorizationFinal {
+func (x *StoreAuthorizationRequestStateRequest) GetAuthorizationRequestState() *models.AuthorizationRequestState {
 	if x != nil {
-		return x.AuthorizationFinal
+		return x.AuthorizationRequestState
 	}
 	return nil
 }
 
-type StoreAuthorizationFinalResponse struct {
+type StoreAuthorizationRequestStateResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 }
 
-func (x *StoreAuthorizationFinalResponse) Reset() {
-	*x = StoreAuthorizationFinalResponse{}
+func (x *StoreAuthorizationRequestStateResponse) Reset() {
+	*x = StoreAuthorizationRequestStateResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_proto_oidc_flows_oidc_flow_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -92,13 +92,13 @@ func (x *StoreAuthorizationFinalResponse) Reset() {
 	}
 }
 
-func (x *StoreAuthorizationFinalResponse) String() string {
+func (x *StoreAuthorizationRequestStateResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*StoreAuthorizationFinalResponse) ProtoMessage() {}
+func (*StoreAuthorizationRequestStateResponse) ProtoMessage() {}
 
-func (x *StoreAuthorizationFinalResponse) ProtoReflect() protoreflect.Message {
+func (x *StoreAuthorizationRequestStateResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_oidc_flows_oidc_flow_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -110,12 +110,12 @@ func (x *StoreAuthorizationFinalResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use StoreAuthorizationFinalResponse.ProtoReflect.Descriptor instead.
-func (*StoreAuthorizationFinalResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use StoreAuthorizationRequestStateResponse.ProtoReflect.Descriptor instead.
+func (*StoreAuthorizationRequestStateResponse) Descriptor() ([]byte, []int) {
 	return file_proto_oidc_flows_oidc_flow_proto_rawDescGZIP(), []int{1}
 }
 
-type GetAuthorizationFinalRequest struct {
+type GetAuthorizationRequestStateRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -123,8 +123,8 @@ type GetAuthorizationFinalRequest struct {
 	State string `protobuf:"bytes,1,opt,name=state,proto3" json:"state,omitempty"`
 }
 
-func (x *GetAuthorizationFinalRequest) Reset() {
-	*x = GetAuthorizationFinalRequest{}
+func (x *GetAuthorizationRequestStateRequest) Reset() {
+	*x = GetAuthorizationRequestStateRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_proto_oidc_flows_oidc_flow_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -132,13 +132,13 @@ func (x *GetAuthorizationFinalRequest) Reset() {
 	}
 }
 
-func (x *GetAuthorizationFinalRequest) String() string {
+func (x *GetAuthorizationRequestStateRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetAuthorizationFinalRequest) ProtoMessage() {}
+func (*GetAuthorizationRequestStateRequest) ProtoMessage() {}
 
-func (x *GetAuthorizationFinalRequest) ProtoReflect() protoreflect.Message {
+func (x *GetAuthorizationRequestStateRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_oidc_flows_oidc_flow_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -150,28 +150,28 @@ func (x *GetAuthorizationFinalRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetAuthorizationFinalRequest.ProtoReflect.Descriptor instead.
-func (*GetAuthorizationFinalRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetAuthorizationRequestStateRequest.ProtoReflect.Descriptor instead.
+func (*GetAuthorizationRequestStateRequest) Descriptor() ([]byte, []int) {
 	return file_proto_oidc_flows_oidc_flow_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *GetAuthorizationFinalRequest) GetState() string {
+func (x *GetAuthorizationRequestStateRequest) GetState() string {
 	if x != nil {
 		return x.State
 	}
 	return ""
 }
 
-type GetAuthorizationFinalResponse struct {
+type GetAuthorizationRequestStateResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	AuthorizationFinal *models.AuthorizationFinal `protobuf:"bytes,1,opt,name=authorization_final,json=authorizationFinal,proto3" json:"authorization_final,omitempty"`
+	AuthorizationRequestState *models.AuthorizationRequestState `protobuf:"bytes,1,opt,name=authorization_final,json=authorizationFinal,proto3" json:"authorization_final,omitempty"`
 }
 
-func (x *GetAuthorizationFinalResponse) Reset() {
-	*x = GetAuthorizationFinalResponse{}
+func (x *GetAuthorizationRequestStateResponse) Reset() {
+	*x = GetAuthorizationRequestStateResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_proto_oidc_flows_oidc_flow_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -179,13 +179,13 @@ func (x *GetAuthorizationFinalResponse) Reset() {
 	}
 }
 
-func (x *GetAuthorizationFinalResponse) String() string {
+func (x *GetAuthorizationRequestStateResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetAuthorizationFinalResponse) ProtoMessage() {}
+func (*GetAuthorizationRequestStateResponse) ProtoMessage() {}
 
-func (x *GetAuthorizationFinalResponse) ProtoReflect() protoreflect.Message {
+func (x *GetAuthorizationRequestStateResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_oidc_flows_oidc_flow_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -197,19 +197,19 @@ func (x *GetAuthorizationFinalResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetAuthorizationFinalResponse.ProtoReflect.Descriptor instead.
-func (*GetAuthorizationFinalResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetAuthorizationRequestStateResponse.ProtoReflect.Descriptor instead.
+func (*GetAuthorizationRequestStateResponse) Descriptor() ([]byte, []int) {
 	return file_proto_oidc_flows_oidc_flow_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *GetAuthorizationFinalResponse) GetAuthorizationFinal() *models.AuthorizationFinal {
+func (x *GetAuthorizationRequestStateResponse) GetAuthorizationRequestState() *models.AuthorizationRequestState {
 	if x != nil {
-		return x.AuthorizationFinal
+		return x.AuthorizationRequestState
 	}
 	return nil
 }
 
-type DeleteAuthorizationFinalRequest struct {
+type DeleteAuthorizationRequestStateRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -217,8 +217,8 @@ type DeleteAuthorizationFinalRequest struct {
 	State string `protobuf:"bytes,1,opt,name=state,proto3" json:"state,omitempty"`
 }
 
-func (x *DeleteAuthorizationFinalRequest) Reset() {
-	*x = DeleteAuthorizationFinalRequest{}
+func (x *DeleteAuthorizationRequestStateRequest) Reset() {
+	*x = DeleteAuthorizationRequestStateRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_proto_oidc_flows_oidc_flow_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -226,13 +226,13 @@ func (x *DeleteAuthorizationFinalRequest) Reset() {
 	}
 }
 
-func (x *DeleteAuthorizationFinalRequest) String() string {
+func (x *DeleteAuthorizationRequestStateRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DeleteAuthorizationFinalRequest) ProtoMessage() {}
+func (*DeleteAuthorizationRequestStateRequest) ProtoMessage() {}
 
-func (x *DeleteAuthorizationFinalRequest) ProtoReflect() protoreflect.Message {
+func (x *DeleteAuthorizationRequestStateRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_oidc_flows_oidc_flow_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -244,26 +244,26 @@ func (x *DeleteAuthorizationFinalRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DeleteAuthorizationFinalRequest.ProtoReflect.Descriptor instead.
-func (*DeleteAuthorizationFinalRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use DeleteAuthorizationRequestStateRequest.ProtoReflect.Descriptor instead.
+func (*DeleteAuthorizationRequestStateRequest) Descriptor() ([]byte, []int) {
 	return file_proto_oidc_flows_oidc_flow_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *DeleteAuthorizationFinalRequest) GetState() string {
+func (x *DeleteAuthorizationRequestStateRequest) GetState() string {
 	if x != nil {
 		return x.State
 	}
 	return ""
 }
 
-type DeleteAuthorizationFinalResponse struct {
+type DeleteAuthorizationRequestStateResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 }
 
-func (x *DeleteAuthorizationFinalResponse) Reset() {
-	*x = DeleteAuthorizationFinalResponse{}
+func (x *DeleteAuthorizationRequestStateResponse) Reset() {
+	*x = DeleteAuthorizationRequestStateResponse{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_proto_oidc_flows_oidc_flow_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -271,13 +271,13 @@ func (x *DeleteAuthorizationFinalResponse) Reset() {
 	}
 }
 
-func (x *DeleteAuthorizationFinalResponse) String() string {
+func (x *DeleteAuthorizationRequestStateResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DeleteAuthorizationFinalResponse) ProtoMessage() {}
+func (*DeleteAuthorizationRequestStateResponse) ProtoMessage() {}
 
-func (x *DeleteAuthorizationFinalResponse) ProtoReflect() protoreflect.Message {
+func (x *DeleteAuthorizationRequestStateResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_oidc_flows_oidc_flow_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -289,8 +289,8 @@ func (x *DeleteAuthorizationFinalResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DeleteAuthorizationFinalResponse.ProtoReflect.Descriptor instead.
-func (*DeleteAuthorizationFinalResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use DeleteAuthorizationRequestStateResponse.ProtoReflect.Descriptor instead.
+func (*DeleteAuthorizationRequestStateResponse) Descriptor() ([]byte, []int) {
 	return file_proto_oidc_flows_oidc_flow_proto_rawDescGZIP(), []int{5}
 }
 
@@ -711,35 +711,35 @@ func file_proto_oidc_flows_oidc_flow_proto_rawDescGZIP() []byte {
 
 var file_proto_oidc_flows_oidc_flow_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_proto_oidc_flows_oidc_flow_proto_goTypes = []interface{}{
-	(*StoreAuthorizationFinalRequest)(nil),    // 0: proto.oidc.flows.StoreAuthorizationFinalRequest
-	(*StoreAuthorizationFinalResponse)(nil),   // 1: proto.oidc.flows.StoreAuthorizationFinalResponse
-	(*GetAuthorizationFinalRequest)(nil),      // 2: proto.oidc.flows.GetAuthorizationFinalRequest
-	(*GetAuthorizationFinalResponse)(nil),     // 3: proto.oidc.flows.GetAuthorizationFinalResponse
-	(*DeleteAuthorizationFinalRequest)(nil),   // 4: proto.oidc.flows.DeleteAuthorizationFinalRequest
-	(*DeleteAuthorizationFinalResponse)(nil),  // 5: proto.oidc.flows.DeleteAuthorizationFinalResponse
+	(*StoreAuthorizationRequestStateRequest)(nil),    // 0: proto.oidc.flows.StoreAuthorizationRequestStateRequest
+	(*StoreAuthorizationRequestStateResponse)(nil),   // 1: proto.oidc.flows.StoreAuthorizationRequestStateResponse
+	(*GetAuthorizationRequestStateRequest)(nil),      // 2: proto.oidc.flows.GetAuthorizationRequestStateRequest
+	(*GetAuthorizationRequestStateResponse)(nil),     // 3: proto.oidc.flows.GetAuthorizationRequestStateResponse
+	(*DeleteAuthorizationRequestStateRequest)(nil),   // 4: proto.oidc.flows.DeleteAuthorizationRequestStateRequest
+	(*DeleteAuthorizationRequestStateResponse)(nil),  // 5: proto.oidc.flows.DeleteAuthorizationRequestStateResponse
 	(*StoreExternalOauth2FinalRequest)(nil),   // 6: proto.oidc.flows.StoreExternalOauth2FinalRequest
 	(*StoreExternalOauth2FinalResponse)(nil),  // 7: proto.oidc.flows.StoreExternalOauth2FinalResponse
 	(*GetExternalOauth2FinalRequest)(nil),     // 8: proto.oidc.flows.GetExternalOauth2FinalRequest
 	(*GetExternalOauth2FinalResponse)(nil),    // 9: proto.oidc.flows.GetExternalOauth2FinalResponse
 	(*DeleteExternalOauth2FinalRequest)(nil),  // 10: proto.oidc.flows.DeleteExternalOauth2FinalRequest
 	(*DeleteExternalOauth2FinalResponse)(nil), // 11: proto.oidc.flows.DeleteExternalOauth2FinalResponse
-	(*models.AuthorizationFinal)(nil),         // 12: proto.oidc.models.AuthorizationFinal
+	(*models.AuthorizationRequestState)(nil),         // 12: proto.oidc.models.AuthorizationRequestState
 	(*models.ExternalOauth2Final)(nil),        // 13: proto.oidc.models.ExternalOauth2Final
 }
 var file_proto_oidc_flows_oidc_flow_proto_depIdxs = []int32{
-	12, // 0: proto.oidc.flows.StoreAuthorizationFinalRequest.authorization_final:type_name -> proto.oidc.models.AuthorizationFinal
-	12, // 1: proto.oidc.flows.GetAuthorizationFinalResponse.authorization_final:type_name -> proto.oidc.models.AuthorizationFinal
+	12, // 0: proto.oidc.flows.StoreAuthorizationRequestStateRequest.authorization_final:type_name -> proto.oidc.models.AuthorizationRequestState
+	12, // 1: proto.oidc.flows.GetAuthorizationRequestStateResponse.authorization_final:type_name -> proto.oidc.models.AuthorizationRequestState
 	13, // 2: proto.oidc.flows.StoreExternalOauth2FinalRequest.external_oauth2_final:type_name -> proto.oidc.models.ExternalOauth2Final
 	13, // 3: proto.oidc.flows.GetExternalOauth2FinalResponse.external_oauth2_final:type_name -> proto.oidc.models.ExternalOauth2Final
-	0,  // 4: proto.oidc.flows.OIDCFlowStore.StoreAuthorizationFinal:input_type -> proto.oidc.flows.StoreAuthorizationFinalRequest
-	2,  // 5: proto.oidc.flows.OIDCFlowStore.GetAuthorizationFinal:input_type -> proto.oidc.flows.GetAuthorizationFinalRequest
-	4,  // 6: proto.oidc.flows.OIDCFlowStore.DeleteAuthorizationFinal:input_type -> proto.oidc.flows.DeleteAuthorizationFinalRequest
+	0,  // 4: proto.oidc.flows.OIDCFlowStore.StoreAuthorizationRequestState:input_type -> proto.oidc.flows.StoreAuthorizationRequestStateRequest
+	2,  // 5: proto.oidc.flows.OIDCFlowStore.GetAuthorizationRequestState:input_type -> proto.oidc.flows.GetAuthorizationRequestStateRequest
+	4,  // 6: proto.oidc.flows.OIDCFlowStore.DeleteAuthorizationRequestState:input_type -> proto.oidc.flows.DeleteAuthorizationRequestStateRequest
 	6,  // 7: proto.oidc.flows.ExternalOauth2FlowStore.StoreExternalOauth2Final:input_type -> proto.oidc.flows.StoreExternalOauth2FinalRequest
 	8,  // 8: proto.oidc.flows.ExternalOauth2FlowStore.GetExternalOauth2Final:input_type -> proto.oidc.flows.GetExternalOauth2FinalRequest
 	10, // 9: proto.oidc.flows.ExternalOauth2FlowStore.DeleteExternalOauth2Final:input_type -> proto.oidc.flows.DeleteExternalOauth2FinalRequest
-	1,  // 10: proto.oidc.flows.OIDCFlowStore.StoreAuthorizationFinal:output_type -> proto.oidc.flows.StoreAuthorizationFinalResponse
-	3,  // 11: proto.oidc.flows.OIDCFlowStore.GetAuthorizationFinal:output_type -> proto.oidc.flows.GetAuthorizationFinalResponse
-	5,  // 12: proto.oidc.flows.OIDCFlowStore.DeleteAuthorizationFinal:output_type -> proto.oidc.flows.DeleteAuthorizationFinalResponse
+	1,  // 10: proto.oidc.flows.OIDCFlowStore.StoreAuthorizationRequestState:output_type -> proto.oidc.flows.StoreAuthorizationRequestStateResponse
+	3,  // 11: proto.oidc.flows.OIDCFlowStore.GetAuthorizationRequestState:output_type -> proto.oidc.flows.GetAuthorizationRequestStateResponse
+	5,  // 12: proto.oidc.flows.OIDCFlowStore.DeleteAuthorizationRequestState:output_type -> proto.oidc.flows.DeleteAuthorizationRequestStateResponse
 	7,  // 13: proto.oidc.flows.ExternalOauth2FlowStore.StoreExternalOauth2Final:output_type -> proto.oidc.flows.StoreExternalOauth2FinalResponse
 	9,  // 14: proto.oidc.flows.ExternalOauth2FlowStore.GetExternalOauth2Final:output_type -> proto.oidc.flows.GetExternalOauth2FinalResponse
 	11, // 15: proto.oidc.flows.ExternalOauth2FlowStore.DeleteExternalOauth2Final:output_type -> proto.oidc.flows.DeleteExternalOauth2FinalResponse
@@ -757,7 +757,7 @@ func file_proto_oidc_flows_oidc_flow_proto_init() {
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_proto_oidc_flows_oidc_flow_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StoreAuthorizationFinalRequest); i {
+			switch v := v.(*StoreAuthorizationRequestStateRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -769,7 +769,7 @@ func file_proto_oidc_flows_oidc_flow_proto_init() {
 			}
 		}
 		file_proto_oidc_flows_oidc_flow_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StoreAuthorizationFinalResponse); i {
+			switch v := v.(*StoreAuthorizationRequestStateResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -781,7 +781,7 @@ func file_proto_oidc_flows_oidc_flow_proto_init() {
 			}
 		}
 		file_proto_oidc_flows_oidc_flow_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetAuthorizationFinalRequest); i {
+			switch v := v.(*GetAuthorizationRequestStateRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -793,7 +793,7 @@ func file_proto_oidc_flows_oidc_flow_proto_init() {
 			}
 		}
 		file_proto_oidc_flows_oidc_flow_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetAuthorizationFinalResponse); i {
+			switch v := v.(*GetAuthorizationRequestStateResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -805,7 +805,7 @@ func file_proto_oidc_flows_oidc_flow_proto_init() {
 			}
 		}
 		file_proto_oidc_flows_oidc_flow_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteAuthorizationFinalRequest); i {
+			switch v := v.(*DeleteAuthorizationRequestStateRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -817,7 +817,7 @@ func file_proto_oidc_flows_oidc_flow_proto_init() {
 			}
 		}
 		file_proto_oidc_flows_oidc_flow_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteAuthorizationFinalResponse); i {
+			switch v := v.(*DeleteAuthorizationRequestStateResponse); i {
 			case 0:
 				return &v.state
 			case 1:

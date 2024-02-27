@@ -215,14 +215,14 @@ func (s *service) Do(c echo.Context) error {
 		}
 		return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
 	}
-	getAuthorizationFinalResponse, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, &proto_oidc_flows.GetAuthorizationFinalRequest{
+	getAuthorizationRequestStateResponse, err := s.OIDCFlowStore().GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
 		State: parentState,
 	})
 	if err != nil {
-		log.Error().Err(err).Msg("GetAuthorizationFinal")
+		log.Error().Err(err).Msg("GetAuthorizationRequestState")
 		return doInternalErrorPost()
 	}
-	authorizationFinal := getAuthorizationFinalResponse.AuthorizationFinal
+	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 
 	getIDPBySlugResponse, err := s.IdpServiceServer().GetIDPBySlug(ctx,
 		&proto_oidc_idp.GetIDPBySlugRequest{
@@ -341,12 +341,12 @@ func (s *service) Do(c echo.Context) error {
 					models.AMRIdp,
 				},
 			}
-			_, err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, &proto_oidc_flows.StoreAuthorizationFinalRequest{
-				State:              parentState,
-				AuthorizationFinal: authorizationFinal,
+			_, err = s.OIDCFlowStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+				State:                     parentState,
+				AuthorizationRequestState: authorizationFinal,
 			})
 			if err != nil {
-				log.Error().Err(err).Msg("StoreAuthorizationFinal")
+				log.Error().Err(err).Msg("StoreAuthorizationRequestState")
 				return doInternalErrorPost()
 			}
 			// redirect back

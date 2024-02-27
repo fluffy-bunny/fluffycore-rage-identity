@@ -14,28 +14,28 @@ import "proto/oidc/models/user.proto";
  
 service OIDCFlowStore {
     // Create user
-    rpc StoreAuthorizationFinal (StoreAuthorizationFinalRequest) returns (StoreAuthorizationFinalResponse) {}     
-    rpc GetAuthorizationFinal (GetAuthorizationFinalRequest) returns (GetAuthorizationFinalResponse) {}     
-    rpc DeleteAuthorizationFinal (DeleteAuthorizationFinalRequest) returns (DeleteAuthorizationFinalResponse) {}     
+    rpc StoreAuthorizationRequestState (StoreAuthorizationRequestStateRequest) returns (StoreAuthorizationRequestStateResponse) {}     
+    rpc GetAuthorizationRequestState (GetAuthorizationRequestStateRequest) returns (GetAuthorizationRequestStateResponse) {}     
+    rpc DeleteAuthorizationRequestState (DeleteAuthorizationRequestStateRequest) returns (DeleteAuthorizationRequestStateResponse) {}     
 
 }
 
-message StoreAuthorizationFinalRequest{
+message StoreAuthorizationRequestStateRequest{
     string state = 1;
-    proto.oidc.models.AuthorizationFinal authorization_final = 2;
+    proto.oidc.models.AuthorizationRequestState authorization_final = 2;
 }
-message StoreAuthorizationFinalResponse{}
+message StoreAuthorizationRequestStateResponse{}
 
-message GetAuthorizationFinalRequest{
+message GetAuthorizationRequestStateRequest{
     string state = 1;
 }
-message GetAuthorizationFinalResponse{
-    proto.oidc.models.AuthorizationFinal authorization_final = 1;
+message GetAuthorizationRequestStateResponse{
+    proto.oidc.models.AuthorizationRequestState authorization_final = 1;
 }
-message DeleteAuthorizationFinalRequest{
+message DeleteAuthorizationRequestStateRequest{
     string state = 1;
 }
-message DeleteAuthorizationFinalResponse{}
+message DeleteAuthorizationRequestStateResponse{}
 
 service ExternalOauth2FlowStore {
     // Create user

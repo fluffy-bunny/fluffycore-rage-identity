@@ -293,15 +293,15 @@ func (s *service) DoPost(c echo.Context) error {
 		return renderError(errors)
 	}
 
-	getAuthorizationFinalResponse, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, &proto_oidc_flows.GetAuthorizationFinalRequest{
+	getAuthorizationRequestStateResponse, err := s.OIDCFlowStore().GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
 		State: dd2.State,
 	})
 	if err != nil {
-		log.Warn().Err(err).Msg("GetAuthorizationFinal")
+		log.Warn().Err(err).Msg("GetAuthorizationRequestState")
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 		return renderError(errors)
 	}
-	authorizationFinal := getAuthorizationFinalResponse.AuthorizationFinal
+	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 	authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
 		Subject: user.RootIdentity.Subject,
 		Email:   user.RootIdentity.Email,
@@ -319,22 +319,22 @@ func (s *service) DoPost(c echo.Context) error {
 	// "urn:mastodon:idp:google", "urn:mastodon:idp:spacex", "urn:mastodon:idp:github-enterprise", etc.
 	// "urn:mastodon:password", "urn:mastodon:2fa", "urn:mastodon:email", etc.
 	// we are done with the state now.  Lets map it to the code so it can be looked up by the client.
-	_, err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, &proto_oidc_flows.StoreAuthorizationFinalRequest{
-		State:              authorizationFinal.Request.Code,
-		AuthorizationFinal: authorizationFinal,
+	_, err = s.OIDCFlowStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+		State:                     authorizationFinal.Request.Code,
+		AuthorizationRequestState: authorizationFinal,
 	})
 	if err != nil {
-		log.Warn().Err(err).Msg("StoreAuthorizationFinal")
+		log.Warn().Err(err).Msg("StoreAuthorizationRequestState")
 		// redirect to error page
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 		return renderError(errors)
 	}
-	s.OIDCFlowStore().DeleteAuthorizationFinal(ctx, &proto_oidc_flows.DeleteAuthorizationFinalRequest{
+	s.OIDCFlowStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
 		State: dd2.State,
 	})
-	_, err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, &proto_oidc_flows.StoreAuthorizationFinalRequest{
-		State:              dd2.State,
-		AuthorizationFinal: authorizationFinal,
+	_, err = s.OIDCFlowStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+		State:                     dd2.State,
+		AuthorizationRequestState: authorizationFinal,
 	})
 	if err != nil {
 		// redirect to error page
@@ -378,16 +378,16 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 	rootPath := s.config.OIDCConfig.BaseUrl
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
-	getAuthorizationFinalResponse, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, &proto_oidc_flows.GetAuthorizationFinalRequest{
+	getAuthorizationRequestStateResponse, err := s.OIDCFlowStore().GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
 		State: state,
 	})
 	if err != nil {
-		log.Error().Err(err).Msg("GetAuthorizationFinal")
+		log.Error().Err(err).Msg("GetAuthorizationRequestState")
 		// redirect to error page
 		redirectUrl := fmt.Sprintf("%s?state=%s&error=%s", wellknown_echo.OIDCLoginPath, state, models.InternalError)
 		return c.Redirect(http.StatusFound, redirectUrl)
 	}
-	authorizationFinal := getAuthorizationFinalResponse.AuthorizationFinal
+	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 	if authorizationFinal.Identity == nil {
 		redirectUrl := fmt.Sprintf("%s?state=%s&error=%s", wellknown_echo.OIDCLoginPath, state, models.InternalError)
 		return c.Redirect(http.StatusFound, redirectUrl)
@@ -408,16 +408,16 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	_, err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, &proto_oidc_flows.StoreAuthorizationFinalRequest{
-		State:              authorizationFinal.Request.Code,
-		AuthorizationFinal: authorizationFinal,
+	_, err = s.OIDCFlowStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+		State:                     authorizationFinal.Request.Code,
+		AuthorizationRequestState: authorizationFinal,
 	})
 	if err != nil {
-		log.Warn().Err(err).Msg("StoreAuthorizationFinal")
+		log.Warn().Err(err).Msg("StoreAuthorizationRequestState")
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	s.OIDCFlowStore().DeleteAuthorizationFinal(ctx, &proto_oidc_flows.DeleteAuthorizationFinalRequest{
+	s.OIDCFlowStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
 		State: state,
 	})
 

@@ -105,15 +105,15 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 	}
 	log.Debug().Interface("req", req).Msg("req")
 
-	getAuthorizationFinalResponse, err := s.oidcFlowStore.GetAuthorizationFinal(ctx,
-		&proto_oidc_flows.GetAuthorizationFinalRequest{
+	getAuthorizationRequestStateResponse, err := s.oidcFlowStore.GetAuthorizationRequestState(ctx,
+		&proto_oidc_flows.GetAuthorizationRequestStateRequest{
 			State: req.Code,
 		})
 	if err != nil {
-		log.Warn().Err(err).Msg("GetAuthorizationFinal")
+		log.Warn().Err(err).Msg("GetAuthorizationRequestState")
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	authorizationFinal := getAuthorizationFinalResponse.AuthorizationFinal
+	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 	idClaims := fluffycore_services_claims.NewClaims()
 	//--REQUIRED--
 	idClaims.Set("aud", client.ClientId)
@@ -180,11 +180,11 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 	// return as json
 	defer func() {
 		log.Debug().Interface("response", response).Msg("response")
-		_, err := s.oidcFlowStore.DeleteAuthorizationFinal(ctx, &proto_oidc_flows.DeleteAuthorizationFinalRequest{
+		_, err := s.oidcFlowStore.DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
 			State: req.Code,
 		})
 		if err != nil {
-			log.Error().Err(err).Msg("DeleteAuthorizationFinal")
+			log.Error().Err(err).Msg("DeleteAuthorizationRequestState")
 		}
 	}()
 	return c.JSONPretty(http.StatusOK, response, "  ")

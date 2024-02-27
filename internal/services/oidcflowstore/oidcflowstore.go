@@ -37,39 +37,39 @@ func AddSingletonIOIDCFlowStore(cb di.ContainerBuilder) {
 	di.AddSingleton[proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer](cb, stemService.Ctor)
 }
 
-func (s *service) StoreAuthorizationFinal(ctx context.Context, request *proto_oidc_flows.StoreAuthorizationFinalRequest) (*proto_oidc_flows.StoreAuthorizationFinalResponse, error) {
+func (s *service) StoreAuthorizationRequestState(ctx context.Context, request *proto_oidc_flows.StoreAuthorizationRequestStateRequest) (*proto_oidc_flows.StoreAuthorizationRequestStateResponse, error) {
 	log := zerolog.Ctx(ctx).With().Str("state", request.State).Logger()
-	err := s.oidcFlowCache.Set(ctx, request.State, request.AuthorizationFinal, store.WithExpiration(30*time.Minute))
-	log.Info().Err(err).Interface("request", request).Msg("StoreAuthorizationFinal")
-	return &proto_oidc_flows.StoreAuthorizationFinalResponse{}, err
+	err := s.oidcFlowCache.Set(ctx, request.State, request.AuthorizationRequestState, store.WithExpiration(30*time.Minute))
+	log.Info().Err(err).Interface("request", request).Msg("StoreAuthorizationRequestState")
+	return &proto_oidc_flows.StoreAuthorizationRequestStateResponse{}, err
 }
-func (s *service) GetAuthorizationFinal(ctx context.Context, request *proto_oidc_flows.GetAuthorizationFinalRequest) (*proto_oidc_flows.GetAuthorizationFinalResponse, error) {
+func (s *service) GetAuthorizationRequestState(ctx context.Context, request *proto_oidc_flows.GetAuthorizationRequestStateRequest) (*proto_oidc_flows.GetAuthorizationRequestStateResponse, error) {
 	log := zerolog.Ctx(ctx).With().Str("state", request.State).Logger()
 	mm, err := s.oidcFlowCache.Get(ctx, request.State)
 	if err != nil {
 		// redirect to error page
-		log.Error().Err(err).Msg("GetAuthorizationFinal")
+		log.Error().Err(err).Msg("GetAuthorizationRequestState")
 		return nil, err
 	}
-	var value *proto_oidc_models.AuthorizationFinal = new(proto_oidc_models.AuthorizationFinal)
+	var value *proto_oidc_models.AuthorizationRequestState = new(proto_oidc_models.AuthorizationRequestState)
 	mmB, err := json.Marshal(mm)
 	if err != nil {
-		log.Error().Err(err).Msg("GetAuthorizationFinal")
+		log.Error().Err(err).Msg("GetAuthorizationRequestState")
 		return nil, err
 	}
 	err = json.Unmarshal(mmB, value)
 	if err != nil {
-		log.Error().Err(err).Msg("GetAuthorizationFinal")
+		log.Error().Err(err).Msg("GetAuthorizationRequestState")
 		return nil, err
 	}
-	return &proto_oidc_flows.GetAuthorizationFinalResponse{
-		AuthorizationFinal: value,
+	return &proto_oidc_flows.GetAuthorizationRequestStateResponse{
+		AuthorizationRequestState: value,
 	}, nil
 }
-func (s *service) DeleteAuthorizationFinal(ctx context.Context, request *proto_oidc_flows.DeleteAuthorizationFinalRequest) (*proto_oidc_flows.DeleteAuthorizationFinalResponse, error) {
+func (s *service) DeleteAuthorizationRequestState(ctx context.Context, request *proto_oidc_flows.DeleteAuthorizationRequestStateRequest) (*proto_oidc_flows.DeleteAuthorizationRequestStateResponse, error) {
 	log := zerolog.Ctx(ctx).With().Str("state", request.State).Logger()
 	err := s.oidcFlowCache.Delete(ctx, request.State)
-	log.Info().Err(err).Msg("DeleteAuthorizationFinal")
+	log.Info().Err(err).Msg("DeleteAuthorizationRequestState")
 
-	return &proto_oidc_flows.DeleteAuthorizationFinalResponse{}, err
+	return &proto_oidc_flows.DeleteAuthorizationRequestStateResponse{}, err
 }

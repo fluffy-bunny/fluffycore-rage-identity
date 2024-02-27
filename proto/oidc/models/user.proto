@@ -91,11 +91,13 @@ message AuthorizationRequest {
     string candidate_user_id = 13;
 }
 
-message AuthorizationFinal {
-    AuthorizationRequest request = 1;
-    OIDCIdentity identity = 2;
-    Identity external_identity = 3;
-    string directive = 4;
+message AuthorizationRequestState {
+    // id to make it db friendly
+    string id = 1;
+    AuthorizationRequest request = 2;
+    OIDCIdentity identity = 3;
+    Identity external_identity = 4;
+    string directive = 5;
 
 }
 

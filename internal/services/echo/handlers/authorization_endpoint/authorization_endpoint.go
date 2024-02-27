@@ -152,7 +152,7 @@ func (s *service) Do(c echo.Context) error {
 	model.Code = code
 
 	// store the model in the cache.  Redis in production.
-	authorizationFinal := &proto_oidc_models.AuthorizationFinal{
+	authorizationFinal := &proto_oidc_models.AuthorizationRequestState{
 		Request: model,
 	}
 
@@ -203,9 +203,9 @@ func (s *service) Do(c echo.Context) error {
 		}
 
 	}
-	_, err = s.oidcFlowStore.StoreAuthorizationFinal(ctx, &proto_oidc_flows.StoreAuthorizationFinalRequest{
-		AuthorizationFinal: authorizationFinal,
-		State:              model.State,
+	_, err = s.oidcFlowStore.StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+		AuthorizationRequestState: authorizationFinal,
+		State:                     model.State,
 	})
 	if err != nil {
 		// redirect to error page
@@ -216,7 +216,7 @@ func (s *service) Do(c echo.Context) error {
 	session.Set("request", model)
 	session.Save()
 
-	mm, err := s.oidcFlowStore.GetAuthorizationFinal(ctx, &proto_oidc_flows.GetAuthorizationFinalRequest{
+	mm, err := s.oidcFlowStore.GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
 		State: model.State,
 	})
 	if err != nil {
