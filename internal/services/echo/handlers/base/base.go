@@ -5,11 +5,11 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/eko_gocache"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/email"
 	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/localizer"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/internal/models"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/internal/wellknown/echo"
+	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
@@ -31,8 +31,8 @@ type (
 		EchoContextAccessor     func() fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor
 		IdpServiceServer        func() proto_oidc_idp.IFluffyCoreIDPServiceServer
 		UserService             func() proto_oidc_user.IFluffyCoreUserServiceServer
-		OIDCFlowStore           func() contracts_eko_gocache.IOIDCFlowStore
-		ExternalOauth2FlowStore func() contracts_eko_gocache.IExternalOauth2FlowStore
+		OIDCFlowStore           func() proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer
+		ExternalOauth2FlowStore func() proto_oidc_flows.IFluffyCoreExternalOauth2FlowStoreServer
 		ScopedMemoryCache       func() fluffycore_contracts_common.IScopedMemoryCache
 		EmailService            func() contracts_email.IEmailService
 		SessionFactory          func() contracts_sessions.ISessionFactory
@@ -42,8 +42,8 @@ type (
 		echoContextAccessor     fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor
 		idpServiceServer        proto_oidc_idp.IFluffyCoreIDPServiceServer
 		userService             proto_oidc_user.IFluffyCoreUserServiceServer
-		oidcFlowStore           contracts_eko_gocache.IOIDCFlowStore
-		externalOauth2FlowStore contracts_eko_gocache.IExternalOauth2FlowStore
+		oidcFlowStore           proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer
+		externalOauth2FlowStore proto_oidc_flows.IFluffyCoreExternalOauth2FlowStoreServer
 		scopedMemoryCache       fluffycore_contracts_common.IScopedMemoryCache
 		emailService            contracts_email.IEmailService
 		sessionFactory          contracts_sessions.ISessionFactory
@@ -115,15 +115,15 @@ func (b *BaseHandler) getUserService() proto_oidc_user.IFluffyCoreUserServiceSer
 	}
 	return b.userService
 }
-func (b *BaseHandler) getOIDCFlowStore() contracts_eko_gocache.IOIDCFlowStore {
+func (b *BaseHandler) getOIDCFlowStore() proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer {
 	if b.oidcFlowStore == nil {
-		b.oidcFlowStore = di.Get[contracts_eko_gocache.IOIDCFlowStore](b.Container)
+		b.oidcFlowStore = di.Get[proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer](b.Container)
 	}
 	return b.oidcFlowStore
 }
-func (b *BaseHandler) getExternalOauth2FlowStore() contracts_eko_gocache.IExternalOauth2FlowStore {
+func (b *BaseHandler) getExternalOauth2FlowStore() proto_oidc_flows.IFluffyCoreExternalOauth2FlowStoreServer {
 	if b.externalOauth2FlowStore == nil {
-		b.externalOauth2FlowStore = di.Get[contracts_eko_gocache.IExternalOauth2FlowStore](b.Container)
+		b.externalOauth2FlowStore = di.Get[proto_oidc_flows.IFluffyCoreExternalOauth2FlowStoreServer](b.Container)
 	}
 	return b.externalOauth2FlowStore
 }

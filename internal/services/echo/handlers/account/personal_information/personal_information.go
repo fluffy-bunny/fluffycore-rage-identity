@@ -7,7 +7,6 @@ import (
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/cookies"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/email"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/identity"
-	models "github.com/fluffy-bunny/fluffycore-rage-identity/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/base"
 	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/shared"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/internal/wellknown/echo"
@@ -102,7 +101,7 @@ func (s *service) getUser(c echo.Context) (*proto_oidc_models.User, error) {
 		log.Error().Err(err).Msg("memCache.Get")
 		return nil, err
 	}
-	rootIdentity := cachedItem.(*models.Identity)
+	rootIdentity := cachedItem.(*proto_oidc_models.Identity)
 	if rootIdentity == nil {
 		log.Error().Msg("rootIdentity is nil")
 		return nil, status.Error(codes.NotFound, "rootIdentity is nil")

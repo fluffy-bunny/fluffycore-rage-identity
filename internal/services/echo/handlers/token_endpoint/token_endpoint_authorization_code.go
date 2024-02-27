@@ -7,6 +7,7 @@ import (
 
 	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/tokenservice"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/internal/models"
+	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	fluffycore_services_claims "github.com/fluffy-bunny/fluffycore/services/claims"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
@@ -104,26 +105,30 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 	}
 	log.Debug().Interface("req", req).Msg("req")
 
-	authFinal, err := s.oidcFlowStore.GetAuthorizationFinal(ctx, req.Code)
+	getAuthorizationFinalResponse, err := s.oidcFlowStore.GetAuthorizationFinal(ctx,
+		&proto_oidc_flows.GetAuthorizationFinalRequest{
+			State: req.Code,
+		})
 	if err != nil {
 		log.Warn().Err(err).Msg("GetAuthorizationFinal")
 		return c.String(http.StatusBadRequest, err.Error())
 	}
+	authorizationFinal := getAuthorizationFinalResponse.AuthorizationFinal
 	idClaims := fluffycore_services_claims.NewClaims()
 	//--REQUIRED--
 	idClaims.Set("aud", client.ClientId)
-	idClaims.Set("nonce", authFinal.Request.Nonce)
-	idClaims.Set("sub", authFinal.Identity.Subject)
+	idClaims.Set("nonce", authorizationFinal.Request.Nonce)
+	idClaims.Set("sub", authorizationFinal.Identity.Subject)
 	//--REQUIRED FOR US --
 	idClaims.Set("client_id", client.ClientId)
-	idClaims.Set("email", authFinal.Identity.Email)
-	idClaims.Set("email_verified", authFinal.Identity.EmailVerified)
+	idClaims.Set("email", authorizationFinal.Identity.Email)
+	idClaims.Set("email_verified", authorizationFinal.Identity.EmailVerified)
 	acrClaims := []string{
 		// always true
 		models.ACRIdpRoot,
 	}
-	if len(authFinal.Identity.ACR) > 0 {
-		acrClaims = append(acrClaims, authFinal.Identity.ACR...)
+	if len(authorizationFinal.Identity.Acr) > 0 {
+		acrClaims = append(acrClaims, authorizationFinal.Identity.Amr...)
 	}
 	idpClaims := []string{}
 	for _, acrValue := range acrClaims {
@@ -133,7 +138,7 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 		}
 		idpClaims = append(idpClaims, idp)
 	}
-	amrClaims := authFinal.Identity.AMR
+	amrClaims := authorizationFinal.Identity.Amr
 
 	idClaims.Set("acr", acrClaims)
 	idClaims.Set("amr", amrClaims)
@@ -153,7 +158,7 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 	accessTokenClaims := fluffycore_services_claims.NewClaims()
 	accessTokenClaims.Set("client_id", client.ClientId)
 	accessTokenClaims.Set("aud", client.ClientId)
-	accessTokenClaims.Set("sub", authFinal.Identity.Subject)
+	accessTokenClaims.Set("sub", authorizationFinal.Identity.Subject)
 
 	accessToken, err := s.tokenService.MintToken(ctx, &contracts_tokenservice.MintTokenRequest{
 		Claims:                  accessTokenClaims,
@@ -175,7 +180,9 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 	// return as json
 	defer func() {
 		log.Debug().Interface("response", response).Msg("response")
-		err := s.oidcFlowStore.DeleteAuthorizationFinal(ctx, req.Code)
+		_, err := s.oidcFlowStore.DeleteAuthorizationFinal(ctx, &proto_oidc_flows.DeleteAuthorizationFinalRequest{
+			State: req.Code,
+		})
 		if err != nil {
 			log.Error().Err(err).Msg("DeleteAuthorizationFinal")
 		}

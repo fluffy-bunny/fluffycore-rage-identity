@@ -10,12 +10,13 @@ import (
 	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/eko_gocache"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/internal/wellknown/echo"
 	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/client"
+	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -31,7 +32,7 @@ type (
 		*services_echo_handlers_base.BaseHandler
 
 		scopedMemoryCache   fluffycore_contracts_common.IScopedMemoryCache
-		oidcFlowStore       contracts_eko_gocache.IOIDCFlowStore
+		oidcFlowStore       proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer
 		clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer
 		idpServiceServer    proto_oidc_idp.IFluffyCoreIDPServiceServer
 		userService         proto_oidc_user.IFluffyCoreUserServiceServer
@@ -51,7 +52,8 @@ func (s *service) Ctor(
 
 	scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
 	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
-	oidcFlowStore contracts_eko_gocache.IOIDCFlowStore) (*service, error) {
+	oidcFlowStore proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer,
+) (*service, error) {
 	return &service{
 		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
 
@@ -90,6 +92,27 @@ func (s *service) newSession() (contracts_sessions.ISession, error) {
 	return session, nil
 }
 
+type (
+	AuthorizationRequest struct {
+		ClientId            string `param:"client_id" query:"client_id" form:"client_id" json:"client_id" xml:"client_id"`
+		ResponseType        string `param:"response_type" query:"response_type" form:"response_type" json:"response_type" xml:"response_type"`
+		Scope               string `param:"scope" query:"scope" form:"scope" json:"scope" xml:"scope"`
+		State               string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
+		RedirectURI         string `param:"redirect_uri" query:"redirect_uri" form:"redirect_uri" json:"redirect_uri" xml:"redirect_uri"`
+		Audience            string `param:"audience" query:"audience" form:"audience" json:"audience" xml:"audience"`
+		CodeChallenge       string `param:"code_challenge" query:"code_challenge" form:"code_challenge" json:"code_challenge" xml:"code_challenge"`
+		CodeChallengeMethod string `param:"code_challenge_method" query:"code_challenge_method" form:"code_challenge_method" json:"code_challenge_method" xml:"code_challenge_method"`
+		ACRValues           string `param:"acr_values" query:"acr_values" form:"acr_values" json:"acr_values" xml:"acr_values"`
+		Nonce               string `param:"nonce" query:"nonce" form:"nonce" json:"nonce" xml:"nonce"`
+		Code                string // this is the internal code that will be returned to the OIDC client
+		// IDPHint is the idp_hint of the external idp that the authorization must authenticate against
+		IDPHint string `json:"idp_hint,omitempty"`
+		// CandidateUserID is the user_id of the candidate user that if the external IDP has no link should be linked to
+		// The candidate user must exist.
+		CandidateUserID string `json:"candidate_user_id,omitempty"`
+	}
+)
+
 // HealthCheck godoc
 // @Summary get the home page.
 // @Description get the home page.
@@ -111,28 +134,30 @@ func (s *service) Do(c echo.Context) error {
 	r := c.Request()
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
-	model := &models.AuthorizationRequest{}
-	if err := c.Bind(model); err != nil {
+	echoModel := &AuthorizationRequest{}
+	if err := c.Bind(echoModel); err != nil {
 		return err
 	}
-	log.Debug().Interface("model", model).Msg("AuthorizationRequest")
+	log.Debug().Interface("echoModel", echoModel).Msg("AuthorizationRequest")
 	session, err := s.newSession()
 	if err != nil {
 		return err
 	}
 
+	model := &proto_oidc_models.AuthorizationRequest{}
+	fluffycore_utils.ConvertStructToProto[*AuthorizationRequest](echoModel, model)
 	// TODO: validate the request
 	// does the client have the permissions to do this?
 	code := xid.New().String()
 	model.Code = code
 
 	// store the model in the cache.  Redis in production.
-	authorizationFinal := &models.AuthorizationFinal{
+	authorizationFinal := &proto_oidc_models.AuthorizationFinal{
 		Request: model,
 	}
 
-	if !fluffycore_utils.IsEmptyOrNil(model.ACRValues) {
-		acrValues := strings.Split(model.ACRValues, " ")
+	if !fluffycore_utils.IsEmptyOrNil(model.AcrValues) {
+		acrValues := strings.Split(model.AcrValues, " ")
 
 		idpHint := ""
 		candidateUserID := ""
@@ -164,7 +189,7 @@ func (s *service) Do(c echo.Context) error {
 				idpHint = ""
 				c.Redirect(http.StatusFound, "/error&error=invalid_idp_hint")
 			}
-			model.IDPHint = idpHint
+			model.IdpHint = idpHint
 		}
 		if !fluffycore_utils.IsEmptyOrNil(candidateUserID) {
 			getUserResponse, err := s.userService.GetUser(ctx, &proto_oidc_user.GetUserRequest{
@@ -174,12 +199,14 @@ func (s *service) Do(c echo.Context) error {
 				candidateUserID = ""
 				c.Redirect(http.StatusFound, "/error&error=invalid_root_candidate")
 			}
-			model.CandidateUserID = candidateUserID
+			model.CandidateUserId = candidateUserID
 		}
 
 	}
-
-	err = s.oidcFlowStore.StoreAuthorizationFinal(ctx, model.State, authorizationFinal)
+	_, err = s.oidcFlowStore.StoreAuthorizationFinal(ctx, &proto_oidc_flows.StoreAuthorizationFinalRequest{
+		AuthorizationFinal: authorizationFinal,
+		State:              model.State,
+	})
 	if err != nil {
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")
@@ -189,7 +216,9 @@ func (s *service) Do(c echo.Context) error {
 	session.Set("request", model)
 	session.Save()
 
-	mm, err := s.oidcFlowStore.GetAuthorizationFinal(ctx, model.State)
+	mm, err := s.oidcFlowStore.GetAuthorizationFinal(ctx, &proto_oidc_flows.GetAuthorizationFinalRequest{
+		State: model.State,
+	})
 	if err != nil {
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")
@@ -197,7 +226,7 @@ func (s *service) Do(c echo.Context) error {
 	log.Info().Interface("mm", mm).Msg("mm")
 	// redirect to the server Auth login pages.
 	//s
-	if fluffycore_utils.IsEmptyOrNil(model.IDPHint) {
+	if fluffycore_utils.IsEmptyOrNil(model.IdpHint) {
 		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath,
 			[]models.FormParam{
 				{
@@ -215,7 +244,7 @@ func (s *service) Do(c echo.Context) error {
 			},
 			{
 				Name:  "idp_hint",
-				Value: model.IDPHint,
+				Value: model.IdpHint,
 			},
 			{
 				Name:  "directive",

@@ -16,7 +16,9 @@ import (
 	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/shared"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/internal/wellknown/echo"
+	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -124,7 +126,7 @@ func (s *service) DoGet(c echo.Context) error {
 	if err != nil {
 		rows = append(rows, row{Key: "error", Value: err.Error()})
 	}
-	dd2 := dd.(*models.AuthorizationRequest)
+	dd2 := dd.(*proto_oidc_models.AuthorizationRequest)
 
 	log.Info().Interface("dd2", dd).Msg("dd2")
 	rows = append(rows, row{Key: "state", Value: dd2.State})
@@ -177,7 +179,7 @@ func (s *service) DoPost(c echo.Context) error {
 	if err != nil {
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 	}
-	dd2 := dd.(*models.AuthorizationRequest)
+	dd2 := dd.(*proto_oidc_models.AuthorizationRequest)
 
 	log.Info().Interface("dd2", dd).Msg("dd2")
 	errors = append(errors, services_handlers_shared.NewErrorF("state", dd2.State))
@@ -369,21 +371,29 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 	rootPath := s.config.OIDCConfig.BaseUrl
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
-	mm, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, state)
+	getAuthorizationFinalResponse, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, &proto_oidc_flows.GetAuthorizationFinalRequest{
+		State: state,
+	})
 	if err != nil {
 		log.Error().Err(err).Msg("GetAuthorizationFinal")
 		// redirect to error page
 		redirectUrl := fmt.Sprintf("%s?state=%s&error=%s", wellknown_echo.OIDCLoginPath, state, models.InternalError)
 		return c.Redirect(http.StatusFound, redirectUrl)
 	}
-	if mm.Identity == nil {
+	authorizationFinal := getAuthorizationFinalResponse.AuthorizationFinal
+	if authorizationFinal.Identity == nil {
 		redirectUrl := fmt.Sprintf("%s?state=%s&error=%s", wellknown_echo.OIDCLoginPath, state, models.InternalError)
 		return c.Redirect(http.StatusFound, redirectUrl)
 	}
 
 	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
 		AuthCookie: &contracts_cookies.AuthCookie{
-			Identity: mm.Identity,
+			Identity: &proto_oidc_models.Identity{
+				Subject:       authorizationFinal.Identity.Subject,
+				Email:         authorizationFinal.Identity.Email,
+				EmailVerified: authorizationFinal.Identity.EmailVerified,
+				IdpSlug:       authorizationFinal.Identity.IdpSlug,
+			},
 		},
 	})
 	if err != nil {
@@ -391,19 +401,23 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")
 	}
-
-	err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, mm.Request.Code, mm)
+	_, err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, &proto_oidc_flows.StoreAuthorizationFinalRequest{
+		State:              authorizationFinal.Request.Code,
+		AuthorizationFinal: authorizationFinal,
+	})
 	if err != nil {
 		log.Warn().Err(err).Msg("StoreAuthorizationFinal")
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	s.OIDCFlowStore().DeleteAuthorizationFinal(ctx, state)
+	s.OIDCFlowStore().DeleteAuthorizationFinal(ctx, &proto_oidc_flows.DeleteAuthorizationFinalRequest{
+		State: state,
+	})
 
 	// redirect to the client with the code.
-	redirectUri := mm.Request.RedirectURI +
-		"?code=" + mm.Request.Code +
-		"&state=" + mm.Request.State +
+	redirectUri := authorizationFinal.Request.RedirectUri +
+		"?code=" + authorizationFinal.Request.Code +
+		"&state=" + authorizationFinal.Request.State +
 		"&iss=" + rootPath
 	return c.Redirect(http.StatusFound, redirectUri)
 

@@ -69,7 +69,7 @@ func (s *service) DoGet(c echo.Context) error {
 		log.Error().Err(err).Msg("memCache.Get")
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	rootIdentity := cachedItem.(*models.Identity)
+	rootIdentity := cachedItem.(*proto_oidc_models.Identity)
 	if rootIdentity == nil {
 		log.Error().Msg("rootIdentity is nil")
 		return c.Redirect(http.StatusFound, "/error")

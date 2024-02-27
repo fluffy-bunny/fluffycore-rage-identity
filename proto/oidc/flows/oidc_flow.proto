@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+option go_package = "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows;flows";
+option java_multiple_files = true;
+option java_package = "com.fluffybunny.rageoidc.flows";
+option csharp_namespace = "FluffyBunny.RageOidc.Oidc.Flows";
+
+
+package proto.oidc.flows;
+
+import "google/protobuf/descriptor.proto";
+import "proto/oidc/models/user.proto";
+
+ 
+service OIDCFlowStore {
+    // Create user
+    rpc StoreAuthorizationFinal (StoreAuthorizationFinalRequest) returns (StoreAuthorizationFinalResponse) {}     
+    rpc GetAuthorizationFinal (GetAuthorizationFinalRequest) returns (GetAuthorizationFinalResponse) {}     
+    rpc DeleteAuthorizationFinal (DeleteAuthorizationFinalRequest) returns (DeleteAuthorizationFinalResponse) {}     
+
+}
+
+message StoreAuthorizationFinalRequest{
+    string state = 1;
+    proto.oidc.models.AuthorizationFinal authorization_final = 2;
+}
+message StoreAuthorizationFinalResponse{}
+
+message GetAuthorizationFinalRequest{
+    string state = 1;
+}
+message GetAuthorizationFinalResponse{
+    proto.oidc.models.AuthorizationFinal authorization_final = 1;
+}
+message DeleteAuthorizationFinalRequest{
+    string state = 1;
+}
+message DeleteAuthorizationFinalResponse{}
+
+service ExternalOauth2FlowStore {
+    // Create user
+    rpc StoreExternalOauth2Final (StoreExternalOauth2FinalRequest) returns (StoreExternalOauth2FinalResponse) {}     
+    rpc GetExternalOauth2Final (GetExternalOauth2FinalRequest) returns (GetExternalOauth2FinalResponse) {}     
+    rpc DeleteExternalOauth2Final (DeleteExternalOauth2FinalRequest) returns (DeleteExternalOauth2FinalResponse) {}     
+}
+
+message StoreExternalOauth2FinalRequest{
+    string state = 1;
+    proto.oidc.models.ExternalOauth2Final external_oauth2_final = 2;
+}
+message StoreExternalOauth2FinalResponse{}
+
+message GetExternalOauth2FinalRequest{
+    string state = 1;
+}
+
+message GetExternalOauth2FinalResponse{
+    proto.oidc.models.ExternalOauth2Final external_oauth2_final = 1;
+}
+
+message DeleteExternalOauth2FinalRequest{
+    string state = 1;
+}
+message DeleteExternalOauth2FinalResponse{}

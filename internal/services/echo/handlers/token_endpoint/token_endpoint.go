@@ -1,17 +1,14 @@
 package token_endpoint
 
 import (
-	"context"
-	"crypto/sha256"
-	"encoding/base64"
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/eko_gocache"
 	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/tokenservice"
 	contracts_util "github.com/fluffy-bunny/fluffycore-rage-identity/internal/contracts/util"
 	clientauthorization "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/middleware/clientauthorization"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/internal/wellknown/echo"
+	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	oauth2 "github.com/go-oauth2/oauth2/v4"
@@ -22,7 +19,7 @@ type (
 	service struct {
 		someUtil          contracts_util.ISomeUtil
 		scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache
-		oidcFlowStore     contracts_eko_gocache.IOIDCFlowStore
+		oidcFlowStore     proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer
 		tokenService      contracts_tokenservice.ITokenService
 	}
 )
@@ -35,7 +32,7 @@ func init() {
 
 func (s *service) Ctor(
 	scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
-	oidcFlowStore contracts_eko_gocache.IOIDCFlowStore,
+	oidcFlowStore proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer,
 	tokenService contracts_tokenservice.ITokenService,
 	someUtil contracts_util.ISomeUtil) (*service, error) {
 	return &service{
@@ -92,33 +89,4 @@ func (s *service) Do(c echo.Context) error {
 		return s.handleAuthorizationCode(c)
 	}
 	return c.String(http.StatusBadRequest, "Bad Request")
-}
-
-// This should be done on your server after receiving the authorization code
-func (s *service) verifyCode(ctx context.Context, code string, codeVerifier string) bool {
-	_, err := s.oidcFlowStore.GetAuthorizationFinal(ctx, code)
-	if err != nil {
-		return false
-	}
-
-	// Get the code challenge back from the authorization server (assuming it stores it)
-	codeChallengeFromDB := "..."
-
-	// Decode the code verifier and stored code challenge
-	verifierBytes, _ := base64.URLEncoding.DecodeString(codeVerifier)
-	challengeBytes, _ := base64.URLEncoding.DecodeString(codeChallengeFromDB)
-
-	// Calculate the hash of the verifier using the same method as the challenge
-	verifierHash := sha256.Sum256(verifierBytes)
-
-	// Compare the stored code challenge with the calculated hash
-	if len(verifierHash) != len(challengeBytes) {
-		return false
-	}
-	for i := 0; i < len(verifierHash); i++ {
-		if verifierHash[i] != challengeBytes[i] {
-			return false
-		}
-	}
-	return true
 }

@@ -1,7 +1,7 @@
 package cookies
 
 import (
-	models "github.com/fluffy-bunny/fluffycore-rage-identity/internal/models"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	echo "github.com/labstack/echo/v4"
 )
 
@@ -37,7 +37,7 @@ type (
 		AccountStateCookie *AccountStateCookie `json:"accountStateCookie"`
 	}
 	AuthCookie struct {
-		Identity *models.Identity `json:"identity"`
+		Identity *proto_oidc_models.Identity `json:"identity"`
 	}
 	SetAuthCookieRequest struct {
 		AuthCookie *AuthCookie `json:"authCookie"`

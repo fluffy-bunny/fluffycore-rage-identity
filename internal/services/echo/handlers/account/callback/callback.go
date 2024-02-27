@@ -9,6 +9,7 @@ import (
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/internal/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/internal/wellknown/echo"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
@@ -150,7 +151,7 @@ func (s *service) Do(c echo.Context) error {
 
 	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
 		AuthCookie: &contracts_cookies.AuthCookie{
-			Identity: &models.Identity{
+			Identity: &proto_oidc_models.Identity{
 				Subject:       idToken.Subject,
 				Email:         claims.Email,
 				EmailVerified: claims.EmailVerified,

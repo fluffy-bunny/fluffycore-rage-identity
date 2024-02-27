@@ -5,9 +5,9 @@ import (
 
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
-	"github.com/gogo/status"
-	"github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
+	status "github.com/gogo/status"
+	zerolog "github.com/rs/zerolog"
+	codes "google.golang.org/grpc/codes"
 )
 
 func (s *service) validateCreateUserRequest(request *proto_oidc_user.CreateUserRequest) error {

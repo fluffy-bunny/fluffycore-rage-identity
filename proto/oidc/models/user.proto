@@ -13,9 +13,10 @@ import "google/protobuf/wrappers.proto";
 import "proto/types/primitives.proto";
 import "proto/types/filter.proto";
 import "proto/types/phone_number.proto";
-import "infobloxopen/options/gorm.proto";
-
-
+ 
+extend google.protobuf.FieldOptions {
+    string param = 50000; // Choose a unique number for your extension
+  }
 enum UserState {
     USER_STATE_UNSPECIFIED = 0;
     USER_STATE_ACTIVE = 1;
@@ -45,6 +46,57 @@ message Identity {
     string idp_slug = 2;
     string email = 3;
     bool email_verified = 4;
+}
+message OIDCIdentity {
+    string subject = 1;
+    string idp_slug = 2;
+    string email = 3;
+    bool email_verified = 4;
+    repeated string acr = 5;
+    repeated string amr = 6;
+}
+message ExternalOauth2Request {
+    string idp_hint = 1;
+    string client_id = 2;
+    string code_challenge = 3;
+    string code_challenge_method = 4;
+    string state = 5;
+    string code_challenge_verifier = 6;
+    string nonce = 7;
+    string directive = 8;
+    string parent_state = 9;
+
+}
+message ExternalOauth2Final {
+    ExternalOauth2Request request = 1;
+    Identity identity = 2;
+}
+message AuthorizationRequest {
+    string client_id = 1;
+    string response_type = 2;
+    string scope = 3;
+    string state = 4;
+    string redirect_uri = 5;
+    string audience = 6;
+    string code_challenge = 7;
+    string code_challenge_method = 8;
+    string acr_values = 9;
+    string nonce = 10;
+    // this is the internal code that will be returned to the OIDC client
+    string code = 11;
+    // IDPHint is the idp_hint of the external idp that the authorization must authenticate against
+    string idp_hint = 12;
+    // CandidateUserID is the user_id of the candidate user that if the external IDP has no link should be linked to
+    // The candidate user must exist.
+    string candidate_user_id = 13;
+}
+
+message AuthorizationFinal {
+    AuthorizationRequest request = 1;
+    OIDCIdentity identity = 2;
+    Identity external_identity = 3;
+    string directive = 4;
+
 }
 
 message LinkedIdentities{
@@ -103,7 +155,6 @@ message ProfileUpdate{
     AddressUpdate address = 4;
 }
 message User {
-    option (gorm.opts).ormable = true;
     uint64 id = 1;
 
     Identity            root_identity = 2;

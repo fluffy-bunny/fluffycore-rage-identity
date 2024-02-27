@@ -9,7 +9,7 @@ import (
 	status "github.com/gogo/status"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
-	"google.golang.org/protobuf/encoding/protojson"
+	protojson "google.golang.org/protobuf/encoding/protojson"
 )
 
 func (s *service) validateGetUserRequest(request *proto_oidc_user.GetUserRequest) error {

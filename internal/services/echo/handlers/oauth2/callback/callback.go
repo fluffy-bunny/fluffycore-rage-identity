@@ -21,6 +21,7 @@ import (
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/internal/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/internal/wellknown/echo"
 	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/client"
+	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
@@ -115,15 +116,20 @@ func (s *service) Do(c echo.Context) error {
 	}
 	log = log.With().Interface("model", model).Logger()
 
-	externalOAuth2State, err := s.ExternalOauth2FlowStore().GetExternalOauth2Final(ctx, model.State)
+	getExternalOauth2FinalResponse, err := s.ExternalOauth2FlowStore().GetExternalOauth2Final(ctx, &proto_oidc_flows.GetExternalOauth2FinalRequest{
+		State: model.State,
+	})
 	if err != nil {
 		log.Error().Err(err).Msg("GetExternalOauth2Final")
 		return c.Redirect(http.StatusTemporaryRedirect, "/login?error=invalid_state")
 	}
-	parentState := externalOAuth2State.Request.ParentState
+	externalOauth2Final := getExternalOauth2FinalResponse.ExternalOauth2Final
+	parentState := externalOauth2Final.Request.ParentState
 	// if we get here we are going to NUKE the cache for this transaction
 	defer func() {
-		s.ExternalOauth2FlowStore().DeleteExternalOauth2Final(ctx, model.State)
+		s.ExternalOauth2FlowStore().DeleteExternalOauth2Final(ctx, &proto_oidc_flows.DeleteExternalOauth2FinalRequest{
+			State: model.State,
+		})
 	}()
 	doInternalErrorPost := func() error {
 		formParams := []models.FormParam{
@@ -209,15 +215,18 @@ func (s *service) Do(c echo.Context) error {
 		}
 		return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
 	}
-	oidcFinalState, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, parentState)
+	getAuthorizationFinalResponse, err := s.OIDCFlowStore().GetAuthorizationFinal(ctx, &proto_oidc_flows.GetAuthorizationFinalRequest{
+		State: parentState,
+	})
 	if err != nil {
 		log.Error().Err(err).Msg("GetAuthorizationFinal")
 		return doInternalErrorPost()
 	}
+	authorizationFinal := getAuthorizationFinalResponse.AuthorizationFinal
 
 	getIDPBySlugResponse, err := s.IdpServiceServer().GetIDPBySlug(ctx,
 		&proto_oidc_idp.GetIDPBySlugRequest{
-			Slug: externalOAuth2State.Request.IDPHint,
+			Slug: externalOauth2Final.Request.IdpHint,
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("GetIDPBySlug")
@@ -232,11 +241,11 @@ func (s *service) Do(c echo.Context) error {
 		case *proto_oidc_models.Protocol_Github:
 			{
 				exchangeCodeResponse, err = s.githubCodeExchange.ExchangeCode(ctx, &contracts_codeexchange.ExchangeCodeRequest{
-					IDPHint:      externalOAuth2State.Request.IDPHint,
-					ClientID:     externalOAuth2State.Request.ClientID,
-					Nonce:        externalOAuth2State.Request.Nonce,
+					IDPHint:      externalOauth2Final.Request.IdpHint,
+					ClientID:     externalOauth2Final.Request.ClientId,
+					Nonce:        externalOauth2Final.Request.Nonce,
 					Code:         model.Code,
-					CodeVerifier: externalOAuth2State.Request.CodeChallenge,
+					CodeVerifier: externalOauth2Final.Request.CodeChallenge,
 				})
 				if err != nil {
 					log.Error().Err(err).Msg("ExchangeCode")
@@ -246,9 +255,9 @@ func (s *service) Do(c echo.Context) error {
 		case *proto_oidc_models.Protocol_Oidc:
 			{
 				exchangeCodeResponse, err = s.genericOIDCCodeExchange.ExchangeCode(ctx, &contracts_codeexchange.ExchangeCodeRequest{
-					IDPHint:  externalOAuth2State.Request.IDPHint,
-					ClientID: externalOAuth2State.Request.ClientID,
-					Nonce:    externalOAuth2State.Request.Nonce,
+					IDPHint:  externalOauth2Final.Request.IdpHint,
+					ClientID: externalOauth2Final.Request.ClientId,
+					Nonce:    externalOauth2Final.Request.Nonce,
 					Code:     model.Code,
 					//			CodeVerifier: finalCache.Request.CodeChallenge,
 				})
@@ -285,13 +294,13 @@ func (s *service) Do(c echo.Context) error {
 			}
 		}
 
-		externalIdentity := &models.Identity{
+		externalIdentity := &proto_oidc_models.OIDCIdentity{
 			Subject: rawToken.Subject(),
 			Email:   email.(string),
-			ACR: []string{
-				fmt.Sprintf("urn:mastodon:idp:%s", externalOAuth2State.Request.IDPHint),
+			Acr: []string{
+				fmt.Sprintf("urn:mastodon:idp:%s", externalOauth2Final.Request.IdpHint),
 			},
-			AMR: []string{
+			Amr: []string{
 				models.AMRIdp,
 			},
 			EmailVerified: emailVerified,
@@ -322,17 +331,20 @@ func (s *service) Do(c echo.Context) error {
 			if !user.RootIdentity.EmailVerified {
 				return doEmailVerification(user)
 			}
-			oidcFinalState.Identity = &models.Identity{
+			authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
 				Subject: user.RootIdentity.Subject,
 				Email:   user.RootIdentity.Email,
-				ACR: []string{
-					fmt.Sprintf("urn:mastodon:idp:%s", externalOAuth2State.Request.IDPHint),
+				Acr: []string{
+					fmt.Sprintf("urn:mastodon:idp:%s", externalOauth2Final.Request.IdpHint),
 				},
-				AMR: []string{
+				Amr: []string{
 					models.AMRIdp,
 				},
 			}
-			err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, parentState, oidcFinalState)
+			_, err = s.OIDCFlowStore().StoreAuthorizationFinal(ctx, &proto_oidc_flows.StoreAuthorizationFinalRequest{
+				State:              parentState,
+				AuthorizationFinal: authorizationFinal,
+			})
 			if err != nil {
 				log.Error().Err(err).Msg("StoreAuthorizationFinal")
 				return doInternalErrorPost()
@@ -361,7 +373,7 @@ func (s *service) Do(c echo.Context) error {
 			return loginLinkedUser(user)
 		}
 
-		linkUser := func(candidateUserID string, externalIdentity *models.Identity) (*proto_oidc_models.User, error) {
+		linkUser := func(candidateUserID string, externalIdentity *proto_oidc_models.OIDCIdentity) (*proto_oidc_models.User, error) {
 			getUserResponse, err := s.UserService().GetUser(ctx, &proto_oidc_user.GetUserRequest{
 				Subject: candidateUserID,
 			})
@@ -379,7 +391,7 @@ func (s *service) Do(c echo.Context) error {
 				ExternalIdentity: &proto_oidc_models.Identity{
 					Subject:       externalIdentity.Subject,
 					Email:         externalIdentity.Email,
-					IdpSlug:       externalOAuth2State.Request.IDPHint,
+					IdpSlug:       externalOauth2Final.Request.IdpHint,
 					EmailVerified: externalIdentity.EmailVerified,
 				},
 			})
@@ -389,7 +401,7 @@ func (s *service) Do(c echo.Context) error {
 			}
 			return user, nil
 		}
-		linkUserAndLogin := func(candidateUserID string, externalIdentity *models.Identity) error {
+		linkUserAndLogin := func(candidateUserID string, externalIdentity *proto_oidc_models.OIDCIdentity) error {
 			user, err := linkUser(candidateUserID, externalIdentity)
 			if err != nil {
 				log.Error().Err(err).Msg("LinkUsers")
@@ -425,7 +437,7 @@ func (s *service) Do(c echo.Context) error {
 								{
 									Subject:       externalIdentity.Subject,
 									Email:         externalIdentity.Email,
-									IdpSlug:       externalOAuth2State.Request.IDPHint,
+									IdpSlug:       externalOauth2Final.Request.IdpHint,
 									EmailVerified: externalIdentity.EmailVerified,
 								},
 							},
@@ -439,7 +451,7 @@ func (s *service) Do(c echo.Context) error {
 			return createUserResponse.User, nil
 		}
 		// not found, redirect to OIDC LoginPage telling the user to do the signup dance
-		if externalOAuth2State.Request.Directive == models.LoginDirective {
+		if externalOauth2Final.Request.Directive == models.LoginDirective {
 
 			// a perfect email match beats out a candidate user
 			//--------------------------------------------------------------------------------------------
@@ -452,10 +464,10 @@ func (s *service) Do(c echo.Context) error {
 				return linkUserAndLogin(user.RootIdentity.Subject, externalIdentity)
 			} else {
 				// do we have a candidate user to link to?
-				if !fluffycore_utils.IsEmptyOrNil(oidcFinalState.Request.CandidateUserID) {
+				if !fluffycore_utils.IsEmptyOrNil(authorizationFinal.Request.CandidateUserId) {
 					// CandidateUserID hint
 					//--------------------------------------------------------------------------------------------
-					return linkUserAndLogin(oidcFinalState.Request.CandidateUserID, externalIdentity)
+					return linkUserAndLogin(authorizationFinal.Request.CandidateUserId, externalIdentity)
 				}
 
 				// is AUTO-ACCOUNT creation enabled for this IDP?
@@ -474,7 +486,7 @@ func (s *service) Do(c echo.Context) error {
 
 		}
 
-		if externalOAuth2State.Request.Directive == models.SignupDirective {
+		if externalOauth2Final.Request.Directive == models.SignupDirective {
 
 			user, err := doAutoCreateUser()
 			if err != nil {
