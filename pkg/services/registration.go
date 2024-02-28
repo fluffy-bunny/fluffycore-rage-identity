@@ -30,12 +30,10 @@ import (
 	services_tokenservice "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/tokenservice"
 	services_util "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/util"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
-	storage_user_inmemory "github.com/fluffy-bunny/fluffycore-rage-identity/storage/oidcuser/inmemory"
 	fluffycore_contracts_jwtminter "github.com/fluffy-bunny/fluffycore/contracts/jwtminter"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_echo_services_cookies_insecure "github.com/fluffy-bunny/fluffycore/echo/services/cookies/insecure"
 	fluffycore_echo_services_cookies_secure "github.com/fluffy-bunny/fluffycore/echo/services/cookies/secure"
-
 	fluffycore_echo_templates "github.com/fluffy-bunny/fluffycore/echo/templates"
 	fluffycore_services_eko_gocache_go_cache "github.com/fluffy-bunny/fluffycore/services/eko_gocache/go_cache"
 	fluffycore_services_jwtminter "github.com/fluffy-bunny/fluffycore/services/jwtminter"
@@ -53,7 +51,6 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	// this has to be added FIRST as it sets up the default inmemory version of the IClient stores
 	// it addes an empty *stores_services_client_inmemory.Clients
 	services_client_inmemory.AddSingletonIFluffyCoreClientServiceServer(builder)
-	storage_user_inmemory.AddSingletonIFluffyCoreUserServiceServer(builder)
 	services_idp_inmemory.AddSingletonIFluffyCoreIDPServiceServer(builder)
 	services_oauth2factory.AddSingletonIOAuth2Factory(builder)
 	services_tokenservice.AddSingletonITokenService(builder)
