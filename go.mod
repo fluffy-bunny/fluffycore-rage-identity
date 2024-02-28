@@ -12,8 +12,8 @@ require (
 	github.com/coreos/go-oidc/v3 v3.9.0
 	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/eko/gocache/lib/v4 v4.1.5
-	github.com/fluffy-bunny/fluffy-dozm-di v0.0.1
-	github.com/fluffy-bunny/fluffycore v1.0.81
+	github.com/fluffy-bunny/fluffy-dozm-di v0.0.2
+	github.com/fluffy-bunny/fluffycore v1.0.83
 	github.com/go-oauth2/oauth2/v4 v4.5.2
 	github.com/gogo/status v1.1.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
