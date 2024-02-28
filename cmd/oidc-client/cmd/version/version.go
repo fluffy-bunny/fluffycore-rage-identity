@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	shared "github.com/fluffy-bunny/fluffycore-rage-identity/cmd/oidc-client/shared"
-	cobra_utils "github.com/fluffy-bunny/fluffycore-rage-identity/internal/cobra_utils"
+	cobra_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/cobra_utils"
 	cobra "github.com/spf13/cobra"
 )
 
