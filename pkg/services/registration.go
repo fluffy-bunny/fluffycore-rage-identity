@@ -30,7 +30,7 @@ import (
 	services_tokenservice "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/tokenservice"
 	services_util "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/util"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
-	storage_user_inmemory "github.com/fluffy-bunny/fluffycore-rage-identity/storage/user/inmemory"
+	storage_user_inmemory "github.com/fluffy-bunny/fluffycore-rage-identity/storage/oidcuser/inmemory"
 	fluffycore_contracts_jwtminter "github.com/fluffy-bunny/fluffycore/contracts/jwtminter"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_echo_services_cookies_insecure "github.com/fluffy-bunny/fluffycore/echo/services/cookies/insecure"

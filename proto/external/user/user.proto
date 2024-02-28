@@ -1,0 +1,105 @@
+syntax = "proto3";
+
+option go_package = "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user;user";
+
+package proto.external.user;
+
+import "google/protobuf/descriptor.proto";
+import "proto/types/filter.proto";
+import "proto/types/pagination.proto";
+import "proto/external/models/user.proto";
+
+import "google/api/annotations.proto";
+
+
+message Filter {
+    proto.types.IDFilterExpression                      id = 1;
+    proto.types.StringMapStringFilterExpression         metadata = 2;
+    proto.external.models.UserStateFilterExpression     state = 3;
+    
+    // AST
+    repeated Filter and = 100;
+    repeated Filter or = 101;
+    repeated Filter not = 102;
+}
+
+service UserService {
+    // Create user
+    rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {
+        option (google.api.http) = {
+            post: "/external/v1/user/_create"
+            body: "*"
+          };
+    }
+    // Get user
+    rpc GetUser (GetUserRequest) returns (GetUserResponse) {
+        option (google.api.http) = {
+            get: "/external/v1/user/subject/{subject}"
+          };
+    }
+
+    // Delete user
+    rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse) {
+        option (google.api.http) = {
+            delete: "/external/v1/user/subject/{subject}"
+          };
+    }
+    // Update user
+    rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse) {
+        option (google.api.http) = {
+            post: "/external/v1/user/_update"
+            body: "*"
+          };
+    }
+    // List users
+    rpc ListUser (ListUserRequest) returns (ListUserResponse) {
+        option (google.api.http) = {
+            post: "/external/v1/user/_search"
+            body: "*"
+          };
+    }
+} 
+
+
+
+
+  
+message CreateUserRequest {
+    proto.external.models.User user = 1;
+}   
+message CreateUserResponse {
+    proto.external.models.User user = 1;
+}
+message GetUserRequest {
+   string subject = 1;
+}
+message GetUserResponse {
+    proto.external.models.User user = 1;
+}
+
+message DeleteUserRequest {
+   string subject = 1;
+}
+message DeleteUserResponse {
+}
+message UpdateUserRequest {
+    proto.external.models.UserUpdate user = 1;
+}
+message UpdateUserResponse {
+    proto.external.models.User user = 1;
+}
+
+message ListUserRequest {
+   // Filter
+   Filter filter = 1;
+
+   // Pagination
+   proto.types.Pagination pagination = 100;
+}
+
+message ListUserResponse {
+   repeated proto.external.models.User users = 1;
+
+   // Pagination details
+   proto.types.PaginationResponse pagination = 100;
+}
