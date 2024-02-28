@@ -30,7 +30,7 @@ message UserStateFilterExpression {
 }
 
 message UserStateValue {
-    UserState vale = 1;
+    UserState value = 1;
 }
 message Password {
     string  hash = 1;

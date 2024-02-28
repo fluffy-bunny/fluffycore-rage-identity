@@ -22,7 +22,7 @@ service OIDCFlowStore {
 
 message StoreAuthorizationRequestStateRequest{
     string state = 1;
-    proto.oidc.models.AuthorizationRequestState authorization_final = 2;
+    proto.oidc.models.AuthorizationRequestState authorization_request_state = 2;
 }
 message StoreAuthorizationRequestStateResponse{}
 
@@ -30,7 +30,7 @@ message GetAuthorizationRequestStateRequest{
     string state = 1;
 }
 message GetAuthorizationRequestStateResponse{
-    proto.oidc.models.AuthorizationRequestState authorization_final = 1;
+    proto.oidc.models.AuthorizationRequestState authorization_request_state = 1;
 }
 message DeleteAuthorizationRequestStateRequest{
     string state = 1;
