@@ -14,9 +14,6 @@ import "proto/types/primitives.proto";
 import "proto/types/filter.proto";
 import "proto/types/phone_number.proto";
  
-extend google.protobuf.FieldOptions {
-    string param = 50000; // Choose a unique number for your extension
-  }
 enum UserState {
     USER_STATE_UNSPECIFIED = 0;
     USER_STATE_ACTIVE = 1;
