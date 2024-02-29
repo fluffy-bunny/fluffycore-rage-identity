@@ -16,7 +16,7 @@ import (
 
 type (
 	service struct {
-		proto_oidc_flows.UnimplementedOIDCFlowStoreServer
+		proto_oidc_flows.UnimplementedAuthorizationRequestStateStoreServer
 
 		oidcFlowCache contracts_eko_gocache.IOIDCFlowCache
 	}
@@ -25,16 +25,16 @@ type (
 var stemService = (*service)(nil)
 
 func init() {
-	var _ proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer = stemService
+	var _ proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer = stemService
 }
-func (s *service) Ctor(oidcFlowCache contracts_eko_gocache.IOIDCFlowCache) (proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer, error) {
+func (s *service) Ctor(oidcFlowCache contracts_eko_gocache.IOIDCFlowCache) (proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer, error) {
 	return &service{
 		oidcFlowCache: oidcFlowCache,
 	}, nil
 }
 
 func AddSingletonIOIDCFlowStore(cb di.ContainerBuilder) {
-	di.AddSingleton[proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer](cb, stemService.Ctor)
+	di.AddSingleton[proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer](cb, stemService.Ctor)
 }
 
 func (s *service) StoreAuthorizationRequestState(ctx context.Context, request *proto_oidc_flows.StoreAuthorizationRequestStateRequest) (*proto_oidc_flows.StoreAuthorizationRequestStateResponse, error) {

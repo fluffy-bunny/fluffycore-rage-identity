@@ -12,59 +12,59 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// IFluffyCoreOIDCFlowStoreServer defines the grpc server
-type IFluffyCoreOIDCFlowStoreServer interface {
-	OIDCFlowStoreServer
+// IFluffyCoreAuthorizationRequestStateStoreServer defines the grpc server
+type IFluffyCoreAuthorizationRequestStateStoreServer interface {
+	AuthorizationRequestStateStoreServer
 }
 
-type UnimplementedFluffyCoreOIDCFlowStoreServerEndpointRegistration struct {
+type UnimplementedFluffyCoreAuthorizationRequestStateStoreServerEndpointRegistration struct {
 }
 
-func (UnimplementedFluffyCoreOIDCFlowStoreServerEndpointRegistration) RegisterFluffyCoreHandler(gwmux *runtime.ServeMux, conn *grpc.ClientConn) {
+func (UnimplementedFluffyCoreAuthorizationRequestStateStoreServerEndpointRegistration) RegisterFluffyCoreHandler(gwmux *runtime.ServeMux, conn *grpc.ClientConn) {
 }
 
-// OIDCFlowStoreFluffyCoreServer defines the grpc server truct
-type OIDCFlowStoreFluffyCoreServer struct {
-	UnimplementedOIDCFlowStoreServer
-	UnimplementedFluffyCoreOIDCFlowStoreServerEndpointRegistration
+// AuthorizationRequestStateStoreFluffyCoreServer defines the grpc server truct
+type AuthorizationRequestStateStoreFluffyCoreServer struct {
+	UnimplementedAuthorizationRequestStateStoreServer
+	UnimplementedFluffyCoreAuthorizationRequestStateStoreServerEndpointRegistration
 }
 
 // RegisterFluffyCoreGRPCService the server with grpc
-func (srv *OIDCFlowStoreFluffyCoreServer) RegisterFluffyCoreGRPCService(s *grpc.Server) {
-	RegisterOIDCFlowStoreServer(s, srv)
+func (srv *AuthorizationRequestStateStoreFluffyCoreServer) RegisterFluffyCoreGRPCService(s *grpc.Server) {
+	RegisterAuthorizationRequestStateStoreServer(s, srv)
 }
 
-// AddOIDCFlowStoreServerWithExternalRegistration adds the fluffycore aware grpc server and external registration service.  Mainly used for grpc-gateway
-func AddOIDCFlowStoreServerWithExternalRegistration(cb fluffy_dozm_di.ContainerBuilder, ctor any, register func() endpoint.IEndpointRegistration) {
+// AddAuthorizationRequestStateStoreServerWithExternalRegistration adds the fluffycore aware grpc server and external registration service.  Mainly used for grpc-gateway
+func AddAuthorizationRequestStateStoreServerWithExternalRegistration(cb fluffy_dozm_di.ContainerBuilder, ctor any, register func() endpoint.IEndpointRegistration) {
 	fluffy_dozm_di.AddSingleton[endpoint.IEndpointRegistration](cb, register)
-	fluffy_dozm_di.AddScoped[IFluffyCoreOIDCFlowStoreServer](cb, ctor)
+	fluffy_dozm_di.AddScoped[IFluffyCoreAuthorizationRequestStateStoreServer](cb, ctor)
 }
 
-// AddOIDCFlowStoreServer adds the fluffycore aware grpc server
-func AddOIDCFlowStoreServer(cb fluffy_dozm_di.ContainerBuilder, ctor any) {
-	AddOIDCFlowStoreServerWithExternalRegistration(cb, ctor, func() endpoint.IEndpointRegistration {
-		return &OIDCFlowStoreFluffyCoreServer{}
+// AddAuthorizationRequestStateStoreServer adds the fluffycore aware grpc server
+func AddAuthorizationRequestStateStoreServer(cb fluffy_dozm_di.ContainerBuilder, ctor any) {
+	AddAuthorizationRequestStateStoreServerWithExternalRegistration(cb, ctor, func() endpoint.IEndpointRegistration {
+		return &AuthorizationRequestStateStoreFluffyCoreServer{}
 	})
 }
 
 // StoreAuthorizationRequestState...
-func (s *OIDCFlowStoreFluffyCoreServer) StoreAuthorizationRequestState(ctx context.Context, request *StoreAuthorizationRequestStateRequest) (*StoreAuthorizationRequestStateResponse, error) {
+func (s *AuthorizationRequestStateStoreFluffyCoreServer) StoreAuthorizationRequestState(ctx context.Context, request *StoreAuthorizationRequestStateRequest) (*StoreAuthorizationRequestStateResponse, error) {
 	requestContainer := dicontext.GetRequestContainer(ctx)
-	downstreamService := fluffy_dozm_di.Get[IFluffyCoreOIDCFlowStoreServer](requestContainer)
+	downstreamService := fluffy_dozm_di.Get[IFluffyCoreAuthorizationRequestStateStoreServer](requestContainer)
 	return downstreamService.StoreAuthorizationRequestState(ctx, request)
 }
 
 // GetAuthorizationRequestState...
-func (s *OIDCFlowStoreFluffyCoreServer) GetAuthorizationRequestState(ctx context.Context, request *GetAuthorizationRequestStateRequest) (*GetAuthorizationRequestStateResponse, error) {
+func (s *AuthorizationRequestStateStoreFluffyCoreServer) GetAuthorizationRequestState(ctx context.Context, request *GetAuthorizationRequestStateRequest) (*GetAuthorizationRequestStateResponse, error) {
 	requestContainer := dicontext.GetRequestContainer(ctx)
-	downstreamService := fluffy_dozm_di.Get[IFluffyCoreOIDCFlowStoreServer](requestContainer)
+	downstreamService := fluffy_dozm_di.Get[IFluffyCoreAuthorizationRequestStateStoreServer](requestContainer)
 	return downstreamService.GetAuthorizationRequestState(ctx, request)
 }
 
 // DeleteAuthorizationRequestState...
-func (s *OIDCFlowStoreFluffyCoreServer) DeleteAuthorizationRequestState(ctx context.Context, request *DeleteAuthorizationRequestStateRequest) (*DeleteAuthorizationRequestStateResponse, error) {
+func (s *AuthorizationRequestStateStoreFluffyCoreServer) DeleteAuthorizationRequestState(ctx context.Context, request *DeleteAuthorizationRequestStateRequest) (*DeleteAuthorizationRequestStateResponse, error) {
 	requestContainer := dicontext.GetRequestContainer(ctx)
-	downstreamService := fluffy_dozm_di.Get[IFluffyCoreOIDCFlowStoreServer](requestContainer)
+	downstreamService := fluffy_dozm_di.Get[IFluffyCoreAuthorizationRequestStateStoreServer](requestContainer)
 	return downstreamService.DeleteAuthorizationRequestState(ctx, request)
 }
 

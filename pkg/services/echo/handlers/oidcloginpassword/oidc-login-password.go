@@ -293,7 +293,7 @@ func (s *service) DoPost(c echo.Context) error {
 		return renderError(errors)
 	}
 
-	getAuthorizationRequestStateResponse, err := s.OIDCFlowStore().GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
+	getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
 		State: dd2.State,
 	})
 	if err != nil {
@@ -319,7 +319,7 @@ func (s *service) DoPost(c echo.Context) error {
 	// "urn:mastodon:idp:google", "urn:mastodon:idp:spacex", "urn:mastodon:idp:github-enterprise", etc.
 	// "urn:mastodon:password", "urn:mastodon:2fa", "urn:mastodon:email", etc.
 	// we are done with the state now.  Lets map it to the code so it can be looked up by the client.
-	_, err = s.OIDCFlowStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
 		State:                     authorizationFinal.Request.Code,
 		AuthorizationRequestState: authorizationFinal,
 	})
@@ -329,10 +329,10 @@ func (s *service) DoPost(c echo.Context) error {
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 		return renderError(errors)
 	}
-	s.OIDCFlowStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
+	s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
 		State: dd2.State,
 	})
-	_, err = s.OIDCFlowStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
 		State:                     dd2.State,
 		AuthorizationRequestState: authorizationFinal,
 	})
@@ -378,7 +378,7 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 	rootPath := s.config.OIDCConfig.BaseUrl
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
-	getAuthorizationRequestStateResponse, err := s.OIDCFlowStore().GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
+	getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
 		State: state,
 	})
 	if err != nil {
@@ -408,7 +408,7 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	_, err = s.OIDCFlowStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
 		State:                     authorizationFinal.Request.Code,
 		AuthorizationRequestState: authorizationFinal,
 	})
@@ -417,7 +417,7 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	s.OIDCFlowStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
+	s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
 		State: state,
 	})
 

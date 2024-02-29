@@ -19,165 +19,166 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	OIDCFlowStore_StoreAuthorizationRequestState_FullMethodName  = "/proto.oidc.flows.OIDCFlowStore/StoreAuthorizationRequestState"
-	OIDCFlowStore_GetAuthorizationRequestState_FullMethodName    = "/proto.oidc.flows.OIDCFlowStore/GetAuthorizationRequestState"
-	OIDCFlowStore_DeleteAuthorizationRequestState_FullMethodName = "/proto.oidc.flows.OIDCFlowStore/DeleteAuthorizationRequestState"
+	AuthorizationRequestStateStore_StoreAuthorizationRequestState_FullMethodName  = "/proto.oidc.flows.AuthorizationRequestStateStore/StoreAuthorizationRequestState"
+	AuthorizationRequestStateStore_GetAuthorizationRequestState_FullMethodName    = "/proto.oidc.flows.AuthorizationRequestStateStore/GetAuthorizationRequestState"
+	AuthorizationRequestStateStore_DeleteAuthorizationRequestState_FullMethodName = "/proto.oidc.flows.AuthorizationRequestStateStore/DeleteAuthorizationRequestState"
 )
 
-// OIDCFlowStoreClient is the client API for OIDCFlowStore service.
+// AuthorizationRequestStateStoreClient is the client API for AuthorizationRequestStateStore service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type OIDCFlowStoreClient interface {
+type AuthorizationRequestStateStoreClient interface {
 	// Create user
 	StoreAuthorizationRequestState(ctx context.Context, in *StoreAuthorizationRequestStateRequest, opts ...grpc.CallOption) (*StoreAuthorizationRequestStateResponse, error)
 	GetAuthorizationRequestState(ctx context.Context, in *GetAuthorizationRequestStateRequest, opts ...grpc.CallOption) (*GetAuthorizationRequestStateResponse, error)
 	DeleteAuthorizationRequestState(ctx context.Context, in *DeleteAuthorizationRequestStateRequest, opts ...grpc.CallOption) (*DeleteAuthorizationRequestStateResponse, error)
 }
 
-type oIDCFlowStoreClient struct {
+type authorizationRequestStateStoreClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewOIDCFlowStoreClient(cc grpc.ClientConnInterface) OIDCFlowStoreClient {
-	return &oIDCFlowStoreClient{cc}
+func NewAuthorizationRequestStateStoreClient(cc grpc.ClientConnInterface) AuthorizationRequestStateStoreClient {
+	return &authorizationRequestStateStoreClient{cc}
 }
 
-func (c *oIDCFlowStoreClient) StoreAuthorizationRequestState(ctx context.Context, in *StoreAuthorizationRequestStateRequest, opts ...grpc.CallOption) (*StoreAuthorizationRequestStateResponse, error) {
+func (c *authorizationRequestStateStoreClient) StoreAuthorizationRequestState(ctx context.Context, in *StoreAuthorizationRequestStateRequest, opts ...grpc.CallOption) (*StoreAuthorizationRequestStateResponse, error) {
 	out := new(StoreAuthorizationRequestStateResponse)
-	err := c.cc.Invoke(ctx, OIDCFlowStore_StoreAuthorizationRequestState_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, AuthorizationRequestStateStore_StoreAuthorizationRequestState_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *oIDCFlowStoreClient) GetAuthorizationRequestState(ctx context.Context, in *GetAuthorizationRequestStateRequest, opts ...grpc.CallOption) (*GetAuthorizationRequestStateResponse, error) {
+func (c *authorizationRequestStateStoreClient) GetAuthorizationRequestState(ctx context.Context, in *GetAuthorizationRequestStateRequest, opts ...grpc.CallOption) (*GetAuthorizationRequestStateResponse, error) {
 	out := new(GetAuthorizationRequestStateResponse)
-	err := c.cc.Invoke(ctx, OIDCFlowStore_GetAuthorizationRequestState_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, AuthorizationRequestStateStore_GetAuthorizationRequestState_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *oIDCFlowStoreClient) DeleteAuthorizationRequestState(ctx context.Context, in *DeleteAuthorizationRequestStateRequest, opts ...grpc.CallOption) (*DeleteAuthorizationRequestStateResponse, error) {
+func (c *authorizationRequestStateStoreClient) DeleteAuthorizationRequestState(ctx context.Context, in *DeleteAuthorizationRequestStateRequest, opts ...grpc.CallOption) (*DeleteAuthorizationRequestStateResponse, error) {
 	out := new(DeleteAuthorizationRequestStateResponse)
-	err := c.cc.Invoke(ctx, OIDCFlowStore_DeleteAuthorizationRequestState_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, AuthorizationRequestStateStore_DeleteAuthorizationRequestState_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// OIDCFlowStoreServer is the server API for OIDCFlowStore service.
-// All implementations must embed UnimplementedOIDCFlowStoreServer
+// AuthorizationRequestStateStoreServer is the server API for AuthorizationRequestStateStore service.
+// All implementations must embed UnimplementedAuthorizationRequestStateStoreServer
 // for forward compatibility
-type OIDCFlowStoreServer interface {
+type AuthorizationRequestStateStoreServer interface {
 	// Create user
 	StoreAuthorizationRequestState(context.Context, *StoreAuthorizationRequestStateRequest) (*StoreAuthorizationRequestStateResponse, error)
 	GetAuthorizationRequestState(context.Context, *GetAuthorizationRequestStateRequest) (*GetAuthorizationRequestStateResponse, error)
 	DeleteAuthorizationRequestState(context.Context, *DeleteAuthorizationRequestStateRequest) (*DeleteAuthorizationRequestStateResponse, error)
-	mustEmbedUnimplementedOIDCFlowStoreServer()
+	mustEmbedUnimplementedAuthorizationRequestStateStoreServer()
 }
 
-// UnimplementedOIDCFlowStoreServer must be embedded to have forward compatible implementations.
-type UnimplementedOIDCFlowStoreServer struct {
+// UnimplementedAuthorizationRequestStateStoreServer must be embedded to have forward compatible implementations.
+type UnimplementedAuthorizationRequestStateStoreServer struct {
 }
 
-func (UnimplementedOIDCFlowStoreServer) StoreAuthorizationRequestState(context.Context, *StoreAuthorizationRequestStateRequest) (*StoreAuthorizationRequestStateResponse, error) {
+func (UnimplementedAuthorizationRequestStateStoreServer) StoreAuthorizationRequestState(context.Context, *StoreAuthorizationRequestStateRequest) (*StoreAuthorizationRequestStateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StoreAuthorizationRequestState not implemented")
 }
-func (UnimplementedOIDCFlowStoreServer) GetAuthorizationRequestState(context.Context, *GetAuthorizationRequestStateRequest) (*GetAuthorizationRequestStateResponse, error) {
+func (UnimplementedAuthorizationRequestStateStoreServer) GetAuthorizationRequestState(context.Context, *GetAuthorizationRequestStateRequest) (*GetAuthorizationRequestStateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAuthorizationRequestState not implemented")
 }
-func (UnimplementedOIDCFlowStoreServer) DeleteAuthorizationRequestState(context.Context, *DeleteAuthorizationRequestStateRequest) (*DeleteAuthorizationRequestStateResponse, error) {
+func (UnimplementedAuthorizationRequestStateStoreServer) DeleteAuthorizationRequestState(context.Context, *DeleteAuthorizationRequestStateRequest) (*DeleteAuthorizationRequestStateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteAuthorizationRequestState not implemented")
 }
-func (UnimplementedOIDCFlowStoreServer) mustEmbedUnimplementedOIDCFlowStoreServer() {}
+func (UnimplementedAuthorizationRequestStateStoreServer) mustEmbedUnimplementedAuthorizationRequestStateStoreServer() {
+}
 
-// UnsafeOIDCFlowStoreServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to OIDCFlowStoreServer will
+// UnsafeAuthorizationRequestStateStoreServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AuthorizationRequestStateStoreServer will
 // result in compilation errors.
-type UnsafeOIDCFlowStoreServer interface {
-	mustEmbedUnimplementedOIDCFlowStoreServer()
+type UnsafeAuthorizationRequestStateStoreServer interface {
+	mustEmbedUnimplementedAuthorizationRequestStateStoreServer()
 }
 
-func RegisterOIDCFlowStoreServer(s grpc.ServiceRegistrar, srv OIDCFlowStoreServer) {
-	s.RegisterService(&OIDCFlowStore_ServiceDesc, srv)
+func RegisterAuthorizationRequestStateStoreServer(s grpc.ServiceRegistrar, srv AuthorizationRequestStateStoreServer) {
+	s.RegisterService(&AuthorizationRequestStateStore_ServiceDesc, srv)
 }
 
-func _OIDCFlowStore_StoreAuthorizationRequestState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _AuthorizationRequestStateStore_StoreAuthorizationRequestState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(StoreAuthorizationRequestStateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OIDCFlowStoreServer).StoreAuthorizationRequestState(ctx, in)
+		return srv.(AuthorizationRequestStateStoreServer).StoreAuthorizationRequestState(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: OIDCFlowStore_StoreAuthorizationRequestState_FullMethodName,
+		FullMethod: AuthorizationRequestStateStore_StoreAuthorizationRequestState_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OIDCFlowStoreServer).StoreAuthorizationRequestState(ctx, req.(*StoreAuthorizationRequestStateRequest))
+		return srv.(AuthorizationRequestStateStoreServer).StoreAuthorizationRequestState(ctx, req.(*StoreAuthorizationRequestStateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _OIDCFlowStore_GetAuthorizationRequestState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _AuthorizationRequestStateStore_GetAuthorizationRequestState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetAuthorizationRequestStateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OIDCFlowStoreServer).GetAuthorizationRequestState(ctx, in)
+		return srv.(AuthorizationRequestStateStoreServer).GetAuthorizationRequestState(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: OIDCFlowStore_GetAuthorizationRequestState_FullMethodName,
+		FullMethod: AuthorizationRequestStateStore_GetAuthorizationRequestState_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OIDCFlowStoreServer).GetAuthorizationRequestState(ctx, req.(*GetAuthorizationRequestStateRequest))
+		return srv.(AuthorizationRequestStateStoreServer).GetAuthorizationRequestState(ctx, req.(*GetAuthorizationRequestStateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _OIDCFlowStore_DeleteAuthorizationRequestState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _AuthorizationRequestStateStore_DeleteAuthorizationRequestState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DeleteAuthorizationRequestStateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(OIDCFlowStoreServer).DeleteAuthorizationRequestState(ctx, in)
+		return srv.(AuthorizationRequestStateStoreServer).DeleteAuthorizationRequestState(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: OIDCFlowStore_DeleteAuthorizationRequestState_FullMethodName,
+		FullMethod: AuthorizationRequestStateStore_DeleteAuthorizationRequestState_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(OIDCFlowStoreServer).DeleteAuthorizationRequestState(ctx, req.(*DeleteAuthorizationRequestStateRequest))
+		return srv.(AuthorizationRequestStateStoreServer).DeleteAuthorizationRequestState(ctx, req.(*DeleteAuthorizationRequestStateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// OIDCFlowStore_ServiceDesc is the grpc.ServiceDesc for OIDCFlowStore service.
+// AuthorizationRequestStateStore_ServiceDesc is the grpc.ServiceDesc for AuthorizationRequestStateStore service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var OIDCFlowStore_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.oidc.flows.OIDCFlowStore",
-	HandlerType: (*OIDCFlowStoreServer)(nil),
+var AuthorizationRequestStateStore_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "proto.oidc.flows.AuthorizationRequestStateStore",
+	HandlerType: (*AuthorizationRequestStateStoreServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "StoreAuthorizationRequestState",
-			Handler:    _OIDCFlowStore_StoreAuthorizationRequestState_Handler,
+			Handler:    _AuthorizationRequestStateStore_StoreAuthorizationRequestState_Handler,
 		},
 		{
 			MethodName: "GetAuthorizationRequestState",
-			Handler:    _OIDCFlowStore_GetAuthorizationRequestState_Handler,
+			Handler:    _AuthorizationRequestStateStore_GetAuthorizationRequestState_Handler,
 		},
 		{
 			MethodName: "DeleteAuthorizationRequestState",
-			Handler:    _OIDCFlowStore_DeleteAuthorizationRequestState_Handler,
+			Handler:    _AuthorizationRequestStateStore_DeleteAuthorizationRequestState_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

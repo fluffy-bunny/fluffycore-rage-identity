@@ -17,10 +17,10 @@ import (
 
 type (
 	service struct {
-		someUtil          contracts_util.ISomeUtil
-		scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache
-		oidcFlowStore     proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer
-		tokenService      contracts_tokenservice.ITokenService
+		someUtil                       contracts_util.ISomeUtil
+		scopedMemoryCache              fluffycore_contracts_common.IScopedMemoryCache
+		authorizationRequestStateStore proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer
+		tokenService                   contracts_tokenservice.ITokenService
 	}
 )
 
@@ -32,14 +32,14 @@ func init() {
 
 func (s *service) Ctor(
 	scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
-	oidcFlowStore proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer,
+	authorizationRequestStateStore proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer,
 	tokenService contracts_tokenservice.ITokenService,
 	someUtil contracts_util.ISomeUtil) (*service, error) {
 	return &service{
-		someUtil:          someUtil,
-		scopedMemoryCache: scopedMemoryCache,
-		oidcFlowStore:     oidcFlowStore,
-		tokenService:      tokenService,
+		someUtil:                       someUtil,
+		scopedMemoryCache:              scopedMemoryCache,
+		authorizationRequestStateStore: authorizationRequestStateStore,
+		tokenService:                   tokenService,
 	}, nil
 }
 

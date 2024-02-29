@@ -31,11 +31,11 @@ type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
 
-		scopedMemoryCache   fluffycore_contracts_common.IScopedMemoryCache
-		oidcFlowStore       proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer
-		clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer
-		idpServiceServer    proto_oidc_idp.IFluffyCoreIDPServiceServer
-		userService         proto_oidc_user.IFluffyCoreRageUserServiceServer
+		scopedMemoryCache                    fluffycore_contracts_common.IScopedMemoryCache
+		authorizationRequestStateStoreServer proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer
+		clientServiceServer                  proto_oidc_client.IFluffyCoreClientServiceServer
+		idpServiceServer                     proto_oidc_idp.IFluffyCoreIDPServiceServer
+		userService                          proto_oidc_user.IFluffyCoreRageUserServiceServer
 	}
 )
 
@@ -52,16 +52,16 @@ func (s *service) Ctor(
 
 	scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
 	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
-	oidcFlowStore proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer,
+	authorizationRequestStateStoreServer proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer,
 ) (*service, error) {
 	return &service{
 		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
 
-		scopedMemoryCache:   scopedMemoryCache,
-		oidcFlowStore:       oidcFlowStore,
-		clientServiceServer: clientServiceServer,
-		idpServiceServer:    idpServiceServer,
-		userService:         userService,
+		scopedMemoryCache:                    scopedMemoryCache,
+		authorizationRequestStateStoreServer: authorizationRequestStateStoreServer,
+		clientServiceServer:                  clientServiceServer,
+		idpServiceServer:                     idpServiceServer,
+		userService:                          userService,
 	}, nil
 }
 
@@ -203,7 +203,7 @@ func (s *service) Do(c echo.Context) error {
 		}
 
 	}
-	_, err = s.oidcFlowStore.StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+	_, err = s.authorizationRequestStateStoreServer.StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
 		AuthorizationRequestState: authorizationFinal,
 		State:                     model.State,
 	})
@@ -216,7 +216,7 @@ func (s *service) Do(c echo.Context) error {
 	session.Set("request", model)
 	session.Save()
 
-	mm, err := s.oidcFlowStore.GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
+	mm, err := s.authorizationRequestStateStoreServer.GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
 		State: model.State,
 	})
 	if err != nil {

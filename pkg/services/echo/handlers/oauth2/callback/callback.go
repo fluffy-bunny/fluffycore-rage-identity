@@ -215,7 +215,7 @@ func (s *service) Do(c echo.Context) error {
 		}
 		return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
 	}
-	getAuthorizationRequestStateResponse, err := s.OIDCFlowStore().GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
+	getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
 		State: parentState,
 	})
 	if err != nil {
@@ -341,7 +341,7 @@ func (s *service) Do(c echo.Context) error {
 					models.AMRIdp,
 				},
 			}
-			_, err = s.OIDCFlowStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+			_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
 				State:                     parentState,
 				AuthorizationRequestState: authorizationFinal,
 			})

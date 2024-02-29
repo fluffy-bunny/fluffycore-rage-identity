@@ -12,7 +12,7 @@ import "google/protobuf/descriptor.proto";
 import "proto/oidc/models/user.proto";
 
  
-service OIDCFlowStore {
+service AuthorizationRequestStateStore {
     // Create user
     rpc StoreAuthorizationRequestState (StoreAuthorizationRequestStateRequest) returns (StoreAuthorizationRequestStateResponse) {}     
     rpc GetAuthorizationRequestState (GetAuthorizationRequestStateRequest) returns (GetAuthorizationRequestStateResponse) {}     

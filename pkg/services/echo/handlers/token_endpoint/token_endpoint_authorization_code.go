@@ -105,7 +105,7 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 	}
 	log.Debug().Interface("req", req).Msg("req")
 
-	getAuthorizationRequestStateResponse, err := s.oidcFlowStore.GetAuthorizationRequestState(ctx,
+	getAuthorizationRequestStateResponse, err := s.authorizationRequestStateStore.GetAuthorizationRequestState(ctx,
 		&proto_oidc_flows.GetAuthorizationRequestStateRequest{
 			State: req.Code,
 		})
@@ -180,7 +180,7 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 	// return as json
 	defer func() {
 		log.Debug().Interface("response", response).Msg("response")
-		_, err := s.oidcFlowStore.DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
+		_, err := s.authorizationRequestStateStore.DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
 			State: req.Code,
 		})
 		if err != nil {

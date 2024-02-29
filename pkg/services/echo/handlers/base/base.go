@@ -25,28 +25,28 @@ import (
 
 type (
 	BaseHandler struct {
-		Container               di.Container
-		Localizer               func() contracts_localizer.ILocalizer
-		ClaimsPrincipal         func() fluffycore_contracts_common.IClaimsPrincipal
-		EchoContextAccessor     func() fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor
-		IdpServiceServer        func() proto_oidc_idp.IFluffyCoreIDPServiceServer
-		RageUserService         func() proto_oidc_user.IFluffyCoreRageUserServiceServer
-		OIDCFlowStore           func() proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer
-		ExternalOauth2FlowStore func() proto_oidc_flows.IFluffyCoreExternalOauth2FlowStoreServer
-		ScopedMemoryCache       func() fluffycore_contracts_common.IScopedMemoryCache
-		EmailService            func() contracts_email.IEmailService
-		SessionFactory          func() contracts_sessions.ISessionFactory
+		Container                      di.Container
+		Localizer                      func() contracts_localizer.ILocalizer
+		ClaimsPrincipal                func() fluffycore_contracts_common.IClaimsPrincipal
+		EchoContextAccessor            func() fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor
+		IdpServiceServer               func() proto_oidc_idp.IFluffyCoreIDPServiceServer
+		RageUserService                func() proto_oidc_user.IFluffyCoreRageUserServiceServer
+		AuthorizationRequestStateStore func() proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer
+		ExternalOauth2FlowStore        func() proto_oidc_flows.IFluffyCoreExternalOauth2FlowStoreServer
+		ScopedMemoryCache              func() fluffycore_contracts_common.IScopedMemoryCache
+		EmailService                   func() contracts_email.IEmailService
+		SessionFactory                 func() contracts_sessions.ISessionFactory
 
-		localizer               contracts_localizer.ILocalizer
-		claimsPrincipal         fluffycore_contracts_common.IClaimsPrincipal
-		echoContextAccessor     fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor
-		idpServiceServer        proto_oidc_idp.IFluffyCoreIDPServiceServer
-		rageUserService         proto_oidc_user.IFluffyCoreRageUserServiceServer
-		oidcFlowStore           proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer
-		externalOauth2FlowStore proto_oidc_flows.IFluffyCoreExternalOauth2FlowStoreServer
-		scopedMemoryCache       fluffycore_contracts_common.IScopedMemoryCache
-		emailService            contracts_email.IEmailService
-		sessionFactory          contracts_sessions.ISessionFactory
+		localizer                      contracts_localizer.ILocalizer
+		claimsPrincipal                fluffycore_contracts_common.IClaimsPrincipal
+		echoContextAccessor            fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor
+		idpServiceServer               proto_oidc_idp.IFluffyCoreIDPServiceServer
+		rageUserService                proto_oidc_user.IFluffyCoreRageUserServiceServer
+		authorizationRequestStateStore proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer
+		externalOauth2FlowStore        proto_oidc_flows.IFluffyCoreExternalOauth2FlowStoreServer
+		scopedMemoryCache              fluffycore_contracts_common.IScopedMemoryCache
+		emailService                   contracts_email.IEmailService
+		sessionFactory                 contracts_sessions.ISessionFactory
 	}
 )
 
@@ -58,7 +58,7 @@ func NewBaseHandler(container di.Container) *BaseHandler {
 	obj.EchoContextAccessor = obj.getEchoContextAccessor
 	obj.IdpServiceServer = obj.getIdpServiceServer
 	obj.RageUserService = obj.getUserService
-	obj.OIDCFlowStore = obj.getOIDCFlowStore
+	obj.AuthorizationRequestStateStore = obj.getOIDCFlowStore
 	obj.ExternalOauth2FlowStore = obj.getExternalOauth2FlowStore
 	obj.ScopedMemoryCache = obj.getScopedMemoryCache
 	obj.EmailService = obj.getEmailService
@@ -115,11 +115,11 @@ func (b *BaseHandler) getUserService() proto_oidc_user.IFluffyCoreRageUserServic
 	}
 	return b.rageUserService
 }
-func (b *BaseHandler) getOIDCFlowStore() proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer {
-	if b.oidcFlowStore == nil {
-		b.oidcFlowStore = di.Get[proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer](b.Container)
+func (b *BaseHandler) getOIDCFlowStore() proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer {
+	if b.authorizationRequestStateStore == nil {
+		b.authorizationRequestStateStore = di.Get[proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer](b.Container)
 	}
-	return b.oidcFlowStore
+	return b.authorizationRequestStateStore
 }
 func (b *BaseHandler) getExternalOauth2FlowStore() proto_oidc_flows.IFluffyCoreExternalOauth2FlowStoreServer {
 	if b.externalOauth2FlowStore == nil {
