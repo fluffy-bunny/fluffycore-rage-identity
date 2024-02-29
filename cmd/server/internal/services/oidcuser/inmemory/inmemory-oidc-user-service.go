@@ -1,18 +1,21 @@
 package inmemory
 
 import (
+	"reflect"
 	"sync"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
+	proto_external_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/models"
+	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 )
 
 type (
 	service struct {
-		proto_oidc_user.UnimplementedUserServiceServer
+		proto_oidc_user.UnimplementedRageUserServiceServer
+		proto_external_user.UnimplementedUserServiceServer
 
-		userMap map[string]*proto_oidc_models.User
+		userMap map[string]*proto_external_models.ExampleUser
 		rwLock  sync.RWMutex
 	}
 )
@@ -20,14 +23,20 @@ type (
 var stemService = (*service)(nil)
 
 func init() {
-	var _ proto_oidc_user.IFluffyCoreUserServiceServer = stemService
+	var _ proto_oidc_user.IFluffyCoreRageUserServiceServer = stemService
+	var _ proto_external_user.IFluffyCoreUserServiceServer = stemService
 }
-func (s *service) Ctor() (proto_oidc_user.IFluffyCoreUserServiceServer, error) {
+func (s *service) Ctor() (*service, error) {
 	return &service{
-		userMap: make(map[string]*proto_oidc_models.User),
+		userMap: make(map[string]*proto_external_models.ExampleUser),
 	}, nil
 }
 
 func AddSingletonIFluffyCoreUserServiceServer(cb di.ContainerBuilder) {
-	di.AddSingleton[proto_oidc_user.IFluffyCoreUserServiceServer](cb, stemService.Ctor)
+	di.AddSingleton[*service](
+		cb,
+		stemService.Ctor,
+		reflect.TypeOf((*proto_oidc_user.IFluffyCoreRageUserServiceServer)(nil)),
+		reflect.TypeOf((*proto_external_user.IFluffyCoreUserServiceServer)(nil)),
+	)
 }

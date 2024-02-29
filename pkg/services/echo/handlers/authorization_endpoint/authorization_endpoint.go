@@ -35,7 +35,7 @@ type (
 		oidcFlowStore       proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer
 		clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer
 		idpServiceServer    proto_oidc_idp.IFluffyCoreIDPServiceServer
-		userService         proto_oidc_user.IFluffyCoreUserServiceServer
+		userService         proto_oidc_user.IFluffyCoreRageUserServiceServer
 	}
 )
 
@@ -48,7 +48,7 @@ func init() {
 func (s *service) Ctor(
 	container di.Container,
 	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
-	userService proto_oidc_user.IFluffyCoreUserServiceServer,
+	userService proto_oidc_user.IFluffyCoreRageUserServiceServer,
 
 	scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
 	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
@@ -192,7 +192,7 @@ func (s *service) Do(c echo.Context) error {
 			model.IdpHint = idpHint
 		}
 		if !fluffycore_utils.IsEmptyOrNil(candidateUserID) {
-			getUserResponse, err := s.userService.GetUser(ctx, &proto_oidc_user.GetUserRequest{
+			getUserResponse, err := s.userService.GetRageUser(ctx, &proto_oidc_user.GetRageUserRequest{
 				Subject: candidateUserID,
 			})
 			if err != nil || getUserResponse == nil || getUserResponse.User == nil {

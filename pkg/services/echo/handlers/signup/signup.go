@@ -45,7 +45,7 @@ func (s *service) Ctor(
 	config *contracts_config.Config,
 	passwordHasher contracts_identity.IPasswordHasher,
 	wellknownCookies contracts_cookies.IWellknownCookies,
-	userService proto_oidc_user.IFluffyCoreUserServiceServer,
+	userService proto_oidc_user.IFluffyCoreRageUserServiceServer,
 ) (*service, error) {
 
 	return &service{
@@ -210,9 +210,9 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 	}
 	// does the user exist.
-	listUserResponse, err := s.UserService().ListUser(ctx, &proto_oidc_user.ListUserRequest{
-		Filter: &proto_oidc_user.Filter{
-			RootIdentity: &proto_oidc_user.IdentityFilter{
+	listUserResponse, err := s.RageUserService().ListRageUser(ctx, &proto_oidc_user.ListRageUserRequest{
+		Filter: &proto_oidc_models.RageUserFilter{
+			RootIdentity: &proto_oidc_models.IdentityFilter{
 				Email: &proto_types.StringFilterExpression{
 					Eq: model.UserName,
 				},
@@ -235,7 +235,7 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("GeneratePasswordHash")
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	user := &proto_oidc_models.User{
+	user := &proto_oidc_models.RageUser{
 		RootIdentity: &proto_oidc_models.Identity{
 			Subject:       xid.New().String(),
 			Email:         model.UserName,
@@ -245,9 +245,9 @@ func (s *service) DoPost(c echo.Context) error {
 		Password: &proto_oidc_models.Password{
 			Hash: hashPasswordResponse.HashedPassword,
 		},
-		State: proto_oidc_models.UserState_USER_STATE_PENDING,
+		State: proto_oidc_models.RageUserState_USER_STATE_PENDING,
 	}
-	_, err = s.UserService().CreateUser(ctx, &proto_oidc_user.CreateUserRequest{
+	_, err = s.RageUserService().CreateRageUser(ctx, &proto_oidc_user.CreateRageUserRequest{
 		User: user,
 	})
 	if err != nil {

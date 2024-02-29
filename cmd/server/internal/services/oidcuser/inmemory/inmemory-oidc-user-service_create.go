@@ -3,35 +3,47 @@ package inmemory
 import (
 	"context"
 
-	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
+	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 )
 
-func (s *service) validateCreateUserRequest(request *proto_oidc_user.CreateUserRequest) error {
+func (s *service) validateCreateUserRequest(request *proto_external_user.CreateUserRequest) error {
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is required")
 	}
+
 	if request.User == nil {
 		return status.Error(codes.InvalidArgument, "request.User is required")
 	}
-	if request.User.RootIdentity == nil {
-		return status.Error(codes.InvalidArgument, "request.User.RootIdentity is required")
+
+	if fluffycore_utils.IsEmptyOrNil(request.User.Id) {
+		return status.Error(codes.InvalidArgument, "request.User.Id is required")
 	}
-	if fluffycore_utils.IsEmptyOrNil(request.User.RootIdentity.Subject) {
-		return status.Error(codes.InvalidArgument, "request.User.RootIdentity.Subject is required")
+
+	if request.User.RageUser == nil {
+		return status.Error(codes.InvalidArgument, "request.User.RageUser is required")
 	}
-	if fluffycore_utils.IsEmptyOrNil(request.User.RootIdentity.Email) {
-		return status.Error(codes.InvalidArgument, "request.User.RootIdentity.Email is required")
+	rageUser := request.User.RageUser
+	if rageUser.RootIdentity == nil {
+		return status.Error(codes.InvalidArgument, "request.User.RageUser.RootIdentity is required")
 	}
-	if fluffycore_utils.IsEmptyOrNil(request.User.RootIdentity.IdpSlug) {
+	rageUser.RootIdentity.Subject = request.User.Id
+
+	if fluffycore_utils.IsEmptyOrNil(rageUser.RootIdentity.Subject) {
+		return status.Error(codes.InvalidArgument, "request.User.RageUser.RootIdentity.Subject is required")
+	}
+	if fluffycore_utils.IsEmptyOrNil(rageUser.RootIdentity.Email) {
+		return status.Error(codes.InvalidArgument, "request.User.RageUser.RootIdentity.Email is required")
+	}
+	if fluffycore_utils.IsEmptyOrNil(rageUser.RootIdentity.IdpSlug) {
 		return status.Error(codes.InvalidArgument, "request.User.RootIdentity.IdpSlug is required")
 	}
 	return nil
 }
-func (s *service) CreateUser(ctx context.Context, request *proto_oidc_user.CreateUserRequest) (*proto_oidc_user.CreateUserResponse, error) {
+func (s *service) CreateUser(ctx context.Context, request *proto_external_user.CreateUserRequest) (*proto_external_user.CreateUserResponse, error) {
 	log := zerolog.Ctx(ctx).With().Logger()
 	err := s.validateCreateUserRequest(request)
 	if err != nil {
@@ -40,8 +52,8 @@ func (s *service) CreateUser(ctx context.Context, request *proto_oidc_user.Creat
 	}
 
 	user := request.User
-	getUserResponse, err := s.GetUser(ctx, &proto_oidc_user.GetUserRequest{
-		Subject: user.RootIdentity.Subject,
+	getUserResponse, err := s.GetUser(ctx, &proto_external_user.GetUserRequest{
+		Subject: user.Id,
 	})
 	if err != nil {
 		st, ok := status.FromError(err)
@@ -49,7 +61,7 @@ func (s *service) CreateUser(ctx context.Context, request *proto_oidc_user.Creat
 			return nil, err
 		}
 	} else {
-		return &proto_oidc_user.CreateUserResponse{
+		return &proto_external_user.CreateUserResponse{
 			User: getUserResponse.User,
 		}, nil
 	}
@@ -59,8 +71,8 @@ func (s *service) CreateUser(ctx context.Context, request *proto_oidc_user.Creat
 	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
 
 	// create the user
-	s.userMap[user.RootIdentity.Subject] = user
-	return &proto_oidc_user.CreateUserResponse{
-		User: s.makeUserCopy(user),
+	s.userMap[user.Id] = user
+	return &proto_external_user.CreateUserResponse{
+		User: s.makeExampleUserCopy(user),
 	}, nil
 }

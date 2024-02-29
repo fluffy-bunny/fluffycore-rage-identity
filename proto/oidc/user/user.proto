@@ -9,72 +9,49 @@ option csharp_namespace = "FluffyBunny.RageOidc.Oidc.User";
 package proto.oidc.user;
 
 import "google/protobuf/descriptor.proto";
-import "proto/types/filter.proto";
 import "proto/types/pagination.proto";
 import "proto/oidc/models/user.proto";
 
 import "google/api/annotations.proto";
 
-message IdentityFilter {
-    proto.types.IDFilterExpression           subject = 1;
-    proto.types.IDFilterExpression           idp_slug = 2;
-    proto.types.StringFilterExpression       email = 3;
 
-}
-message Filter {
-    IdentityFilter root_identity = 1;
-    IdentityFilter linked_identity = 2;
-    proto.oidc.models.UserStateFilterExpression state = 3;
-
-    // AST
-    repeated Filter and = 100;
-    repeated Filter or = 101;
-    repeated Filter not = 102;
-}
-
-service UserService {
+service RageUserService {
     // Create user
-    rpc CreateUser (CreateUserRequest) returns (CreateUserResponse) {
+    rpc CreateRageUser (CreateRageUserRequest) returns (CreateRageUserResponse) {
         option (google.api.http) = {
             post: "/api/v1/user/_create"
             body: "*"
           };
     }
     // Get user
-    rpc GetUser (GetUserRequest) returns (GetUserResponse) {
+    rpc GetRageUser (GetRageUserRequest) returns (GetRageUserResponse) {
         option (google.api.http) = {
             get: "/api/v1/user/subject/{subject}"
           };
     }
 
-    // Delete user
-    rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse) {
-        option (google.api.http) = {
-            delete: "/api/v1/user/subject/{subject}"
-          };
-    }
     // Update user
-    rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse) {
+    rpc UpdateRageUser (UpdateRageUserRequest) returns (UpdateRageUserResponse) {
         option (google.api.http) = {
             post: "/api/v1/user/_update"
             body: "*"
           };
     }
     // List users
-    rpc ListUser (ListUserRequest) returns (ListUserResponse) {
+    rpc ListRageUser (ListRageUserRequest) returns (ListRageUserResponse) {
         option (google.api.http) = {
             post: "/api/v1/user/_search"
             body: "*"
           };
     }
 
-    rpc LinkUsers (LinkUsersRequest) returns (LinkUsersResponse) {
+    rpc LinkRageUsers (LinkRageUsersRequest) returns (LinkRageUsersResponse) {
         option (google.api.http) = {
             post: "/api/v1/user/_link"
             body: "*"
           };
     }
-    rpc UnlinkUsers (UnlinkUsersRequest) returns (UnlinkUsersResponse) {
+    rpc UnlinkRageUsers (UnlinkRageUsersRequest) returns (UnlinkRageUsersResponse) {
         option (google.api.http) = {
             post: "/api/v1/user/_unlink"
             body: "*"
@@ -82,59 +59,54 @@ service UserService {
     }
 } 
 
-message LinkUsersRequest {
+message LinkRageUsersRequest {
     string root_subject = 1;
     proto.oidc.models.Identity external_identity = 2;
 }
 
-message LinkUsersResponse {
-    proto.oidc.models.User user = 1;
+message LinkRageUsersResponse {
+    proto.oidc.models.RageUser user = 1;
 }
 
-message UnlinkUsersRequest {
+message UnlinkRageUsersRequest {
     string root_subject = 1;
     proto.oidc.models.Identity external_identity = 2;
 }
-message UnlinkUsersResponse {
-    proto.oidc.models.User user = 1;
+message UnlinkRageUsersResponse {
+    proto.oidc.models.RageUser user = 1;
 }
 
   
-message CreateUserRequest {
-    proto.oidc.models.User user = 1;
+message CreateRageUserRequest {
+    proto.oidc.models.RageUser user = 1;
 }   
-message CreateUserResponse {
-    proto.oidc.models.User user = 1;
+message CreateRageUserResponse {
+    proto.oidc.models.RageUser user = 1;
 }
-message GetUserRequest {
+message GetRageUserRequest {
    string subject = 1;
 }
-message GetUserResponse {
-    proto.oidc.models.User user = 1;
+message GetRageUserResponse {
+    proto.oidc.models.RageUser user = 1;
 }
 
-message DeleteUserRequest {
-   string subject = 1;
+message UpdateRageUserRequest {
+    proto.oidc.models.RageUserUpdate user = 1;
 }
-message DeleteUserResponse {
-}
-message UpdateUserRequest {
-    proto.oidc.models.UserUpdate user = 1;
-}
-message UpdateUserResponse {
-    proto.oidc.models.User user = 1;
+message UpdateRageUserResponse {
+    proto.oidc.models.RageUser user = 1;
 }
 
-message ListUserRequest {
+message ListRageUserRequest {
    // Filter
-   Filter filter = 1;
+   proto.oidc.models.RageUserFilter filter = 1;
 
    // Pagination
    proto.types.Pagination pagination = 100;
 }
 
-message ListUserResponse {
-   repeated proto.oidc.models.User users = 1;
+message ListRageUserResponse {
+   repeated proto.oidc.models.RageUser users = 1;
 
    // Pagination details
    proto.types.PaginationResponse pagination = 100;

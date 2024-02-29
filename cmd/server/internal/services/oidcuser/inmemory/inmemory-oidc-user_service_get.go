@@ -3,8 +3,8 @@ package inmemory
 import (
 	"context"
 
-	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
-	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/models"
+	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	zerolog "github.com/rs/zerolog"
@@ -12,7 +12,7 @@ import (
 	protojson "google.golang.org/protobuf/encoding/protojson"
 )
 
-func (s *service) validateGetUserRequest(request *proto_oidc_user.GetUserRequest) error {
+func (s *service) validateGetUserRequest(request *proto_external_user.GetUserRequest) error {
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is required")
 	}
@@ -23,7 +23,7 @@ func (s *service) validateGetUserRequest(request *proto_oidc_user.GetUserRequest
 
 }
 
-func (s *service) makeUserCopy(user *proto_oidc_models.User) *proto_oidc_models.User {
+func (s *service) makeExampleUserCopy(user *proto_oidc_models.ExampleUser) *proto_oidc_models.ExampleUser {
 	if user == nil {
 		return nil
 	}
@@ -31,14 +31,14 @@ func (s *service) makeUserCopy(user *proto_oidc_models.User) *proto_oidc_models.
 	if err != nil {
 		return nil
 	}
-	var newUser proto_oidc_models.User
+	var newUser proto_oidc_models.ExampleUser
 	err = protojson.Unmarshal(d, &newUser)
 	if err != nil {
 		return nil
 	}
 	return &newUser
 }
-func (s *service) GetUser(ctx context.Context, request *proto_oidc_user.GetUserRequest) (*proto_oidc_user.GetUserResponse, error) {
+func (s *service) GetUser(ctx context.Context, request *proto_external_user.GetUserRequest) (*proto_external_user.GetUserResponse, error) {
 	log := zerolog.Ctx(ctx).With().Logger()
 	err := s.validateGetUserRequest(request)
 	if err != nil {
@@ -51,8 +51,8 @@ func (s *service) GetUser(ctx context.Context, request *proto_oidc_user.GetUserR
 	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
 	user, ok := s.userMap[request.Subject]
 	if ok {
-		return &proto_oidc_user.GetUserResponse{
-			User: s.makeUserCopy(user),
+		return &proto_external_user.GetUserResponse{
+			User: s.makeExampleUserCopy(user),
 		}, nil
 	}
 	return nil, status.Error(codes.NotFound, "User not found")

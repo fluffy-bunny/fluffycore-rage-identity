@@ -10,11 +10,10 @@ package proto.oidc.models;
 
 import "google/protobuf/descriptor.proto";
 import "google/protobuf/wrappers.proto";
-import "proto/types/primitives.proto";
 import "proto/types/filter.proto";
-import "proto/types/phone_number.proto";
  
-enum UserState {
+
+enum RageUserState {
     USER_STATE_UNSPECIFIED = 0;
     USER_STATE_ACTIVE = 1;
     USER_STATE_DISABLED = 2;
@@ -22,15 +21,15 @@ enum UserState {
     USER_STATE_PENDING = 4;
 }
 
-message UserStateFilterExpression {
+message RageUserStateFilterExpression {
     option (proto.types.filter_expression) = true;
 
-    UserState eq          = 1 [(proto.types.op) = OP_EQ];
-    repeated UserState in = 2 [(proto.types.op) = OP_IN];
+    RageUserState eq          = 1 [(proto.types.op) = OP_EQ];
+    repeated RageUserState in = 2 [(proto.types.op) = OP_IN];
 }
 
-message UserStateValue {
-    UserState value = 1;
+message RageUserStateValue {
+    RageUserState value = 1;
 }
 message Password {
     string  hash = 1;
@@ -43,6 +42,12 @@ message Identity {
     string idp_slug = 2;
     string email = 3;
     bool email_verified = 4;
+}
+message IdentityFilter {
+    proto.types.IDFilterExpression           subject = 1;
+    proto.types.IDFilterExpression           idp_slug = 2;
+    proto.types.StringFilterExpression       email = 3;
+
 }
 message OIDCIdentity {
     string subject = 1;
@@ -120,56 +125,48 @@ message LinkedIdentitiesUpdate {
         LinkedIdentities    replace = 2;
     }
 }
+message Email {
+    string email = 1;
+    bool email_verified = 2;
+}
+message EmailUpdate {
+    google.protobuf.StringValue email = 1;
+    google.protobuf.BoolValue email_verified = 2;
+}
 message Recovery{
-    proto.types.StringValues emails = 1;
+    // only one email is allowed.  Make this simple
+    Email email = 1;
 }
 message RecoveryUpdate{
-    proto.types.StringArrayUpdate emails = 1;
+    EmailUpdate email = 1;
 }
 
-message Address {
-    string street = 1;
-    string city = 2;
-    string state = 3;
-    string postal_code = 4;
-    string country = 5;
-}
-message AddressUpdate {
-    google.protobuf.StringValue street = 1;
-    google.protobuf.StringValue city = 2;
-    google.protobuf.StringValue state = 3;
-    google.protobuf.StringValue postal_code = 4;
-    google.protobuf.StringValue country = 5;
-}
-message Profile{
-    string given_name = 1;
-    string family_name = 2;
-    repeated proto.types.PhoneNumberDTO phone_numbers = 3;
-    Address address = 4;
-}
-message ProfileUpdate{
-    google.protobuf.StringValue given_name = 1;
-    google.protobuf.StringValue family_name = 2;
-    repeated proto.types.PhoneNumberDTOUpdate phone_numbers = 3;
-    AddressUpdate address = 4;
-}
-message User {
-    uint64 id = 1;
-
-    Identity            root_identity = 2;
-    LinkedIdentities    linked_identities = 3;
-    Recovery            recovery = 4;
-    Password            password = 5;
-    UserState           state = 6;
-    Profile             profile = 7;
+message RageUser {
+    string              id = 1;
+    RageUserState       state = 2;
+    Identity            root_identity = 3;
+    LinkedIdentities    linked_identities = 4;
+    Recovery            recovery = 5;
+    Password            password = 6;
 }
 
-message UserUpdate {
+message RageUserUpdate {
     IdentityUpdate          root_identity = 1;
-    LinkedIdentitiesUpdate  linked_identities = 2;
-    RecoveryUpdate          recovery = 3;
-    PasswordUpdate          password = 4;
-    UserStateValue          state = 5;
-    ProfileUpdate           profile = 6;
-}
+    RageUserStateValue      state = 2;
+    LinkedIdentitiesUpdate  linked_identities = 3;
+    RecoveryUpdate          recovery = 4;
+    PasswordUpdate          password = 5;
+ }
 
+
+ message RageUserFilter {
+    proto.oidc.models.IdentityFilter                    root_identity = 1;
+    proto.oidc.models.IdentityFilter                    linked_identity = 2;
+    proto.oidc.models.RageUserStateFilterExpression     state = 3;
+
+    // AST
+    repeated RageUserFilter and = 100;
+    repeated RageUserFilter or = 101;
+    repeated RageUserFilter not = 102;
+}
+ 

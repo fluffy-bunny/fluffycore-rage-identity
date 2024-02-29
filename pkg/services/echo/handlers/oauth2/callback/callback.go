@@ -160,7 +160,7 @@ func (s *service) Do(c echo.Context) error {
 		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
 
 	}
-	doEmailVerification := func(user *proto_oidc_models.User) error {
+	doEmailVerification := func(user *proto_oidc_models.RageUser) error {
 		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
 		err = s.wellknownCookies.SetVerificationCodeCookie(c,
 			&contracts_cookies.SetVerificationCodeCookieRequest{
@@ -306,11 +306,11 @@ func (s *service) Do(c echo.Context) error {
 			EmailVerified: emailVerified,
 		}
 
-		getUserByEmail := func(email string) (*proto_oidc_models.User, error) {
+		getUserByEmail := func(email string) (*proto_oidc_models.RageUser, error) {
 			// is this user already linked.
-			listUserResponse, err := s.UserService().ListUser(ctx, &proto_oidc_user.ListUserRequest{
-				Filter: &proto_oidc_user.Filter{
-					RootIdentity: &proto_oidc_user.IdentityFilter{
+			listUserResponse, err := s.RageUserService().ListRageUser(ctx, &proto_oidc_user.ListRageUserRequest{
+				Filter: &proto_oidc_models.RageUserFilter{
+					RootIdentity: &proto_oidc_models.IdentityFilter{
 						Email: &proto_types.StringFilterExpression{
 							Eq: strings.ToLower(email),
 						},
@@ -327,7 +327,7 @@ func (s *service) Do(c echo.Context) error {
 			return nil, status.Error(codes.NotFound, "user not found")
 
 		}
-		loginLinkedUser := func(user *proto_oidc_models.User) error {
+		loginLinkedUser := func(user *proto_oidc_models.RageUser) error {
 			if !user.RootIdentity.EmailVerified {
 				return doEmailVerification(user)
 			}
@@ -354,9 +354,9 @@ func (s *service) Do(c echo.Context) error {
 		}
 
 		// is this user already linked.
-		listUserResponse, err := s.UserService().ListUser(ctx, &proto_oidc_user.ListUserRequest{
-			Filter: &proto_oidc_user.Filter{
-				LinkedIdentity: &proto_oidc_user.IdentityFilter{
+		listUserResponse, err := s.RageUserService().ListRageUser(ctx, &proto_oidc_user.ListRageUserRequest{
+			Filter: &proto_oidc_models.RageUserFilter{
+				LinkedIdentity: &proto_oidc_models.IdentityFilter{
 					Subject: &proto_types.IDFilterExpression{
 						Eq: rawToken.Subject(),
 					},
@@ -373,8 +373,8 @@ func (s *service) Do(c echo.Context) error {
 			return loginLinkedUser(user)
 		}
 
-		linkUser := func(candidateUserID string, externalIdentity *proto_oidc_models.OIDCIdentity) (*proto_oidc_models.User, error) {
-			getUserResponse, err := s.UserService().GetUser(ctx, &proto_oidc_user.GetUserRequest{
+		linkUser := func(candidateUserID string, externalIdentity *proto_oidc_models.OIDCIdentity) (*proto_oidc_models.RageUser, error) {
+			getUserResponse, err := s.RageUserService().GetRageUser(ctx, &proto_oidc_user.GetRageUserRequest{
 				Subject: candidateUserID,
 			})
 			if err != nil {
@@ -386,7 +386,7 @@ func (s *service) Do(c echo.Context) error {
 				log.Error().Msg("user not found")
 				return nil, err
 			}
-			_, err = s.UserService().LinkUsers(ctx, &proto_oidc_user.LinkUsersRequest{
+			_, err = s.RageUserService().LinkRageUsers(ctx, &proto_oidc_user.LinkRageUsersRequest{
 				RootSubject: candidateUserID,
 				ExternalIdentity: &proto_oidc_models.Identity{
 					Subject:       externalIdentity.Subject,
@@ -409,7 +409,7 @@ func (s *service) Do(c echo.Context) error {
 			}
 			return loginLinkedUser(user)
 		}
-		doAutoCreateUser := func() (*proto_oidc_models.User, error) {
+		doAutoCreateUser := func() (*proto_oidc_models.RageUser, error) {
 			emailVerified := false
 			emailVerificationRequired := idp.EmailVerificationRequired
 			if emailVerificationRequired {
@@ -423,9 +423,9 @@ func (s *service) Do(c echo.Context) error {
 			} else {
 				emailVerified = true
 			}
-			createUserResponse, err := s.UserService().CreateUser(ctx,
-				&proto_oidc_user.CreateUserRequest{
-					User: &proto_oidc_models.User{
+			createUserResponse, err := s.RageUserService().CreateRageUser(ctx,
+				&proto_oidc_user.CreateRageUserRequest{
+					User: &proto_oidc_models.RageUser{
 						RootIdentity: &proto_oidc_models.Identity{
 							Subject:       s.userIdGenerator.GenerateUserId(),
 							IdpSlug:       models.WellknownIdpRoot,

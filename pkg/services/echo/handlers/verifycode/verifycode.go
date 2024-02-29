@@ -187,10 +187,10 @@ func (s *service) DoPost(c echo.Context) error {
 				},
 			})
 	}
-	userService := s.UserService()
+	userService := s.RageUserService()
 
-	_, err = userService.UpdateUser(ctx, &proto_oidc_user.UpdateUserRequest{
-		User: &proto_oidc_models.UserUpdate{
+	_, err = userService.UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
+		User: &proto_oidc_models.RageUserUpdate{
 			RootIdentity: &proto_oidc_models.IdentityUpdate{
 				Subject: verificationCode.Subject,
 				EmailVerified: &wrapperspb.BoolValue{

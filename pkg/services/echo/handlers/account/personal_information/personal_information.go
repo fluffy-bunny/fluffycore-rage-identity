@@ -10,8 +10,9 @@ import (
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/shared"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	proto_external_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/models"
+	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
-	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
@@ -26,8 +27,9 @@ type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
 
-		wellknownCookies contracts_cookies.IWellknownCookies
-		passwordHasher   contracts_identity.IPasswordHasher
+		wellknownCookies            contracts_cookies.IWellknownCookies
+		passwordHasher              contracts_identity.IPasswordHasher
+		fluffyCoreUserServiceServer proto_external_user.IFluffyCoreUserServiceServer
 	}
 )
 
@@ -45,11 +47,13 @@ func (s *service) Ctor(
 	container di.Container,
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	passwordHasher contracts_identity.IPasswordHasher,
+	fluffyCoreUserServiceServer proto_external_user.IFluffyCoreUserServiceServer,
 ) (*service, error) {
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
-		wellknownCookies: wellknownCookies,
-		passwordHasher:   passwordHasher,
+		BaseHandler:                 services_echo_handlers_base.NewBaseHandler(container),
+		wellknownCookies:            wellknownCookies,
+		passwordHasher:              passwordHasher,
+		fluffyCoreUserServiceServer: fluffyCoreUserServiceServer,
 	}, nil
 }
 
@@ -92,7 +96,7 @@ func (s *service) validatePersonalInformationGetRequest(model *PersonalInformati
 	return nil
 }
 
-func (s *service) getUser(c echo.Context) (*proto_oidc_models.User, error) {
+func (s *service) getUser(c echo.Context) (*proto_external_models.ExampleUser, error) {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 	memCache := s.ScopedMemoryCache()
@@ -106,10 +110,10 @@ func (s *service) getUser(c echo.Context) (*proto_oidc_models.User, error) {
 		log.Error().Msg("rootIdentity is nil")
 		return nil, status.Error(codes.NotFound, "rootIdentity is nil")
 	}
-	userService := s.UserService()
+	userService := s.fluffyCoreUserServiceServer
 	// get the user
 	getUserResponse, err := userService.GetUser(ctx,
-		&proto_oidc_user.GetUserRequest{
+		&proto_external_user.GetUserRequest{
 			Subject: rootIdentity.Subject,
 		})
 	if err != nil {
@@ -117,7 +121,7 @@ func (s *service) getUser(c echo.Context) (*proto_oidc_models.User, error) {
 		return nil, err
 	}
 	if getUserResponse.User.Profile == nil {
-		getUserResponse.User.Profile = &proto_oidc_models.Profile{}
+		getUserResponse.User.Profile = &proto_external_models.Profile{}
 	}
 	return getUserResponse.User, nil
 
@@ -154,7 +158,7 @@ func (s *service) DoGet(c echo.Context) error {
 			"returnUrl":    model.ReturnUrl,
 			"formAction":   wellknown_echo.PersonalInformationPath,
 			"errors":       []*services_handlers_shared.Error{},
-			"email":        user.RootIdentity.Email,
+			"email":        user.RageUser.RootIdentity.Email,
 			"given_name":   user.Profile.GivenName,
 			"family_name":  user.Profile.FamilyName,
 			"phone_number": phoneNumber,
@@ -204,7 +208,7 @@ func (s *service) DoPost(c echo.Context) error {
 				"returnUrl":    model.ReturnUrl,
 				"formAction":   wellknown_echo.PersonalInformationPath,
 				"errors":       errors,
-				"email":        user.RootIdentity.Email,
+				"email":        user.RageUser.RootIdentity.Email,
 				"given_name":   user.Profile.GivenName,
 				"family_name":  user.Profile.FamilyName,
 				"phone_number": phoneNumber,
@@ -223,13 +227,12 @@ func (s *service) DoPost(c echo.Context) error {
 			Number: model.PhoneNumber,
 		},
 	}
-	_, err = s.UserService().UpdateUser(ctx,
-		&proto_oidc_user.UpdateUserRequest{
-			User: &proto_oidc_models.UserUpdate{
-				RootIdentity: &proto_oidc_models.IdentityUpdate{
-					Subject: user.RootIdentity.Subject,
-				},
-				Profile: &proto_oidc_models.ProfileUpdate{
+	_, err = s.fluffyCoreUserServiceServer.UpdateUser(ctx,
+		&proto_external_user.UpdateUserRequest{
+			User: &proto_external_models.ExampleUserUpdate{
+				Id: user.Id,
+
+				Profile: &proto_external_models.ProfileUpdate{
 					GivenName:  &wrapperspb.StringValue{Value: model.GivenName},
 					FamilyName: &wrapperspb.StringValue{Value: model.FamilyName},
 					PhoneNumbers: []*proto_types.PhoneNumberDTOUpdate{
@@ -250,7 +253,7 @@ func (s *service) DoPost(c echo.Context) error {
 	// send the email
 	_, err = s.EmailService().SendSimpleEmail(ctx,
 		&contracts_email.SendSimpleEmailRequest{
-			ToEmail:   user.RootIdentity.Email,
+			ToEmail:   user.RageUser.RootIdentity.Email,
 			SubjectId: "password.reset.changed.subject",
 			BodyId:    "password.reset.changed.message",
 		})

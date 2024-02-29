@@ -13,6 +13,7 @@ import (
 	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/shared"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -145,10 +146,10 @@ func (s *service) DoPost(c echo.Context) error {
 	// NOTE: We don't want to give bots the ability to probe our service to see if an email exists.
 	// we check here and we redirect to the enter code in all cases.
 	// we just don't send the email, but we drop the cookie with a verification code just for the fun of it.
-	listUserResponse, err := s.UserService().ListUser(ctx,
-		&proto_oidc_user.ListUserRequest{
-			Filter: &proto_oidc_user.Filter{
-				RootIdentity: &proto_oidc_user.IdentityFilter{
+	listUserResponse, err := s.RageUserService().ListRageUser(ctx,
+		&proto_oidc_user.ListRageUserRequest{
+			Filter: &proto_oidc_models.RageUserFilter{
+				RootIdentity: &proto_oidc_models.IdentityFilter{
 					Email: &proto_types.StringFilterExpression{
 						Eq: model.Email,
 					},

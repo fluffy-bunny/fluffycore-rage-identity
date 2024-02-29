@@ -4,6 +4,7 @@ import (
 	"context"
 
 	linq "github.com/ahmetb/go-linq/v3"
+	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
@@ -12,7 +13,7 @@ import (
 	codes "google.golang.org/grpc/codes"
 )
 
-func (s *service) validateUnlinkUsersRequest(request *proto_oidc_user.UnlinkUsersRequest) error {
+func (s *service) validateUnlinkRageUsersRequest(request *proto_oidc_user.UnlinkRageUsersRequest) error {
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is required")
 	}
@@ -30,9 +31,9 @@ func (s *service) validateUnlinkUsersRequest(request *proto_oidc_user.UnlinkUser
 	}
 	return nil
 }
-func (s *service) UnlinkUsers(ctx context.Context, request *proto_oidc_user.UnlinkUsersRequest) (*proto_oidc_user.UnlinkUsersResponse, error) {
+func (s *service) UnlinkUsers(ctx context.Context, request *proto_oidc_user.UnlinkRageUsersRequest) (*proto_oidc_user.UnlinkRageUsersResponse, error) {
 	log := zerolog.Ctx(ctx).With().Logger()
-	err := s.validateUnlinkUsersRequest(request)
+	err := s.validateUnlinkRageUsersRequest(request)
 	if err != nil {
 		log.Warn().Err(err).Msg("validateLinkUsersRequest")
 		return nil, err
@@ -41,7 +42,7 @@ func (s *service) UnlinkUsers(ctx context.Context, request *proto_oidc_user.Unli
 	s.rwLock.Lock()
 	defer s.rwLock.Unlock()
 	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
-	getUserResponse, err := s.GetUser(ctx, &proto_oidc_user.GetUserRequest{
+	getUserResponse, err := s.GetUser(ctx, &proto_external_user.GetUserRequest{
 		Subject: request.RootSubject,
 	})
 	if err != nil {
@@ -50,21 +51,29 @@ func (s *service) UnlinkUsers(ctx context.Context, request *proto_oidc_user.Unli
 	user := getUserResponse.User
 
 	linkedIdentities := make([]*proto_oidc_models.Identity, 0)
-
-	linq.From(s.userMap).WhereT(func(c *proto_oidc_models.Identity) bool {
-		if c.Subject == request.ExternalIdentity.Subject &&
-			c.IdpSlug == request.ExternalIdentity.IdpSlug {
-			// cull it
+	if user.RageUser.LinkedIdentities == nil || fluffycore_utils.IsEmptyOrNil(user.RageUser.LinkedIdentities.Identities) {
+		// nothing linked
+		return &proto_oidc_user.UnlinkRageUsersResponse{
+			User: s.makeRageUserCopy(user.RageUser),
+		}, nil
+	}
+	linq.From(user.RageUser.LinkedIdentities.Identities).
+		WhereT(func(c *proto_oidc_models.Identity) bool {
+			if request.ExternalIdentity.Subject != c.Subject {
+				return true
+			}
+			if request.ExternalIdentity.IdpSlug != c.IdpSlug {
+				return true
+			}
 			return false
-		}
-		return true
-	}).SelectT(func(c *proto_oidc_models.Identity) *proto_oidc_models.Identity {
-		return c
-	}).ToSlice(&linkedIdentities)
-	user.LinkedIdentities.Identities = linkedIdentities
-	s.userMap[user.RootIdentity.Subject] = user
-	return &proto_oidc_user.UnlinkUsersResponse{
-		User: s.makeUserCopy(user),
+		}).
+		SelectT(func(c *proto_oidc_models.Identity) *proto_oidc_models.Identity {
+			return c
+		}).ToSlice(&linkedIdentities)
+	user.RageUser.LinkedIdentities.Identities = linkedIdentities
+	s.userMap[user.Id] = user
+	return &proto_oidc_user.UnlinkRageUsersResponse{
+		User: s.makeRageUserCopy(user.RageUser),
 	}, nil
 
 }

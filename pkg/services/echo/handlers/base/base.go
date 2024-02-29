@@ -30,7 +30,7 @@ type (
 		ClaimsPrincipal         func() fluffycore_contracts_common.IClaimsPrincipal
 		EchoContextAccessor     func() fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor
 		IdpServiceServer        func() proto_oidc_idp.IFluffyCoreIDPServiceServer
-		UserService             func() proto_oidc_user.IFluffyCoreUserServiceServer
+		RageUserService         func() proto_oidc_user.IFluffyCoreRageUserServiceServer
 		OIDCFlowStore           func() proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer
 		ExternalOauth2FlowStore func() proto_oidc_flows.IFluffyCoreExternalOauth2FlowStoreServer
 		ScopedMemoryCache       func() fluffycore_contracts_common.IScopedMemoryCache
@@ -41,7 +41,7 @@ type (
 		claimsPrincipal         fluffycore_contracts_common.IClaimsPrincipal
 		echoContextAccessor     fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor
 		idpServiceServer        proto_oidc_idp.IFluffyCoreIDPServiceServer
-		userService             proto_oidc_user.IFluffyCoreUserServiceServer
+		rageUserService         proto_oidc_user.IFluffyCoreRageUserServiceServer
 		oidcFlowStore           proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer
 		externalOauth2FlowStore proto_oidc_flows.IFluffyCoreExternalOauth2FlowStoreServer
 		scopedMemoryCache       fluffycore_contracts_common.IScopedMemoryCache
@@ -57,7 +57,7 @@ func NewBaseHandler(container di.Container) *BaseHandler {
 	obj.ClaimsPrincipal = obj.getClaimsPrincipal
 	obj.EchoContextAccessor = obj.getEchoContextAccessor
 	obj.IdpServiceServer = obj.getIdpServiceServer
-	obj.UserService = obj.getUserService
+	obj.RageUserService = obj.getUserService
 	obj.OIDCFlowStore = obj.getOIDCFlowStore
 	obj.ExternalOauth2FlowStore = obj.getExternalOauth2FlowStore
 	obj.ScopedMemoryCache = obj.getScopedMemoryCache
@@ -109,11 +109,11 @@ func (b *BaseHandler) getIdpServiceServer() proto_oidc_idp.IFluffyCoreIDPService
 	}
 	return b.idpServiceServer
 }
-func (b *BaseHandler) getUserService() proto_oidc_user.IFluffyCoreUserServiceServer {
-	if b.userService == nil {
-		b.userService = di.Get[proto_oidc_user.IFluffyCoreUserServiceServer](b.Container)
+func (b *BaseHandler) getUserService() proto_oidc_user.IFluffyCoreRageUserServiceServer {
+	if b.rageUserService == nil {
+		b.rageUserService = di.Get[proto_oidc_user.IFluffyCoreRageUserServiceServer](b.Container)
 	}
-	return b.userService
+	return b.rageUserService
 }
 func (b *BaseHandler) getOIDCFlowStore() proto_oidc_flows.IFluffyCoreOIDCFlowStoreServer {
 	if b.oidcFlowStore == nil {

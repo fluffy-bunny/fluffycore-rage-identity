@@ -175,8 +175,8 @@ func (s *service) DoPost(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 
-	getUserResponse, err := s.UserService().GetUser(ctx,
-		&proto_oidc_user.GetUserRequest{
+	getUserResponse, err := s.RageUserService().GetRageUser(ctx,
+		&proto_oidc_user.GetRageUserRequest{
 			Subject: getPasswordResetCookieResponse.PasswordReset.Subject,
 		})
 	if err != nil {
@@ -184,8 +184,8 @@ func (s *service) DoPost(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/Error")
 	}
 
-	_, err = s.UserService().UpdateUser(ctx, &proto_oidc_user.UpdateUserRequest{
-		User: &proto_oidc_models.UserUpdate{
+	_, err = s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
+		User: &proto_oidc_models.RageUserUpdate{
 			RootIdentity: &proto_oidc_models.IdentityUpdate{
 				Subject: getPasswordResetCookieResponse.PasswordReset.Subject,
 			},

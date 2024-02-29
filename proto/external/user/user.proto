@@ -5,23 +5,11 @@ option go_package = "github.com/fluffy-bunny/fluffycore-rage-identity/proto/exte
 package proto.external.user;
 
 import "google/protobuf/descriptor.proto";
-import "proto/types/filter.proto";
 import "proto/types/pagination.proto";
 import "proto/external/models/user.proto";
-
 import "google/api/annotations.proto";
+ // this would be in your own personal repo proto.  Make a copy of the rage users proto
 
-
-message Filter {
-    proto.types.IDFilterExpression                      id = 1;
-    proto.types.StringMapStringFilterExpression         metadata = 2;
-    proto.external.models.UserStateFilterExpression     state = 3;
-    
-    // AST
-    repeated Filter and = 100;
-    repeated Filter or = 101;
-    repeated Filter not = 102;
-}
 
 service UserService {
     // Create user
@@ -65,16 +53,16 @@ service UserService {
 
   
 message CreateUserRequest {
-    proto.external.models.User user = 1;
+    proto.external.models.ExampleUser user = 1;
 }   
 message CreateUserResponse {
-    proto.external.models.User user = 1;
+    proto.external.models.ExampleUser user = 1;
 }
 message GetUserRequest {
    string subject = 1;
 }
 message GetUserResponse {
-    proto.external.models.User user = 1;
+    proto.external.models.ExampleUser user = 1;
 }
 
 message DeleteUserRequest {
@@ -83,22 +71,22 @@ message DeleteUserRequest {
 message DeleteUserResponse {
 }
 message UpdateUserRequest {
-    proto.external.models.UserUpdate user = 1;
+    proto.external.models.ExampleUserUpdate user = 1;
 }
 message UpdateUserResponse {
-    proto.external.models.User user = 1;
+    proto.external.models.ExampleUser user = 1;
 }
 
 message ListUserRequest {
    // Filter
-   Filter filter = 1;
+   proto.external.models.ExampleUserFilter filter = 1;
 
    // Pagination
    proto.types.Pagination pagination = 100;
 }
 
 message ListUserResponse {
-   repeated proto.external.models.User users = 1;
+   repeated proto.external.models.ExampleUser users = 1;
 
    // Pagination details
    proto.types.PaginationResponse pagination = 100;

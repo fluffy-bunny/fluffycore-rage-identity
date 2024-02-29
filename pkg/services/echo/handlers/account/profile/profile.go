@@ -9,8 +9,9 @@ import (
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	proto_external_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/models"
+	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
-	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
@@ -22,6 +23,7 @@ type (
 		*services_echo_handlers_base.BaseHandler
 
 		wellknownCookies contracts_cookies.IWellknownCookies
+		userService      proto_external_user.IFluffyCoreUserServiceServer
 	}
 )
 
@@ -34,10 +36,13 @@ func init() {
 func (s *service) Ctor(
 	container di.Container,
 	wellknownCookies contracts_cookies.IWellknownCookies,
+	userService proto_external_user.IFluffyCoreUserServiceServer,
+
 ) (*service, error) {
 	return &service{
 		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
 		wellknownCookies: wellknownCookies,
+		userService:      userService,
 	}, nil
 }
 
@@ -75,10 +80,9 @@ func (s *service) DoGet(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 
-	userService := s.UserService()
 	// get the user
-	getUserResponse, err := userService.GetUser(ctx,
-		&proto_oidc_user.GetUserRequest{
+	getUserResponse, err := s.userService.GetUser(ctx,
+		&proto_external_user.GetUserRequest{
 			Subject: rootIdentity.Subject,
 		})
 	if err != nil {
@@ -87,7 +91,7 @@ func (s *service) DoGet(c echo.Context) error {
 	}
 	user := getUserResponse.User
 	if user.Profile == nil {
-		user.Profile = &proto_oidc_models.Profile{}
+		user.Profile = &proto_external_models.Profile{}
 	}
 	phoneNumber := ""
 	if !fluffycore_utils.IsEmptyOrNil(user.Profile.PhoneNumbers) {
