@@ -128,7 +128,7 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 		models.ACRIdpRoot,
 	}
 	if len(authorizationFinal.Identity.Acr) > 0 {
-		acrClaims = append(acrClaims, authorizationFinal.Identity.Amr...)
+		acrClaims = append(acrClaims, authorizationFinal.Identity.Acr...)
 	}
 	idpClaims := []string{}
 	for _, acrValue := range acrClaims {

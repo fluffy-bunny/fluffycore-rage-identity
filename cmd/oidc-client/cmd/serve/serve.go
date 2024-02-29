@@ -115,7 +115,7 @@ func Serve() {
 			authCodeOptions = append(authCodeOptions, AcrValues(shared.AppConfig.ACRValues...))
 		}
 		authRequestURL := config.AuthCodeURL(state, authCodeOptions...)
-		fmt.Println(authRequestURL)
+		fmt.Println("\n" + authRequestURL + "\n")
 		http.Redirect(w, r, authRequestURL, http.StatusFound)
 	})
 
