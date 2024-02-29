@@ -10,13 +10,6 @@ import (
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/localizer"
 	services "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services"
-	services_handlers_account_about "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/account/about"
-	services_handlers_account_callback "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/account/callback"
-	services_handlers_account_home "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/account/home"
-	services_handlers_account_login "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/account/login"
-	services_handlers_account_logout "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/account/logout"
-	services_handlers_account_personal_information "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/account/personal_information"
-	services_handlers_account_profile "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/account/profile"
 	services_handlers_authorization_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/authorization_endpoint"
 	services_handlers_discovery_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/discovery_endpoint"
 	services_handlers_error "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/error"
@@ -127,16 +120,6 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	// App Handlers
 	//--------------------------------------------------------
 	services_handlers_healthz.AddScopedIHandler(builder)
-
-	// Account Handlers
-	//--------------------------------------------------------
-	services_handlers_account_home.AddScopedIHandler(builder)
-	services_handlers_account_about.AddScopedIHandler(builder)
-	services_handlers_account_callback.AddScopedIHandler(builder)
-	services_handlers_account_login.AddScopedIHandler(builder)
-	services_handlers_account_logout.AddScopedIHandler(builder)
-	services_handlers_account_profile.AddScopedIHandler(builder)
-	services_handlers_account_personal_information.AddScopedIHandler(builder)
 
 	// OIDC Handlers
 	//--------------------------------------------------------
