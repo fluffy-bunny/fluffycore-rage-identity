@@ -61,7 +61,8 @@ type SelfIDPConfig struct {
 }
 
 type OIDCConfig struct {
-	BaseUrl string `json:"baseUrl"`
+	BaseUrl            string `json:"baseUrl"`
+	OAuth2CallbackPath string `json:"oauth2CallbackPath"`
 }
 type CookieConfig struct {
 	Domain string `json:"domain"`
@@ -112,7 +113,8 @@ const configDefaultJSONTemplate = `
 		"developerMode": false
 	},
 	"oidcConfig": {
-		"baseUrl": "IN_ENVIRONMENT"
+		"baseUrl": "IN_ENVIRONMENT",
+		"oauth2CallbackPath": "/auth/callback"
 	},
 	"cookieConfig": {
  	},

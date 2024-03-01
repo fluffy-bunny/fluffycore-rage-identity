@@ -17,34 +17,40 @@ type (
 	}
 )
 
+var requiresNoAuthPaths map[string]bool
+
 // everything requries auth unless otherwise documented here.
 // -- this is a list of paths that do not require auth
-var (
-	RequiresNoAuth = map[string]bool{
-		wellknown_echo.AboutPath:                       true,
-		wellknown_echo.AccountCallbackPath:             true,
-		wellknown_echo.ErrorPath:                       true,
-		wellknown_echo.ExternalIDPPath:                 true,
-		wellknown_echo.ForgotPasswordPath:              true,
-		wellknown_echo.HealthzPath:                     true,
-		wellknown_echo.HomePath:                        true,
-		wellknown_echo.LoginPath:                       true,
-		wellknown_echo.LogoutPath:                      true,
-		wellknown_echo.OAuth2CallbackPath:              true,
-		wellknown_echo.OAuth2TokenEndpointPath:         true,
-		wellknown_echo.OIDCAuthorizationEndpointPath:   true,
-		wellknown_echo.OIDCLoginPath:                   true,
-		wellknown_echo.OIDCLoginPasswordPath:           true,
-		wellknown_echo.PasswordResetPath:               true,
-		wellknown_echo.ReadyPath:                       true,
-		wellknown_echo.SignupPath:                      true,
-		wellknown_echo.SwaggerPath:                     true,
-		wellknown_echo.UserInfoPath:                    true,
-		wellknown_echo.VerifyCodePath:                  true,
-		wellknown_echo.WellKnownJWKS:                   true,
-		wellknown_echo.WellKnownOpenIDCOnfiguationPath: true,
+func RequiresNoAuth() map[string]bool {
+	// needs to be a func as some of these are configured in.
+	if requiresNoAuthPaths == nil {
+		requiresNoAuthPaths = map[string]bool{
+			wellknown_echo.AboutPath:                       true,
+			wellknown_echo.AccountCallbackPath:             true,
+			wellknown_echo.ErrorPath:                       true,
+			wellknown_echo.ExternalIDPPath:                 true,
+			wellknown_echo.ForgotPasswordPath:              true,
+			wellknown_echo.HealthzPath:                     true,
+			wellknown_echo.HomePath:                        true,
+			wellknown_echo.LoginPath:                       true,
+			wellknown_echo.LogoutPath:                      true,
+			wellknown_echo.OAuth2CallbackPath:              true,
+			wellknown_echo.OAuth2TokenEndpointPath:         true,
+			wellknown_echo.OIDCAuthorizationEndpointPath:   true,
+			wellknown_echo.OIDCLoginPath:                   true,
+			wellknown_echo.OIDCLoginPasswordPath:           true,
+			wellknown_echo.PasswordResetPath:               true,
+			wellknown_echo.ReadyPath:                       true,
+			wellknown_echo.SignupPath:                      true,
+			wellknown_echo.SwaggerPath:                     true,
+			wellknown_echo.UserInfoPath:                    true,
+			wellknown_echo.VerifyCodePath:                  true,
+			wellknown_echo.WellKnownJWKS:                   true,
+			wellknown_echo.WellKnownOpenIDCOnfiguationPath: true,
+		}
 	}
-)
+	return requiresNoAuthPaths
+}
 
 // EnsureAuth ...
 func EnsureAuth(_ di.Container) echo.MiddlewareFunc {
@@ -58,7 +64,7 @@ func EnsureAuth(_ di.Container) echo.MiddlewareFunc {
 
 			// get path
 			path := c.Path()
-			if _, ok := RequiresNoAuth[path]; ok {
+			if _, ok := RequiresNoAuth()[path]; ok {
 				return next(c)
 			}
 			claimsPrincipal := di.Get[fluffycore_contracts_common.IClaimsPrincipal](subContainer)
