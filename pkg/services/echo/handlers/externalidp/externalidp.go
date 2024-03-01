@@ -213,7 +213,7 @@ func (s *service) DoPost(c echo.Context) error {
 					ClientID:     v.Oauth2.ClientId,
 					ClientSecret: v.Oauth2.ClientSecret,
 					Scopes:       scopes,
-					RedirectURL:  rootPath + wellknown_echo.OAuth2CallbackPath,
+					RedirectURL:  rootPath + s.config.OIDCConfig.OAuth2CallbackPath,
 					Endpoint: oauth2.Endpoint{
 						AuthURL:  v.Oauth2.AuthorizationEndpoint,
 						TokenURL: v.Oauth2.TokenEndpoint,

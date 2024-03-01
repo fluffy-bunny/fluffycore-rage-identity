@@ -8,7 +8,6 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_oauth2factory "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oauth2factory"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
@@ -96,7 +95,7 @@ func (s *service) GetConfig(ctx context.Context, request *contracts_oauth2factor
 					ClientID:     v.Github.ClientId,
 					ClientSecret: v.Github.ClientSecret,
 					Scopes:       GithubScopes,
-					RedirectURL:  s.config.OIDCConfig.BaseUrl + wellknown_echo.OAuth2CallbackPath,
+					RedirectURL:  s.config.OIDCConfig.BaseUrl + s.config.OIDCConfig.OAuth2CallbackPath,
 					Endpoint: oauth2.Endpoint{
 						AuthURL:  GithubAuthURL,
 						TokenURL: GithubTokenURL,
@@ -128,7 +127,7 @@ func (s *service) GetConfig(ctx context.Context, request *contracts_oauth2factor
 						ClientID:     v.Oidc.ClientId,
 						ClientSecret: v.Oidc.ClientSecret,
 						Scopes:       scopes,
-						RedirectURL:  s.config.OIDCConfig.BaseUrl + wellknown_echo.OAuth2CallbackPath,
+						RedirectURL:  s.config.OIDCConfig.BaseUrl + s.config.OIDCConfig.OAuth2CallbackPath,
 						Endpoint: oauth2.Endpoint{
 							AuthURL:  oidcProvider.Endpoint().AuthURL,
 							TokenURL: oidcProvider.Endpoint().TokenURL,

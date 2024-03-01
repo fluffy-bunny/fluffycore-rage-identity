@@ -15,6 +15,7 @@ import (
 	pkg_types "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/types"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	pkg_version "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/version"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
 	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
 	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
 	fluffycore_contracts_middleware "github.com/fluffy-bunny/fluffycore/contracts/middleware"
@@ -136,6 +137,8 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 		panic(err)
 	}
 	config := s.configOptions.Destination.(*contracts_config.Config)
+	wellknown_echo.OAuth2CallbackPath = config.OIDCConfig.OAuth2CallbackPath
+
 	config.DDProfilerConfig.ApplicationEnvironment = config.ApplicationEnvironment
 	config.DDProfilerConfig.ServiceName = config.ApplicationName
 	config.DDProfilerConfig.Version = pkg_version.Version()

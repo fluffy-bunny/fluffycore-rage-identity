@@ -114,7 +114,7 @@ const configDefaultJSONTemplate = `
 	},
 	"oidcConfig": {
 		"baseUrl": "IN_ENVIRONMENT",
-		"oauth2CallbackPath": "/auth/callback"
+		"oauth2CallbackPath": "/oauth2/callback"
 	},
 	"cookieConfig": {
  	},

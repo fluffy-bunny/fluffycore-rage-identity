@@ -74,13 +74,13 @@ func (s *service) Ctor(
 }
 
 // AddScopedIHandler registers the *service as a singleton.
-func AddScopedIHandler(builder di.ContainerBuilder) {
+func AddScopedIHandler(builder di.ContainerBuilder, callbackPath string) {
 	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
 		stemService.Ctor,
 		[]contracts_handler.HTTPVERB{
 			contracts_handler.GET,
 		},
-		wellknown_echo.OAuth2CallbackPath,
+		callbackPath,
 	)
 
 }

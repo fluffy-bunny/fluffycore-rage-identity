@@ -133,7 +133,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_jwks_endpoint.AddScopedIHandler(builder)
 	services_handlers_authorization_endpoint.AddScopedIHandler(builder)
 	services_handlers_token_endpoint.AddScopedIHandler(builder)
-	services_handlers_oauth2_callback.AddScopedIHandler(builder)
+	services_handlers_oauth2_callback.AddScopedIHandler(builder, s.config.OIDCConfig.OAuth2CallbackPath)
 	services_handlers_forgotpassword.AddScopedIHandler(builder)
 	services_handlers_verifycode.AddScopedIHandler(builder)
 	services_handlers_passwordreset.AddScopedIHandler(builder)
