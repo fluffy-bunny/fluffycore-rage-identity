@@ -21,13 +21,6 @@ enum RageUserState {
     USER_STATE_PENDING = 4;
 }
 
-message RageUserStateFilterExpression {
-    option (proto.types.filter_expression) = true;
-
-    RageUserState eq          = 1 [(proto.types.op) = OP_EQ];
-    repeated RageUserState in = 2 [(proto.types.op) = OP_IN];
-}
-
 message RageUserStateValue {
     RageUserState value = 1;
 }
