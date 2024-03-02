@@ -162,8 +162,7 @@ message RageUserUpdate {
  message RageUserFilter {
     proto.oidc.models.IdentityFilter                    root_identity = 1;
     proto.oidc.models.IdentityFilter                    linked_identity = 2;
-    proto.oidc.models.RageUserStateFilterExpression     state = 3;
-
+ 
     // AST
     repeated RageUserFilter and = 100;
     repeated RageUserFilter or = 101;

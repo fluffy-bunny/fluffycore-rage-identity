@@ -71,11 +71,6 @@ func (s *service) ListUser(ctx context.Context, request *proto_external_user.Lis
 				if c.RageUser == nil {
 					return false
 				}
-				if request.Filter.RageUser.State != nil {
-					if request.Filter.RageUser.State.Eq != c.RageUser.State {
-						return false
-					}
-				}
 
 				if request.Filter.RageUser.RootIdentity != nil {
 					if c.RageUser.RootIdentity == nil {
