@@ -486,28 +486,6 @@
         },
         "linkedIdentity": {
           "$ref": "#/definitions/modelsIdentityFilter"
-        },
-        "and": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/modelsRageUserFilter"
-          },
-          "title": "AST"
-        },
-        "or": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/modelsRageUserFilter"
-          }
-        },
-        "not": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/modelsRageUserFilter"
-          }
         }
       }
     },
