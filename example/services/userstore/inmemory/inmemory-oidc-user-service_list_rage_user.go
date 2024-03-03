@@ -13,7 +13,7 @@ import (
 	codes "google.golang.org/grpc/codes"
 )
 
-func (s *service) validateListRageUserRequest(request *proto_oidc_user.ListRageUserRequest) error {
+func (s *service) validateListRageUsersRequest(request *proto_oidc_user.ListRageUsersRequest) error {
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is required")
 	}
@@ -28,19 +28,53 @@ func (s *service) validateListRageUserRequest(request *proto_oidc_user.ListRageU
 
 }
 
-func (s *service) ListRageUser(ctx context.Context, request *proto_oidc_user.ListRageUserRequest) (*proto_oidc_user.ListRageUserResponse, error) {
+func (s *service) ListRageUsers(ctx context.Context, request *proto_oidc_user.ListRageUsersRequest) (*proto_oidc_user.ListRageUsersResponse, error) {
 	log := zerolog.Ctx(ctx).With().Logger()
-	err := s.validateListRageUserRequest(request)
+	err := s.validateListRageUsersRequest(request)
 	if err != nil {
 		log.Warn().Err(err).Msg("validateListRageUserRequest")
 		return nil, err
 	}
-
+	filter := &proto_external_models.ExampleUserFilter{}
+	if request.Filter != nil {
+		if request.Filter.RootSubject != nil {
+			filter.Id = &proto_types.IDFilterExpression{
+				Eq: request.Filter.RootSubject.Eq,
+				In: request.Filter.RootSubject.In,
+			}
+		}
+		if request.Filter.RootEmail != nil {
+			filter.Email = &proto_types.StringFilterExpression{
+				Eq:       request.Filter.RootEmail.Eq,
+				In:       request.Filter.RootEmail.In,
+				Contains: request.Filter.RootEmail.Contains,
+				Ne:       request.Filter.RootEmail.Ne,
+			}
+		}
+		if request.Filter.LinkedIdentitySubject != nil {
+			filter.LinkedIdentitySubject = &proto_types.IDFilterExpression{
+				Eq: request.Filter.LinkedIdentitySubject.Eq,
+				In: request.Filter.LinkedIdentitySubject.In,
+			}
+		}
+		if request.Filter.LinkedIdentityIdpSlug != nil {
+			filter.LinkedIdentityIdpSlug = &proto_types.IDFilterExpression{
+				Eq: request.Filter.LinkedIdentityIdpSlug.Eq,
+				In: request.Filter.LinkedIdentityIdpSlug.In,
+			}
+		}
+		if request.Filter.LinkedIdentityEmail != nil {
+			filter.LinkedIdentityEmail = &proto_types.StringFilterExpression{
+				Eq:       request.Filter.LinkedIdentityEmail.Eq,
+				In:       request.Filter.LinkedIdentityEmail.In,
+				Contains: request.Filter.LinkedIdentityEmail.Contains,
+				Ne:       request.Filter.LinkedIdentityEmail.Ne,
+			}
+		}
+	}
 	listUserResponse, err := s.ListUser(ctx, &proto_external_user.ListUserRequest{
 		Pagination: request.Pagination,
-		Filter: &proto_external_models.ExampleUserFilter{
-			RageUser: request.Filter,
-		},
+		Filter:     filter,
 	})
 	if err != nil {
 		return nil, err
@@ -51,7 +85,7 @@ func (s *service) ListRageUser(ctx context.Context, request *proto_oidc_user.Lis
 		users = append(users, s.makeRageUserCopy(v.RageUser))
 	}
 
-	return &proto_oidc_user.ListRageUserResponse{
+	return &proto_oidc_user.ListRageUsersResponse{
 		Users: users,
 	}, nil
 }

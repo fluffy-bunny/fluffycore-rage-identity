@@ -38,41 +38,53 @@ service RageUserService {
           };
     }
     // List users
-    rpc ListRageUser (ListRageUserRequest) returns (ListRageUserResponse) {
+    rpc ListRageUsers (ListRageUsersRequest) returns (ListRageUsersResponse) {
         option (google.api.http) = {
             post: "/api/v1/user/_search"
             body: "*"
           };
     }
 
-    rpc LinkRageUsers (LinkRageUsersRequest) returns (LinkRageUsersResponse) {
+    rpc LinkRageUser (LinkRageUserRequest) returns (LinkRageUserResponse) {
         option (google.api.http) = {
             post: "/api/v1/user/_link"
             body: "*"
           };
     }
-    rpc UnlinkRageUsers (UnlinkRageUsersRequest) returns (UnlinkRageUsersResponse) {
+    rpc UnlinkRageUsers (UnlinkRageUserRequest) returns (UnlinkRageUserResponse) {
         option (google.api.http) = {
             post: "/api/v1/user/_unlink"
             body: "*"
           };
     }
+    rpc IsRageUserLinked (IsRageUserLinkedRequest) returns (IsRageUserLinkedResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/user/_islinked"
+            body: "*"
+          };
+    }
 } 
-
-message LinkRageUsersRequest {
+message IsRageUserLinkedRequest {
+    string root_subject = 1;
+    proto.oidc.models.Identity external_identity = 2;
+}
+message IsRageUserLinkedResponse {
+    bool is_linked = 1;
+}
+message LinkRageUserRequest {
     string root_subject = 1;
     proto.oidc.models.Identity external_identity = 2;
 }
 
-message LinkRageUsersResponse {
+message LinkRageUserResponse {
     proto.oidc.models.RageUser user = 1;
 }
 
-message UnlinkRageUsersRequest {
+message UnlinkRageUserRequest {
     string root_subject = 1;
     proto.oidc.models.Identity external_identity = 2;
 }
-message UnlinkRageUsersResponse {
+message UnlinkRageUserResponse {
     proto.oidc.models.RageUser user = 1;
 }
 
@@ -97,7 +109,7 @@ message UpdateRageUserResponse {
     proto.oidc.models.RageUser user = 1;
 }
 
-message ListRageUserRequest {
+message ListRageUsersRequest {
    // Filter
    proto.oidc.models.RageUserFilter filter = 1;
 
@@ -105,7 +117,7 @@ message ListRageUserRequest {
    proto.types.Pagination pagination = 100;
 }
 
-message ListRageUserResponse {
+message ListRageUsersResponse {
    repeated proto.oidc.models.RageUser users = 1;
 
    // Pagination details

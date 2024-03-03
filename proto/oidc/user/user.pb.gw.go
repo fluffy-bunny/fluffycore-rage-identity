@@ -135,60 +135,60 @@ func local_request_RageUserService_UpdateRageUser_0(ctx context.Context, marshal
 
 }
 
-func request_RageUserService_ListRageUser_0(ctx context.Context, marshaler runtime.Marshaler, client RageUserServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ListRageUserRequest
+func request_RageUserService_ListRageUsers_0(ctx context.Context, marshaler runtime.Marshaler, client RageUserServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ListRageUsersRequest
 	var metadata runtime.ServerMetadata
 
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.ListRageUser(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.ListRageUsers(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_RageUserService_ListRageUser_0(ctx context.Context, marshaler runtime.Marshaler, server RageUserServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ListRageUserRequest
+func local_request_RageUserService_ListRageUsers_0(ctx context.Context, marshaler runtime.Marshaler, server RageUserServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ListRageUsersRequest
 	var metadata runtime.ServerMetadata
 
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.ListRageUser(ctx, &protoReq)
+	msg, err := server.ListRageUsers(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-func request_RageUserService_LinkRageUsers_0(ctx context.Context, marshaler runtime.Marshaler, client RageUserServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq LinkRageUsersRequest
+func request_RageUserService_LinkRageUser_0(ctx context.Context, marshaler runtime.Marshaler, client RageUserServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq LinkRageUserRequest
 	var metadata runtime.ServerMetadata
 
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.LinkRageUsers(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.LinkRageUser(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_RageUserService_LinkRageUsers_0(ctx context.Context, marshaler runtime.Marshaler, server RageUserServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq LinkRageUsersRequest
+func local_request_RageUserService_LinkRageUser_0(ctx context.Context, marshaler runtime.Marshaler, server RageUserServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq LinkRageUserRequest
 	var metadata runtime.ServerMetadata
 
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.LinkRageUsers(ctx, &protoReq)
+	msg, err := server.LinkRageUser(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
 func request_RageUserService_UnlinkRageUsers_0(ctx context.Context, marshaler runtime.Marshaler, client RageUserServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq UnlinkRageUsersRequest
+	var protoReq UnlinkRageUserRequest
 	var metadata runtime.ServerMetadata
 
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
@@ -201,7 +201,7 @@ func request_RageUserService_UnlinkRageUsers_0(ctx context.Context, marshaler ru
 }
 
 func local_request_RageUserService_UnlinkRageUsers_0(ctx context.Context, marshaler runtime.Marshaler, server RageUserServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq UnlinkRageUsersRequest
+	var protoReq UnlinkRageUserRequest
 	var metadata runtime.ServerMetadata
 
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
@@ -209,6 +209,32 @@ func local_request_RageUserService_UnlinkRageUsers_0(ctx context.Context, marsha
 	}
 
 	msg, err := server.UnlinkRageUsers(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+func request_RageUserService_IsRageUserLinked_0(ctx context.Context, marshaler runtime.Marshaler, client RageUserServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq IsRageUserLinkedRequest
+	var metadata runtime.ServerMetadata
+
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.IsRageUserLinked(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_RageUserService_IsRageUserLinked_0(ctx context.Context, marshaler runtime.Marshaler, server RageUserServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq IsRageUserLinkedRequest
+	var metadata runtime.ServerMetadata
+
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.IsRageUserLinked(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -294,7 +320,7 @@ func RegisterRageUserServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("POST", pattern_RageUserService_ListRageUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_RageUserService_ListRageUsers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -302,12 +328,12 @@ func RegisterRageUserServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/proto.oidc.user.RageUserService/ListRageUser", runtime.WithHTTPPathPattern("/api/v1/user/_search"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/proto.oidc.user.RageUserService/ListRageUsers", runtime.WithHTTPPathPattern("/api/v1/user/_search"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_RageUserService_ListRageUser_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_RageUserService_ListRageUsers_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
@@ -315,11 +341,11 @@ func RegisterRageUserServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 			return
 		}
 
-		forward_RageUserService_ListRageUser_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_RageUserService_ListRageUsers_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_RageUserService_LinkRageUsers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_RageUserService_LinkRageUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -327,12 +353,12 @@ func RegisterRageUserServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/proto.oidc.user.RageUserService/LinkRageUsers", runtime.WithHTTPPathPattern("/api/v1/user/_link"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/proto.oidc.user.RageUserService/LinkRageUser", runtime.WithHTTPPathPattern("/api/v1/user/_link"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_RageUserService_LinkRageUsers_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_RageUserService_LinkRageUser_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
@@ -340,7 +366,7 @@ func RegisterRageUserServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 			return
 		}
 
-		forward_RageUserService_LinkRageUsers_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_RageUserService_LinkRageUser_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -366,6 +392,31 @@ func RegisterRageUserServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		}
 
 		forward_RageUserService_UnlinkRageUsers_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("POST", pattern_RageUserService_IsRageUserLinked_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/proto.oidc.user.RageUserService/IsRageUserLinked", runtime.WithHTTPPathPattern("/api/v1/user/_islinked"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_RageUserService_IsRageUserLinked_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_RageUserService_IsRageUserLinked_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -476,47 +527,47 @@ func RegisterRageUserServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("POST", pattern_RageUserService_ListRageUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_RageUserService_ListRageUsers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/proto.oidc.user.RageUserService/ListRageUser", runtime.WithHTTPPathPattern("/api/v1/user/_search"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/proto.oidc.user.RageUserService/ListRageUsers", runtime.WithHTTPPathPattern("/api/v1/user/_search"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_RageUserService_ListRageUser_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_RageUserService_ListRageUsers_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_RageUserService_ListRageUser_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_RageUserService_ListRageUsers_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_RageUserService_LinkRageUsers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_RageUserService_LinkRageUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/proto.oidc.user.RageUserService/LinkRageUsers", runtime.WithHTTPPathPattern("/api/v1/user/_link"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/proto.oidc.user.RageUserService/LinkRageUser", runtime.WithHTTPPathPattern("/api/v1/user/_link"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_RageUserService_LinkRageUsers_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_RageUserService_LinkRageUser_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_RageUserService_LinkRageUsers_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_RageUserService_LinkRageUser_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -542,6 +593,28 @@ func RegisterRageUserServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 
 	})
 
+	mux.Handle("POST", pattern_RageUserService_IsRageUserLinked_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/proto.oidc.user.RageUserService/IsRageUserLinked", runtime.WithHTTPPathPattern("/api/v1/user/_islinked"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_RageUserService_IsRageUserLinked_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_RageUserService_IsRageUserLinked_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	return nil
 }
 
@@ -552,11 +625,13 @@ var (
 
 	pattern_RageUserService_UpdateRageUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "user", "_update"}, ""))
 
-	pattern_RageUserService_ListRageUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "user", "_search"}, ""))
+	pattern_RageUserService_ListRageUsers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "user", "_search"}, ""))
 
-	pattern_RageUserService_LinkRageUsers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "user", "_link"}, ""))
+	pattern_RageUserService_LinkRageUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "user", "_link"}, ""))
 
 	pattern_RageUserService_UnlinkRageUsers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "user", "_unlink"}, ""))
+
+	pattern_RageUserService_IsRageUserLinked_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "user", "_islinked"}, ""))
 )
 
 var (
@@ -566,9 +641,11 @@ var (
 
 	forward_RageUserService_UpdateRageUser_0 = runtime.ForwardResponseMessage
 
-	forward_RageUserService_ListRageUser_0 = runtime.ForwardResponseMessage
+	forward_RageUserService_ListRageUsers_0 = runtime.ForwardResponseMessage
 
-	forward_RageUserService_LinkRageUsers_0 = runtime.ForwardResponseMessage
+	forward_RageUserService_LinkRageUser_0 = runtime.ForwardResponseMessage
 
 	forward_RageUserService_UnlinkRageUsers_0 = runtime.ForwardResponseMessage
+
+	forward_RageUserService_IsRageUserLinked_0 = runtime.ForwardResponseMessage
 )

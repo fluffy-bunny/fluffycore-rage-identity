@@ -123,7 +123,7 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 			if rootIdentityUpdate.EmailVerified != nil {
 				rootIdentity.EmailVerified = rootIdentityUpdate.EmailVerified.Value
 			}
-			if !fluffycore_utils.IsEmptyOrNil(rootIdentityUpdate.Email) {
+			if fluffycore_utils.IsNotEmptyOrNil(rootIdentityUpdate.Email) {
 				rootIdentity.Email = rootIdentityUpdate.Email.Value
 			}
 			return nil

@@ -75,7 +75,7 @@ type ForgotPasswordPostRequest struct {
 	Type  string `param:"type" query:"type" form:"type" json:"type" xml:"type"`
 }
 
-func (s *service) validateForgotPasswordGetRequest(model *ForgotPasswordGetRequest) error {
+func (s *service) validateForgotPasswordGetRequest(request *ForgotPasswordGetRequest) error {
 
 	return nil
 }
@@ -146,13 +146,11 @@ func (s *service) DoPost(c echo.Context) error {
 	// NOTE: We don't want to give bots the ability to probe our service to see if an email exists.
 	// we check here and we redirect to the enter code in all cases.
 	// we just don't send the email, but we drop the cookie with a verification code just for the fun of it.
-	listUserResponse, err := s.RageUserService().ListRageUser(ctx,
-		&proto_oidc_user.ListRageUserRequest{
+	listUserResponse, err := s.RageUserService().ListRageUsers(ctx,
+		&proto_oidc_user.ListRageUsersRequest{
 			Filter: &proto_oidc_models.RageUserFilter{
-				RootIdentity: &proto_oidc_models.IdentityFilter{
-					Email: &proto_types.StringFilterExpression{
-						Eq: model.Email,
-					},
+				RootEmail: &proto_types.StringFilterExpression{
+					Eq: model.Email,
 				},
 			},
 		})

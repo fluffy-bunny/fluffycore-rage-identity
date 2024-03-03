@@ -242,12 +242,10 @@ func (s *service) DoPost(c echo.Context) error {
 
 	}
 	// does the user exist.
-	listUserResponse, err := s.RageUserService().ListRageUser(ctx, &proto_oidc_user.ListRageUserRequest{
+	listUserResponse, err := s.RageUserService().ListRageUsers(ctx, &proto_oidc_user.ListRageUsersRequest{
 		Filter: &proto_oidc_models.RageUserFilter{
-			RootIdentity: &proto_oidc_models.IdentityFilter{
-				Email: &proto_types.StringFilterExpression{
-					Eq: model.UserName,
-				},
+			RootEmail: &proto_types.StringFilterExpression{
+				Eq: model.UserName,
 			},
 		},
 	})

@@ -13,7 +13,7 @@ import (
 	codes "google.golang.org/grpc/codes"
 )
 
-func (s *service) validateUnlinkRageUsersRequest(request *proto_oidc_user.UnlinkRageUsersRequest) error {
+func (s *service) validateUnlinkRageUserRequest(request *proto_oidc_user.UnlinkRageUserRequest) error {
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is required")
 	}
@@ -31,9 +31,9 @@ func (s *service) validateUnlinkRageUsersRequest(request *proto_oidc_user.Unlink
 	}
 	return nil
 }
-func (s *service) UnlinkUsers(ctx context.Context, request *proto_oidc_user.UnlinkRageUsersRequest) (*proto_oidc_user.UnlinkRageUsersResponse, error) {
+func (s *service) UnlinkRageUser(ctx context.Context, request *proto_oidc_user.UnlinkRageUserRequest) (*proto_oidc_user.UnlinkRageUserResponse, error) {
 	log := zerolog.Ctx(ctx).With().Logger()
-	err := s.validateUnlinkRageUsersRequest(request)
+	err := s.validateUnlinkRageUserRequest(request)
 	if err != nil {
 		log.Warn().Err(err).Msg("validateLinkUsersRequest")
 		return nil, err
@@ -53,7 +53,7 @@ func (s *service) UnlinkUsers(ctx context.Context, request *proto_oidc_user.Unli
 	linkedIdentities := make([]*proto_oidc_models.Identity, 0)
 	if user.RageUser.LinkedIdentities == nil || fluffycore_utils.IsEmptyOrNil(user.RageUser.LinkedIdentities.Identities) {
 		// nothing linked
-		return &proto_oidc_user.UnlinkRageUsersResponse{
+		return &proto_oidc_user.UnlinkRageUserResponse{
 			User: s.makeRageUserCopy(user.RageUser),
 		}, nil
 	}
@@ -72,7 +72,7 @@ func (s *service) UnlinkUsers(ctx context.Context, request *proto_oidc_user.Unli
 		}).ToSlice(&linkedIdentities)
 	user.RageUser.LinkedIdentities.Identities = linkedIdentities
 	s.userMap[user.Id] = user
-	return &proto_oidc_user.UnlinkRageUsersResponse{
+	return &proto_oidc_user.UnlinkRageUserResponse{
 		User: s.makeRageUserCopy(user.RageUser),
 	}, nil
 

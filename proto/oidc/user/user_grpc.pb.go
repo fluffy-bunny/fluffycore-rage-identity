@@ -19,12 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	RageUserService_CreateRageUser_FullMethodName  = "/proto.oidc.user.RageUserService/CreateRageUser"
-	RageUserService_GetRageUser_FullMethodName     = "/proto.oidc.user.RageUserService/GetRageUser"
-	RageUserService_UpdateRageUser_FullMethodName  = "/proto.oidc.user.RageUserService/UpdateRageUser"
-	RageUserService_ListRageUser_FullMethodName    = "/proto.oidc.user.RageUserService/ListRageUser"
-	RageUserService_LinkRageUsers_FullMethodName   = "/proto.oidc.user.RageUserService/LinkRageUsers"
-	RageUserService_UnlinkRageUsers_FullMethodName = "/proto.oidc.user.RageUserService/UnlinkRageUsers"
+	RageUserService_CreateRageUser_FullMethodName   = "/proto.oidc.user.RageUserService/CreateRageUser"
+	RageUserService_GetRageUser_FullMethodName      = "/proto.oidc.user.RageUserService/GetRageUser"
+	RageUserService_UpdateRageUser_FullMethodName   = "/proto.oidc.user.RageUserService/UpdateRageUser"
+	RageUserService_ListRageUsers_FullMethodName    = "/proto.oidc.user.RageUserService/ListRageUsers"
+	RageUserService_LinkRageUser_FullMethodName     = "/proto.oidc.user.RageUserService/LinkRageUser"
+	RageUserService_UnlinkRageUsers_FullMethodName  = "/proto.oidc.user.RageUserService/UnlinkRageUsers"
+	RageUserService_IsRageUserLinked_FullMethodName = "/proto.oidc.user.RageUserService/IsRageUserLinked"
 )
 
 // RageUserServiceClient is the client API for RageUserService service.
@@ -38,9 +39,10 @@ type RageUserServiceClient interface {
 	// Update user
 	UpdateRageUser(ctx context.Context, in *UpdateRageUserRequest, opts ...grpc.CallOption) (*UpdateRageUserResponse, error)
 	// List users
-	ListRageUser(ctx context.Context, in *ListRageUserRequest, opts ...grpc.CallOption) (*ListRageUserResponse, error)
-	LinkRageUsers(ctx context.Context, in *LinkRageUsersRequest, opts ...grpc.CallOption) (*LinkRageUsersResponse, error)
-	UnlinkRageUsers(ctx context.Context, in *UnlinkRageUsersRequest, opts ...grpc.CallOption) (*UnlinkRageUsersResponse, error)
+	ListRageUsers(ctx context.Context, in *ListRageUsersRequest, opts ...grpc.CallOption) (*ListRageUsersResponse, error)
+	LinkRageUser(ctx context.Context, in *LinkRageUserRequest, opts ...grpc.CallOption) (*LinkRageUserResponse, error)
+	UnlinkRageUsers(ctx context.Context, in *UnlinkRageUserRequest, opts ...grpc.CallOption) (*UnlinkRageUserResponse, error)
+	IsRageUserLinked(ctx context.Context, in *IsRageUserLinkedRequest, opts ...grpc.CallOption) (*IsRageUserLinkedResponse, error)
 }
 
 type rageUserServiceClient struct {
@@ -78,27 +80,36 @@ func (c *rageUserServiceClient) UpdateRageUser(ctx context.Context, in *UpdateRa
 	return out, nil
 }
 
-func (c *rageUserServiceClient) ListRageUser(ctx context.Context, in *ListRageUserRequest, opts ...grpc.CallOption) (*ListRageUserResponse, error) {
-	out := new(ListRageUserResponse)
-	err := c.cc.Invoke(ctx, RageUserService_ListRageUser_FullMethodName, in, out, opts...)
+func (c *rageUserServiceClient) ListRageUsers(ctx context.Context, in *ListRageUsersRequest, opts ...grpc.CallOption) (*ListRageUsersResponse, error) {
+	out := new(ListRageUsersResponse)
+	err := c.cc.Invoke(ctx, RageUserService_ListRageUsers_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *rageUserServiceClient) LinkRageUsers(ctx context.Context, in *LinkRageUsersRequest, opts ...grpc.CallOption) (*LinkRageUsersResponse, error) {
-	out := new(LinkRageUsersResponse)
-	err := c.cc.Invoke(ctx, RageUserService_LinkRageUsers_FullMethodName, in, out, opts...)
+func (c *rageUserServiceClient) LinkRageUser(ctx context.Context, in *LinkRageUserRequest, opts ...grpc.CallOption) (*LinkRageUserResponse, error) {
+	out := new(LinkRageUserResponse)
+	err := c.cc.Invoke(ctx, RageUserService_LinkRageUser_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *rageUserServiceClient) UnlinkRageUsers(ctx context.Context, in *UnlinkRageUsersRequest, opts ...grpc.CallOption) (*UnlinkRageUsersResponse, error) {
-	out := new(UnlinkRageUsersResponse)
+func (c *rageUserServiceClient) UnlinkRageUsers(ctx context.Context, in *UnlinkRageUserRequest, opts ...grpc.CallOption) (*UnlinkRageUserResponse, error) {
+	out := new(UnlinkRageUserResponse)
 	err := c.cc.Invoke(ctx, RageUserService_UnlinkRageUsers_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rageUserServiceClient) IsRageUserLinked(ctx context.Context, in *IsRageUserLinkedRequest, opts ...grpc.CallOption) (*IsRageUserLinkedResponse, error) {
+	out := new(IsRageUserLinkedResponse)
+	err := c.cc.Invoke(ctx, RageUserService_IsRageUserLinked_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -116,9 +127,10 @@ type RageUserServiceServer interface {
 	// Update user
 	UpdateRageUser(context.Context, *UpdateRageUserRequest) (*UpdateRageUserResponse, error)
 	// List users
-	ListRageUser(context.Context, *ListRageUserRequest) (*ListRageUserResponse, error)
-	LinkRageUsers(context.Context, *LinkRageUsersRequest) (*LinkRageUsersResponse, error)
-	UnlinkRageUsers(context.Context, *UnlinkRageUsersRequest) (*UnlinkRageUsersResponse, error)
+	ListRageUsers(context.Context, *ListRageUsersRequest) (*ListRageUsersResponse, error)
+	LinkRageUser(context.Context, *LinkRageUserRequest) (*LinkRageUserResponse, error)
+	UnlinkRageUsers(context.Context, *UnlinkRageUserRequest) (*UnlinkRageUserResponse, error)
+	IsRageUserLinked(context.Context, *IsRageUserLinkedRequest) (*IsRageUserLinkedResponse, error)
 	mustEmbedUnimplementedRageUserServiceServer()
 }
 
@@ -135,14 +147,17 @@ func (UnimplementedRageUserServiceServer) GetRageUser(context.Context, *GetRageU
 func (UnimplementedRageUserServiceServer) UpdateRageUser(context.Context, *UpdateRageUserRequest) (*UpdateRageUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateRageUser not implemented")
 }
-func (UnimplementedRageUserServiceServer) ListRageUser(context.Context, *ListRageUserRequest) (*ListRageUserResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListRageUser not implemented")
+func (UnimplementedRageUserServiceServer) ListRageUsers(context.Context, *ListRageUsersRequest) (*ListRageUsersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListRageUsers not implemented")
 }
-func (UnimplementedRageUserServiceServer) LinkRageUsers(context.Context, *LinkRageUsersRequest) (*LinkRageUsersResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method LinkRageUsers not implemented")
+func (UnimplementedRageUserServiceServer) LinkRageUser(context.Context, *LinkRageUserRequest) (*LinkRageUserResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LinkRageUser not implemented")
 }
-func (UnimplementedRageUserServiceServer) UnlinkRageUsers(context.Context, *UnlinkRageUsersRequest) (*UnlinkRageUsersResponse, error) {
+func (UnimplementedRageUserServiceServer) UnlinkRageUsers(context.Context, *UnlinkRageUserRequest) (*UnlinkRageUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnlinkRageUsers not implemented")
+}
+func (UnimplementedRageUserServiceServer) IsRageUserLinked(context.Context, *IsRageUserLinkedRequest) (*IsRageUserLinkedResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsRageUserLinked not implemented")
 }
 func (UnimplementedRageUserServiceServer) mustEmbedUnimplementedRageUserServiceServer() {}
 
@@ -211,44 +226,44 @@ func _RageUserService_UpdateRageUser_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
-func _RageUserService_ListRageUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListRageUserRequest)
+func _RageUserService_ListRageUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRageUsersRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RageUserServiceServer).ListRageUser(ctx, in)
+		return srv.(RageUserServiceServer).ListRageUsers(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: RageUserService_ListRageUser_FullMethodName,
+		FullMethod: RageUserService_ListRageUsers_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RageUserServiceServer).ListRageUser(ctx, req.(*ListRageUserRequest))
+		return srv.(RageUserServiceServer).ListRageUsers(ctx, req.(*ListRageUsersRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _RageUserService_LinkRageUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LinkRageUsersRequest)
+func _RageUserService_LinkRageUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LinkRageUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RageUserServiceServer).LinkRageUsers(ctx, in)
+		return srv.(RageUserServiceServer).LinkRageUser(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: RageUserService_LinkRageUsers_FullMethodName,
+		FullMethod: RageUserService_LinkRageUser_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RageUserServiceServer).LinkRageUsers(ctx, req.(*LinkRageUsersRequest))
+		return srv.(RageUserServiceServer).LinkRageUser(ctx, req.(*LinkRageUserRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _RageUserService_UnlinkRageUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UnlinkRageUsersRequest)
+	in := new(UnlinkRageUserRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -260,7 +275,25 @@ func _RageUserService_UnlinkRageUsers_Handler(srv interface{}, ctx context.Conte
 		FullMethod: RageUserService_UnlinkRageUsers_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RageUserServiceServer).UnlinkRageUsers(ctx, req.(*UnlinkRageUsersRequest))
+		return srv.(RageUserServiceServer).UnlinkRageUsers(ctx, req.(*UnlinkRageUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RageUserService_IsRageUserLinked_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IsRageUserLinkedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RageUserServiceServer).IsRageUserLinked(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RageUserService_IsRageUserLinked_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RageUserServiceServer).IsRageUserLinked(ctx, req.(*IsRageUserLinkedRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -285,16 +318,20 @@ var RageUserService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _RageUserService_UpdateRageUser_Handler,
 		},
 		{
-			MethodName: "ListRageUser",
-			Handler:    _RageUserService_ListRageUser_Handler,
+			MethodName: "ListRageUsers",
+			Handler:    _RageUserService_ListRageUsers_Handler,
 		},
 		{
-			MethodName: "LinkRageUsers",
-			Handler:    _RageUserService_LinkRageUsers_Handler,
+			MethodName: "LinkRageUser",
+			Handler:    _RageUserService_LinkRageUser_Handler,
 		},
 		{
 			MethodName: "UnlinkRageUsers",
 			Handler:    _RageUserService_UnlinkRageUsers_Handler,
+		},
+		{
+			MethodName: "IsRageUserLinked",
+			Handler:    _RageUserService_IsRageUserLinked_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -153,7 +153,13 @@ message RageUserUpdate {
 
 
  message RageUserFilter {
-    proto.oidc.models.IdentityFilter                    root_identity = 1;
-    proto.oidc.models.IdentityFilter                    linked_identity = 2;
+    proto.types.IDFilterExpression       root_subject = 1;
+    proto.types.IDFilterExpression       root_idp_slug = 2  ;
+    proto.types.StringFilterExpression   root_email = 3;
+
+    proto.types.IDFilterExpression       linked_identity_subject = 4;
+    proto.types.IDFilterExpression       linked_identity_idp_slug = 5;
+    proto.types.StringFilterExpression   linked_identity_email = 6;
+
 }
  

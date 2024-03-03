@@ -2,11 +2,13 @@ package inmemory
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	linq "github.com/ahmetb/go-linq/v3"
 	proto_external_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/models"
 	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
@@ -46,14 +48,20 @@ func (s *service) ListUser(ctx context.Context, request *proto_external_user.Lis
 		users = append(users, s.makeExampleUserCopy(v))
 	}
 	linq.From(users).WhereT(func(c *proto_external_models.ExampleUser) bool {
+		if c.RageUser == nil {
+			return false
+		}
+		if c.RageUser.LinkedIdentities == nil {
+			c.RageUser.LinkedIdentities = &proto_oidc_models.LinkedIdentities{}
+		}
 		if request.Filter != nil {
 			if request.Filter.Id != nil {
-				if fluffycore_utils.IsEmptyOrNil(request.Filter.Id.Eq) {
+				if fluffycore_utils.IsNotEmptyOrNil(request.Filter.Id.Eq) {
 					if request.Filter.Id.Eq != c.Id {
 						return false
 					}
 				}
-				if fluffycore_utils.IsEmptyOrNil(request.Filter.Id.In) {
+				if fluffycore_utils.IsNotEmptyOrNil(request.Filter.Id.In) {
 					found := false
 					for _, v := range request.Filter.Id.In {
 						if v == c.Id {
@@ -65,100 +73,107 @@ func (s *service) ListUser(ctx context.Context, request *proto_external_user.Lis
 						return false
 					}
 				}
-
 			}
-			if request.Filter.RageUser != nil {
-				if c.RageUser == nil {
+
+			if request.Filter.Email != nil {
+				if fluffycore_utils.IsNotEmptyOrNil(request.Filter.Email.Eq) {
+					if request.Filter.Email.Eq != c.RageUser.RootIdentity.Email {
+						return false
+					}
+				}
+				if fluffycore_utils.IsNotEmptyOrNil(request.Filter.Email.In) {
+					found := false
+					for _, v := range request.Filter.Email.In {
+						if v == c.RageUser.RootIdentity.Email {
+							found = true
+							break
+						}
+					}
+					if !found {
+						return false
+					}
+				}
+				if fluffycore_utils.IsNotEmptyOrNil(request.Filter.Email.Contains) {
+					if !strings.Contains(c.RageUser.RootIdentity.Email, request.Filter.Email.Contains) {
+						return false
+					}
+				}
+				if fluffycore_utils.IsNotEmptyOrNil(request.Filter.Email.Ne) {
+					if request.Filter.Email.Ne == c.RageUser.RootIdentity.Email {
+						return false
+					}
+				}
+			}
+			if request.Filter.LinkedIdentityIdpSlug != nil && request.Filter.LinkedIdentitySubject == nil {
+				// no subject idp combo
+				return false
+			}
+			if request.Filter.LinkedIdentitySubject != nil && request.Filter.LinkedIdentityIdpSlug == nil {
+				// no subject idp combo
+				return false
+			}
+			// build a fast lookup
+			mapIdpSlugSubjectMap := make(map[string]*proto_oidc_models.Identity)
+			mapEmailMap := make(map[string]*proto_oidc_models.Identity)
+			makeSubjectIpdSlugKey := func(subject string, idpSlug string) string {
+				return fmt.Sprintf("%s:%s", subject, idpSlug)
+			}
+			if (request.Filter.LinkedIdentityIdpSlug != nil && request.Filter.LinkedIdentitySubject != nil) ||
+				request.Filter.LinkedIdentityEmail != nil {
+				for _, linkedIdentity := range c.RageUser.LinkedIdentities.Identities {
+					subjectIdpSlugKey := makeSubjectIpdSlugKey(linkedIdentity.Subject, linkedIdentity.IdpSlug)
+					mapIdpSlugSubjectMap[subjectIdpSlugKey] = linkedIdentity
+					mapEmailMap[linkedIdentity.Email] = linkedIdentity
+				}
+			}
+
+			if request.Filter.LinkedIdentityIdpSlug != nil && request.Filter.LinkedIdentitySubject != nil {
+				key := makeSubjectIpdSlugKey(request.Filter.LinkedIdentitySubject.Eq, request.Filter.LinkedIdentityIdpSlug.Eq)
+				_, found := mapIdpSlugSubjectMap[key]
+				if !found {
 					return false
 				}
+			}
 
-				if request.Filter.RageUser.RootIdentity != nil {
-					if c.RageUser.RootIdentity == nil {
+			if request.Filter.LinkedIdentityEmail != nil {
+				if fluffycore_utils.IsNotEmptyOrNil(request.Filter.LinkedIdentityEmail.Eq) {
+					_, found := mapEmailMap[request.Filter.LinkedIdentityEmail.Eq]
+					if !found {
 						return false
-					}
-					c.RageUser.RootIdentity.Email = strings.ToLower(c.RageUser.RootIdentity.Email)
-					if request.Filter.RageUser.RootIdentity.Email != nil {
-						if !fluffycore_utils.IsEmptyOrNil(request.Filter.RageUser.RootIdentity.Email.Eq) {
-							if strings.ToLower(request.Filter.RageUser.RootIdentity.Email.Eq) != c.RageUser.RootIdentity.Email {
-								return false
-							}
-						}
-						if !fluffycore_utils.IsEmptyOrNil(request.Filter.RageUser.RootIdentity.Email.Contains) {
-							if !strings.Contains(c.RageUser.RootIdentity.Email, strings.ToLower(request.Filter.RageUser.RootIdentity.Email.Contains)) {
-								return false
-							}
-						}
-						if !fluffycore_utils.IsEmptyOrNil(request.Filter.RageUser.RootIdentity.Email.Ne) {
-							if request.Filter.RageUser.RootIdentity.Email.Ne == c.RageUser.RootIdentity.Email {
-								return false
-							}
-						}
-						if !fluffycore_utils.IsEmptyOrNil(request.Filter.RageUser.RootIdentity.Email.In) {
-							found := false
-							for _, v := range request.Filter.RageUser.RootIdentity.Email.In {
-								if strings.ToLower(v) == c.RageUser.RootIdentity.Email {
-									found = true
-									break
-								}
-							}
-							if !found {
-								return false
-							}
-						}
-
 					}
 				}
-				if request.Filter.RageUser.LinkedIdentity != nil {
-					if c.RageUser.LinkedIdentities == nil || fluffycore_utils.IsEmptyOrNil(c.RageUser.LinkedIdentities.Identities) {
+				if fluffycore_utils.IsNotEmptyOrNil(request.Filter.LinkedIdentityEmail.In) {
+					found := false
+					for _, v := range request.Filter.LinkedIdentityEmail.In {
+						_, found = mapEmailMap[v]
+						if found {
+							break
+						}
+					}
+					if !found {
 						return false
 					}
-
-					for _, v := range c.RageUser.LinkedIdentities.Identities {
-						v.Email = strings.ToLower(v.Email)
-						v.IdpSlug = strings.ToLower(v.IdpSlug)
-
-						if request.Filter.RageUser.LinkedIdentity.IdpSlug != nil {
-							if strings.ToLower(request.Filter.RageUser.LinkedIdentity.IdpSlug.Eq) != v.IdpSlug {
-								return false
-							}
+				}
+				if fluffycore_utils.IsNotEmptyOrNil(request.Filter.LinkedIdentityEmail.Contains) {
+					found := false
+					for k := range mapEmailMap {
+						if strings.Contains(k, request.Filter.LinkedIdentityEmail.Contains) {
+							found = true
+							break
 						}
-						if request.Filter.RageUser.LinkedIdentity.Subject != nil {
-							if request.Filter.RageUser.LinkedIdentity.Subject.Eq != v.Subject {
-								return false
-							}
-						}
-						if request.Filter.RageUser.LinkedIdentity.Email != nil {
-							if !fluffycore_utils.IsEmptyOrNil(request.Filter.RageUser.LinkedIdentity.Email.Eq) {
-								if strings.ToLower(request.Filter.RageUser.LinkedIdentity.Email.Eq) != v.Email {
-									return false
-								}
-							}
-							if !fluffycore_utils.IsEmptyOrNil(request.Filter.RageUser.LinkedIdentity.Email.Contains) {
-								if !strings.Contains(v.Email, strings.ToLower(request.Filter.RageUser.LinkedIdentity.Email.Contains)) {
-									return false
-								}
-							}
-							if !fluffycore_utils.IsEmptyOrNil(request.Filter.RageUser.LinkedIdentity.Email.Ne) {
-								if request.Filter.RageUser.LinkedIdentity.Email.Ne == v.Email {
-									return false
-								}
-							}
-							if !fluffycore_utils.IsEmptyOrNil(request.Filter.RageUser.LinkedIdentity.Email.In) {
-								found := false
-								for _, v := range request.Filter.RageUser.LinkedIdentity.Email.In {
-									if strings.ToLower(v) == c.RageUser.RootIdentity.Email {
-										found = true
-										break
-									}
-								}
-								if !found {
-									return false
-								}
-							}
-						}
+					}
+					if !found {
+						return false
+					}
+				}
+				if fluffycore_utils.IsNotEmptyOrNil(request.Filter.LinkedIdentityEmail.Ne) {
+					_, found := mapEmailMap[request.Filter.LinkedIdentityEmail.Ne]
+					if found {
+						return false
 					}
 				}
 			}
+
 		}
 		return true
 

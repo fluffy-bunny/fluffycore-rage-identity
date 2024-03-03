@@ -288,8 +288,17 @@
         "id": {
           "$ref": "#/definitions/typesIDFilterExpression"
         },
-        "rageUser": {
-          "$ref": "#/definitions/modelsRageUserFilter"
+        "email": {
+          "$ref": "#/definitions/typesStringFilterExpression"
+        },
+        "linkedIdentitySubject": {
+          "$ref": "#/definitions/typesIDFilterExpression"
+        },
+        "linkedIdentityIdpSlug": {
+          "$ref": "#/definitions/typesIDFilterExpression"
+        },
+        "linkedIdentityEmail": {
+          "$ref": "#/definitions/typesStringFilterExpression"
         },
         "and": {
           "type": "array",
@@ -343,20 +352,6 @@
         },
         "emailVerified": {
           "type": "boolean"
-        }
-      }
-    },
-    "modelsIdentityFilter": {
-      "type": "object",
-      "properties": {
-        "subject": {
-          "$ref": "#/definitions/typesIDFilterExpression"
-        },
-        "idpSlug": {
-          "$ref": "#/definitions/typesIDFilterExpression"
-        },
-        "email": {
-          "$ref": "#/definitions/typesStringFilterExpression"
         }
       }
     },
@@ -475,17 +470,6 @@
         },
         "password": {
           "$ref": "#/definitions/modelsPassword"
-        }
-      }
-    },
-    "modelsRageUserFilter": {
-      "type": "object",
-      "properties": {
-        "rootIdentity": {
-          "$ref": "#/definitions/modelsIdentityFilter"
-        },
-        "linkedIdentity": {
-          "$ref": "#/definitions/modelsIdentityFilter"
         }
       }
     },

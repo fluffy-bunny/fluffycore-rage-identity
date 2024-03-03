@@ -64,9 +64,12 @@ message ExampleUserUpdate {
 }
 
 message ExampleUserFilter {
-    proto.types.IDFilterExpression                      id = 1;
-    proto.oidc.models.RageUserFilter                    rage_user = 2;
-    
+    proto.types.IDFilterExpression       id = 1;
+    proto.types.StringFilterExpression   email = 2;
+
+    proto.types.IDFilterExpression       linked_identity_subject = 4;
+    proto.types.IDFilterExpression       linked_identity_idp_slug = 5;
+    proto.types.StringFilterExpression   linked_identity_email = 6;    
     // AST
     repeated ExampleUserFilter and = 100;
     repeated ExampleUserFilter or = 101;

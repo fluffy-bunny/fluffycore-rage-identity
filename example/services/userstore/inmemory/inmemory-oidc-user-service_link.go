@@ -13,7 +13,7 @@ import (
 	codes "google.golang.org/grpc/codes"
 )
 
-func (s *service) validateLinkUsersRequest(request *proto_oidc_user.LinkRageUsersRequest) error {
+func (s *service) validateLinkUserRequest(request *proto_oidc_user.LinkRageUserRequest) error {
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is required")
 	}
@@ -32,9 +32,9 @@ func (s *service) validateLinkUsersRequest(request *proto_oidc_user.LinkRageUser
 	return nil
 }
 
-func (s *service) LinkUsers(ctx context.Context, request *proto_oidc_user.LinkRageUsersRequest) (*proto_oidc_user.LinkRageUsersResponse, error) {
+func (s *service) LinkRageUser(ctx context.Context, request *proto_oidc_user.LinkRageUserRequest) (*proto_oidc_user.LinkRageUserResponse, error) {
 	log := zerolog.Ctx(ctx).With().Logger()
-	err := s.validateLinkUsersRequest(request)
+	err := s.validateLinkUserRequest(request)
 	if err != nil {
 		log.Warn().Err(err).Msg("validateLinkUsersRequest")
 		return nil, err
@@ -49,15 +49,13 @@ func (s *service) LinkUsers(ctx context.Context, request *proto_oidc_user.LinkRa
 	user := getUserResponse.User
 
 	// user cannot be linked to any other account
-	listUserResponse, err := s.ListRageUser(ctx, &proto_oidc_user.ListRageUserRequest{
+	listUserResponse, err := s.ListRageUsers(ctx, &proto_oidc_user.ListRageUsersRequest{
 		Filter: &proto_oidc_models.RageUserFilter{
-			LinkedIdentity: &proto_oidc_models.IdentityFilter{
-				Subject: &proto_types.IDFilterExpression{
-					Eq: request.ExternalIdentity.Subject,
-				},
-				IdpSlug: &proto_types.IDFilterExpression{
-					Eq: request.ExternalIdentity.IdpSlug,
-				},
+			LinkedIdentitySubject: &proto_types.IDFilterExpression{
+				Eq: request.ExternalIdentity.Subject,
+			},
+			LinkedIdentityIdpSlug: &proto_types.IDFilterExpression{
+				Eq: request.ExternalIdentity.IdpSlug,
 			},
 		},
 	})
@@ -81,7 +79,7 @@ func (s *service) LinkUsers(ctx context.Context, request *proto_oidc_user.LinkRa
 		user.RageUser.LinkedIdentities.Identities = append(user.RageUser.LinkedIdentities.Identities, request.ExternalIdentity)
 	}
 	s.userMap[user.Id] = user
-	return &proto_oidc_user.LinkRageUsersResponse{
+	return &proto_oidc_user.LinkRageUserResponse{
 		User: user.RageUser,
 	}, nil
 

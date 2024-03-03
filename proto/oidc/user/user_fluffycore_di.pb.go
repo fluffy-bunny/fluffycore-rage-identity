@@ -68,23 +68,30 @@ func (s *RageUserServiceFluffyCoreServer) UpdateRageUser(ctx context.Context, re
 	return downstreamService.UpdateRageUser(ctx, request)
 }
 
-// ListRageUser...
-func (s *RageUserServiceFluffyCoreServer) ListRageUser(ctx context.Context, request *ListRageUserRequest) (*ListRageUserResponse, error) {
+// ListRageUsers...
+func (s *RageUserServiceFluffyCoreServer) ListRageUsers(ctx context.Context, request *ListRageUsersRequest) (*ListRageUsersResponse, error) {
 	requestContainer := dicontext.GetRequestContainer(ctx)
 	downstreamService := fluffy_dozm_di.Get[IFluffyCoreRageUserServiceServer](requestContainer)
-	return downstreamService.ListRageUser(ctx, request)
+	return downstreamService.ListRageUsers(ctx, request)
 }
 
-// LinkRageUsers...
-func (s *RageUserServiceFluffyCoreServer) LinkRageUsers(ctx context.Context, request *LinkRageUsersRequest) (*LinkRageUsersResponse, error) {
+// LinkRageUser...
+func (s *RageUserServiceFluffyCoreServer) LinkRageUser(ctx context.Context, request *LinkRageUserRequest) (*LinkRageUserResponse, error) {
 	requestContainer := dicontext.GetRequestContainer(ctx)
 	downstreamService := fluffy_dozm_di.Get[IFluffyCoreRageUserServiceServer](requestContainer)
-	return downstreamService.LinkRageUsers(ctx, request)
+	return downstreamService.LinkRageUser(ctx, request)
 }
 
 // UnlinkRageUsers...
-func (s *RageUserServiceFluffyCoreServer) UnlinkRageUsers(ctx context.Context, request *UnlinkRageUsersRequest) (*UnlinkRageUsersResponse, error) {
+func (s *RageUserServiceFluffyCoreServer) UnlinkRageUsers(ctx context.Context, request *UnlinkRageUserRequest) (*UnlinkRageUserResponse, error) {
 	requestContainer := dicontext.GetRequestContainer(ctx)
 	downstreamService := fluffy_dozm_di.Get[IFluffyCoreRageUserServiceServer](requestContainer)
 	return downstreamService.UnlinkRageUsers(ctx, request)
+}
+
+// IsRageUserLinked...
+func (s *RageUserServiceFluffyCoreServer) IsRageUserLinked(ctx context.Context, request *IsRageUserLinkedRequest) (*IsRageUserLinkedResponse, error) {
+	requestContainer := dicontext.GetRequestContainer(ctx)
+	downstreamService := fluffy_dozm_di.Get[IFluffyCoreRageUserServiceServer](requestContainer)
+	return downstreamService.IsRageUserLinked(ctx, request)
 }

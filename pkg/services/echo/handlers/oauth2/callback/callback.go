@@ -308,12 +308,10 @@ func (s *service) Do(c echo.Context) error {
 
 		getUserByEmail := func(email string) (*proto_oidc_models.RageUser, error) {
 			// is this user already linked.
-			listUserResponse, err := s.RageUserService().ListRageUser(ctx, &proto_oidc_user.ListRageUserRequest{
+			listUserResponse, err := s.RageUserService().ListRageUsers(ctx, &proto_oidc_user.ListRageUsersRequest{
 				Filter: &proto_oidc_models.RageUserFilter{
-					RootIdentity: &proto_oidc_models.IdentityFilter{
-						Email: &proto_types.StringFilterExpression{
-							Eq: strings.ToLower(email),
-						},
+					RootEmail: &proto_types.StringFilterExpression{
+						Eq: strings.ToLower(email),
 					},
 				},
 			})
@@ -354,12 +352,13 @@ func (s *service) Do(c echo.Context) error {
 		}
 
 		// is this user already linked.
-		listUserResponse, err := s.RageUserService().ListRageUser(ctx, &proto_oidc_user.ListRageUserRequest{
+		listUserResponse, err := s.RageUserService().ListRageUsers(ctx, &proto_oidc_user.ListRageUsersRequest{
 			Filter: &proto_oidc_models.RageUserFilter{
-				LinkedIdentity: &proto_oidc_models.IdentityFilter{
-					Subject: &proto_types.IDFilterExpression{
-						Eq: rawToken.Subject(),
-					},
+				LinkedIdentitySubject: &proto_types.IDFilterExpression{
+					Eq: rawToken.Subject(),
+				},
+				LinkedIdentityIdpSlug: &proto_types.IDFilterExpression{
+					Eq: externalOauth2Final.Request.IdpHint,
 				},
 			},
 		})
@@ -386,7 +385,7 @@ func (s *service) Do(c echo.Context) error {
 				log.Error().Msg("user not found")
 				return nil, err
 			}
-			_, err = s.RageUserService().LinkRageUsers(ctx, &proto_oidc_user.LinkRageUsersRequest{
+			_, err = s.RageUserService().LinkRageUser(ctx, &proto_oidc_user.LinkRageUserRequest{
 				RootSubject: candidateUserID,
 				ExternalIdentity: &proto_oidc_models.Identity{
 					Subject:       externalIdentity.Subject,
