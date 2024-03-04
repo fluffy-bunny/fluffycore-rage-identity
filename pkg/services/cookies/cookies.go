@@ -2,6 +2,7 @@ package cookies
 
 import (
 	"encoding/json"
+	"strings"
 	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
@@ -262,6 +263,9 @@ func (s *service) validateSetExternalOauth2CookieRequest(c echo.Context, request
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is nil")
 	}
+	if fluffycore_utils.IsEmptyOrNil(request.State) {
+		return status.Error(codes.InvalidArgument, "request.State is empty")
+	}
 	if request.ExternalOAuth2State == nil {
 		return status.Error(codes.InvalidArgument, "request.ExternalOAuth2State is nil")
 	}
@@ -269,6 +273,13 @@ func (s *service) validateSetExternalOauth2CookieRequest(c echo.Context, request
 		return status.Error(codes.InvalidArgument, "request.ExternalOAuth2State.Request is nil")
 	}
 	return nil
+}
+func (s *service) makeExternalOAuth2CookieName(state string) string {
+	if fluffycore_utils.IsEmptyOrNil(state) {
+		panic("state is empty")
+	}
+	result := strings.ReplaceAll(contracts_cookies.CookieNameExternalOauth2StateTemplate, "{state}", state)
+	return result
 }
 func (s *service) SetExternalOauth2Cookie(c echo.Context, request *contracts_cookies.SetExternalOauth2CookieRequest) error {
 	err := s.validateSetExternalOauth2CookieRequest(c, request)
@@ -284,9 +295,10 @@ func (s *service) SetExternalOauth2Cookie(c echo.Context, request *contracts_coo
 	if err != nil {
 		return err
 	}
+	cookieName := s.makeExternalOAuth2CookieName(request.State)
 	_, err = s.secureCookies.SetCookie(c,
 		&fluffycore_contracts_cookies.SetCookieRequest{
-			Name:     contracts_cookies.CookieNameExternalOauth2State,
+			Name:     cookieName,
 			Value:    value,
 			HttpOnly: false,
 			Expires:  time.Now().Add(30 * time.Minute),
@@ -298,17 +310,47 @@ func (s *service) SetExternalOauth2Cookie(c echo.Context, request *contracts_coo
 	}
 	return nil
 }
-func (s *service) DeleteExternalOauth2CookieCookie(c echo.Context) {
+func (s *service) validateDeleteExternalOauth2CookieRequest(request *contracts_cookies.DeleteExternalOauth2CookieRequest) error {
+	if request == nil {
+		return status.Error(codes.InvalidArgument, "request is nil")
+	}
+	if fluffycore_utils.IsEmptyOrNil(request.State) {
+		return status.Error(codes.InvalidArgument, "request.State is empty")
+	}
+	return nil
+}
+func (s *service) DeleteExternalOauth2Cookie(c echo.Context, request *contracts_cookies.DeleteExternalOauth2CookieRequest) error {
+	err := s.validateDeleteExternalOauth2CookieRequest(request)
+	if err != nil {
+		return err
+	}
+	cookieName := s.makeExternalOAuth2CookieName(request.State)
+
 	s.secureCookies.DeleteCookie(c,
 		&fluffycore_contracts_cookies.DeleteCookieRequest{
-			Name:   contracts_cookies.CookieNameExternalOauth2State,
+			Name:   cookieName,
 			Path:   "/",
 			Domain: s.cookieConfig.Domain,
 		})
+	return nil
 }
-func (s *service) GetExternalOauth2CookieCookie(c echo.Context) (*contracts_cookies.GetExternalOauth2CookieResponse, error) {
+func (s *service) validateGetExternalOauth2CookieRequest(request *contracts_cookies.GetExternalOauth2CookieRequest) error {
+	if request == nil {
+		return status.Error(codes.InvalidArgument, "request is nil")
+	}
+	if fluffycore_utils.IsEmptyOrNil(request.State) {
+		return status.Error(codes.InvalidArgument, "request.State is empty")
+	}
+	return nil
+}
+func (s *service) GetExternalOauth2Cookie(c echo.Context, request *contracts_cookies.GetExternalOauth2CookieRequest) (*contracts_cookies.GetExternalOauth2CookieResponse, error) {
+	err := s.validateGetExternalOauth2CookieRequest(request)
+	if err != nil {
+		return nil, err
+	}
 	var value proto_oidc_models.ExternalOauth2State
-	err := GetCookie(c, s.secureCookies, contracts_cookies.CookieNameExternalOauth2State, &value)
+	cookieName := s.makeExternalOAuth2CookieName(request.State)
+	err = GetCookie(c, s.secureCookies, cookieName, &value)
 	if err != nil {
 		return nil, err
 	}

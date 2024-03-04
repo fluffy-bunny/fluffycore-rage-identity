@@ -32,7 +32,6 @@ type (
 		IdpServiceServer               func() proto_oidc_idp.IFluffyCoreIDPServiceServer
 		RageUserService                func() proto_oidc_user.IFluffyCoreRageUserServiceServer
 		AuthorizationRequestStateStore func() proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer
-		ExternalOauth2FlowStore        func() proto_oidc_flows.IFluffyCoreExternalOauth2FlowStoreServer
 		ScopedMemoryCache              func() fluffycore_contracts_common.IScopedMemoryCache
 		EmailService                   func() contracts_email.IEmailService
 		SessionFactory                 func() contracts_sessions.ISessionFactory
@@ -43,7 +42,6 @@ type (
 		idpServiceServer               proto_oidc_idp.IFluffyCoreIDPServiceServer
 		rageUserService                proto_oidc_user.IFluffyCoreRageUserServiceServer
 		authorizationRequestStateStore proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer
-		externalOauth2FlowStore        proto_oidc_flows.IFluffyCoreExternalOauth2FlowStoreServer
 		scopedMemoryCache              fluffycore_contracts_common.IScopedMemoryCache
 		emailService                   contracts_email.IEmailService
 		sessionFactory                 contracts_sessions.ISessionFactory
@@ -59,7 +57,6 @@ func NewBaseHandler(container di.Container) *BaseHandler {
 	obj.IdpServiceServer = obj.getIdpServiceServer
 	obj.RageUserService = obj.getUserService
 	obj.AuthorizationRequestStateStore = obj.getOIDCFlowStore
-	obj.ExternalOauth2FlowStore = obj.getExternalOauth2FlowStore
 	obj.ScopedMemoryCache = obj.getScopedMemoryCache
 	obj.EmailService = obj.getEmailService
 	obj.SessionFactory = obj.getSessionFactory
@@ -120,12 +117,6 @@ func (b *BaseHandler) getOIDCFlowStore() proto_oidc_flows.IFluffyCoreAuthorizati
 		b.authorizationRequestStateStore = di.Get[proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer](b.Container)
 	}
 	return b.authorizationRequestStateStore
-}
-func (b *BaseHandler) getExternalOauth2FlowStore() proto_oidc_flows.IFluffyCoreExternalOauth2FlowStoreServer {
-	if b.externalOauth2FlowStore == nil {
-		b.externalOauth2FlowStore = di.Get[proto_oidc_flows.IFluffyCoreExternalOauth2FlowStoreServer](b.Container)
-	}
-	return b.externalOauth2FlowStore
 }
 
 func (b *BaseHandler) RenderAutoPost(c echo.Context, action string, formData []models.FormParam) error {

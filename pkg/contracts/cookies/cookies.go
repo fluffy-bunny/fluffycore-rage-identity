@@ -7,9 +7,17 @@ import (
 
 type (
 	SetExternalOauth2CookieRequest struct {
+		State               string                                 `json:"state"`
 		ExternalOAuth2State *proto_oidc_models.ExternalOauth2State `json:"externalOAuth2State"`
 	}
+	DeleteExternalOauth2CookieRequest struct {
+		State string `json:"state"`
+	}
+	GetExternalOauth2CookieRequest struct {
+		State string `json:"state"`
+	}
 	GetExternalOauth2CookieResponse struct {
+		State               string                                 `json:"state"`
 		ExternalOAuth2State *proto_oidc_models.ExternalOauth2State `json:"externalOAuth2State"`
 	}
 	SetVerificationCodeCookieRequest struct {
@@ -55,8 +63,8 @@ type (
 		// External OAuth2 Cookie
 		//---------------------------------------------------------------------
 		SetExternalOauth2Cookie(c echo.Context, request *SetExternalOauth2CookieRequest) error
-		DeleteExternalOauth2CookieCookie(c echo.Context)
-		GetExternalOauth2CookieCookie(c echo.Context) (*GetExternalOauth2CookieResponse, error)
+		DeleteExternalOauth2Cookie(c echo.Context, request *DeleteExternalOauth2CookieRequest) error
+		GetExternalOauth2Cookie(c echo.Context, request *GetExternalOauth2CookieRequest) (*GetExternalOauth2CookieResponse, error)
 		// Verification Code Cookie
 		//---------------------------------------------------------------------
 		SetVerificationCodeCookie(c echo.Context, request *SetVerificationCodeCookieRequest) error
@@ -86,10 +94,10 @@ type (
 )
 
 const (
-	CookieNameVerificationCode    = "_verificationCode"
-	CookieNamePasswordReset       = "_passwordReset"
-	CookieNameAccountState        = "_accountState"
-	CookieNameAuth                = "_auth"
-	LoginRequest                  = "_loginRequest"
-	CookieNameExternalOauth2State = "_externalOauth2State"
+	CookieNameVerificationCode            = "_verificationCode"
+	CookieNamePasswordReset               = "_passwordReset"
+	CookieNameAccountState                = "_accountState"
+	CookieNameAuth                        = "_auth"
+	LoginRequest                          = "_loginRequest"
+	CookieNameExternalOauth2StateTemplate = "_externalOauth2State_{state}"
 )

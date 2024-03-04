@@ -10,12 +10,12 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
+	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_oauth2factory "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oauth2factory"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
-	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -32,9 +32,10 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
-		oauth2Factory contracts_oauth2factory.IOAuth2Factory
-		config        *contracts_config.Config
-		oidcSession   contracts_oidc_session.IOIDCSession
+		oauth2Factory    contracts_oauth2factory.IOAuth2Factory
+		config           *contracts_config.Config
+		oidcSession      contracts_oidc_session.IOIDCSession
+		wellknownCookies contracts_cookies.IWellknownCookies
 	}
 )
 
@@ -49,13 +50,15 @@ func (s *service) Ctor(
 	container di.Container,
 	oauth2Factory contracts_oauth2factory.IOAuth2Factory,
 	oidcSession contracts_oidc_session.IOIDCSession,
+	wellknownCookies contracts_cookies.IWellknownCookies,
 ) (*service, error) {
 
 	return &service{
-		BaseHandler:   services_echo_handlers_base.NewBaseHandler(container),
-		oauth2Factory: oauth2Factory,
-		config:        config,
-		oidcSession:   oidcSession,
+		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
+		oauth2Factory:    oauth2Factory,
+		config:           config,
+		oidcSession:      oidcSession,
+		wellknownCookies: wellknownCookies,
 	}, nil
 }
 
@@ -146,25 +149,25 @@ func (s *service) DoPost(c echo.Context) error {
 		case *proto_oidc_models.Protocol_Github:
 			{
 				codeChallenge, verifier := generateCodeChallenge()
-				_, err = s.ExternalOauth2FlowStore().StoreExternalOauth2Final(ctx,
-					&proto_oidc_flows.StoreExternalOauth2FinalRequest{
-						State: externalState,
-						ExternalOauth2Final: &proto_oidc_models.ExternalOauth2State{
-							Request: &proto_oidc_models.ExternalOauth2Request{
-								IdpHint:               model.IDPHint,
-								ClientId:              v.Github.ClientId,
-								State:                 dd2.State,
-								CodeChallenge:         codeChallenge,
-								CodeChallengeMethod:   "S256",
-								CodeChallengeVerifier: verifier,
-								Directive:             model.Directive,
-								ParentState:           dd2.State,
-							},
-						},
-					})
+				externalOAuth2State := &proto_oidc_models.ExternalOauth2State{
+					Request: &proto_oidc_models.ExternalOauth2Request{
+						IdpHint:               model.IDPHint,
+						ClientId:              v.Github.ClientId,
+						State:                 dd2.State,
+						CodeChallenge:         codeChallenge,
+						CodeChallengeMethod:   "S256",
+						CodeChallengeVerifier: verifier,
+						Directive:             model.Directive,
+						ParentState:           dd2.State,
+					},
+				}
+				err = s.wellknownCookies.SetExternalOauth2Cookie(c, &contracts_cookies.SetExternalOauth2CookieRequest{
+					State:               externalState,
+					ExternalOAuth2State: externalOAuth2State,
+				})
 
 				if err != nil {
-					log.Error().Err(err).Msg("StoreExternalOauth2Final")
+					log.Error().Err(err).Msg("SetExternalOauth2Cookie")
 					// redirect to error page
 					return c.Redirect(http.StatusFound, "/error")
 				}
@@ -186,25 +189,25 @@ func (s *service) DoPost(c echo.Context) error {
 		case *proto_oidc_models.Protocol_Oauth2:
 			{
 				codeChallenge, verifier := generateCodeChallenge()
-				_, err = s.ExternalOauth2FlowStore().StoreExternalOauth2Final(ctx,
-					&proto_oidc_flows.StoreExternalOauth2FinalRequest{
-						State: externalState,
-						ExternalOauth2Final: &proto_oidc_models.ExternalOauth2State{
-							Request: &proto_oidc_models.ExternalOauth2Request{
-								IdpHint:               model.IDPHint,
-								ClientId:              v.Oauth2.ClientId,
-								State:                 dd2.State,
-								CodeChallenge:         codeChallenge,
-								CodeChallengeMethod:   "S256",
-								CodeChallengeVerifier: verifier,
-								Directive:             model.Directive,
-								ParentState:           dd2.State,
-							},
-						},
-					})
+				externalOAuth2State := &proto_oidc_models.ExternalOauth2State{
+					Request: &proto_oidc_models.ExternalOauth2Request{
+						IdpHint:               model.IDPHint,
+						ClientId:              v.Oauth2.ClientId,
+						State:                 dd2.State,
+						CodeChallenge:         codeChallenge,
+						CodeChallengeMethod:   "S256",
+						CodeChallengeVerifier: verifier,
+						Directive:             model.Directive,
+						ParentState:           dd2.State,
+					},
+				}
+				err = s.wellknownCookies.SetExternalOauth2Cookie(c, &contracts_cookies.SetExternalOauth2CookieRequest{
+					State:               externalState,
+					ExternalOAuth2State: externalOAuth2State,
+				})
 
 				if err != nil {
-					log.Error().Err(err).Msg("StoreExternalOauth2Final")
+					log.Error().Err(err).Msg("SetExternalOauth2Cookie")
 					// redirect to error page
 					return c.Redirect(http.StatusFound, "/error")
 				}
@@ -229,25 +232,24 @@ func (s *service) DoPost(c echo.Context) error {
 		case *proto_oidc_models.Protocol_Oidc:
 			{
 				nonce := xid.New().String()
-
+				externalOAuth2State := &proto_oidc_models.ExternalOauth2State{
+					Request: &proto_oidc_models.ExternalOauth2Request{
+						IdpHint:     model.IDPHint,
+						ClientId:    v.Oidc.ClientId,
+						State:       dd2.State,
+						Directive:   model.Directive,
+						ParentState: dd2.State,
+						Nonce:       nonce,
+					},
+				}
 				//codeChallenge, verifier := generateCodeChallenge()
-				_, err = s.ExternalOauth2FlowStore().StoreExternalOauth2Final(ctx,
-					&proto_oidc_flows.StoreExternalOauth2FinalRequest{
-						State: externalState,
-						ExternalOauth2Final: &proto_oidc_models.ExternalOauth2State{
-							Request: &proto_oidc_models.ExternalOauth2Request{
-								IdpHint:     model.IDPHint,
-								ClientId:    v.Oidc.ClientId,
-								State:       dd2.State,
-								Directive:   model.Directive,
-								ParentState: dd2.State,
-								Nonce:       nonce,
-							},
-						},
-					})
+				err = s.wellknownCookies.SetExternalOauth2Cookie(c, &contracts_cookies.SetExternalOauth2CookieRequest{
+					State:               externalState,
+					ExternalOAuth2State: externalOAuth2State,
+				})
 
 				if err != nil {
-					log.Error().Err(err).Msg("StoreExternalOauth2Final")
+					log.Error().Err(err).Msg("SetExternalOauth2Cookie")
 					// redirect to error page
 					return c.Redirect(http.StatusFound, "/error")
 				}

@@ -115,21 +115,23 @@ func (s *service) Do(c echo.Context) error {
 	}
 	log = log.With().Interface("model", model).Logger()
 
-	getExternalOauth2FinalResponse, err := s.ExternalOauth2FlowStore().GetExternalOauth2Final(ctx, &proto_oidc_flows.GetExternalOauth2FinalRequest{
-		State: model.State,
-	})
+	getExternalOauth2CookieResponse, err := s.wellknownCookies.GetExternalOauth2Cookie(c,
+		&contracts_cookies.GetExternalOauth2CookieRequest{
+			State: model.State,
+		})
+
 	if err != nil {
 		log.Error().Err(err).Msg("GetExternalOauth2Final")
 		return c.Redirect(http.StatusTemporaryRedirect, "/login?error=invalid_state")
 	}
-	externalOauth2Final := getExternalOauth2FinalResponse.ExternalOauth2Final
-	parentState := externalOauth2Final.Request.ParentState
+	externalOauth2State := getExternalOauth2CookieResponse.ExternalOAuth2State
+	parentState := externalOauth2State.Request.ParentState
 	// if we get here we are going to NUKE the cache for this transaction
-	defer func() {
-		s.ExternalOauth2FlowStore().DeleteExternalOauth2Final(ctx, &proto_oidc_flows.DeleteExternalOauth2FinalRequest{
+	s.wellknownCookies.DeleteExternalOauth2Cookie(c,
+		&contracts_cookies.DeleteExternalOauth2CookieRequest{
 			State: model.State,
 		})
-	}()
+
 	doInternalErrorPost := func() error {
 		formParams := []models.FormParam{
 			{
@@ -225,7 +227,7 @@ func (s *service) Do(c echo.Context) error {
 
 	getIDPBySlugResponse, err := s.IdpServiceServer().GetIDPBySlug(ctx,
 		&proto_oidc_idp.GetIDPBySlugRequest{
-			Slug: externalOauth2Final.Request.IdpHint,
+			Slug: externalOauth2State.Request.IdpHint,
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("GetIDPBySlug")
@@ -240,11 +242,11 @@ func (s *service) Do(c echo.Context) error {
 		case *proto_oidc_models.Protocol_Github:
 			{
 				exchangeCodeResponse, err = s.githubCodeExchange.ExchangeCode(ctx, &contracts_codeexchange.ExchangeCodeRequest{
-					IDPHint:      externalOauth2Final.Request.IdpHint,
-					ClientID:     externalOauth2Final.Request.ClientId,
-					Nonce:        externalOauth2Final.Request.Nonce,
+					IDPHint:      externalOauth2State.Request.IdpHint,
+					ClientID:     externalOauth2State.Request.ClientId,
+					Nonce:        externalOauth2State.Request.Nonce,
 					Code:         model.Code,
-					CodeVerifier: externalOauth2Final.Request.CodeChallenge,
+					CodeVerifier: externalOauth2State.Request.CodeChallenge,
 				})
 				if err != nil {
 					log.Error().Err(err).Msg("ExchangeCode")
@@ -254,9 +256,9 @@ func (s *service) Do(c echo.Context) error {
 		case *proto_oidc_models.Protocol_Oidc:
 			{
 				exchangeCodeResponse, err = s.genericOIDCCodeExchange.ExchangeCode(ctx, &contracts_codeexchange.ExchangeCodeRequest{
-					IDPHint:  externalOauth2Final.Request.IdpHint,
-					ClientID: externalOauth2Final.Request.ClientId,
-					Nonce:    externalOauth2Final.Request.Nonce,
+					IDPHint:  externalOauth2State.Request.IdpHint,
+					ClientID: externalOauth2State.Request.ClientId,
+					Nonce:    externalOauth2State.Request.Nonce,
 					Code:     model.Code,
 					//			CodeVerifier: finalCache.Request.CodeChallenge,
 				})
@@ -297,7 +299,7 @@ func (s *service) Do(c echo.Context) error {
 			Subject: rawToken.Subject(),
 			Email:   email.(string),
 			Acr: []string{
-				fmt.Sprintf("urn:mastodon:idp:%s", externalOauth2Final.Request.IdpHint),
+				fmt.Sprintf("urn:mastodon:idp:%s", externalOauth2State.Request.IdpHint),
 			},
 			Amr: []string{
 				models.AMRIdp,
@@ -332,7 +334,7 @@ func (s *service) Do(c echo.Context) error {
 				Subject: user.RootIdentity.Subject,
 				Email:   user.RootIdentity.Email,
 				Acr: []string{
-					fmt.Sprintf("urn:mastodon:idp:%s", externalOauth2Final.Request.IdpHint),
+					fmt.Sprintf("urn:mastodon:idp:%s", externalOauth2State.Request.IdpHint),
 				},
 				Amr: []string{
 					models.AMRIdp,
@@ -356,7 +358,7 @@ func (s *service) Do(c echo.Context) error {
 				By: &proto_oidc_user.GetRageUserRequest_ExternalIdentity{
 					ExternalIdentity: &proto_oidc_models.Identity{
 						Subject: externalIdentity.Subject,
-						IdpSlug: externalOauth2Final.Request.IdpHint,
+						IdpSlug: externalOauth2State.Request.IdpHint,
 					},
 				},
 			})
@@ -397,7 +399,7 @@ func (s *service) Do(c echo.Context) error {
 				ExternalIdentity: &proto_oidc_models.Identity{
 					Subject:       externalIdentity.Subject,
 					Email:         externalIdentity.Email,
-					IdpSlug:       externalOauth2Final.Request.IdpHint,
+					IdpSlug:       externalOauth2State.Request.IdpHint,
 					EmailVerified: externalIdentity.EmailVerified,
 				},
 			})
@@ -443,7 +445,7 @@ func (s *service) Do(c echo.Context) error {
 								{
 									Subject:       externalIdentity.Subject,
 									Email:         externalIdentity.Email,
-									IdpSlug:       externalOauth2Final.Request.IdpHint,
+									IdpSlug:       externalOauth2State.Request.IdpHint,
 									EmailVerified: externalIdentity.EmailVerified,
 								},
 							},
@@ -457,7 +459,7 @@ func (s *service) Do(c echo.Context) error {
 			return createUserResponse.User, nil
 		}
 		// not found, redirect to OIDC LoginPage telling the user to do the signup dance
-		if externalOauth2Final.Request.Directive == models.LoginDirective {
+		if externalOauth2State.Request.Directive == models.LoginDirective {
 
 			// a perfect email match beats out a candidate user
 			//--------------------------------------------------------------------------------------------
@@ -492,7 +494,7 @@ func (s *service) Do(c echo.Context) error {
 
 		}
 
-		if externalOauth2Final.Request.Directive == models.SignupDirective {
+		if externalOauth2State.Request.Directive == models.SignupDirective {
 
 			user, err := doAutoCreateUser()
 			if err != nil {

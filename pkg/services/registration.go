@@ -23,7 +23,6 @@ import (
 	services_localizer "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/localizer"
 	services_localizerbundle "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/localizerbundle"
 	services_oauth2factory "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/oauth2factory"
-	services_oauth2flowstore "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/oauth2flowstore"
 	services_oidcproviderfactory "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/oidcproviderfactory"
 	services_selfoauth2provider "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/selfoauth2provider"
 	services_tokenservice "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/tokenservice"
@@ -79,7 +78,6 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 		fluffycore_services_eko_gocache_go_cache.AddISingletonInMemoryCacheWithOptions(builder, inMemoryOptions)
 	}
 
-	services_oauth2flowstore.AddSingletonIExternalOauth2FlowStore(builder)
 	di.AddInstance[*contracts_config.Config](builder, config)
 	di.AddInstance[*contracts_config.OIDCConfig](builder, config.OIDCConfig)
 	di.AddInstance[*contracts_config.SelfIDPConfig](builder, config.SelfIDPConfig)

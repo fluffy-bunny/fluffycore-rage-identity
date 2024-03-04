@@ -16,11 +16,11 @@ import (
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
-	"github.com/gogo/status"
+	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
 	zerolog "github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
+	codes "google.golang.org/grpc/codes"
 )
 
 type (
