@@ -68,13 +68,6 @@ func (s *RageUserServiceFluffyCoreServer) UpdateRageUser(ctx context.Context, re
 	return downstreamService.UpdateRageUser(ctx, request)
 }
 
-// ListRageUsers...
-func (s *RageUserServiceFluffyCoreServer) ListRageUsers(ctx context.Context, request *ListRageUsersRequest) (*ListRageUsersResponse, error) {
-	requestContainer := dicontext.GetRequestContainer(ctx)
-	downstreamService := fluffy_dozm_di.Get[IFluffyCoreRageUserServiceServer](requestContainer)
-	return downstreamService.ListRageUsers(ctx, request)
-}
-
 // LinkRageUser...
 func (s *RageUserServiceFluffyCoreServer) LinkRageUser(ctx context.Context, request *LinkRageUserRequest) (*LinkRageUserResponse, error) {
 	requestContainer := dicontext.GetRequestContainer(ctx)
@@ -87,11 +80,4 @@ func (s *RageUserServiceFluffyCoreServer) UnlinkRageUser(ctx context.Context, re
 	requestContainer := dicontext.GetRequestContainer(ctx)
 	downstreamService := fluffy_dozm_di.Get[IFluffyCoreRageUserServiceServer](requestContainer)
 	return downstreamService.UnlinkRageUser(ctx, request)
-}
-
-// IsRageUserLinked...
-func (s *RageUserServiceFluffyCoreServer) IsRageUserLinked(ctx context.Context, request *IsRageUserLinkedRequest) (*IsRageUserLinkedResponse, error) {
-	requestContainer := dicontext.GetRequestContainer(ctx)
-	downstreamService := fluffy_dozm_di.Get[IFluffyCoreRageUserServiceServer](requestContainer)
-	return downstreamService.IsRageUserLinked(ctx, request)
 }

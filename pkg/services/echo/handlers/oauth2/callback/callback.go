@@ -25,7 +25,6 @@ import (
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
-	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
@@ -308,19 +307,19 @@ func (s *service) Do(c echo.Context) error {
 
 		getUserByEmail := func(email string) (*proto_oidc_models.RageUser, error) {
 			// is this user already linked.
-			listUserResponse, err := s.RageUserService().ListRageUsers(ctx, &proto_oidc_user.ListRageUsersRequest{
-				Filter: &proto_oidc_models.RageUserFilter{
-					RootEmail: &proto_types.StringFilterExpression{
-						Eq: strings.ToLower(email),
+			getRageUserResponse, err := s.RageUserService().GetRageUser(ctx,
+				&proto_oidc_user.GetRageUserRequest{
+					By: &proto_oidc_user.GetRageUserRequest_Email{
+						Email: strings.ToLower(email),
 					},
-				},
-			})
+				})
+
 			if err != nil {
 				log.Error().Err(err).Msg("ListUser")
 				return nil, err
 			}
-			if len(listUserResponse.Users) > 0 {
-				return listUserResponse.Users[0], nil
+			if getRageUserResponse != nil {
+				return getRageUserResponse.User, nil
 			}
 			return nil, status.Error(codes.NotFound, "user not found")
 
@@ -352,30 +351,38 @@ func (s *service) Do(c echo.Context) error {
 		}
 
 		// is this user already linked.
-		listUserResponse, err := s.RageUserService().ListRageUsers(ctx, &proto_oidc_user.ListRageUsersRequest{
-			Filter: &proto_oidc_models.RageUserFilter{
-				LinkedIdentitySubject: &proto_types.IDFilterExpression{
-					Eq: rawToken.Subject(),
+		getRageUserResponse, err := s.RageUserService().GetRageUser(ctx,
+			&proto_oidc_user.GetRageUserRequest{
+				By: &proto_oidc_user.GetRageUserRequest_ExternalIdentity{
+					ExternalIdentity: &proto_oidc_models.Identity{
+						Subject: externalIdentity.Subject,
+						IdpSlug: externalOauth2Final.Request.IdpHint,
+					},
 				},
-				LinkedIdentityIdpSlug: &proto_types.IDFilterExpression{
-					Eq: externalOauth2Final.Request.IdpHint,
-				},
-			},
-		})
+			})
+
 		if err != nil {
-			log.Error().Err(err).Msg("ListUser")
-			return doInternalErrorPost()
+			st, ok := status.FromError(err)
+			if ok && st.Code() == codes.NotFound {
+				err = nil
+			} else {
+				log.Error().Err(err).Msg("GetUser")
+				return doInternalErrorPost()
+			}
 		}
 
-		if len(listUserResponse.Users) > 0 {
-			user := listUserResponse.Users[0]
+		if getRageUserResponse != nil {
+			user := getRageUserResponse.User
 			return loginLinkedUser(user)
 		}
 
 		linkUser := func(candidateUserID string, externalIdentity *proto_oidc_models.OIDCIdentity) (*proto_oidc_models.RageUser, error) {
-			getUserResponse, err := s.RageUserService().GetRageUser(ctx, &proto_oidc_user.GetRageUserRequest{
-				Subject: candidateUserID,
-			})
+			getUserResponse, err := s.RageUserService().GetRageUser(ctx,
+				&proto_oidc_user.GetRageUserRequest{
+					By: &proto_oidc_user.GetRageUserRequest_Subject{
+						Subject: candidateUserID,
+					},
+				})
 			if err != nil {
 				log.Error().Err(err).Msg("GetUser")
 				return nil, err

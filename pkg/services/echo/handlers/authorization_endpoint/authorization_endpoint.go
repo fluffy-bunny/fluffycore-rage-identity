@@ -192,9 +192,12 @@ func (s *service) Do(c echo.Context) error {
 			model.IdpHint = idpHint
 		}
 		if !fluffycore_utils.IsEmptyOrNil(candidateUserID) {
-			getUserResponse, err := s.userService.GetRageUser(ctx, &proto_oidc_user.GetRageUserRequest{
-				Subject: candidateUserID,
-			})
+			getUserResponse, err := s.userService.GetRageUser(ctx,
+				&proto_oidc_user.GetRageUserRequest{
+					By: &proto_oidc_user.GetRageUserRequest_Subject{
+						Subject: candidateUserID,
+					},
+				})
 			if err != nil || getUserResponse == nil || getUserResponse.User == nil {
 				candidateUserID = ""
 				c.Redirect(http.StatusFound, "/error&error=invalid_root_candidate")

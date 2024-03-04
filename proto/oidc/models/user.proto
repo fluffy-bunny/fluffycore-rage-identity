@@ -135,7 +135,6 @@ message RecoveryUpdate{
 }
 
 message RageUser {
-    string              id = 1;
     RageUserState       state = 2;
     Identity            root_identity = 3;
     LinkedIdentities    linked_identities = 4;

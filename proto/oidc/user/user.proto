@@ -37,14 +37,7 @@ service RageUserService {
             body: "*"
           };
     }
-    // List users
-    rpc ListRageUsers (ListRageUsersRequest) returns (ListRageUsersResponse) {
-        option (google.api.http) = {
-            post: "/api/v1/user/_search"
-            body: "*"
-          };
-    }
-
+  
     rpc LinkRageUser (LinkRageUserRequest) returns (LinkRageUserResponse) {
         option (google.api.http) = {
             post: "/api/v1/user/_link"
@@ -57,20 +50,9 @@ service RageUserService {
             body: "*"
           };
     }
-    rpc IsRageUserLinked (IsRageUserLinkedRequest) returns (IsRageUserLinkedResponse) {
-        option (google.api.http) = {
-            post: "/api/v1/user/_islinked"
-            body: "*"
-          };
-    }
+
 } 
-message IsRageUserLinkedRequest {
-    string root_subject = 1;
-    proto.oidc.models.Identity external_identity = 2;
-}
-message IsRageUserLinkedResponse {
-    bool is_linked = 1;
-}
+ 
 message LinkRageUserRequest {
     string root_subject = 1;
     proto.oidc.models.Identity external_identity = 2;
@@ -96,8 +78,12 @@ message CreateRageUserResponse {
     proto.oidc.models.RageUser user = 1;
 }
 message GetRageUserRequest {
-   string subject = 1;
-}
+    oneof by {
+        string subject = 1;
+        string email = 2;
+        proto.oidc.models.Identity external_identity = 3;
+    }
+ }
 message GetRageUserResponse {
     proto.oidc.models.RageUser user = 1;
 }

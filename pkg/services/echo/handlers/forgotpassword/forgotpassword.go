@@ -13,14 +13,14 @@ import (
 	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/shared"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
-	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
-	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
+	"github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
 	zerolog "github.com/rs/zerolog"
+	"google.golang.org/grpc/codes"
 )
 
 type (
@@ -146,21 +146,26 @@ func (s *service) DoPost(c echo.Context) error {
 	// NOTE: We don't want to give bots the ability to probe our service to see if an email exists.
 	// we check here and we redirect to the enter code in all cases.
 	// we just don't send the email, but we drop the cookie with a verification code just for the fun of it.
-	listUserResponse, err := s.RageUserService().ListRageUsers(ctx,
-		&proto_oidc_user.ListRageUsersRequest{
-			Filter: &proto_oidc_models.RageUserFilter{
-				RootEmail: &proto_types.StringFilterExpression{
-					Eq: model.Email,
-				},
+	getRageUserResponse, err := s.RageUserService().GetRageUser(ctx,
+		&proto_oidc_user.GetRageUserRequest{
+			By: &proto_oidc_user.GetRageUserRequest_Email{
+				Email: model.Email,
 			},
 		})
+
 	if err != nil {
-		log.Error().Err(err).Msg("ListUser")
-		return c.Redirect(http.StatusFound, "/Error")
+		st, ok := status.FromError(err)
+		if ok && st.Code() != codes.NotFound {
+			err = nil
+		}
+		if err != nil {
+			log.Error().Err(err).Msg("ListUser")
+			return c.Redirect(http.StatusFound, "/Error")
+		}
 	}
 	subject := "NA"
-	if listUserResponse != nil && len(listUserResponse.Users) > 0 {
-		subject = listUserResponse.Users[0].RootIdentity.Subject
+	if getRageUserResponse != nil {
+		subject = getRageUserResponse.User.RootIdentity.Subject
 	}
 
 	verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
@@ -182,7 +187,7 @@ func (s *service) DoPost(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 	message = strings.ReplaceAll(message, "{code}", verificationCode)
-	if len(listUserResponse.Users) > 0 {
+	if getRageUserResponse != nil {
 		// send the email
 		_, err = s.EmailService().SendEmail(ctx,
 			&contracts_email.SendEmailRequest{

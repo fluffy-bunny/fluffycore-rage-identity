@@ -6,7 +6,6 @@ import (
 	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
-	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	zerolog "github.com/rs/zerolog"
@@ -48,27 +47,35 @@ func (s *service) LinkRageUser(ctx context.Context, request *proto_oidc_user.Lin
 	}
 	user := getUserResponse.User
 
+	isUserLinked := false
 	// user cannot be linked to any other account
-	listUserResponse, err := s.ListRageUsers(ctx, &proto_oidc_user.ListRageUsersRequest{
-		Filter: &proto_oidc_models.RageUserFilter{
-			LinkedIdentitySubject: &proto_types.IDFilterExpression{
-				Eq: request.ExternalIdentity.Subject,
+	getRageUserResponse, err := s.GetRageUser(ctx,
+		&proto_oidc_user.GetRageUserRequest{
+			By: &proto_oidc_user.GetRageUserRequest_ExternalIdentity{
+				ExternalIdentity: request.ExternalIdentity,
 			},
-			LinkedIdentityIdpSlug: &proto_types.IDFilterExpression{
-				Eq: request.ExternalIdentity.IdpSlug,
-			},
-		},
-	})
+		})
 	if err != nil {
-		return nil, err
+		st, ok := status.FromError(err)
+		if ok && st.Code() == codes.NotFound {
+			// user is not linked
+			err = nil
+		} else {
+			return nil, err
+		}
+	} else {
+		isUserLinked = true
 	}
+
 	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
 	s.rwLock.Lock()
 	defer s.rwLock.Unlock()
 	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
-	if len(listUserResponse.Users) > 0 {
+	if isUserLinked {
 		// is this a problem?  could be the same user
-		if listUserResponse.Users[0].RootIdentity.Subject != user.RageUser.RootIdentity.Subject {
+		alreadyLinkedUser := getRageUserResponse.User
+
+		if alreadyLinkedUser.RootIdentity.Subject != user.RageUser.RootIdentity.Subject {
 			return nil, status.Error(codes.AlreadyExists, "External Identity already linked to another user")
 		}
 	} else {

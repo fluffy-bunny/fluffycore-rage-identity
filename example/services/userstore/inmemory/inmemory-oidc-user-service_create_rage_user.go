@@ -47,7 +47,9 @@ func (s *service) CreateRageUser(ctx context.Context, request *proto_oidc_user.C
 
 	user := request.User
 	getUserResponse, err := s.GetRageUser(ctx, &proto_oidc_user.GetRageUserRequest{
-		Subject: user.RootIdentity.Subject,
+		By: &proto_oidc_user.GetRageUserRequest_Subject{
+			Subject: user.RootIdentity.Subject,
+		},
 	})
 	if err != nil {
 		st, ok := status.FromError(err)

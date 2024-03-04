@@ -19,12 +19,13 @@ import (
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
-	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
+	"github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
+	"google.golang.org/grpc/codes"
 )
 
 type (
@@ -186,28 +187,23 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 	}
 	// does the user exist.
-	listUserResponse, err := s.RageUserService().ListRageUsers(ctx, &proto_oidc_user.ListRageUsersRequest{
-		Filter: &proto_oidc_models.RageUserFilter{
-			RootEmail: &proto_types.StringFilterExpression{
-				Eq: model.UserName,
+	getRageUserResponse, err := s.RageUserService().GetRageUser(ctx,
+		&proto_oidc_user.GetRageUserRequest{
+			By: &proto_oidc_user.GetRageUserRequest_Email{
+				Email: model.UserName,
 			},
-		},
-	})
-
+		})
 	if err != nil {
-		log.Warn().Err(err).Msg("ListUser")
-		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
-
-		if len(listUserResponse.Users) == 0 {
-			errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s not found", model.UserName))
+		st, ok := status.FromError(err)
+		if ok && st.Code() != codes.NotFound {
+			log.Warn().Err(err).Msg("GetRageUser")
+			errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 			return renderError(errors)
 		}
+		err = nil
 	}
-	if len(listUserResponse.Users) == 0 {
-		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s not found", model.UserName))
-		return renderError(errors)
-	}
-	user := listUserResponse.Users[0]
+
+	user := getRageUserResponse.User
 	if s.config.EmailVerificationRequired && !user.RootIdentity.EmailVerified {
 
 		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
@@ -259,11 +255,7 @@ func (s *service) DoPost(c echo.Context) error {
 
 	if user.Password == nil {
 		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s does not have a password", model.UserName))
-
-		if len(listUserResponse.Users) == 0 {
-			errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s not found", model.UserName))
-			return renderError(errors)
-		}
+		return renderError(errors)
 	}
 
 	err = s.passwordHasher.VerifyPassword(ctx, &contracts_identity.VerifyPasswordRequest{

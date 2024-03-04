@@ -177,7 +177,9 @@ func (s *service) DoPost(c echo.Context) error {
 
 	getUserResponse, err := s.RageUserService().GetRageUser(ctx,
 		&proto_oidc_user.GetRageUserRequest{
-			Subject: getPasswordResetCookieResponse.PasswordReset.Subject,
+			By: &proto_oidc_user.GetRageUserRequest_Subject{
+				Subject: getPasswordResetCookieResponse.PasswordReset.Subject,
+			},
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("ListUser")

@@ -24,8 +24,10 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
+	"github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
+	"google.golang.org/grpc/codes"
 )
 
 type (
@@ -242,14 +244,20 @@ func (s *service) DoPost(c echo.Context) error {
 
 	}
 	// does the user exist.
-	listUserResponse, err := s.RageUserService().ListRageUsers(ctx, &proto_oidc_user.ListRageUsersRequest{
-		Filter: &proto_oidc_models.RageUserFilter{
-			RootEmail: &proto_types.StringFilterExpression{
-				Eq: model.UserName,
+	getRageUserResponse, err := s.RageUserService().GetRageUser(ctx,
+		&proto_oidc_user.GetRageUserRequest{
+			By: &proto_oidc_user.GetRageUserRequest_Email{
+				Email: strings.ToLower(model.UserName),
 			},
-		},
-	})
-	if len(listUserResponse.Users) == 0 {
+		})
+	if err != nil {
+		st, ok := status.FromError(err)
+		if ok && st.Code() != codes.NotFound {
+			return err
+		}
+		err = nil
+	}
+	if getRageUserResponse == nil {
 		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s not found", model.UserName))
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
@@ -272,7 +280,7 @@ func (s *service) DoPost(c echo.Context) error {
 				"directive": models.LoginDirective,
 			})
 	}
-	user := listUserResponse.Users[0]
+	user := getRageUserResponse.User
 	if s.config.EmailVerificationRequired && !user.RootIdentity.EmailVerified {
 		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
 		err = s.wellknownCookies.SetVerificationCodeCookie(c,

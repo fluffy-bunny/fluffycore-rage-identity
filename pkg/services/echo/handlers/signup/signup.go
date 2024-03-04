@@ -20,9 +20,11 @@ import (
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
+	"github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	xid "github.com/rs/xid"
 	zerolog "github.com/rs/zerolog"
+	"google.golang.org/grpc/codes"
 )
 
 type (
@@ -210,22 +212,28 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 	}
 	// does the user exist.
-	listUserResponse, err := s.RageUserService().ListRageUsers(ctx, &proto_oidc_user.ListRageUsersRequest{
-		Filter: &proto_oidc_models.RageUserFilter{
-			RootEmail: &proto_types.StringFilterExpression{
-				Eq: model.UserName,
+	getRageUserResponse, err := s.RageUserService().GetRageUser(ctx,
+		&proto_oidc_user.GetRageUserRequest{
+			By: &proto_oidc_user.GetRageUserRequest_Email{
+				Email: strings.ToLower(model.UserName),
 			},
-		},
-	})
+		})
 	if err != nil {
-		log.Error().Err(err).Msg("ListUser")
-		return c.Redirect(http.StatusFound, "/error")
+		st, ok := status.FromError(err)
+		if ok && st.Code() == codes.NotFound {
+			err = nil
+		} else {
+			log.Error().Err(err).Msg("GetRageUser")
+			return c.Redirect(http.StatusFound, "/error")
+		}
+
 	}
-	if len(listUserResponse.Users) > 0 {
+	if getRageUserResponse != nil {
 		return doError([]*services_handlers_shared.Error{
 			services_handlers_shared.NewErrorF("username", "username:%s already exists", model.UserName),
 		})
 	}
+	// TODO: check password strength
 	hashPasswordResponse, err := s.passwordHasher.HashPassword(ctx, &contracts_identity.HashPasswordRequest{
 		Password: model.Password,
 	})

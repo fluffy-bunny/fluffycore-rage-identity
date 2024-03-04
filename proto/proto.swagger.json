@@ -453,9 +453,6 @@
     "modelsRageUser": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string"
-        },
         "state": {
           "$ref": "#/definitions/modelsRageUserState"
         },
