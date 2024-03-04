@@ -52,7 +52,7 @@ func (s *service) GetExternalOauth2Final(ctx context.Context, request *proto_oid
 		// redirect to error page
 		return nil, err
 	}
-	var value *proto_oidc_models.ExternalOauth2Final = new(proto_oidc_models.ExternalOauth2Final)
+	var value *proto_oidc_models.ExternalOauth2State = new(proto_oidc_models.ExternalOauth2State)
 	mmB, err := json.Marshal(mm)
 	if err != nil {
 		log.Error().Err(err).Msg("marshal")

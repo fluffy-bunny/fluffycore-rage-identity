@@ -149,7 +149,7 @@ func (s *service) DoPost(c echo.Context) error {
 				_, err = s.ExternalOauth2FlowStore().StoreExternalOauth2Final(ctx,
 					&proto_oidc_flows.StoreExternalOauth2FinalRequest{
 						State: externalState,
-						ExternalOauth2Final: &proto_oidc_models.ExternalOauth2Final{
+						ExternalOauth2Final: &proto_oidc_models.ExternalOauth2State{
 							Request: &proto_oidc_models.ExternalOauth2Request{
 								IdpHint:               model.IDPHint,
 								ClientId:              v.Github.ClientId,
@@ -189,7 +189,7 @@ func (s *service) DoPost(c echo.Context) error {
 				_, err = s.ExternalOauth2FlowStore().StoreExternalOauth2Final(ctx,
 					&proto_oidc_flows.StoreExternalOauth2FinalRequest{
 						State: externalState,
-						ExternalOauth2Final: &proto_oidc_models.ExternalOauth2Final{
+						ExternalOauth2Final: &proto_oidc_models.ExternalOauth2State{
 							Request: &proto_oidc_models.ExternalOauth2Request{
 								IdpHint:               model.IDPHint,
 								ClientId:              v.Oauth2.ClientId,
@@ -234,7 +234,7 @@ func (s *service) DoPost(c echo.Context) error {
 				_, err = s.ExternalOauth2FlowStore().StoreExternalOauth2Final(ctx,
 					&proto_oidc_flows.StoreExternalOauth2FinalRequest{
 						State: externalState,
-						ExternalOauth2Final: &proto_oidc_models.ExternalOauth2Final{
+						ExternalOauth2Final: &proto_oidc_models.ExternalOauth2State{
 							Request: &proto_oidc_models.ExternalOauth2Request{
 								IdpHint:     model.IDPHint,
 								ClientId:    v.Oidc.ClientId,

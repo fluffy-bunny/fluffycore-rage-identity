@@ -46,7 +46,7 @@ service ExternalOauth2FlowStore {
 
 message StoreExternalOauth2FinalRequest{
     string state = 1;
-    proto.oidc.models.ExternalOauth2Final external_oauth2_final = 2;
+    proto.oidc.models.ExternalOauth2State external_oauth2_final = 2;
 }
 message StoreExternalOauth2FinalResponse{}
 
@@ -55,7 +55,7 @@ message GetExternalOauth2FinalRequest{
 }
 
 message GetExternalOauth2FinalResponse{
-    proto.oidc.models.ExternalOauth2Final external_oauth2_final = 1;
+    proto.oidc.models.ExternalOauth2State external_oauth2_final = 1;
 }
 
 message DeleteExternalOauth2FinalRequest{

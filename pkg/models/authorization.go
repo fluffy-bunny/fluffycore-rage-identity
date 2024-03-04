@@ -11,7 +11,7 @@ func init() {
 	gob.Register(&proto_oidc_models.ExternalOauth2Request{})
 	gob.Register(&proto_oidc_models.OIDCIdentity{})
 	gob.Register(&proto_oidc_models.AuthorizationRequestState{})
-	gob.Register(&proto_oidc_models.ExternalOauth2Final{})
+	gob.Register(&proto_oidc_models.ExternalOauth2State{})
 	gob.Register(&FormParam{})
 
 }
@@ -39,7 +39,7 @@ const (
 )
 
 const (
-	OIDCSessionName = "_oidc-session"
+	OIDCSessionName = "_oidc_session"
 )
 
 type (

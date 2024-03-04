@@ -6,6 +6,12 @@ import (
 )
 
 type (
+	SetExternalOauth2CookieRequest struct {
+		ExternalOAuth2State *proto_oidc_models.ExternalOauth2State `json:"externalOAuth2State"`
+	}
+	GetExternalOauth2CookieResponse struct {
+		ExternalOAuth2State *proto_oidc_models.ExternalOauth2State `json:"externalOAuth2State"`
+	}
 	SetVerificationCodeCookieRequest struct {
 		VerificationCode *VerificationCode `json:"verificationCode"`
 	}
@@ -46,19 +52,33 @@ type (
 		AuthCookie *AuthCookie `json:"authCookie"`
 	}
 	IWellknownCookies interface {
+		// External OAuth2 Cookie
+		//---------------------------------------------------------------------
+		SetExternalOauth2Cookie(c echo.Context, request *SetExternalOauth2CookieRequest) error
+		DeleteExternalOauth2CookieCookie(c echo.Context)
+		GetExternalOauth2CookieCookie(c echo.Context) (*GetExternalOauth2CookieResponse, error)
+		// Verification Code Cookie
+		//---------------------------------------------------------------------
 		SetVerificationCodeCookie(c echo.Context, request *SetVerificationCodeCookieRequest) error
 		DeleteVerificationCodeCookie(c echo.Context)
 		GetVerificationCodeCookie(c echo.Context) (*GetVerificationCodeCookieResponse, error)
+		// Password Reset Cookie
+		//---------------------------------------------------------------------
 		SetPasswordResetCookie(c echo.Context, request *SetPasswordResetCookieRequest) error
 		DeletePasswordResetCookie(c echo.Context)
 		GetPasswordResetCookie(c echo.Context) (*GetPasswordResetCookieResponse, error)
+		// Account State Cookie
+		//---------------------------------------------------------------------
 		SetAccountStateCookie(c echo.Context, request *SetAccountStateCookieRequest) error
 		DeleteAccountStateCookie(c echo.Context)
 		GetAccountStateCookie(c echo.Context) (*GetAccountStateCookieResponse, error)
+		// Auth Cookie
+		//---------------------------------------------------------------------
 		SetAuthCookie(c echo.Context, request *SetAuthCookieRequest) error
 		DeleteAuthCookie(c echo.Context)
 		GetAuthCookie(c echo.Context) (*GetAuthCookieResponse, error)
-
+		// Insecure Cookies
+		//---------------------------------------------------------------------
 		SetInsecureCookie(c echo.Context, name string, value interface{}) error
 		DeleteInsecureCookie(c echo.Context, name string)
 		GetInsecureCookie(c echo.Context, name string) (interface{}, error)
@@ -66,9 +86,10 @@ type (
 )
 
 const (
-	CookieNameVerificationCode = "verificationCode"
-	CookieNamePasswordReset    = "passwordReset"
-	CookieNameAccountState     = "accountState"
-	CookieNameAuth             = "_auth"
-	LoginRequest               = "_loginRequest"
+	CookieNameVerificationCode    = "_verificationCode"
+	CookieNamePasswordReset       = "_passwordReset"
+	CookieNameAccountState        = "_accountState"
+	CookieNameAuth                = "_auth"
+	LoginRequest                  = "_loginRequest"
+	CookieNameExternalOauth2State = "_externalOauth2State"
 )

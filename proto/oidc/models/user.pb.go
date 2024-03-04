@@ -551,7 +551,7 @@ func (x *ExternalOauth2Request) GetParentState() string {
 	return ""
 }
 
-type ExternalOauth2Final struct {
+type ExternalOauth2State struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -560,8 +560,8 @@ type ExternalOauth2Final struct {
 	Identity *Identity              `protobuf:"bytes,2,opt,name=identity,proto3" json:"identity,omitempty"`
 }
 
-func (x *ExternalOauth2Final) Reset() {
-	*x = ExternalOauth2Final{}
+func (x *ExternalOauth2State) Reset() {
+	*x = ExternalOauth2State{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_proto_oidc_models_user_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -569,13 +569,13 @@ func (x *ExternalOauth2Final) Reset() {
 	}
 }
 
-func (x *ExternalOauth2Final) String() string {
+func (x *ExternalOauth2State) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ExternalOauth2Final) ProtoMessage() {}
+func (*ExternalOauth2State) ProtoMessage() {}
 
-func (x *ExternalOauth2Final) ProtoReflect() protoreflect.Message {
+func (x *ExternalOauth2State) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_oidc_models_user_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -587,19 +587,19 @@ func (x *ExternalOauth2Final) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ExternalOauth2Final.ProtoReflect.Descriptor instead.
-func (*ExternalOauth2Final) Descriptor() ([]byte, []int) {
+// Deprecated: Use ExternalOauth2State.ProtoReflect.Descriptor instead.
+func (*ExternalOauth2State) Descriptor() ([]byte, []int) {
 	return file_proto_oidc_models_user_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *ExternalOauth2Final) GetRequest() *ExternalOauth2Request {
+func (x *ExternalOauth2State) GetRequest() *ExternalOauth2Request {
 	if x != nil {
 		return x.Request
 	}
 	return nil
 }
 
-func (x *ExternalOauth2Final) GetIdentity() *Identity {
+func (x *ExternalOauth2State) GetIdentity() *Identity {
 	if x != nil {
 		return x.Identity
 	}
@@ -1604,8 +1604,8 @@ var file_proto_oidc_models_user_proto_rawDesc = []byte{
 	0x69, 0x72, 0x65, 0x63, 0x74, 0x69, 0x76, 0x65, 0x12, 0x21, 0x0a, 0x0c, 0x70, 0x61, 0x72, 0x65,
 	0x6e, 0x74, 0x5f, 0x73, 0x74, 0x61, 0x74, 0x65, 0x18, 0x09, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b,
 	0x70, 0x61, 0x72, 0x65, 0x6e, 0x74, 0x53, 0x74, 0x61, 0x74, 0x65, 0x22, 0x92, 0x01, 0x0a, 0x13,
-	0x45, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x4f, 0x61, 0x75, 0x74, 0x68, 0x32, 0x46, 0x69,
-	0x6e, 0x61, 0x6c, 0x12, 0x42, 0x0a, 0x07, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x18, 0x01,
+	0x45, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x4f, 0x61, 0x75, 0x74, 0x68, 0x32, 0x53, 0x74,
+	0x61, 0x74, 0x65, 0x12, 0x42, 0x0a, 0x07, 0x72, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x0b, 0x32, 0x28, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x6f, 0x69, 0x64,
 	0x63, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x45, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61,
 	0x6c, 0x4f, 0x61, 0x75, 0x74, 0x68, 0x32, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x52, 0x07,
@@ -1831,7 +1831,7 @@ var file_proto_oidc_models_user_proto_goTypes = []interface{}{
 	(*IdentityFilter)(nil),                  // 5: proto.oidc.models.IdentityFilter
 	(*OIDCIdentity)(nil),                    // 6: proto.oidc.models.OIDCIdentity
 	(*ExternalOauth2Request)(nil),           // 7: proto.oidc.models.ExternalOauth2Request
-	(*ExternalOauth2Final)(nil),             // 8: proto.oidc.models.ExternalOauth2Final
+	(*ExternalOauth2State)(nil),             // 8: proto.oidc.models.ExternalOauth2State
 	(*AuthorizationRequest)(nil),            // 9: proto.oidc.models.AuthorizationRequest
 	(*AuthorizationRequestState)(nil),       // 10: proto.oidc.models.AuthorizationRequestState
 	(*LinkedIdentities)(nil),                // 11: proto.oidc.models.LinkedIdentities
@@ -1856,8 +1856,8 @@ var file_proto_oidc_models_user_proto_depIdxs = []int32{
 	23, // 2: proto.oidc.models.IdentityFilter.subject:type_name -> proto.types.IDFilterExpression
 	23, // 3: proto.oidc.models.IdentityFilter.idp_slug:type_name -> proto.types.IDFilterExpression
 	24, // 4: proto.oidc.models.IdentityFilter.email:type_name -> proto.types.StringFilterExpression
-	7,  // 5: proto.oidc.models.ExternalOauth2Final.request:type_name -> proto.oidc.models.ExternalOauth2Request
-	4,  // 6: proto.oidc.models.ExternalOauth2Final.identity:type_name -> proto.oidc.models.Identity
+	7,  // 5: proto.oidc.models.ExternalOauth2State.request:type_name -> proto.oidc.models.ExternalOauth2Request
+	4,  // 6: proto.oidc.models.ExternalOauth2State.identity:type_name -> proto.oidc.models.Identity
 	9,  // 7: proto.oidc.models.AuthorizationRequestState.request:type_name -> proto.oidc.models.AuthorizationRequest
 	6,  // 8: proto.oidc.models.AuthorizationRequestState.identity:type_name -> proto.oidc.models.OIDCIdentity
 	4,  // 9: proto.oidc.models.AuthorizationRequestState.external_identity:type_name -> proto.oidc.models.Identity
@@ -1986,7 +1986,7 @@ func file_proto_oidc_models_user_proto_init() {
 			}
 		}
 		file_proto_oidc_models_user_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ExternalOauth2Final); i {
+			switch v := v.(*ExternalOauth2State); i {
 			case 0:
 				return &v.state
 			case 1:

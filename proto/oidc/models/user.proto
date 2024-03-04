@@ -62,7 +62,7 @@ message ExternalOauth2Request {
     string parent_state = 9;
 
 }
-message ExternalOauth2Final {
+message ExternalOauth2State {
     ExternalOauth2Request request = 1;
     Identity identity = 2;
 }

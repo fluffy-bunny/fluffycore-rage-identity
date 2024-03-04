@@ -300,7 +300,7 @@ type StoreExternalOauth2FinalRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	State               string                      `protobuf:"bytes,1,opt,name=state,proto3" json:"state,omitempty"`
-	ExternalOauth2Final *models.ExternalOauth2Final `protobuf:"bytes,2,opt,name=external_oauth2_final,json=externalOauth2Final,proto3" json:"external_oauth2_final,omitempty"`
+	ExternalOauth2Final *models.ExternalOauth2State `protobuf:"bytes,2,opt,name=external_oauth2_final,json=externalOauth2Final,proto3" json:"external_oauth2_final,omitempty"`
 }
 
 func (x *StoreExternalOauth2FinalRequest) Reset() {
@@ -342,7 +342,7 @@ func (x *StoreExternalOauth2FinalRequest) GetState() string {
 	return ""
 }
 
-func (x *StoreExternalOauth2FinalRequest) GetExternalOauth2Final() *models.ExternalOauth2Final {
+func (x *StoreExternalOauth2FinalRequest) GetExternalOauth2Final() *models.ExternalOauth2State {
 	if x != nil {
 		return x.ExternalOauth2Final
 	}
@@ -439,7 +439,7 @@ type GetExternalOauth2FinalResponse struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	ExternalOauth2Final *models.ExternalOauth2Final `protobuf:"bytes,1,opt,name=external_oauth2_final,json=externalOauth2Final,proto3" json:"external_oauth2_final,omitempty"`
+	ExternalOauth2Final *models.ExternalOauth2State `protobuf:"bytes,1,opt,name=external_oauth2_final,json=externalOauth2Final,proto3" json:"external_oauth2_final,omitempty"`
 }
 
 func (x *GetExternalOauth2FinalResponse) Reset() {
@@ -474,7 +474,7 @@ func (*GetExternalOauth2FinalResponse) Descriptor() ([]byte, []int) {
 	return file_proto_oidc_flows_oidc_flow_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *GetExternalOauth2FinalResponse) GetExternalOauth2Final() *models.ExternalOauth2Final {
+func (x *GetExternalOauth2FinalResponse) GetExternalOauth2Final() *models.ExternalOauth2State {
 	if x != nil {
 		return x.ExternalOauth2Final
 	}
@@ -617,7 +617,7 @@ var file_proto_oidc_flows_oidc_flow_proto_rawDesc = []byte{
 	0x6c, 0x5f, 0x6f, 0x61, 0x75, 0x74, 0x68, 0x32, 0x5f, 0x66, 0x69, 0x6e, 0x61, 0x6c, 0x18, 0x02,
 	0x20, 0x01, 0x28, 0x0b, 0x32, 0x26, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x6f, 0x69, 0x64,
 	0x63, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x45, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61,
-	0x6c, 0x4f, 0x61, 0x75, 0x74, 0x68, 0x32, 0x46, 0x69, 0x6e, 0x61, 0x6c, 0x52, 0x13, 0x65, 0x78,
+	0x6c, 0x4f, 0x61, 0x75, 0x74, 0x68, 0x32, 0x53, 0x74, 0x61, 0x74, 0x65, 0x52, 0x13, 0x65, 0x78,
 	0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x4f, 0x61, 0x75, 0x74, 0x68, 0x32, 0x46, 0x69, 0x6e, 0x61,
 	0x6c, 0x22, 0x22, 0x0a, 0x20, 0x53, 0x74, 0x6f, 0x72, 0x65, 0x45, 0x78, 0x74, 0x65, 0x72, 0x6e,
 	0x61, 0x6c, 0x4f, 0x61, 0x75, 0x74, 0x68, 0x32, 0x46, 0x69, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x73,
@@ -631,7 +631,7 @@ var file_proto_oidc_flows_oidc_flow_proto_rawDesc = []byte{
 	0x32, 0x5f, 0x66, 0x69, 0x6e, 0x61, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x26, 0x2e,
 	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x6f, 0x69, 0x64, 0x63, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c,
 	0x73, 0x2e, 0x45, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x4f, 0x61, 0x75, 0x74, 0x68, 0x32,
-	0x46, 0x69, 0x6e, 0x61, 0x6c, 0x52, 0x13, 0x65, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x4f,
+	0x53, 0x74, 0x61, 0x74, 0x65, 0x52, 0x13, 0x65, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x4f,
 	0x61, 0x75, 0x74, 0x68, 0x32, 0x46, 0x69, 0x6e, 0x61, 0x6c, 0x22, 0x38, 0x0a, 0x20, 0x44, 0x65,
 	0x6c, 0x65, 0x74, 0x65, 0x45, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x4f, 0x61, 0x75, 0x74,
 	0x68, 0x32, 0x46, 0x69, 0x6e, 0x61, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x14,
@@ -735,13 +735,13 @@ var file_proto_oidc_flows_oidc_flow_proto_goTypes = []interface{}{
 	(*DeleteExternalOauth2FinalRequest)(nil),        // 10: proto.oidc.flows.DeleteExternalOauth2FinalRequest
 	(*DeleteExternalOauth2FinalResponse)(nil),       // 11: proto.oidc.flows.DeleteExternalOauth2FinalResponse
 	(*models.AuthorizationRequestState)(nil),        // 12: proto.oidc.models.AuthorizationRequestState
-	(*models.ExternalOauth2Final)(nil),              // 13: proto.oidc.models.ExternalOauth2Final
+	(*models.ExternalOauth2State)(nil),              // 13: proto.oidc.models.ExternalOauth2State
 }
 var file_proto_oidc_flows_oidc_flow_proto_depIdxs = []int32{
 	12, // 0: proto.oidc.flows.StoreAuthorizationRequestStateRequest.authorization_request_state:type_name -> proto.oidc.models.AuthorizationRequestState
 	12, // 1: proto.oidc.flows.GetAuthorizationRequestStateResponse.authorization_request_state:type_name -> proto.oidc.models.AuthorizationRequestState
-	13, // 2: proto.oidc.flows.StoreExternalOauth2FinalRequest.external_oauth2_final:type_name -> proto.oidc.models.ExternalOauth2Final
-	13, // 3: proto.oidc.flows.GetExternalOauth2FinalResponse.external_oauth2_final:type_name -> proto.oidc.models.ExternalOauth2Final
+	13, // 2: proto.oidc.flows.StoreExternalOauth2FinalRequest.external_oauth2_final:type_name -> proto.oidc.models.ExternalOauth2State
+	13, // 3: proto.oidc.flows.GetExternalOauth2FinalResponse.external_oauth2_final:type_name -> proto.oidc.models.ExternalOauth2State
 	0,  // 4: proto.oidc.flows.AuthorizationRequestStateStore.StoreAuthorizationRequestState:input_type -> proto.oidc.flows.StoreAuthorizationRequestStateRequest
 	2,  // 5: proto.oidc.flows.AuthorizationRequestStateStore.GetAuthorizationRequestState:input_type -> proto.oidc.flows.GetAuthorizationRequestStateRequest
 	4,  // 6: proto.oidc.flows.AuthorizationRequestStateStore.DeleteAuthorizationRequestState:input_type -> proto.oidc.flows.DeleteAuthorizationRequestStateRequest
