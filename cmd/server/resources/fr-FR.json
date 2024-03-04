@@ -10,6 +10,7 @@
   "password": "Mot de passe",
   "confirm_password": "Confirmez le mot de passe",
   "password_reset": "Réinitialiser le mot de passe",
+  "phone_number": "Numéro de téléphone",
   "security_settings": "Paramètres de sécurité",
   "personal_information": "Informations personnelles",
   "given_name": "Prénom",

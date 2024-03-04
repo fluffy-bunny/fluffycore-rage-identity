@@ -9,6 +9,7 @@
   "password": "Password",
   "confirm_password": "Confirm Password",
   "password_reset": "Reset Password",
+  "phone_number": "Phone Number",
   "or_signin_with": "Or sign in with:",
   "security_settings": "Security Settings",
   "personal_information": "Personal Information",
