@@ -20,11 +20,10 @@ import (
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
-	"github.com/gogo/status"
+	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
-	xid "github.com/rs/xid"
 	zerolog "github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
+	codes "google.golang.org/grpc/codes"
 )
 
 type (
@@ -33,6 +32,7 @@ type (
 		config           *contracts_config.Config
 		passwordHasher   contracts_identity.IPasswordHasher
 		wellknownCookies contracts_cookies.IWellknownCookies
+		userIdGenerator  contracts_identity.IUserIdGenerator
 	}
 )
 
@@ -48,6 +48,7 @@ func (s *service) Ctor(
 	passwordHasher contracts_identity.IPasswordHasher,
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	userService proto_oidc_user.IFluffyCoreRageUserServiceServer,
+	userIdGenerator contracts_identity.IUserIdGenerator,
 ) (*service, error) {
 
 	return &service{
@@ -55,6 +56,7 @@ func (s *service) Ctor(
 		config:           config,
 		passwordHasher:   passwordHasher,
 		wellknownCookies: wellknownCookies,
+		userIdGenerator:  userIdGenerator,
 	}, nil
 }
 
@@ -241,9 +243,10 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("GeneratePasswordHash")
 		return c.Redirect(http.StatusFound, "/error")
 	}
+	subjectId := s.userIdGenerator.GenerateUserId()
 	user := &proto_oidc_models.RageUser{
 		RootIdentity: &proto_oidc_models.Identity{
-			Subject:       xid.New().String(),
+			Subject:       subjectId,
 			Email:         model.UserName,
 			IdpSlug:       models.RootIdp,
 			EmailVerified: false,
