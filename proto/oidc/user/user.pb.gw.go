@@ -187,7 +187,7 @@ func local_request_RageUserService_LinkRageUser_0(ctx context.Context, marshaler
 
 }
 
-func request_RageUserService_UnlinkRageUsers_0(ctx context.Context, marshaler runtime.Marshaler, client RageUserServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_RageUserService_UnlinkRageUser_0(ctx context.Context, marshaler runtime.Marshaler, client RageUserServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq UnlinkRageUserRequest
 	var metadata runtime.ServerMetadata
 
@@ -195,12 +195,12 @@ func request_RageUserService_UnlinkRageUsers_0(ctx context.Context, marshaler ru
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.UnlinkRageUsers(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.UnlinkRageUser(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_RageUserService_UnlinkRageUsers_0(ctx context.Context, marshaler runtime.Marshaler, server RageUserServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_RageUserService_UnlinkRageUser_0(ctx context.Context, marshaler runtime.Marshaler, server RageUserServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq UnlinkRageUserRequest
 	var metadata runtime.ServerMetadata
 
@@ -208,7 +208,7 @@ func local_request_RageUserService_UnlinkRageUsers_0(ctx context.Context, marsha
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.UnlinkRageUsers(ctx, &protoReq)
+	msg, err := server.UnlinkRageUser(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -370,7 +370,7 @@ func RegisterRageUserServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("POST", pattern_RageUserService_UnlinkRageUsers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_RageUserService_UnlinkRageUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -378,12 +378,12 @@ func RegisterRageUserServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/proto.oidc.user.RageUserService/UnlinkRageUsers", runtime.WithHTTPPathPattern("/api/v1/user/_unlink"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/proto.oidc.user.RageUserService/UnlinkRageUser", runtime.WithHTTPPathPattern("/api/v1/user/_unlink"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_RageUserService_UnlinkRageUsers_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_RageUserService_UnlinkRageUser_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
@@ -391,7 +391,7 @@ func RegisterRageUserServiceHandlerServer(ctx context.Context, mux *runtime.Serv
 			return
 		}
 
-		forward_RageUserService_UnlinkRageUsers_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_RageUserService_UnlinkRageUser_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -571,25 +571,25 @@ func RegisterRageUserServiceHandlerClient(ctx context.Context, mux *runtime.Serv
 
 	})
 
-	mux.Handle("POST", pattern_RageUserService_UnlinkRageUsers_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_RageUserService_UnlinkRageUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/proto.oidc.user.RageUserService/UnlinkRageUsers", runtime.WithHTTPPathPattern("/api/v1/user/_unlink"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/proto.oidc.user.RageUserService/UnlinkRageUser", runtime.WithHTTPPathPattern("/api/v1/user/_unlink"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_RageUserService_UnlinkRageUsers_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_RageUserService_UnlinkRageUser_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_RageUserService_UnlinkRageUsers_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_RageUserService_UnlinkRageUser_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -629,7 +629,7 @@ var (
 
 	pattern_RageUserService_LinkRageUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "user", "_link"}, ""))
 
-	pattern_RageUserService_UnlinkRageUsers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "user", "_unlink"}, ""))
+	pattern_RageUserService_UnlinkRageUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "user", "_unlink"}, ""))
 
 	pattern_RageUserService_IsRageUserLinked_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "user", "_islinked"}, ""))
 )
@@ -645,7 +645,7 @@ var (
 
 	forward_RageUserService_LinkRageUser_0 = runtime.ForwardResponseMessage
 
-	forward_RageUserService_UnlinkRageUsers_0 = runtime.ForwardResponseMessage
+	forward_RageUserService_UnlinkRageUser_0 = runtime.ForwardResponseMessage
 
 	forward_RageUserService_IsRageUserLinked_0 = runtime.ForwardResponseMessage
 )

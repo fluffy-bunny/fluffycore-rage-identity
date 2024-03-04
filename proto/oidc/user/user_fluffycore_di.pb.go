@@ -82,11 +82,11 @@ func (s *RageUserServiceFluffyCoreServer) LinkRageUser(ctx context.Context, requ
 	return downstreamService.LinkRageUser(ctx, request)
 }
 
-// UnlinkRageUsers...
-func (s *RageUserServiceFluffyCoreServer) UnlinkRageUsers(ctx context.Context, request *UnlinkRageUserRequest) (*UnlinkRageUserResponse, error) {
+// UnlinkRageUser...
+func (s *RageUserServiceFluffyCoreServer) UnlinkRageUser(ctx context.Context, request *UnlinkRageUserRequest) (*UnlinkRageUserResponse, error) {
 	requestContainer := dicontext.GetRequestContainer(ctx)
 	downstreamService := fluffy_dozm_di.Get[IFluffyCoreRageUserServiceServer](requestContainer)
-	return downstreamService.UnlinkRageUsers(ctx, request)
+	return downstreamService.UnlinkRageUser(ctx, request)
 }
 
 // IsRageUserLinked...

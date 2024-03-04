@@ -51,7 +51,7 @@ service RageUserService {
             body: "*"
           };
     }
-    rpc UnlinkRageUsers (UnlinkRageUserRequest) returns (UnlinkRageUserResponse) {
+    rpc UnlinkRageUser (UnlinkRageUserRequest) returns (UnlinkRageUserResponse) {
         option (google.api.http) = {
             post: "/api/v1/user/_unlink"
             body: "*"
