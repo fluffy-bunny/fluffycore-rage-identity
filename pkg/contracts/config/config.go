@@ -21,6 +21,7 @@ type (
 		IDPsPath           string `json:"idpsPath"`
 		SigningKeyJsonPath string `json:"signingKeyJsonPath"`
 		RagePath           string `json:"ragePath"`
+		SeedUsersPath      string `json:"seedUsersPath"`
 	}
 	InMemoryClient struct {
 		Secret   string `json:"secret"`
@@ -151,9 +152,10 @@ const configDefaultJSONTemplate = `
 	},
 	"configFiles": {
 		"ragePath": "./config/rage.json",
-		"oidcClientPath": "./config/oidcClients.json",
+		"oidcClientPath": "./config/oidc-clients.json",
 		"idpsPath": "./config/idps.json",
-		"signingKeyJsonPath": "./config/signing-keys.json"
+		"signingKeyJsonPath": "./config/signing-keys.json",
+		"seedUsersPath": "./config/seed-users.json"
 	},
 	"ddProfilerConfig": {
 		"ENABLED": false,

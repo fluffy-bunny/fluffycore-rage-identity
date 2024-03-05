@@ -16,6 +16,8 @@ import (
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	pkg_version "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/version"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
+	proto_oidcuser "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
 	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
 	fluffycore_contracts_middleware "github.com/fluffy-bunny/fluffycore/contracts/middleware"
@@ -36,6 +38,7 @@ import (
 	async "github.com/reugn/async"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
+	protojson "google.golang.org/protobuf/encoding/protojson"
 )
 
 type (
@@ -199,11 +202,41 @@ func (s *startup) Configure(ctx context.Context, rootContainer di.Container, una
 	unaryServerInterceptorBuilder.Use(grpc_recovery.UnaryServerInterceptor(opts...))
 
 }
+func (s *startup) OnLoadSeedUsers(ctx context.Context) error {
+	log := zerolog.Ctx(ctx).With().Str("method", "OnLoadSeedUsers").Logger()
+	config := s.configOptions.Destination.(*contracts_config.Config)
+
+	fileContent, err := os.ReadFile(config.ConfigFiles.SeedUsersPath)
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to read OIDCClientPath - may not be a problem if clients are comming from a DB")
+		return nil
+	}
+	rageUsers := &proto_oidc_models.RageUsers{}
+
+	err = protojson.Unmarshal(fileContent, rageUsers)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to unmarshal OIDCClientPath")
+		return err
+	}
+	log.Info().Interface("rageUsers", rageUsers).Msg("rageUsers")
+
+	rageUserService := di.Get[proto_oidcuser.IFluffyCoreRageUserServiceServer](s.RootContainer)
+	for _, rageUser := range rageUsers.Users {
+		_, err := rageUserService.CreateRageUser(ctx, &proto_oidcuser.CreateRageUserRequest{
+			User: rageUser,
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("failed to CreateRageUser")
+			return err
+		}
+	}
+	return nil
+}
 
 // OnPreServerStartup ...
 func (s *startup) OnPreServerStartup(ctx context.Context) error {
 	log := zerolog.Ctx(ctx).With().Str("method", "OnPreServerStartup").Logger()
-
+	//s.OnLoadSeedUsers(ctx)
 	s.oidcserverRuntime = core_echo_runtime.New(oidcserver.NewStartup(
 		oidcserver.WithConfigureServices(s.ext),
 	))

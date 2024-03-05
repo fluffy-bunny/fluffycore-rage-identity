@@ -2,6 +2,7 @@ package oidcserver
 
 import (
 	"context"
+	"os"
 	"strconv"
 	"strings"
 
@@ -27,6 +28,8 @@ import (
 	services_handlers_verifycode "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/verifycode"
 	services_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/oidc_session"
 	pkg_types "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/types"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
+	proto_oidcuser "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
 	contracts_startup "github.com/fluffy-bunny/fluffycore/echo/contracts/startup"
@@ -40,6 +43,7 @@ import (
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type (
@@ -108,8 +112,39 @@ func (s *startup) PreStartHook(echo *echo.Echo) error {
 
 	return nil
 }
+func (s *startup) OnLoadSeedUsers(ctx context.Context,
+	container di.Container) error {
+	log := zerolog.Ctx(ctx).With().Str("method", "OnLoadSeedUsers").Logger()
+	config := s.config
+	fileContent, err := os.ReadFile(config.ConfigFiles.SeedUsersPath)
+	if err != nil {
+		log.Warn().Err(err).Msg("failed to read OIDCClientPath - may not be a problem if clients are comming from a DB")
+		return nil
+	}
+	rageUsers := &proto_oidc_models.RageUsers{}
+
+	err = protojson.Unmarshal(fileContent, rageUsers)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to unmarshal OIDCClientPath")
+		return err
+	}
+	log.Info().Interface("rageUsers", rageUsers).Msg("rageUsers")
+
+	rageUserService := di.Get[proto_oidcuser.IFluffyCoreRageUserServiceServer](container)
+	for _, rageUser := range rageUsers.Users {
+		_, err := rageUserService.CreateRageUser(ctx, &proto_oidcuser.CreateRageUserRequest{
+			User: rageUser,
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("failed to CreateRageUser")
+			return err
+		}
+	}
+	return nil
+}
 func (s *startup) PostBuildHook(container di.Container) error {
 	s.log.Info().Msg("PostBuildHook")
+	s.OnLoadSeedUsers(context.Background(), container)
 	return nil
 }
 func (s *startup) PreShutdownHook(echo *echo.Echo) error {

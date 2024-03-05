@@ -141,7 +141,9 @@ message RageUser {
     Recovery            recovery = 5;
     Password            password = 6;
 }
-
+message RageUsers {
+    repeated RageUser users = 1;
+}
 message RageUserUpdate {
     IdentityUpdate          root_identity = 1;
     RageUserStateValue      state = 2;

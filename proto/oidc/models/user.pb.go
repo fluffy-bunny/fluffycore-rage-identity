@@ -1308,6 +1308,53 @@ func (x *RageUser) GetPassword() *Password {
 	return nil
 }
 
+type RageUsers struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Users []*RageUser `protobuf:"bytes,1,rep,name=users,proto3" json:"users,omitempty"`
+}
+
+func (x *RageUsers) Reset() {
+	*x = RageUsers{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_proto_oidc_models_user_proto_msgTypes[18]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RageUsers) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RageUsers) ProtoMessage() {}
+
+func (x *RageUsers) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_oidc_models_user_proto_msgTypes[18]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RageUsers.ProtoReflect.Descriptor instead.
+func (*RageUsers) Descriptor() ([]byte, []int) {
+	return file_proto_oidc_models_user_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *RageUsers) GetUsers() []*RageUser {
+	if x != nil {
+		return x.Users
+	}
+	return nil
+}
+
 type RageUserUpdate struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1323,7 +1370,7 @@ type RageUserUpdate struct {
 func (x *RageUserUpdate) Reset() {
 	*x = RageUserUpdate{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_oidc_models_user_proto_msgTypes[18]
+		mi := &file_proto_oidc_models_user_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1336,7 +1383,7 @@ func (x *RageUserUpdate) String() string {
 func (*RageUserUpdate) ProtoMessage() {}
 
 func (x *RageUserUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_models_user_proto_msgTypes[18]
+	mi := &file_proto_oidc_models_user_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1349,7 +1396,7 @@ func (x *RageUserUpdate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RageUserUpdate.ProtoReflect.Descriptor instead.
 func (*RageUserUpdate) Descriptor() ([]byte, []int) {
-	return file_proto_oidc_models_user_proto_rawDescGZIP(), []int{18}
+	return file_proto_oidc_models_user_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *RageUserUpdate) GetRootIdentity() *IdentityUpdate {
@@ -1403,7 +1450,7 @@ type RageUserFilter struct {
 func (x *RageUserFilter) Reset() {
 	*x = RageUserFilter{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_oidc_models_user_proto_msgTypes[19]
+		mi := &file_proto_oidc_models_user_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1416,7 +1463,7 @@ func (x *RageUserFilter) String() string {
 func (*RageUserFilter) ProtoMessage() {}
 
 func (x *RageUserFilter) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_models_user_proto_msgTypes[19]
+	mi := &file_proto_oidc_models_user_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1429,7 +1476,7 @@ func (x *RageUserFilter) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RageUserFilter.ProtoReflect.Descriptor instead.
 func (*RageUserFilter) Descriptor() ([]byte, []int) {
-	return file_proto_oidc_models_user_proto_rawDescGZIP(), []int{19}
+	return file_proto_oidc_models_user_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *RageUserFilter) GetRootSubject() *types.IDFilterExpression {
@@ -1486,7 +1533,7 @@ type LinkedIdentitiesUpdate_Granular struct {
 func (x *LinkedIdentitiesUpdate_Granular) Reset() {
 	*x = LinkedIdentitiesUpdate_Granular{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_proto_oidc_models_user_proto_msgTypes[20]
+		mi := &file_proto_oidc_models_user_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1499,7 +1546,7 @@ func (x *LinkedIdentitiesUpdate_Granular) String() string {
 func (*LinkedIdentitiesUpdate_Granular) ProtoMessage() {}
 
 func (x *LinkedIdentitiesUpdate_Granular) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_models_user_proto_msgTypes[20]
+	mi := &file_proto_oidc_models_user_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1733,6 +1780,10 @@ var file_proto_oidc_models_user_proto_rawDesc = []byte{
 	0x6f, 0x72, 0x64, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x70, 0x72, 0x6f, 0x74,
 	0x6f, 0x2e, 0x6f, 0x69, 0x64, 0x63, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2e, 0x50, 0x61,
 	0x73, 0x73, 0x77, 0x6f, 0x72, 0x64, 0x52, 0x08, 0x70, 0x61, 0x73, 0x73, 0x77, 0x6f, 0x72, 0x64,
+	0x22, 0x3e, 0x0a, 0x09, 0x52, 0x61, 0x67, 0x65, 0x55, 0x73, 0x65, 0x72, 0x73, 0x12, 0x31, 0x0a,
+	0x05, 0x75, 0x73, 0x65, 0x72, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1b, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x6f, 0x69, 0x64, 0x63, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73,
+	0x2e, 0x52, 0x61, 0x67, 0x65, 0x55, 0x73, 0x65, 0x72, 0x52, 0x05, 0x75, 0x73, 0x65, 0x72, 0x73,
 	0x22, 0xeb, 0x02, 0x0a, 0x0e, 0x52, 0x61, 0x67, 0x65, 0x55, 0x73, 0x65, 0x72, 0x55, 0x70, 0x64,
 	0x61, 0x74, 0x65, 0x12, 0x46, 0x0a, 0x0d, 0x72, 0x6f, 0x6f, 0x74, 0x5f, 0x69, 0x64, 0x65, 0x6e,
 	0x74, 0x69, 0x74, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x70, 0x72, 0x6f,
@@ -1821,7 +1872,7 @@ func file_proto_oidc_models_user_proto_rawDescGZIP() []byte {
 }
 
 var file_proto_oidc_models_user_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_proto_oidc_models_user_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_proto_oidc_models_user_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
 var file_proto_oidc_models_user_proto_goTypes = []interface{}{
 	(RageUserState)(0),                      // 0: proto.oidc.models.RageUserState
 	(*RageUserStateValue)(nil),              // 1: proto.oidc.models.RageUserStateValue
@@ -1842,32 +1893,33 @@ var file_proto_oidc_models_user_proto_goTypes = []interface{}{
 	(*Recovery)(nil),                        // 16: proto.oidc.models.Recovery
 	(*RecoveryUpdate)(nil),                  // 17: proto.oidc.models.RecoveryUpdate
 	(*RageUser)(nil),                        // 18: proto.oidc.models.RageUser
-	(*RageUserUpdate)(nil),                  // 19: proto.oidc.models.RageUserUpdate
-	(*RageUserFilter)(nil),                  // 20: proto.oidc.models.RageUserFilter
-	(*LinkedIdentitiesUpdate_Granular)(nil), // 21: proto.oidc.models.LinkedIdentitiesUpdate.Granular
-	(*wrapperspb.StringValue)(nil),          // 22: google.protobuf.StringValue
-	(*types.IDFilterExpression)(nil),        // 23: proto.types.IDFilterExpression
-	(*types.StringFilterExpression)(nil),    // 24: proto.types.StringFilterExpression
-	(*wrapperspb.BoolValue)(nil),            // 25: google.protobuf.BoolValue
+	(*RageUsers)(nil),                       // 19: proto.oidc.models.RageUsers
+	(*RageUserUpdate)(nil),                  // 20: proto.oidc.models.RageUserUpdate
+	(*RageUserFilter)(nil),                  // 21: proto.oidc.models.RageUserFilter
+	(*LinkedIdentitiesUpdate_Granular)(nil), // 22: proto.oidc.models.LinkedIdentitiesUpdate.Granular
+	(*wrapperspb.StringValue)(nil),          // 23: google.protobuf.StringValue
+	(*types.IDFilterExpression)(nil),        // 24: proto.types.IDFilterExpression
+	(*types.StringFilterExpression)(nil),    // 25: proto.types.StringFilterExpression
+	(*wrapperspb.BoolValue)(nil),            // 26: google.protobuf.BoolValue
 }
 var file_proto_oidc_models_user_proto_depIdxs = []int32{
 	0,  // 0: proto.oidc.models.RageUserStateValue.value:type_name -> proto.oidc.models.RageUserState
-	22, // 1: proto.oidc.models.PasswordUpdate.hash:type_name -> google.protobuf.StringValue
-	23, // 2: proto.oidc.models.IdentityFilter.subject:type_name -> proto.types.IDFilterExpression
-	23, // 3: proto.oidc.models.IdentityFilter.idp_slug:type_name -> proto.types.IDFilterExpression
-	24, // 4: proto.oidc.models.IdentityFilter.email:type_name -> proto.types.StringFilterExpression
+	23, // 1: proto.oidc.models.PasswordUpdate.hash:type_name -> google.protobuf.StringValue
+	24, // 2: proto.oidc.models.IdentityFilter.subject:type_name -> proto.types.IDFilterExpression
+	24, // 3: proto.oidc.models.IdentityFilter.idp_slug:type_name -> proto.types.IDFilterExpression
+	25, // 4: proto.oidc.models.IdentityFilter.email:type_name -> proto.types.StringFilterExpression
 	7,  // 5: proto.oidc.models.ExternalOauth2State.request:type_name -> proto.oidc.models.ExternalOauth2Request
 	4,  // 6: proto.oidc.models.ExternalOauth2State.identity:type_name -> proto.oidc.models.Identity
 	9,  // 7: proto.oidc.models.AuthorizationRequestState.request:type_name -> proto.oidc.models.AuthorizationRequest
 	6,  // 8: proto.oidc.models.AuthorizationRequestState.identity:type_name -> proto.oidc.models.OIDCIdentity
 	4,  // 9: proto.oidc.models.AuthorizationRequestState.external_identity:type_name -> proto.oidc.models.Identity
 	4,  // 10: proto.oidc.models.LinkedIdentities.identities:type_name -> proto.oidc.models.Identity
-	22, // 11: proto.oidc.models.IdentityUpdate.email:type_name -> google.protobuf.StringValue
-	25, // 12: proto.oidc.models.IdentityUpdate.email_verified:type_name -> google.protobuf.BoolValue
-	21, // 13: proto.oidc.models.LinkedIdentitiesUpdate.granular:type_name -> proto.oidc.models.LinkedIdentitiesUpdate.Granular
+	23, // 11: proto.oidc.models.IdentityUpdate.email:type_name -> google.protobuf.StringValue
+	26, // 12: proto.oidc.models.IdentityUpdate.email_verified:type_name -> google.protobuf.BoolValue
+	22, // 13: proto.oidc.models.LinkedIdentitiesUpdate.granular:type_name -> proto.oidc.models.LinkedIdentitiesUpdate.Granular
 	11, // 14: proto.oidc.models.LinkedIdentitiesUpdate.replace:type_name -> proto.oidc.models.LinkedIdentities
-	22, // 15: proto.oidc.models.EmailUpdate.email:type_name -> google.protobuf.StringValue
-	25, // 16: proto.oidc.models.EmailUpdate.email_verified:type_name -> google.protobuf.BoolValue
+	23, // 15: proto.oidc.models.EmailUpdate.email:type_name -> google.protobuf.StringValue
+	26, // 16: proto.oidc.models.EmailUpdate.email_verified:type_name -> google.protobuf.BoolValue
 	14, // 17: proto.oidc.models.Recovery.email:type_name -> proto.oidc.models.Email
 	15, // 18: proto.oidc.models.RecoveryUpdate.email:type_name -> proto.oidc.models.EmailUpdate
 	0,  // 19: proto.oidc.models.RageUser.state:type_name -> proto.oidc.models.RageUserState
@@ -1875,24 +1927,25 @@ var file_proto_oidc_models_user_proto_depIdxs = []int32{
 	11, // 21: proto.oidc.models.RageUser.linked_identities:type_name -> proto.oidc.models.LinkedIdentities
 	16, // 22: proto.oidc.models.RageUser.recovery:type_name -> proto.oidc.models.Recovery
 	2,  // 23: proto.oidc.models.RageUser.password:type_name -> proto.oidc.models.Password
-	12, // 24: proto.oidc.models.RageUserUpdate.root_identity:type_name -> proto.oidc.models.IdentityUpdate
-	1,  // 25: proto.oidc.models.RageUserUpdate.state:type_name -> proto.oidc.models.RageUserStateValue
-	13, // 26: proto.oidc.models.RageUserUpdate.linked_identities:type_name -> proto.oidc.models.LinkedIdentitiesUpdate
-	17, // 27: proto.oidc.models.RageUserUpdate.recovery:type_name -> proto.oidc.models.RecoveryUpdate
-	3,  // 28: proto.oidc.models.RageUserUpdate.password:type_name -> proto.oidc.models.PasswordUpdate
-	23, // 29: proto.oidc.models.RageUserFilter.root_subject:type_name -> proto.types.IDFilterExpression
-	23, // 30: proto.oidc.models.RageUserFilter.root_idp_slug:type_name -> proto.types.IDFilterExpression
-	24, // 31: proto.oidc.models.RageUserFilter.root_email:type_name -> proto.types.StringFilterExpression
-	23, // 32: proto.oidc.models.RageUserFilter.linked_identity_subject:type_name -> proto.types.IDFilterExpression
-	23, // 33: proto.oidc.models.RageUserFilter.linked_identity_idp_slug:type_name -> proto.types.IDFilterExpression
-	24, // 34: proto.oidc.models.RageUserFilter.linked_identity_email:type_name -> proto.types.StringFilterExpression
-	4,  // 35: proto.oidc.models.LinkedIdentitiesUpdate.Granular.add:type_name -> proto.oidc.models.Identity
-	4,  // 36: proto.oidc.models.LinkedIdentitiesUpdate.Granular.remove:type_name -> proto.oidc.models.Identity
-	37, // [37:37] is the sub-list for method output_type
-	37, // [37:37] is the sub-list for method input_type
-	37, // [37:37] is the sub-list for extension type_name
-	37, // [37:37] is the sub-list for extension extendee
-	0,  // [0:37] is the sub-list for field type_name
+	18, // 24: proto.oidc.models.RageUsers.users:type_name -> proto.oidc.models.RageUser
+	12, // 25: proto.oidc.models.RageUserUpdate.root_identity:type_name -> proto.oidc.models.IdentityUpdate
+	1,  // 26: proto.oidc.models.RageUserUpdate.state:type_name -> proto.oidc.models.RageUserStateValue
+	13, // 27: proto.oidc.models.RageUserUpdate.linked_identities:type_name -> proto.oidc.models.LinkedIdentitiesUpdate
+	17, // 28: proto.oidc.models.RageUserUpdate.recovery:type_name -> proto.oidc.models.RecoveryUpdate
+	3,  // 29: proto.oidc.models.RageUserUpdate.password:type_name -> proto.oidc.models.PasswordUpdate
+	24, // 30: proto.oidc.models.RageUserFilter.root_subject:type_name -> proto.types.IDFilterExpression
+	24, // 31: proto.oidc.models.RageUserFilter.root_idp_slug:type_name -> proto.types.IDFilterExpression
+	25, // 32: proto.oidc.models.RageUserFilter.root_email:type_name -> proto.types.StringFilterExpression
+	24, // 33: proto.oidc.models.RageUserFilter.linked_identity_subject:type_name -> proto.types.IDFilterExpression
+	24, // 34: proto.oidc.models.RageUserFilter.linked_identity_idp_slug:type_name -> proto.types.IDFilterExpression
+	25, // 35: proto.oidc.models.RageUserFilter.linked_identity_email:type_name -> proto.types.StringFilterExpression
+	4,  // 36: proto.oidc.models.LinkedIdentitiesUpdate.Granular.add:type_name -> proto.oidc.models.Identity
+	4,  // 37: proto.oidc.models.LinkedIdentitiesUpdate.Granular.remove:type_name -> proto.oidc.models.Identity
+	38, // [38:38] is the sub-list for method output_type
+	38, // [38:38] is the sub-list for method input_type
+	38, // [38:38] is the sub-list for extension type_name
+	38, // [38:38] is the sub-list for extension extendee
+	0,  // [0:38] is the sub-list for field type_name
 }
 
 func init() { file_proto_oidc_models_user_proto_init() }
@@ -2118,7 +2171,7 @@ func file_proto_oidc_models_user_proto_init() {
 			}
 		}
 		file_proto_oidc_models_user_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RageUserUpdate); i {
+			switch v := v.(*RageUsers); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2130,7 +2183,7 @@ func file_proto_oidc_models_user_proto_init() {
 			}
 		}
 		file_proto_oidc_models_user_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RageUserFilter); i {
+			switch v := v.(*RageUserUpdate); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2142,6 +2195,18 @@ func file_proto_oidc_models_user_proto_init() {
 			}
 		}
 		file_proto_oidc_models_user_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RageUserFilter); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_proto_oidc_models_user_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LinkedIdentitiesUpdate_Granular); i {
 			case 0:
 				return &v.state
@@ -2164,7 +2229,7 @@ func file_proto_oidc_models_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_proto_oidc_models_user_proto_rawDesc,
 			NumEnums:      1,
-			NumMessages:   21,
+			NumMessages:   22,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

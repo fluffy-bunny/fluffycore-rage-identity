@@ -53,7 +53,7 @@ services:
       RAGE_someSecret: "1234567890"
       RAGE_jwtValidators__issuers: "http://rage:30053"
       RAGE_jwtValidators__jwksUrls: "http://rage:30053/.well-known/jwks"
-      RAGE_configFiles__oidcClientPath: "/config/oidcClients.json"
+      RAGE_configFiles__oidcClientPath: "/config/oidc-clients.json"
       RAGE_configFiles__idpsPath: "/config/idps.json"
       RAGE_configFiles__ragePath: "/config/rage.json"
       RAGE_configFiles__signingKeyJsonPath: "/config/signing-keys.json"
@@ -84,9 +84,10 @@ services:
       - "traefik.http.services.rage.loadbalancer.server.port=9044"
     volumes:
       - ./cmd/server/config/rage.docker.json:/config/rage.json
-      - ./cmd/server/config/oidcClients.json:/config/oidcClients.json
+      - ./cmd/server/config/oidc-clients.json:/config/oidc-clients.json
       - ./cmd/server/config/idps.docker.json:/config/idps.json
       - ./cmd/server/config/signing-keys.json:/config/signing-keys.json
+      - ./cmd/server/config/seed-users.json:/config/seed-users.json
 
     entrypoint: ["/app/server", "serve"]
 
