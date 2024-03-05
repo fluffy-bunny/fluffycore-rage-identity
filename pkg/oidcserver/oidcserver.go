@@ -40,9 +40,11 @@ import (
 	fluffycore_echo_services_sessions_session_factory "github.com/fluffy-bunny/fluffycore/echo/services/sessions/session_factory"
 	services_startup "github.com/fluffy-bunny/fluffycore/echo/services/startup"
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
+	"github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -136,6 +138,10 @@ func (s *startup) OnLoadSeedUsers(ctx context.Context,
 			User: rageUser,
 		})
 		if err != nil {
+			st, ok := status.FromError(err)
+			if ok && st.Code() == codes.AlreadyExists {
+				continue
+			}
 			log.Error().Err(err).Msg("failed to CreateRageUser")
 			return err
 		}
