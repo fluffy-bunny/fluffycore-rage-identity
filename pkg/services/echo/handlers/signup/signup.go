@@ -132,7 +132,7 @@ func (s *service) validateSignupPostRequest(request *SignupPostRequest) ([]*serv
 	} else {
 		_, ok := echo_utils.IsValidEmailAddress(request.UserName)
 		if !ok {
-			errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s is not a valid email address", request.UserName))
+			errors = append(errors, services_handlers_shared.NewErrorF("username", "username %s is not a valid email address", request.UserName))
 		}
 	}
 	if fluffycore_utils.IsEmptyOrNil(request.Password) {
@@ -232,7 +232,7 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 	if getRageUserResponse != nil {
 		return doError([]*services_handlers_shared.Error{
-			services_handlers_shared.NewErrorF("username", "username:%s already exists", model.UserName),
+			services_handlers_shared.NewErrorF("username", "username %s already exists", model.UserName),
 		})
 	}
 	// TODO: check password strength

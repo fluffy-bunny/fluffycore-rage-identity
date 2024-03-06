@@ -25,6 +25,7 @@ func RequiresNoAuth() map[string]bool {
 	// needs to be a func as some of these are configured in.
 	if requiresNoAuthPaths == nil {
 		requiresNoAuthPaths = map[string]bool{
+			wellknown_echo.StaticPath:                      true,
 			wellknown_echo.AboutPath:                       true,
 			wellknown_echo.AccountCallbackPath:             true,
 			wellknown_echo.ErrorPath:                       true,
@@ -56,17 +57,19 @@ func RequiresNoAuth() map[string]bool {
 func EnsureAuth(_ di.Container) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			// get path
+			path := c.Path()
+
 			//ctx := c.Request().Context()
 			subContainer, ok := c.Get(fluffycore_echo_wellknown.SCOPED_CONTAINER_KEY).(di.Container)
 			if !ok {
 				return next(c)
 			}
 
-			// get path
-			path := c.Path()
 			if _, ok := RequiresNoAuth()[path]; ok {
 				return next(c)
 			}
+
 			claimsPrincipal := di.Get[fluffycore_contracts_common.IClaimsPrincipal](subContainer)
 			isAuthenticated := claimsPrincipal.HasClaim(fluffycore_contracts_common.Claim{
 				Type:  fluffycore_echo_wellknown.ClaimTypeAuthenticated,

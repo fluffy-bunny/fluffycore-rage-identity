@@ -11,28 +11,17 @@
         <div class="row justify-content-center">
             <div class="col-md-6">
                 {{ if len .errors }}
-                
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th scope="col">ID</th>
-                            <th scope="col">Name</th>
-                            <th scope="col">Message</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {{range $idx,$error := .errors}}
-                        <tr>
-                            <th class="text-start" scope="row">{{$idx}}</th>
-                            <td class="text-start">{{$error.Key}}</td>
-                            <td class="text-start">{{$error.Value}}</td>
-                        </tr>
-                        
+                <div class="error-container">
+                    <ul class="error-list">
+                        {{range $idx, $error := .errors}}
+                            <li class="error-list-item">
+                                {{$error.Value}}
+                            </li>
                         {{end}}
-                    </tbody>
-                </table>
-          
+                    </ul>
+                </div>
                 {{ end }}
+
                 <div class="card shadow">
                     <div class="card-body p-4">
                         <h2 class="card-title text-center mb-4">{{ call .LocalizeMessage "login" }}</h2>

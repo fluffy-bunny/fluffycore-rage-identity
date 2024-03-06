@@ -165,13 +165,11 @@ func (s *service) DoPost(c echo.Context) error {
 	if err != nil {
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 	}
-	dd, err := session.Get("request")
+	sessionRequest, err := session.Get("request")
 	if err != nil {
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 	}
-	dd2 := dd.(*proto_oidc_models.AuthorizationRequest)
-
-	errors = append(errors, services_handlers_shared.NewErrorF("state", dd2.State))
+	authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
 
 	model.UserName = strings.ToLower(model.UserName)
 
@@ -252,7 +250,7 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 
 	if user.Password == nil {
-		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s does not have a password", model.UserName))
+		errors = append(errors, services_handlers_shared.NewErrorF("username", "username %s does not have a password", model.UserName))
 		return renderError(errors)
 	}
 
@@ -282,7 +280,7 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 
 	getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
-		State: dd2.State,
+		State: authorizationRequest.State,
 	})
 	if err != nil {
 		log.Warn().Err(err).Msg("GetAuthorizationRequestState")
@@ -318,10 +316,10 @@ func (s *service) DoPost(c echo.Context) error {
 		return renderError(errors)
 	}
 	s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
-		State: dd2.State,
+		State: authorizationRequest.State,
 	})
 	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-		State:                     dd2.State,
+		State:                     authorizationRequest.State,
 		AuthorizationRequestState: authorizationFinal,
 	})
 	if err != nil {

@@ -187,7 +187,7 @@ func (s *service) DoPost(c echo.Context) error {
 
 	email, ok := echo_utils.IsValidEmailAddress(model.UserName)
 	if !ok {
-		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s is not a valid email address", model.UserName))
+		errors = append(errors, services_handlers_shared.NewErrorF("username", "username %s is not a valid email address", model.UserName))
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"idps":      idps,
@@ -254,7 +254,7 @@ func (s *service) DoPost(c echo.Context) error {
 		err = nil
 	}
 	if getRageUserResponse == nil {
-		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s not found", model.UserName))
+		errors = append(errors, services_handlers_shared.NewErrorF("username", "username %s not found", model.UserName))
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"state":     authorizationRequest.State,
