@@ -30,11 +30,11 @@
             </thead>
             <tbody>
 
-            {{range $idx,$def := .defs}}
+            {{range $idx,$error := .errors}}
                 <tr>
                 <th class="text-start" scope="row">{{$idx}}</th>
-                <td class="text-start">{{$def.Key}}</td>
-                <td class="text-start">{{$def.Value}}</td>
+                <td class="text-start">{{$error.Key}}</td>
+                <td class="text-start">{{$error.Value}}</td>
                 </tr>
             {{end}}
             </tbody>

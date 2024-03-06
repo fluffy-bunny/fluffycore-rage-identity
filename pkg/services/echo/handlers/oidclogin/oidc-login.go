@@ -131,7 +131,6 @@ func (s *service) DoGet(c echo.Context) error {
 	dd2 := dd.(*proto_oidc_models.AuthorizationRequest)
 
 	log.Info().Interface("dd2", dd).Msg("dd2")
-	rows = append(rows, row{Key: "state", Value: dd2.State})
 
 	switch model.Directive {
 	case models.IdentityFound:
@@ -145,9 +144,8 @@ func (s *service) DoGet(c echo.Context) error {
 
 	return s.Render(c, http.StatusOK, "oidc/oidclogin/index",
 		map[string]interface{}{
-			"defs":      rows,
+			"errors":    rows,
 			"idps":      idps,
-			"state":     dd2.State,
 			"email":     model.Email,
 			"directive": models.LoginDirective,
 		})
@@ -177,14 +175,13 @@ func (s *service) DoPost(c echo.Context) error {
 	if err != nil {
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 	}
-	dd, err := session.Get("request")
+	sessionRequest, err := session.Get("request")
 	if err != nil {
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 	}
-	dd2 := dd.(*proto_oidc_models.AuthorizationRequest)
+	authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
 
-	log.Info().Interface("dd2", dd).Msg("dd2")
-	errors = append(errors, services_handlers_shared.NewErrorF("state", dd2.State))
+	log.Debug().Interface("sessionRequest", sessionRequest).Msg("sessionRequest")
 
 	model.UserName = strings.ToLower(model.UserName)
 
@@ -193,9 +190,8 @@ func (s *service) DoPost(c echo.Context) error {
 		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s is not a valid email address", model.UserName))
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
-				"state":     dd2.State,
 				"idps":      idps,
-				"defs":      errors,
+				"errors":    errors,
 				"directive": models.LoginDirective,
 			})
 	}
@@ -216,9 +212,9 @@ func (s *service) DoPost(c echo.Context) error {
 		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
-				"state":     dd2.State,
+				"state":     authorizationRequest.State,
 				"idps":      idps,
-				"defs":      errors,
+				"errors":    errors,
 				"directive": models.LoginDirective,
 			})
 	}
@@ -230,7 +226,7 @@ func (s *service) DoPost(c echo.Context) error {
 			[]models.FormParam{
 				{
 					Name:  "state",
-					Value: dd2.State,
+					Value: authorizationRequest.State,
 				},
 				{
 					Name:  "idp_hint",
@@ -261,9 +257,9 @@ func (s *service) DoPost(c echo.Context) error {
 		errors = append(errors, services_handlers_shared.NewErrorF("username", "username:%s not found", model.UserName))
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
-				"state":     dd2.State,
+				"state":     authorizationRequest.State,
 				"idps":      idps,
-				"defs":      errors,
+				"errors":    errors,
 				"directive": models.LoginDirective,
 			})
 
@@ -274,9 +270,9 @@ func (s *service) DoPost(c echo.Context) error {
 
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
-				"state":     dd2.State,
+				"state":     authorizationRequest.State,
 				"idps":      idps,
-				"defs":      errors,
+				"errors":    errors,
 				"directive": models.LoginDirective,
 			})
 	}
@@ -307,7 +303,7 @@ func (s *service) DoPost(c echo.Context) error {
 		formParams := []models.FormParam{
 			{
 				Name:  "state",
-				Value: dd2.State,
+				Value: authorizationRequest.State,
 			},
 			{
 				Name:  "email",
@@ -335,7 +331,7 @@ func (s *service) DoPost(c echo.Context) error {
 		[]models.FormParam{
 			{
 				Name:  "state",
-				Value: dd2.State,
+				Value: authorizationRequest.State,
 			},
 			{
 				Name:  "email",

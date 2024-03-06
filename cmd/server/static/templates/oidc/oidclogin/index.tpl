@@ -10,7 +10,7 @@
     
         <div class="row justify-content-center">
             <div class="col-md-6">
-                {{ if len .defs }}
+                {{ if len .errors }}
                 
                 <table class="table table-bordered">
                     <thead>
@@ -21,11 +21,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                    {{range $idx,$def := .defs}}
+                    {{range $idx,$error := .errors}}
                         <tr>
                             <th class="text-start" scope="row">{{$idx}}</th>
-                            <td class="text-start">{{$def.Key}}</td>
-                            <td class="text-start">{{$def.Value}}</td>
+                            <td class="text-start">{{$error.Key}}</td>
+                            <td class="text-start">{{$error.Value}}</td>
                         </tr>
                         
                         {{end}}

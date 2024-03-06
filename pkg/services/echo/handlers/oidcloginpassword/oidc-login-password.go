@@ -126,8 +126,6 @@ func (s *service) DoGet(c echo.Context) error {
 	}
 	dd2 := dd.(*proto_oidc_models.AuthorizationRequest)
 
-	rows = append(rows, row{Key: "state", Value: dd2.State})
-
 	switch model.Directive {
 	case models.IdentityFound:
 		return s.handleIdentityFound(c, dd2.State)
@@ -140,7 +138,7 @@ func (s *service) DoGet(c echo.Context) error {
 
 	return s.Render(c, http.StatusOK, "oidc/oidcloginpassword/index",
 		map[string]interface{}{
-			"defs":      rows,
+			"errors":    rows,
 			"idps":      idps,
 			"email":     model.Email,
 			"directive": models.LoginDirective,
@@ -182,7 +180,7 @@ func (s *service) DoPost(c echo.Context) error {
 			"oidc/oidcloginpassword/index",
 			map[string]interface{}{
 				"email":     model.UserName,
-				"defs":      errors,
+				"errors":    errors,
 				"directive": models.LoginDirective,
 			})
 	}

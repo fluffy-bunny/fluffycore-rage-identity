@@ -116,7 +116,7 @@ func (s *service) Do(c echo.Context) error {
 
 	return s.Render(c, http.StatusOK, "account/about/index",
 		map[string]interface{}{
-			"defs": rows,
+			"errors": rows,
 		})
 
 }
