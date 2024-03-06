@@ -18,6 +18,8 @@ var (
 	HomePath            = "/"
 	LoginPath           = "/login"
 	LogoutPath          = "/logout"
+	StaticPath          = "/static*"
+
 	//OAuth2CallbackPath                               = "/oauth2/callback"
 	OAuth2CallbackPath                               = "@@OAuth2CallbackPath@@"
 	OAuth2TokenEndpointPath                          = "/token"

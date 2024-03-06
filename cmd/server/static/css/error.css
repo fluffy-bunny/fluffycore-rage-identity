@@ -1,0 +1,23 @@
+/* Custom styles for the error message container */
+.error-container {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+}
+
+/* Custom styles for the error list */
+.error-list {
+  list-style: none;
+  padding: 0;
+}
+
+.error-list-item {
+  margin-bottom: 10px;
+}
+
+.error-list-item strong {
+  font-weight: bold;
+}

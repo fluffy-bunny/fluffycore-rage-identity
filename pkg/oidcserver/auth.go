@@ -25,6 +25,7 @@ func RequiresNoAuth() map[string]bool {
 	// needs to be a func as some of these are configured in.
 	if requiresNoAuthPaths == nil {
 		requiresNoAuthPaths = map[string]bool{
+			wellknown_echo.StaticPath:                      true,
 			wellknown_echo.AboutPath:                       true,
 			wellknown_echo.AccountCallbackPath:             true,
 			wellknown_echo.ErrorPath:                       true,
