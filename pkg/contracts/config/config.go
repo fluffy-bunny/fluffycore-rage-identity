@@ -80,8 +80,6 @@ type Config struct {
 	fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
 
 	ConfigFiles               ConfigFiles                             `json:"configFiles"`
-	CustomString              string                                  `json:"customString"`
-	SomeSecret                string                                  `json:"someSecret" redact:"true"`
 	JWTValidators             JWTValidators                           `json:"jwtValidators"`
 	DDProfilerConfig          *fluffycore_contracts_ddprofiler.Config `json:"ddProfilerConfig"`
 	Echo                      *EchoConfig                             `json:"echo"`
@@ -106,17 +104,7 @@ const configDefaultJSONTemplate = `
 	"LOG_LEVEL": "info",
 	"PORT": 50051,
 	"REST_PORT": 50052,
- 	"customString": "some default value",
-	"someSecret": "password",
 	"GRPC_GATEWAY_ENABLED": true,
-	"systemConfig": {
-		"domain": "@@CHANGEME@@",
-		"developerMode": false
-	},
-	"oidcConfig": {
-		"baseUrl": "IN_ENVIRONMENT",
-		"oauth2CallbackPath": "/oauth2/callback"
-	},
 	"cookieConfig": {
  	},
 	"jwtValidators": {},
@@ -173,6 +161,10 @@ const configDefaultJSONTemplate = `
 	},
 	"inMemoryClients": {
 		"clients": []
+	},	
+	"oidcConfig": {
+		"baseUrl": "IN_ENVIRONMENT",
+		"oauth2CallbackPath": "/oauth2/callback"
 	},
 	"sessionConfig": {
 		"sessionName": "_session",
@@ -180,6 +172,10 @@ const configDefaultJSONTemplate = `
 		"encryptionKey": "1234567890abcdef1234567890abcdef",
 		"maxAge": 1800,
 		"domain": "@@C"
+	},
+	"systemConfig": {
+		"domain": "@@CHANGEME@@",
+		"developerMode": false
 	}
 
 

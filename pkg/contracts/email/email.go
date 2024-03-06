@@ -45,12 +45,12 @@ type (
 		PlainAuth *PlainAuth `json:"plainAuth"`
 	}
 	EmailConfig struct {
-		TemplateEngine *template.Template
-		Host           string `json:"host"`
-		Auth           *Auth  `json:"auth"`
-		FromName       string `json:"fromName"`
-		FromEmail      string `json:"fromEmail"`
-		JustLogIt      bool   `json:"justLogIt"`
+		TemplateEngine *template.Template `json:"-"`
+		Host           string             `json:"host"`
+		Auth           *Auth              `json:"auth"`
+		FromName       string             `json:"fromName"`
+		FromEmail      string             `json:"fromEmail"`
+		JustLogIt      bool               `json:"justLogIt"`
 	}
 	IEmailRenderer interface {
 		RenderEmail(ctx context.Context, request *RenderEmailRequest) (*RenderEmailResponse, error)

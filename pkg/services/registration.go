@@ -162,8 +162,10 @@ func OnConfigureServicesLoadOIDCClients(ctx context.Context, config *contracts_c
 		log.Warn().Err(err).Msg("failed to read OIDCClientPath - may not be a problem if clients are comming from a DB")
 		return nil
 	}
+	fixedFileContent := fluffycore_utils.ReplaceEnv(string(fileContent), "${%s}")
+
 	var oidcClients *proto_oidc_models.Clients = &proto_oidc_models.Clients{}
-	err = protojson.Unmarshal(fileContent, oidcClients)
+	err = protojson.Unmarshal([]byte(fixedFileContent), oidcClients)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to unmarshal OIDCClientPath")
 		return err

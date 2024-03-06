@@ -40,12 +40,13 @@ import (
 	fluffycore_echo_services_sessions_session_factory "github.com/fluffy-bunny/fluffycore/echo/services/sessions/session_factory"
 	services_startup "github.com/fluffy-bunny/fluffycore/echo/services/startup"
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
-	"github.com/gogo/status"
+	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
+	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/protobuf/encoding/protojson"
+	codes "google.golang.org/grpc/codes"
+	protojson "google.golang.org/protobuf/encoding/protojson"
 )
 
 type (
@@ -123,9 +124,11 @@ func (s *startup) OnLoadSeedUsers(ctx context.Context,
 		log.Warn().Err(err).Msg("failed to read OIDCClientPath - may not be a problem if clients are comming from a DB")
 		return nil
 	}
+	fixedFileContent := fluffycore_utils.ReplaceEnv(string(fileContent), "${%s}")
+
 	rageUsers := &proto_oidc_models.RageUsers{}
 
-	err = protojson.Unmarshal(fileContent, rageUsers)
+	err = protojson.Unmarshal([]byte(fixedFileContent), rageUsers)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to unmarshal OIDCClientPath")
 		return err
