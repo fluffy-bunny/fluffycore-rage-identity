@@ -17,7 +17,7 @@ import (
 
 	oidc "github.com/coreos/go-oidc/v3/oidc"
 	shared "github.com/fluffy-bunny/fluffycore-rage-identity/cmd/oidc-client/shared"
-	cobra_utils "github.com/fluffy-bunny/fluffycore-rage-identity/internal/cobra_utils"
+	cobra_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/cobra_utils"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	req "github.com/imroc/req/v3"
 	zerolog "github.com/rs/zerolog"
@@ -115,7 +115,7 @@ func Serve() {
 			authCodeOptions = append(authCodeOptions, AcrValues(shared.AppConfig.ACRValues...))
 		}
 		authRequestURL := config.AuthCodeURL(state, authCodeOptions...)
-		fmt.Println(authRequestURL)
+		fmt.Println("\n" + authRequestURL + "\n")
 		http.Redirect(w, r, authRequestURL, http.StatusFound)
 	})
 

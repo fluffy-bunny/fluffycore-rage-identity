@@ -12,16 +12,13 @@ require (
 	github.com/coreos/go-oidc/v3 v3.9.0
 	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/eko/gocache/lib/v4 v4.1.5
-	github.com/fluffy-bunny/fluffy-dozm-di v0.0.1
-	github.com/fluffy-bunny/fluffycore v1.0.79
+	github.com/fluffy-bunny/fluffy-dozm-di v0.0.2
+	github.com/fluffy-bunny/fluffycore v1.0.87
 	github.com/go-oauth2/oauth2/v4 v4.5.2
 	github.com/gogo/status v1.1.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/imroc/req/v3 v3.42.3
-	github.com/infobloxopen/atlas-app-toolkit v0.24.1-0.20210416193901-4c7518b07e08
-	github.com/infobloxopen/protoc-gen-gorm v1.1.2
-	github.com/jinzhu/gorm v1.9.16
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/lestrrat-go/jwx/v2 v2.0.20
 	github.com/nicksnyder/go-i18n/v2 v2.4.0
@@ -29,7 +26,7 @@ require (
 	github.com/rs/xid v1.5.0
 	github.com/rs/zerolog v1.32.0
 	github.com/spf13/cobra v1.8.0
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	github.com/swaggo/echo-swagger v1.4.1
 	github.com/swaggo/swag v1.16.3
 	github.com/wamuir/svg-qr-code v0.0.0-20210725140500-9525ec975db7
@@ -37,7 +34,6 @@ require (
 	golang.org/x/net v0.21.0
 	golang.org/x/oauth2 v0.17.0
 	golang.org/x/text v0.14.0
-	google.golang.org/genproto v0.0.0-20240123012728-ef4313101c80
 	google.golang.org/genproto/googleapis/api v0.0.0-20240125205218-1f4bbc51befe
 	google.golang.org/grpc v1.62.0
 	google.golang.org/protobuf v1.32.0
@@ -66,7 +62,7 @@ require (
 	github.com/eko/gocache/store/go_cache/v4 v4.2.1 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/felixge/fgprof v0.9.3 // indirect
-	github.com/fluffy-bunny/viperEx v0.0.30 // indirect
+	github.com/fluffy-bunny/viperEx v0.0.32 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.5+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
@@ -95,7 +91,6 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.5.4 // indirect
 	github.com/jellydator/ttlcache/v2 v2.11.1 // indirect
 	github.com/jinzhu/copier v0.4.0 // indirect
-	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.4 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
@@ -104,7 +99,6 @@ require (
 	github.com/lestrrat-go/httprc v1.0.4 // indirect
 	github.com/lestrrat-go/iter v1.0.2 // indirect
 	github.com/lestrrat-go/option v1.0.1 // indirect
-	github.com/lib/pq v1.10.9 // indirect
 	github.com/madflojo/tasks v1.1.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
@@ -166,6 +160,7 @@ require (
 	golang.org/x/tools v0.17.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
+	google.golang.org/genproto v0.0.0-20240123012728-ef4313101c80 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240125205218-1f4bbc51befe // indirect
 	gopkg.in/DataDog/dd-trace-go.v1 v1.60.3 // indirect
 	gopkg.in/go-jose/go-jose.v2 v2.6.2 // indirect

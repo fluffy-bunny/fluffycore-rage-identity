@@ -12,86 +12,72 @@ import (
 	grpc "google.golang.org/grpc"
 )
 
-// IFluffyCoreUserServiceServer defines the grpc server
-type IFluffyCoreUserServiceServer interface {
-	UserServiceServer
+// IFluffyCoreRageUserServiceServer defines the grpc server
+type IFluffyCoreRageUserServiceServer interface {
+	RageUserServiceServer
 }
 
-type UnimplementedFluffyCoreUserServiceServerEndpointRegistration struct {
+type UnimplementedFluffyCoreRageUserServiceServerEndpointRegistration struct {
 }
 
-func (UnimplementedFluffyCoreUserServiceServerEndpointRegistration) RegisterFluffyCoreHandler(gwmux *runtime.ServeMux, conn *grpc.ClientConn) {
+func (UnimplementedFluffyCoreRageUserServiceServerEndpointRegistration) RegisterFluffyCoreHandler(gwmux *runtime.ServeMux, conn *grpc.ClientConn) {
 }
 
-// UserServiceFluffyCoreServer defines the grpc server truct
-type UserServiceFluffyCoreServer struct {
-	UnimplementedUserServiceServer
-	UnimplementedFluffyCoreUserServiceServerEndpointRegistration
+// RageUserServiceFluffyCoreServer defines the grpc server truct
+type RageUserServiceFluffyCoreServer struct {
+	UnimplementedRageUserServiceServer
+	UnimplementedFluffyCoreRageUserServiceServerEndpointRegistration
 }
 
 // RegisterFluffyCoreGRPCService the server with grpc
-func (srv *UserServiceFluffyCoreServer) RegisterFluffyCoreGRPCService(s *grpc.Server) {
-	RegisterUserServiceServer(s, srv)
+func (srv *RageUserServiceFluffyCoreServer) RegisterFluffyCoreGRPCService(s *grpc.Server) {
+	RegisterRageUserServiceServer(s, srv)
 }
 
-// AddUserServiceServerWithExternalRegistration adds the fluffycore aware grpc server and external registration service.  Mainly used for grpc-gateway
-func AddUserServiceServerWithExternalRegistration(cb fluffy_dozm_di.ContainerBuilder, ctor any, register func() endpoint.IEndpointRegistration) {
+// AddRageUserServiceServerWithExternalRegistration adds the fluffycore aware grpc server and external registration service.  Mainly used for grpc-gateway
+func AddRageUserServiceServerWithExternalRegistration(cb fluffy_dozm_di.ContainerBuilder, ctor any, register func() endpoint.IEndpointRegistration) {
 	fluffy_dozm_di.AddSingleton[endpoint.IEndpointRegistration](cb, register)
-	fluffy_dozm_di.AddScoped[IFluffyCoreUserServiceServer](cb, ctor)
+	fluffy_dozm_di.AddScoped[IFluffyCoreRageUserServiceServer](cb, ctor)
 }
 
-// AddUserServiceServer adds the fluffycore aware grpc server
-func AddUserServiceServer(cb fluffy_dozm_di.ContainerBuilder, ctor any) {
-	AddUserServiceServerWithExternalRegistration(cb, ctor, func() endpoint.IEndpointRegistration {
-		return &UserServiceFluffyCoreServer{}
+// AddRageUserServiceServer adds the fluffycore aware grpc server
+func AddRageUserServiceServer(cb fluffy_dozm_di.ContainerBuilder, ctor any) {
+	AddRageUserServiceServerWithExternalRegistration(cb, ctor, func() endpoint.IEndpointRegistration {
+		return &RageUserServiceFluffyCoreServer{}
 	})
 }
 
-// CreateUser...
-func (s *UserServiceFluffyCoreServer) CreateUser(ctx context.Context, request *CreateUserRequest) (*CreateUserResponse, error) {
+// CreateRageUser...
+func (s *RageUserServiceFluffyCoreServer) CreateRageUser(ctx context.Context, request *CreateRageUserRequest) (*CreateRageUserResponse, error) {
 	requestContainer := dicontext.GetRequestContainer(ctx)
-	downstreamService := fluffy_dozm_di.Get[IFluffyCoreUserServiceServer](requestContainer)
-	return downstreamService.CreateUser(ctx, request)
+	downstreamService := fluffy_dozm_di.Get[IFluffyCoreRageUserServiceServer](requestContainer)
+	return downstreamService.CreateRageUser(ctx, request)
 }
 
-// GetUser...
-func (s *UserServiceFluffyCoreServer) GetUser(ctx context.Context, request *GetUserRequest) (*GetUserResponse, error) {
+// GetRageUser...
+func (s *RageUserServiceFluffyCoreServer) GetRageUser(ctx context.Context, request *GetRageUserRequest) (*GetRageUserResponse, error) {
 	requestContainer := dicontext.GetRequestContainer(ctx)
-	downstreamService := fluffy_dozm_di.Get[IFluffyCoreUserServiceServer](requestContainer)
-	return downstreamService.GetUser(ctx, request)
+	downstreamService := fluffy_dozm_di.Get[IFluffyCoreRageUserServiceServer](requestContainer)
+	return downstreamService.GetRageUser(ctx, request)
 }
 
-// DeleteUser...
-func (s *UserServiceFluffyCoreServer) DeleteUser(ctx context.Context, request *DeleteUserRequest) (*DeleteUserResponse, error) {
+// UpdateRageUser...
+func (s *RageUserServiceFluffyCoreServer) UpdateRageUser(ctx context.Context, request *UpdateRageUserRequest) (*UpdateRageUserResponse, error) {
 	requestContainer := dicontext.GetRequestContainer(ctx)
-	downstreamService := fluffy_dozm_di.Get[IFluffyCoreUserServiceServer](requestContainer)
-	return downstreamService.DeleteUser(ctx, request)
+	downstreamService := fluffy_dozm_di.Get[IFluffyCoreRageUserServiceServer](requestContainer)
+	return downstreamService.UpdateRageUser(ctx, request)
 }
 
-// UpdateUser...
-func (s *UserServiceFluffyCoreServer) UpdateUser(ctx context.Context, request *UpdateUserRequest) (*UpdateUserResponse, error) {
+// LinkRageUser...
+func (s *RageUserServiceFluffyCoreServer) LinkRageUser(ctx context.Context, request *LinkRageUserRequest) (*LinkRageUserResponse, error) {
 	requestContainer := dicontext.GetRequestContainer(ctx)
-	downstreamService := fluffy_dozm_di.Get[IFluffyCoreUserServiceServer](requestContainer)
-	return downstreamService.UpdateUser(ctx, request)
+	downstreamService := fluffy_dozm_di.Get[IFluffyCoreRageUserServiceServer](requestContainer)
+	return downstreamService.LinkRageUser(ctx, request)
 }
 
-// ListUser...
-func (s *UserServiceFluffyCoreServer) ListUser(ctx context.Context, request *ListUserRequest) (*ListUserResponse, error) {
+// UnlinkRageUser...
+func (s *RageUserServiceFluffyCoreServer) UnlinkRageUser(ctx context.Context, request *UnlinkRageUserRequest) (*UnlinkRageUserResponse, error) {
 	requestContainer := dicontext.GetRequestContainer(ctx)
-	downstreamService := fluffy_dozm_di.Get[IFluffyCoreUserServiceServer](requestContainer)
-	return downstreamService.ListUser(ctx, request)
-}
-
-// LinkUsers...
-func (s *UserServiceFluffyCoreServer) LinkUsers(ctx context.Context, request *LinkUsersRequest) (*LinkUsersResponse, error) {
-	requestContainer := dicontext.GetRequestContainer(ctx)
-	downstreamService := fluffy_dozm_di.Get[IFluffyCoreUserServiceServer](requestContainer)
-	return downstreamService.LinkUsers(ctx, request)
-}
-
-// UnlinkUsers...
-func (s *UserServiceFluffyCoreServer) UnlinkUsers(ctx context.Context, request *UnlinkUsersRequest) (*UnlinkUsersResponse, error) {
-	requestContainer := dicontext.GetRequestContainer(ctx)
-	downstreamService := fluffy_dozm_di.Get[IFluffyCoreUserServiceServer](requestContainer)
-	return downstreamService.UnlinkUsers(ctx, request)
+	downstreamService := fluffy_dozm_di.Get[IFluffyCoreRageUserServiceServer](requestContainer)
+	return downstreamService.UnlinkRageUser(ctx, request)
 }

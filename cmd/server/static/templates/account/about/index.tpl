@@ -19,12 +19,12 @@
                 </tr>
             </thead>
             <tbody>
-            {{range $idx,$def := .defs}}
+            {{range $idx,$error := .errors}}
                 
                 <tr>
                 <th class="text-start" scope="row">{{$idx}}</th>
-                <td class="text-start">{{$def.Verbs}}</td>
-                <td class="text-start">{{$def.Path}}</td>
+                <td class="text-start">{{$error.Verbs}}</td>
+                <td class="text-start">{{$error.Path}}</td>
                 </tr>
             {{end}}
             </tbody>

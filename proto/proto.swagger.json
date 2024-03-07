@@ -1,17 +1,531 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "proto/oidc/models/user.proto",
+    "title": "proto/external/user/user.proto",
     "version": "version not set"
   },
+  "tags": [
+    {
+      "name": "UserService"
+    }
+  ],
   "consumes": [
     "application/json"
   ],
   "produces": [
     "application/json"
   ],
-  "paths": {},
+  "paths": {
+    "/external/v1/user/_create": {
+      "post": {
+        "summary": "Create user",
+        "operationId": "UserService_CreateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/userCreateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/userCreateUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/external/v1/user/_search": {
+      "post": {
+        "summary": "List users",
+        "operationId": "UserService_ListUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/userListUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/userListUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/external/v1/user/_update": {
+      "post": {
+        "summary": "Update user",
+        "operationId": "UserService_UpdateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/userUpdateUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/userUpdateUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    },
+    "/external/v1/user/subject/{subject}": {
+      "get": {
+        "summary": "Get user",
+        "operationId": "UserService_GetUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/userGetUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "subject",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      },
+      "delete": {
+        "summary": "Delete user",
+        "operationId": "UserService_DeleteUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/userDeleteUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "subject",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    }
+  },
   "definitions": {
+    "LinkedIdentitiesUpdateGranular": {
+      "type": "object",
+      "properties": {
+        "add": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/modelsIdentity"
+          }
+        },
+        "remove": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/modelsIdentity"
+          }
+        }
+      }
+    },
+    "modelsAddress": {
+      "type": "object",
+      "properties": {
+        "street": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "postalCode": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        }
+      }
+    },
+    "modelsAddressUpdate": {
+      "type": "object",
+      "properties": {
+        "street": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "postalCode": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        }
+      }
+    },
+    "modelsEmail": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "emailVerified": {
+          "type": "boolean"
+        }
+      }
+    },
+    "modelsEmailUpdate": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "emailVerified": {
+          "type": "boolean"
+        }
+      }
+    },
+    "modelsExampleUser": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "rageUser": {
+          "$ref": "#/definitions/modelsRageUser"
+        },
+        "profile": {
+          "$ref": "#/definitions/modelsProfile"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Timestamp of when this user was created"
+        },
+        "updated": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Timestamp of when this user was last updated"
+        }
+      }
+    },
+    "modelsExampleUserFilter": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/typesIDFilterExpression"
+        },
+        "email": {
+          "$ref": "#/definitions/typesStringFilterExpression"
+        },
+        "linkedIdentitySubject": {
+          "$ref": "#/definitions/typesIDFilterExpression"
+        },
+        "linkedIdentityIdpSlug": {
+          "$ref": "#/definitions/typesIDFilterExpression"
+        },
+        "linkedIdentityEmail": {
+          "$ref": "#/definitions/typesStringFilterExpression"
+        },
+        "and": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/modelsExampleUserFilter"
+          },
+          "title": "AST"
+        },
+        "or": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/modelsExampleUserFilter"
+          }
+        },
+        "not": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/modelsExampleUserFilter"
+          }
+        }
+      }
+    },
+    "modelsExampleUserUpdate": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "rageUser": {
+          "$ref": "#/definitions/modelsRageUserUpdate"
+        },
+        "profile": {
+          "$ref": "#/definitions/modelsProfileUpdate"
+        }
+      }
+    },
+    "modelsIdentity": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "type": "string"
+        },
+        "idpSlug": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "emailVerified": {
+          "type": "boolean"
+        }
+      }
+    },
+    "modelsIdentityUpdate": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "emailVerified": {
+          "type": "boolean"
+        }
+      }
+    },
+    "modelsLinkedIdentities": {
+      "type": "object",
+      "properties": {
+        "identities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/modelsIdentity"
+          }
+        }
+      }
+    },
+    "modelsLinkedIdentitiesUpdate": {
+      "type": "object",
+      "properties": {
+        "granular": {
+          "$ref": "#/definitions/LinkedIdentitiesUpdateGranular"
+        },
+        "replace": {
+          "$ref": "#/definitions/modelsLinkedIdentities"
+        }
+      }
+    },
+    "modelsPassword": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string"
+        }
+      }
+    },
+    "modelsPasswordUpdate": {
+      "type": "object",
+      "properties": {
+        "hash": {
+          "type": "string"
+        }
+      }
+    },
+    "modelsProfile": {
+      "type": "object",
+      "properties": {
+        "givenName": {
+          "type": "string"
+        },
+        "familyName": {
+          "type": "string"
+        },
+        "phoneNumbers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/typesPhoneNumberDTO"
+          }
+        },
+        "address": {
+          "$ref": "#/definitions/modelsAddress"
+        }
+      }
+    },
+    "modelsProfileUpdate": {
+      "type": "object",
+      "properties": {
+        "givenName": {
+          "type": "string"
+        },
+        "familyName": {
+          "type": "string"
+        },
+        "phoneNumbers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/typesPhoneNumberDTOUpdate"
+          }
+        },
+        "address": {
+          "$ref": "#/definitions/modelsAddressUpdate"
+        }
+      }
+    },
+    "modelsRageUser": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "$ref": "#/definitions/modelsRageUserState"
+        },
+        "rootIdentity": {
+          "$ref": "#/definitions/modelsIdentity"
+        },
+        "linkedIdentities": {
+          "$ref": "#/definitions/modelsLinkedIdentities"
+        },
+        "recovery": {
+          "$ref": "#/definitions/modelsRecovery"
+        },
+        "password": {
+          "$ref": "#/definitions/modelsPassword"
+        }
+      }
+    },
+    "modelsRageUserState": {
+      "type": "string",
+      "enum": [
+        "USER_STATE_UNSPECIFIED",
+        "USER_STATE_ACTIVE",
+        "USER_STATE_DISABLED",
+        "USER_STATE_DELETED",
+        "USER_STATE_PENDING"
+      ],
+      "default": "USER_STATE_UNSPECIFIED"
+    },
+    "modelsRageUserStateValue": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "$ref": "#/definitions/modelsRageUserState"
+        }
+      }
+    },
+    "modelsRageUserUpdate": {
+      "type": "object",
+      "properties": {
+        "rootIdentity": {
+          "$ref": "#/definitions/modelsIdentityUpdate"
+        },
+        "state": {
+          "$ref": "#/definitions/modelsRageUserStateValue"
+        },
+        "linkedIdentities": {
+          "$ref": "#/definitions/modelsLinkedIdentitiesUpdate"
+        },
+        "recovery": {
+          "$ref": "#/definitions/modelsRecoveryUpdate"
+        },
+        "password": {
+          "$ref": "#/definitions/modelsPasswordUpdate"
+        }
+      }
+    },
+    "modelsRecovery": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "$ref": "#/definitions/modelsEmail",
+          "title": "only one email is allowed.  Make this simple"
+        }
+      }
+    },
+    "modelsRecoveryUpdate": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "$ref": "#/definitions/modelsEmailUpdate"
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -37,6 +551,217 @@
             "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "typesIDFilterExpression": {
+      "type": "object",
+      "properties": {
+        "eq": {
+          "type": "string"
+        },
+        "in": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "typesOrder": {
+      "type": "string",
+      "enum": [
+        "ORDER_UNSPECIFIED",
+        "ASC",
+        "DESC"
+      ],
+      "default": "ORDER_UNSPECIFIED",
+      "title": "- ORDER_UNSPECIFIED: Conventional default for enums. Do not use this.\n - ASC: Ascending order\n - DESC: Descending order"
+    },
+    "typesPagination": {
+      "type": "object",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "format": "int64",
+          "title": "Maximum number of entries to retrieve"
+        },
+        "iterator": {
+          "type": "string"
+        },
+        "order": {
+          "$ref": "#/definitions/typesOrder"
+        }
+      }
+    },
+    "typesPaginationResponse": {
+      "type": "object",
+      "properties": {
+        "iterator": {
+          "type": "string"
+        },
+        "prevIterator": {
+          "type": "string"
+        },
+        "totalAvailable": {
+          "type": "boolean",
+          "title": "Is a total count of records available?"
+        },
+        "total": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Total number of records available (if totalAvailable = true)"
+        },
+        "noMoreData": {
+          "type": "boolean",
+          "title": "There is no more data"
+        }
+      },
+      "description": "PaginationResponse ..."
+    },
+    "typesPhoneNumberDTO": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "countryCode": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "number": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/typesPhoneType"
+        }
+      }
+    },
+    "typesPhoneNumberDTOUpdate": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "countryCode": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "number": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/typesPhoneTypeValue"
+        }
+      }
+    },
+    "typesPhoneType": {
+      "type": "string",
+      "enum": [
+        "PHONE_TYPE_UNSPECIFIED",
+        "PHONE_TYPE_MOBILE",
+        "PHONE_TYPE_HOME",
+        "PHONE_TYPE_WORK"
+      ],
+      "default": "PHONE_TYPE_UNSPECIFIED"
+    },
+    "typesPhoneTypeValue": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "$ref": "#/definitions/typesPhoneType"
+        }
+      }
+    },
+    "typesStringFilterExpression": {
+      "type": "object",
+      "properties": {
+        "eq": {
+          "type": "string"
+        },
+        "contains": {
+          "type": "string"
+        },
+        "in": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ne": {
+          "type": "string"
+        }
+      }
+    },
+    "userCreateUserRequest": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/modelsExampleUser"
+        }
+      }
+    },
+    "userCreateUserResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/modelsExampleUser"
+        }
+      }
+    },
+    "userDeleteUserResponse": {
+      "type": "object"
+    },
+    "userGetUserResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/modelsExampleUser"
+        }
+      }
+    },
+    "userListUserRequest": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "$ref": "#/definitions/modelsExampleUserFilter",
+          "title": "Filter"
+        },
+        "pagination": {
+          "$ref": "#/definitions/typesPagination",
+          "title": "Pagination"
+        }
+      }
+    },
+    "userListUserResponse": {
+      "type": "object",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/modelsExampleUser"
+          }
+        },
+        "pagination": {
+          "$ref": "#/definitions/typesPaginationResponse",
+          "title": "Pagination details"
+        }
+      }
+    },
+    "userUpdateUserRequest": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/modelsExampleUserUpdate"
+        }
+      }
+    },
+    "userUpdateUserResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/modelsExampleUser"
         }
       }
     }

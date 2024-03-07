@@ -133,22 +133,22 @@ extend google.protobuf.FieldOptions {
     // ```
     // Note that "person_name" at the end of that path is in Protobuf snake_case, not
     // JSON lowerCamelCase. GTM will give it the proper casing when generating BSON.
-    string filter_path = 75000;
+    string filter_path = 85000;
 
     // For FilterExpressions, this is the operation to be used in the creation of BSON
-    Operator op = 75001;
+    Operator op = 85001;
 }
 
 extend google.protobuf.MessageOptions {
     // Indicates this message is a nested Filter for a custom type (see notes at the top)
-    bool nested_filter = 75000;
+    bool nested_filter = 85000;
 
     // Indicates this message is a FilterExpression
-    bool filter_expression = 75100;
+    bool filter_expression = 85100;
 
     // For FilterExpressions, allows multiple values to be set which will be AND'd together
     // default is false
-    bool allow_multi = 75101;
+    bool allow_multi = 85101;
 }
 
 enum Operator {
