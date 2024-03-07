@@ -21,7 +21,7 @@ RUN --mount=type=ssh go mod download
 # Add remaining code
 COPY . .
 
-ARG location=github.com/fluffy-bunny/fluffycore-rage-identity/internal/version
+ARG location=github.com/fluffy-bunny/fluffycore-rage-identity/pkg/version
 ARG commit=AFFE
 ARG version=0.0.0
 ARG date=19700101
@@ -71,7 +71,6 @@ COPY --from=stage1 /etc/passwd /etc/passwd
 ENV PATH=/app:${PATH}
 ENV PORT="50051"
 ENV REST_PORT="50052"
-ENV oauth2Port="50053"
 ENV GRPC_GATEWAY_ENABLED="true"
 
 ENV ENABLE_GRPC_SERVER_REFLECTION="true"

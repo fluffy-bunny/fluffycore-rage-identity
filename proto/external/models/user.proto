@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+option go_package = "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/models;models";
+
+package proto.external.models;
+
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/wrappers.proto";
+import "proto/types/phone_number.proto";
+ // this would be in your own personal repo proto.  Make a copy of the rage users proto
+import "proto/oidc/models/user.proto";
+import "google/protobuf/timestamp.proto";
+import "proto/types/filter.proto";
+
+
+
+ 
+ 
+message Address {
+    string street = 1;
+    string city = 2;
+    string state = 3;
+    string postal_code = 4;
+    string country = 5;
+}
+message AddressUpdate {
+    google.protobuf.StringValue street = 1;
+    google.protobuf.StringValue city = 2;
+    google.protobuf.StringValue state = 3;
+    google.protobuf.StringValue postal_code = 4;
+    google.protobuf.StringValue country = 5;
+}
+message Profile{
+    string                                      given_name = 1;
+    string                                      family_name = 2;
+    repeated proto.types.PhoneNumberDTO          phone_numbers = 3;
+    Address                                     address = 4;
+}
+message ProfileUpdate{
+    google.protobuf.StringValue                 given_name = 1;
+    google.protobuf.StringValue                 family_name = 2;
+    repeated proto.types.PhoneNumberDTOUpdate   phone_numbers = 3;
+    AddressUpdate                               address = 4;
+}
+
+message ExampleUser {
+    string                          id = 1;
+    proto.oidc.models.RageUser      rage_user = 2;
+    Profile                         profile = 3;
+
+    // Timestamp of when this user was created
+    google.protobuf.Timestamp created = 50;
+
+    // Timestamp of when this user was last updated
+    google.protobuf.Timestamp updated = 51;
+
+}
+
+message ExampleUserUpdate {
+    string                              id = 1;
+    proto.oidc.models.RageUserUpdate    rage_user = 2;
+    ProfileUpdate                       profile = 3;
+ 
+}
+
+message ExampleUserFilter {
+    proto.types.IDFilterExpression       id = 1;
+    proto.types.StringFilterExpression   email = 2;
+
+    proto.types.IDFilterExpression       linked_identity_subject = 4;
+    proto.types.IDFilterExpression       linked_identity_idp_slug = 5;
+    proto.types.StringFilterExpression   linked_identity_email = 6;    
+    // AST
+    repeated ExampleUserFilter and = 100;
+    repeated ExampleUserFilter or = 101;
+    repeated ExampleUserFilter not = 102;
+}

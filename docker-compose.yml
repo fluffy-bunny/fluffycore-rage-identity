@@ -31,43 +31,44 @@ services:
     dns:
       - 8.8.8.8
     ports:
-      - "50051:50051"
-      - "50052:50052"
-      - "50053:50053"
+      - "30051:30051"
+      - "30052:30052"
+      - "30053:30053"
       - "9044:9044"
     env_file:
       - .env
       - .env.secrets
     environment:
-      ENABLE_GRPC_SERVER_REFLECTION: "true"
-      APPLICATION_NAME: "starterkit"
       APPLICATION_ENVIRONMENT: "DOCKER"
-      LOG_LEVEL": "debug"
-      PRETTY_LOG: "true"
-      PORT: "50051"
+      ENABLE_GRPC_SERVER_REFLECTION: "true"
       GRPC_GATEWAY_ENABLED: "true"
-      REST_PORT: "50052"
-      oauth2Port: "50053"
-      customString: "In Flames"
-      someSecret: "1234567890"
-      jwtValidators__issuers: "http://starterkit:50053"
-      jwtValidators__jwksUrls: "http://starterkit:50053/.well-known/jwks"
-      configFiles__mockOAuth2ClientPath: "/config/mockOAuth2Clients.json"
-      configFiles__oidcClientPath: "/config/oidcClients.json"
-      configFiles__idpsPath: "/config/idps.json"
-      configFiles__signingKeyJsonPath: "/config/signing-keys.json"
-      emailConfig__host: "${RAGE_SMTP_HOST}:25"
-      emailConfig__auth__plainAuth__host: "${RAGE_SMTP_HOST}"
-      emailConfig__auth__plainAuth__username: "${SMTP4DEV_SMTP_CONFIG__USER}"
-      emailConfig__auth__plainAuth__password: "${SMTP4DEV_SMTP_CONFIG__PASSWORD}"
-      emailConfig__auth__plainAuth__identity: "${RAGE_SMTP_HOST}"
-      selfIDPConfig__redirectUrl: "https://rage.localhost.dev/auth/callback"
-      selfIDPConfig__authority: "https://rage.localhost.dev"
-      oidcConfig__baseUrl: "https://rage.localhost.dev"
-      emailConfig__justLogIt: "true"
-      domain: "rage.localhost.dev"
-      echo__disableSecureCookies: "true"
-      systemConfig__developerMode: "true"
+      RAGE_GRPC_GATEWAY_ENABLED: "true"
+      RAGE_APPLICATION_NAME: "RAGE"
+      RAGE_APPLICATION_ENVIRONMENT: "DOCKER"
+      RAGE_LOG_LEVEL": "debug"
+      RAGE_PRETTY_LOG: "true"
+      RAGE_PORT: "30051"
+      RAGE_REST_PORT: "30052"
+      RAGE_customString: "In Flames"
+      RAGE_someSecret: "1234567890"
+      RAGE_jwtValidators__issuers: "http://rage:30053"
+      RAGE_jwtValidators__jwksUrls: "http://rage:30053/.well-known/jwks"
+      RAGE_configFiles__oidcClientPath: "/config/oidc-clients.json"
+      RAGE_configFiles__idpsPath: "/config/idps.json"
+      RAGE_configFiles__ragePath: "/config/rage.json"
+      RAGE_configFiles__signingKeyJsonPath: "/config/signing-keys.json"
+      RAGE_emailConfig__host: "${RAGE_SMTP_HOST}:25"
+      RAGE_emailConfig__auth__plainAuth__host: "${RAGE_SMTP_HOST}"
+      RAGE_emailConfig__auth__plainAuth__username: "${SMTP4DEV_SMTP_CONFIG__USER}"
+      RAGE_emailConfig__auth__plainAuth__password: "${SMTP4DEV_SMTP_CONFIG__PASSWORD}"
+      RAGE_emailConfig__auth__plainAuth__identity: "${RAGE_SMTP_HOST}"
+      RAGE_selfIDPConfig__redirectUrl: "https://rage.localhost.dev/auth/callback"
+      RAGE_selfIDPConfig__authority: "https://rage.localhost.dev"
+      RAGE_oidcConfig__baseUrl: "https://rage.localhost.dev"
+      RAGE_emailConfig__justLogIt: "true"
+      RAGE_echo__disableSecureCookies: "true"
+      RAGE_echo__port: "9044"
+      RAGE_systemConfig__developerMode: "true"
     labels:
       # Enable this container to be mapped by traefik
       # For more information, see: https://docs.traefik.io/providers/docker/#exposedbydefault
@@ -82,10 +83,11 @@ services:
       # - "traefik.http.services.<service_name>.loadbalancer.server.port=<port>"
       - "traefik.http.services.rage.loadbalancer.server.port=9044"
     volumes:
-      - ./cmd/server/config/mockOAuth2Clients.json:/config/mockOAuth2Clients.json
-      - ./cmd/server/config/oidcClients.json:/config/oidcClients.json
+      - ./cmd/server/config/rage.docker.json:/config/rage.json
+      - ./cmd/server/config/oidc-clients.json:/config/oidc-clients.json
       - ./cmd/server/config/idps.docker.json:/config/idps.json
       - ./cmd/server/config/signing-keys.json:/config/signing-keys.json
+      - ./cmd/server/config/seed-users.json:/config/seed-users.json
 
     entrypoint: ["/app/server", "serve"]
 

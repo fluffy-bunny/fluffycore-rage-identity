@@ -74,7 +74,6 @@ go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest
 go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 go install github.com/fluffy-bunny/fluffycore/protoc-gen-go-fluffycore-di/cmd/protoc-gen-go-fluffycore-di@latest
-go install github.com/infobloxopen/protoc-gen-gorm@latest
 
 ```
 
@@ -99,10 +98,15 @@ protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gat
 
 protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/oidc/idp/idp.proto
 
-protoc --go_out=. --go_opt paths=source_relative --gorm_opt paths=source_relative --gorm_out=.  --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/oidc/models/user.proto
+protoc --go_out=. --go_opt paths=source_relative  --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/oidc/models/user.proto
 
 protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/oidc/user/user.proto
 
+protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/oidc/flows/oidc_flow.proto
+
+protoc --go_out=. --go_opt paths=source_relative  --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/external/models/user.proto
+
+protoc --go_out=. --go_opt paths=source_relative  --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/external/user/user.proto
 ```
 
 ## Private OAuth2 server
@@ -191,6 +195,8 @@ $env:PORT = "5556";$env:OAUTH2_CLIENT_ID = "go-client";$env:OAUTH2_CLIENT_SECRET
 $env:PORT = "5556";$env:OAUTH2_CLIENT_ID = "go-client";$env:OAUTH2_CLIENT_SECRET = "secret";$env:AUTHORITY = "http://localhost:9044"; .\go-client.exe
 ```
 
+### Dev Client
+
 ```bash
 cd cmd/oidc-client
 go build .
@@ -199,7 +205,19 @@ go build .
 
 .\oidc-client.exe serve --acr_values "urn:mastodon:idp:google-social"   --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
 
-.\oidc-client.exe serve --acr_values "urn:mastodon:idp:mapped-enterprise" --acr_values "urn:mastodon:root_candidate:cn8cp8khb6334r4ri1bg"  --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
+.\oidc-client.exe serve --acr_values "urn:mastodon:idp:mapped-enterprise" --acr_values "urn:mastodon:root_candidate:cnf07331og1ecp4r680g"  --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
 
 .\oidc-client.exe serve --acr_values "urn:mastodon:idp:mapped-enterprise"  --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
+```
+
+### Docker Clients
+
+```bash
+.\oidc-client.exe serve    --authority https://rage.localhost.dev --client_id go-client --client_secret secret --port 5556
+
+.\oidc-client.exe serve --acr_values "urn:mastodon:idp:mapped-enterprise"   --authority https://rage.localhost.dev --client_id go-client --client_secret secret --port 5556
+
+.\oidc-client.exe serve --acr_values "urn:mastodon:idp:mapped-enterprise" --acr_values "urn:mastodon:root_candidate:cnf08ok1fnuu73eq91vg"   --authority https://rage.localhost.dev --client_id go-client --client_secret secret --port 5556
+
+
 ```
