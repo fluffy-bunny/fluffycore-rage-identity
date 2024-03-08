@@ -18,7 +18,7 @@ type (
 	service struct {
 		proto_oidc_flows.UnimplementedAuthorizationRequestStateStoreServer
 
-		oidcFlowCache contracts_eko_gocache.IOIDCFlowCache
+		oidcFlowCache contracts_eko_gocache.IAuthorizationRequestStateCache
 	}
 )
 
@@ -27,7 +27,7 @@ var stemService = (*service)(nil)
 func init() {
 	var _ proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer = stemService
 }
-func (s *service) Ctor(oidcFlowCache contracts_eko_gocache.IOIDCFlowCache) (proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer, error) {
+func (s *service) Ctor(oidcFlowCache contracts_eko_gocache.IAuthorizationRequestStateCache) (proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer, error) {
 	return &service{
 		oidcFlowCache: oidcFlowCache,
 	}, nil

@@ -62,7 +62,7 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	case contracts_config.BackingCacheTypeInMemory:
 		inMemoryOptions := &fluffycore_services_eko_gocache_go_cache.InMemoryCacheOptions{
 			ImplementedInterfaceTypes: []reflect.Type{
-				reflect.TypeOf((*contracts_eko_gocache.IOIDCFlowCache)(nil)),
+				reflect.TypeOf((*contracts_eko_gocache.IAuthorizationRequestStateCache)(nil)),
 				reflect.TypeOf((*contracts_eko_gocache.IExternalOAuth2Cache)(nil)),
 			},
 		}
