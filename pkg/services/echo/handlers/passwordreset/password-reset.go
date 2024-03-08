@@ -9,7 +9,7 @@ import (
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/shared"
+	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
@@ -102,22 +102,27 @@ func (s *service) DoGet(c echo.Context) error {
 	err = s.Render(c, http.StatusOK, "oidc/passwordreset/index",
 		map[string]interface{}{
 			"returnUrl": model.ReturnUrl,
-			"errors":    []*services_handlers_shared.Error{},
+			"errors":    []string{},
 		})
 	return err
 }
 
-func (s *service) validatePasswordResetPostRequest(request *PasswordResetPostRequest) ([]*services_handlers_shared.Error, error) {
-	errors := make([]*services_handlers_shared.Error, 0)
+func (s *service) validatePasswordResetPostRequest(request *PasswordResetPostRequest) ([]string, error) {
+	localizer := s.Localizer().GetLocalizer()
+
+	errors := make([]string, 0)
 
 	if fluffycore_utils.IsEmptyOrNil(request.Password) {
-		errors = append(errors, services_handlers_shared.NewErrorF("password", "Password is empty"))
+		msg := utils.LocalizeSimple(localizer, "password.is.empty")
+		errors = append(errors, msg)
 	}
 	if fluffycore_utils.IsEmptyOrNil(request.ConfirmPassword) {
-		errors = append(errors, services_handlers_shared.NewErrorF("confirmPassword", "ConfirmPassword is empty"))
+		msg := utils.LocalizeSimple(localizer, "confirm_password.is.empty")
+		errors = append(errors, msg)
 	}
 	if request.Password != request.ConfirmPassword {
-		errors = append(errors, services_handlers_shared.NewErrorF("confirmPassword", "Passwords do not match"))
+		msg := utils.LocalizeSimple(localizer, "passwords.do.not.match")
+		errors = append(errors, msg)
 	}
 	if len(errors) > 0 {
 		return errors, status.Error(codes.InvalidArgument, "validation failed")
