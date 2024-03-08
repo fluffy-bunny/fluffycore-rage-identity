@@ -10,7 +10,6 @@ import (
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/shared"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
@@ -102,24 +101,24 @@ func (s *service) DoGet(c echo.Context) error {
 	err = s.Render(c, http.StatusOK, "oidc/forgotpassword/index",
 		map[string]interface{}{
 			"email":  model.Email,
-			"errors": make([]*services_handlers_shared.Error, 0),
+			"errors": make([]string, 0),
 		})
 	return err
 }
 
-func (s *service) validateForgotPasswordPostRequest(request *ForgotPasswordPostRequest) ([]*services_handlers_shared.Error, error) {
+func (s *service) validateForgotPasswordPostRequest(request *ForgotPasswordPostRequest) ([]string, error) {
 	var err error
 	localizer := s.Localizer().GetLocalizer()
-	errors := make([]*services_handlers_shared.Error, 0)
+	errors := make([]string, 0)
 
 	if fluffycore_utils.IsEmptyOrNil(request.Email) {
-		msg := utils.LocalizeSimple(localizer, "email.is.empty")
-		errors = append(errors, services_handlers_shared.NewErrorF("email", msg))
+		msg := utils.LocalizeWithInterperlate(localizer, "email.is.empty", nil)
+		errors = append(errors, msg)
 	}
 	_, ok := echo_utils.IsValidEmailAddress(request.Email)
 	if !ok {
-		msg, _ := utils.LocalizeReplaceStrings(localizer, "email.is.not.valid", map[string]string{"email": request.Email})
-		errors = append(errors, services_handlers_shared.NewErrorF("email", msg))
+		msg := utils.LocalizeWithInterperlate(localizer, "email.is.not.valid", map[string]string{"email": request.Email})
+		errors = append(errors, msg)
 	}
 	request.Email = strings.ToLower(request.Email)
 	return errors, err

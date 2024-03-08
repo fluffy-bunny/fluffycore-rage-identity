@@ -13,8 +13,8 @@ import (
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/shared"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
+	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
@@ -22,10 +22,10 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
-	"github.com/gogo/status"
+	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
+	codes "google.golang.org/grpc/codes"
 )
 
 type (
@@ -146,6 +146,8 @@ func (s *service) DoGet(c echo.Context) error {
 }
 
 func (s *service) DoPost(c echo.Context) error {
+	localizer := s.Localizer().GetLocalizer()
+
 	r := c.Request()
 	// is the request get or post?
 	rootPath := echo_utils.GetMyRootPath(c)
@@ -160,20 +162,20 @@ func (s *service) DoPost(c echo.Context) error {
 		return s.DoGet(c)
 	}
 
-	var errors []*services_handlers_shared.Error
+	var errors []string
 	session, err := s.getSession()
 	if err != nil {
-		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+		errors = append(errors, err.Error())
 	}
 	sessionRequest, err := session.Get("request")
 	if err != nil {
-		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+		errors = append(errors, err.Error())
 	}
 	authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
 
 	model.UserName = strings.ToLower(model.UserName)
 
-	renderError := func(errors []*services_handlers_shared.Error) error {
+	renderError := func(errors []string) error {
 		return s.Render(c, http.StatusBadRequest,
 			"oidc/oidcloginpassword/index",
 			map[string]interface{}{
@@ -193,7 +195,7 @@ func (s *service) DoPost(c echo.Context) error {
 		st, ok := status.FromError(err)
 		if ok && st.Code() != codes.NotFound {
 			log.Warn().Err(err).Msg("GetRageUser")
-			errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+			errors = append(errors, err.Error())
 			return renderError(errors)
 		}
 		err = nil
@@ -250,7 +252,11 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 
 	if user.Password == nil {
-		errors = append(errors, services_handlers_shared.NewErrorF("username", "username %s does not have a password", model.UserName))
+		ee := utils.LocalizeWithInterperlate(localizer, "username.does.not.have.password", map[string]string{
+			"username": model.UserName,
+		})
+
+		errors = append(errors, ee)
 		return renderError(errors)
 	}
 
@@ -260,7 +266,8 @@ func (s *service) DoPost(c echo.Context) error {
 	})
 	if err != nil {
 		log.Warn().Err(err).Msg("ComparePasswordHash")
-		errors = append(errors, services_handlers_shared.NewErrorF("password", "password is invalid"))
+		ee := utils.LocalizeWithInterperlate(localizer, "password.is.invalid", nil)
+		errors = append(errors, ee)
 		return renderError(errors)
 	}
 	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
@@ -274,7 +281,7 @@ func (s *service) DoPost(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("SetAuthCookie")
-		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+		errors = append(errors, err.Error())
 		// redirect to error page
 		return renderError(errors)
 	}
@@ -284,7 +291,7 @@ func (s *service) DoPost(c echo.Context) error {
 	})
 	if err != nil {
 		log.Warn().Err(err).Msg("GetAuthorizationRequestState")
-		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+		errors = append(errors, err.Error())
 		return renderError(errors)
 	}
 	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
@@ -312,7 +319,7 @@ func (s *service) DoPost(c echo.Context) error {
 	if err != nil {
 		log.Warn().Err(err).Msg("StoreAuthorizationRequestState")
 		// redirect to error page
-		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+		errors = append(errors, err.Error())
 		return renderError(errors)
 	}
 	s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
@@ -324,7 +331,7 @@ func (s *service) DoPost(c echo.Context) error {
 	})
 	if err != nil {
 		// redirect to error page
-		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+		errors = append(errors, err.Error())
 		return renderError(errors)
 	}
 	// redirect to the client with the code.

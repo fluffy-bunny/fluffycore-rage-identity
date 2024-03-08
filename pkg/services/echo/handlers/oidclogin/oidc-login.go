@@ -13,7 +13,6 @@ import (
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/shared"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
@@ -169,17 +168,17 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 
 	idps, err := s.GetIDPs(ctx)
-	var errors []*services_handlers_shared.Error
+	var errors []string
 	if err != nil {
-		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+		errors = append(errors, err.Error())
 	}
 	session, err := s.getSession()
 	if err != nil {
-		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+		errors = append(errors, err.Error())
 	}
 	sessionRequest, err := session.Get("request")
 	if err != nil {
-		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+		errors = append(errors, err.Error())
 	}
 	authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
 
@@ -189,12 +188,9 @@ func (s *service) DoPost(c echo.Context) error {
 
 	email, ok := echo_utils.IsValidEmailAddress(model.UserName)
 	if !ok {
-		msg, err := utils.LocalizeReplaceStrings(localizer, "username.not.valid", map[string]string{"username": model.UserName})
-		if err != nil {
-			log.Error().Err(err).Msg("LocalizeReplaceStrings")
-			return err
-		}
-		errors = append(errors, services_handlers_shared.NewErrorF("username", msg))
+		msg := utils.LocalizeWithInterperlate(localizer, "username.not.valid", map[string]string{"username": model.UserName})
+
+		errors = append(errors, msg)
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"idps":      idps,
@@ -216,7 +212,7 @@ func (s *service) DoPost(c echo.Context) error {
 	})
 	if err != nil {
 		log.Warn().Err(err).Msg("ListIDP")
-		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+		errors = append(errors, err.Error())
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"state":     authorizationRequest.State,
@@ -261,7 +257,9 @@ func (s *service) DoPost(c echo.Context) error {
 		err = nil
 	}
 	if getRageUserResponse == nil {
-		errors = append(errors, services_handlers_shared.NewErrorF("username", "username %s not found", model.UserName))
+		msg := utils.LocalizeWithInterperlate(localizer, "username.not.found", map[string]string{"username": model.UserName})
+
+		errors = append(errors, msg)
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"state":     authorizationRequest.State,
@@ -273,7 +271,7 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 	if err != nil {
 		log.Warn().Err(err).Msg("ListUser")
-		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+		errors = append(errors, err.Error())
 
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{

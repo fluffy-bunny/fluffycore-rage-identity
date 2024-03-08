@@ -11,8 +11,8 @@ import (
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/shared"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
+	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
@@ -122,27 +122,33 @@ func (s *service) DoGet(c echo.Context) error {
 		})
 }
 
-func (s *service) validateSignupPostRequest(request *SignupPostRequest) ([]*services_handlers_shared.Error, error) {
+func (s *service) validateSignupPostRequest(request *SignupPostRequest) ([]string, error) {
+	localizer := s.Localizer().GetLocalizer()
+
 	var err error
-	errors := make([]*services_handlers_shared.Error, 0)
+	errors := make([]string, 0)
 
 	if fluffycore_utils.IsEmptyOrNil(request.UserName) {
-
-		errors = append(errors, services_handlers_shared.NewErrorF("username", "username is empty"))
+		msg := utils.LocalizeSimple(localizer, "username.is.empty")
+		errors = append(errors, msg)
 	} else {
 		_, ok := echo_utils.IsValidEmailAddress(request.UserName)
 		if !ok {
-			errors = append(errors, services_handlers_shared.NewErrorF("username", "username %s is not a valid email address", request.UserName))
+			msg := utils.LocalizeWithInterperlate(localizer, "username.is.not.valid", map[string]string{"username": request.UserName})
+			errors = append(errors, msg)
 		}
 	}
 	if fluffycore_utils.IsEmptyOrNil(request.Password) {
-		errors = append(errors, services_handlers_shared.NewErrorF("password", "password is empty"))
+		msg := utils.LocalizeSimple(localizer, "password.is.empty")
+		errors = append(errors, msg)
 	}
 
 	return errors, err
 }
 
 func (s *service) DoPost(c echo.Context) error {
+	localizer := s.Localizer().GetLocalizer()
+
 	r := c.Request()
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
@@ -152,7 +158,7 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("getIDPs")
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	doError := func(errors []*services_handlers_shared.Error) error {
+	doError := func(errors []string) error {
 		return s.Render(c, http.StatusBadRequest, "oidc/signup/index",
 			map[string]interface{}{
 				"errors":    errors,
@@ -165,8 +171,8 @@ func (s *service) DoPost(c echo.Context) error {
 	model := &SignupPostRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Debug().Err(err).Msg("Bind")
-		return doError([]*services_handlers_shared.Error{
-			services_handlers_shared.NewErrorF("model", "model is invalid"),
+		return doError([]string{
+			utils.LocalizeSimple(localizer, "model.is.invalid"),
 		})
 	}
 	log.Info().Interface("model", model).Msg("model")
@@ -194,7 +200,7 @@ func (s *service) DoPost(c echo.Context) error {
 	})
 	if err != nil {
 		log.Warn().Err(err).Msg("ListIDP")
-		errors = append(errors, services_handlers_shared.NewErrorF("error", err.Error()))
+		errors = append(errors, err.Error())
 		return doError(errors)
 	}
 	if len(listIDPRequest.Idps) > 0 {
@@ -231,8 +237,8 @@ func (s *service) DoPost(c echo.Context) error {
 
 	}
 	if getRageUserResponse != nil {
-		return doError([]*services_handlers_shared.Error{
-			services_handlers_shared.NewErrorF("username", "username %s already exists", model.UserName),
+		return doError([]string{
+			utils.LocalizeWithInterperlate(localizer, "username.already.exists", map[string]string{"username": model.UserName}),
 		})
 	}
 	// TODO: check password strength
