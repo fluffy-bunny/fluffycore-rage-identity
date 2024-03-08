@@ -172,12 +172,12 @@ func (s *service) validatePersonalInformationPostRequest(request *PersonalInform
 
 	errors := make([]*services_handlers_shared.Error, 0)
 	if fluffycore_utils.IsEmptyOrNil(request.Action) {
-		msg := utils.LocalizeSimple(localizer, "action.is.empty")
-		errors = append(errors, services_handlers_shared.NewErrorF("action", msg))
+		ee := utils.LocalizeToError(localizer, "action.is.empty", nil)
+		errors = append(errors, ee)
 	}
 	if fluffycore_utils.IsEmptyOrNil(request.ReturnUrl) {
-		msg := utils.LocalizeSimple(localizer, "returnurl.is.empty")
-		errors = append(errors, services_handlers_shared.NewErrorF("returnUrl", msg))
+		ee := utils.LocalizeToError(localizer, "returnurl.is.empty", nil)
+		errors = append(errors, ee)
 	}
 	if len(errors) > 0 {
 		return errors, status.Error(codes.InvalidArgument, "validation failed")

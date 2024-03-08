@@ -3,6 +3,7 @@ package utils
 import (
 	"strings"
 
+	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/shared"
 	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
@@ -32,4 +33,12 @@ func LocalizeSimple(localizer *i18n.Localizer, id string) string {
 		return id
 	}
 	return s
+}
+
+func LocalizeToError(localizer *i18n.Localizer, id string, replace map[string]string) *services_handlers_shared.Error {
+	msg, err := LocalizeReplaceStrings(localizer, id, replace)
+	if err == nil {
+		services_handlers_shared.NewErrorF(id, msg)
+	}
+	return services_handlers_shared.NewErrorF(id, id)
 }
