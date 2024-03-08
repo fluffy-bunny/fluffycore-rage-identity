@@ -7,8 +7,8 @@ import (
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/shared"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
+	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
@@ -108,32 +108,39 @@ func (s *service) DoGet(c echo.Context) error {
 			"email":     model.Email,
 			"code":      model.Code,
 			"directive": model.Directive,
-			"errors":    make([]*services_handlers_shared.Error, 0),
+			"errors":    make([]string, 0),
 		})
 	return err
 }
 
-func (s *service) validateVerifyCodePostRequest(request *VerifyCodePostRequest) ([]*services_handlers_shared.Error, error) {
+func (s *service) validateVerifyCodePostRequest(request *VerifyCodePostRequest) ([]string, error) {
+	localizer := s.Localizer().GetLocalizer()
 	var err error
-	errors := make([]*services_handlers_shared.Error, 0)
+	errors := make([]string, 0)
 
 	if fluffycore_utils.IsEmptyOrNil(request.Email) {
-		errors = append(errors, services_handlers_shared.NewErrorF("email", "Email is empty"))
+		msg := utils.LocalizeSimple(localizer, "email.is.empty")
+		errors = append(errors, msg)
 	}
 	if fluffycore_utils.IsEmptyOrNil(request.Code) {
-		errors = append(errors, services_handlers_shared.NewErrorF("code", "Code is empty"))
+		msg := utils.LocalizeSimple(localizer, "code.is.empty")
+		errors = append(errors, msg)
 	}
 	_, ok := echo_utils.IsValidEmailAddress(request.Email)
 	if !ok {
-		errors = append(errors, services_handlers_shared.NewErrorF("email", "Email:%s is not a valid email address", request.Email))
+		msg := utils.LocalizeWithInterperlate(localizer, "email.is.not.valid", map[string]string{"email": request.Email})
+		errors = append(errors, msg)
 	}
 	if fluffycore_utils.IsEmptyOrNil(request.Directive) {
-		errors = append(errors, services_handlers_shared.NewErrorF("code", "Code is empty"))
+		msg := utils.LocalizeSimple(localizer, "directive.is.empty")
+		errors = append(errors, msg)
 	}
 	return errors, err
 }
 
 func (s *service) DoPost(c echo.Context) error {
+	localizer := s.Localizer().GetLocalizer()
+
 	r := c.Request()
 	// is the request get or post?
 	ctx := r.Context()
@@ -182,8 +189,8 @@ func (s *service) DoPost(c echo.Context) error {
 				"email":     model.Email,
 				"code":      model.Code,
 				"directive": model.Directive,
-				"errors": []*services_handlers_shared.Error{
-					services_handlers_shared.NewErrorF("code", "Code is invalid"),
+				"errors": []string{
+					utils.LocalizeSimple(localizer, "code.is.invalid"),
 				},
 			})
 	}

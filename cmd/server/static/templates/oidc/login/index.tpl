@@ -34,7 +34,7 @@
                 <tr>
                 <th class="text-start" scope="row">{{$idx}}</th>
                 <td class="text-start">{{$error.Key}}</td>
-                <td class="text-start">{{$error.Value}}</td>
+                <td class="text-start">{{$error}}</td>
                 </tr>
             {{end}}
             </tbody>

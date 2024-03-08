@@ -14,7 +14,7 @@
                     <ul class="error-list">
                         {{range $idx, $error := .errors}}
                             <li class="error-list-item">
-                                {{$error.Value}}
+                                {{$error}}
                             </li>
                         {{end}}
                     </ul>
