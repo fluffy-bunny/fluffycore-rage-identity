@@ -33,7 +33,7 @@ func (s *service) Ctor(oidcFlowCache contracts_eko_gocache.IAuthorizationRequest
 	}, nil
 }
 
-func AddSingletonIOIDCFlowStore(cb di.ContainerBuilder) {
+func AddSingletonAuthorizationRequestStateStoreServer(cb di.ContainerBuilder) {
 	di.AddSingleton[proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer](cb, stemService.Ctor)
 }
 
