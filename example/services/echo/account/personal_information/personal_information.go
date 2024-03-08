@@ -9,6 +9,7 @@ import (
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/shared"
+	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
 	proto_external_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/models"
 	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
@@ -167,12 +168,16 @@ func (s *service) DoGet(c echo.Context) error {
 }
 
 func (s *service) validatePersonalInformationPostRequest(request *PersonalInformationPostRequest) ([]*services_handlers_shared.Error, error) {
+	localizer := s.Localizer().GetLocalizer()
+
 	errors := make([]*services_handlers_shared.Error, 0)
 	if fluffycore_utils.IsEmptyOrNil(request.Action) {
-		errors = append(errors, services_handlers_shared.NewErrorF("action", "Action is empty"))
+		msg := utils.LocalizeSimple(localizer, "action.is.empty")
+		errors = append(errors, services_handlers_shared.NewErrorF("action", msg))
 	}
 	if fluffycore_utils.IsEmptyOrNil(request.ReturnUrl) {
-		errors = append(errors, services_handlers_shared.NewErrorF("returnUrl", "ReturnUrl is empty"))
+		msg := utils.LocalizeSimple(localizer, "returnurl.is.empty")
+		errors = append(errors, services_handlers_shared.NewErrorF("returnUrl", msg))
 	}
 	if len(errors) > 0 {
 		return errors, status.Error(codes.InvalidArgument, "validation failed")

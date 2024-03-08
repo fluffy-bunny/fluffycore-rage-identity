@@ -15,6 +15,7 @@ import (
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/shared"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
+	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
@@ -24,10 +25,10 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
-	"github.com/gogo/status"
+	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
-	"google.golang.org/grpc/codes"
+	codes "google.golang.org/grpc/codes"
 )
 
 type (
@@ -152,6 +153,7 @@ func (s *service) DoGet(c echo.Context) error {
 }
 
 func (s *service) DoPost(c echo.Context) error {
+	localizer := s.Localizer().GetLocalizer()
 	r := c.Request()
 	// is the request get or post?
 
@@ -187,7 +189,12 @@ func (s *service) DoPost(c echo.Context) error {
 
 	email, ok := echo_utils.IsValidEmailAddress(model.UserName)
 	if !ok {
-		errors = append(errors, services_handlers_shared.NewErrorF("username", "username %s is not a valid email address", model.UserName))
+		msg, err := utils.LocalizeReplaceStrings(localizer, "username.not.valid", map[string]string{"username": model.UserName})
+		if err != nil {
+			log.Error().Err(err).Msg("LocalizeReplaceStrings")
+			return err
+		}
+		errors = append(errors, services_handlers_shared.NewErrorF("username", msg))
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"idps":      idps,

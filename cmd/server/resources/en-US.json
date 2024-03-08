@@ -24,5 +24,8 @@
   "forgotpassword.email.subject": "Your Reset Password Code",
   "password.reset.message": "Your reset password code is: {code}",
   "password.reset.changed.subject": "Your Password Has Been Changed",
-  "password.reset.changed.message": "Your password has been changed. If you did not make this change, please contact us immediately."
+  "password.reset.changed.message": "Your password has been changed. If you did not make this change, please contact us immediately.",
+  "username.not.valid": "The username {username} is not a valid email address",
+  "action.is.empty": "The action is empty",
+  "returnurl.is.empty": "The returnurl is empty"
 }
