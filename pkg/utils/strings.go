@@ -19,7 +19,7 @@ func ReplaceStrings(original string, replace map[string]string) string {
 func LocalizeReplaceStrings(localizer *i18n.Localizer, id string, replace map[string]string) (string, error) {
 	template, err := localizer.LocalizeMessage(&i18n.Message{ID: id})
 	if err != nil {
-		return "", err
+		return id, err
 	}
 
 	s := ReplaceStrings(template, replace)

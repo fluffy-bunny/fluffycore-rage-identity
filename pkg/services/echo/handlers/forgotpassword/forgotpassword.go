@@ -12,6 +12,7 @@ import (
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	services_handlers_shared "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/shared"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
+	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -108,14 +109,17 @@ func (s *service) DoGet(c echo.Context) error {
 
 func (s *service) validateForgotPasswordPostRequest(request *ForgotPasswordPostRequest) ([]*services_handlers_shared.Error, error) {
 	var err error
+	localizer := s.Localizer().GetLocalizer()
 	errors := make([]*services_handlers_shared.Error, 0)
 
 	if fluffycore_utils.IsEmptyOrNil(request.Email) {
-		errors = append(errors, services_handlers_shared.NewErrorF("email", "Email is empty"))
+		msg := utils.LocalizeSimple(localizer, "email.is.empty")
+		errors = append(errors, services_handlers_shared.NewErrorF("email", msg))
 	}
 	_, ok := echo_utils.IsValidEmailAddress(request.Email)
 	if !ok {
-		errors = append(errors, services_handlers_shared.NewErrorF("email", "Email:%s is not a valid email address", request.Email))
+		msg, _ := utils.LocalizeReplaceStrings(localizer, "email.is.not.valid", map[string]string{"email": request.Email})
+		errors = append(errors, services_handlers_shared.NewErrorF("email", msg))
 	}
 	request.Email = strings.ToLower(request.Email)
 	return errors, err

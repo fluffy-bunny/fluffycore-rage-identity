@@ -27,5 +27,7 @@
   "password.reset.changed.message": "Your password has been changed. If you did not make this change, please contact us immediately.",
   "username.not.valid": "The username {username} is not a valid email address",
   "action.is.empty": "The action is empty",
-  "returnurl.is.empty": "The returnurl is empty"
+  "returnurl.is.empty": "The returnurl is empty",
+  "email.is.empty": "The email is empty",
+  "email.not.valid": "The email {email} is not valid"
 }
