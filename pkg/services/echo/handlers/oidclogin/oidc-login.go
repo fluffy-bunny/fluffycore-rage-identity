@@ -119,14 +119,17 @@ func (s *service) DoGet(c echo.Context) error {
 	}
 	log.Info().Interface("model", model).Msg("model")
 
-	var rows []row
+	var errors []string
+	if !fluffycore_utils.IsEmptyOrNil(model.Error) {
+		errors = append(errors, model.Error)
+	}
 	session, err := s.getSession()
 	if err != nil {
-		rows = append(rows, row{Key: "error", Value: err.Error()})
+		errors = append(errors, err.Error())
 	}
 	dd, err := session.Get("request")
 	if err != nil {
-		rows = append(rows, row{Key: "error", Value: err.Error()})
+		errors = append(errors, err.Error())
 	}
 	dd2 := dd.(*proto_oidc_models.AuthorizationRequest)
 
@@ -139,12 +142,12 @@ func (s *service) DoGet(c echo.Context) error {
 	}
 	idps, err := s.GetIDPs(ctx)
 	if err != nil {
-		rows = append(rows, row{Key: "error", Value: err.Error()})
+		errors = append(errors, err.Error())
 	}
 
 	return s.Render(c, http.StatusOK, "oidc/oidclogin/index",
 		map[string]interface{}{
-			"errors":    rows,
+			"errors":    errors,
 			"idps":      idps,
 			"email":     model.Email,
 			"directive": models.LoginDirective,

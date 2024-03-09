@@ -19,6 +19,7 @@ import (
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
+	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
 	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/client"
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
@@ -52,6 +53,21 @@ var stemService = (*service)(nil)
 func init() {
 	var _ contracts_handler.IHandler = stemService
 }
+
+const (
+	// make sure only one is shown.  This is an internal error code to point the developer to the code that is failing
+	InternalError_Callback_001 = "rg-callback-001"
+	InternalError_Callback_002 = "rg-callback-002"
+	InternalError_Callback_003 = "rg-callback-003"
+	InternalError_Callback_004 = "rg-callback-004"
+	InternalError_Callback_005 = "rg-callback-005"
+	InternalError_Callback_006 = "rg-callback-006"
+	InternalError_Callback_007 = "rg-callback-007"
+	InternalError_Callback_008 = "rg-callback-008"
+	InternalError_Callback_009 = "rg-callback-009"
+	InternalError_Callback_010 = "rg-callback-010"
+	InternalError_Callback_011 = "rg-callback-011"
+)
 
 func (s *service) Ctor(
 	container di.Container,
@@ -106,6 +122,8 @@ type CallbackRequest struct {
 // @Success 200 {object} string
 // @Router /oauth2/callback [get]
 func (s *service) Do(c echo.Context) error {
+	localizer := s.Localizer().GetLocalizer()
+
 	r := c.Request()
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
@@ -132,7 +150,7 @@ func (s *service) Do(c echo.Context) error {
 			State: model.State,
 		})
 
-	doInternalErrorPost := func() error {
+	doInternalErrorPost := func(msg string) error {
 		formParams := []models.FormParam{
 			{
 				Name:  "state",
@@ -140,7 +158,7 @@ func (s *service) Do(c echo.Context) error {
 			},
 			{
 				Name:  "error",
-				Value: models.InternalError,
+				Value: msg,
 			},
 		}
 		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
@@ -221,7 +239,7 @@ func (s *service) Do(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("GetAuthorizationRequestState")
-		return doInternalErrorPost()
+		return doInternalErrorPost(InternalError_Callback_001)
 	}
 	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 
@@ -346,7 +364,7 @@ func (s *service) Do(c echo.Context) error {
 			})
 			if err != nil {
 				log.Error().Err(err).Msg("StoreAuthorizationRequestState")
-				return doInternalErrorPost()
+				return doInternalErrorPost(InternalError_Callback_002)
 			}
 			// redirect back
 			return doLoginBounceBack()
@@ -369,7 +387,7 @@ func (s *service) Do(c echo.Context) error {
 				err = nil
 			} else {
 				log.Error().Err(err).Msg("GetUser")
-				return doInternalErrorPost()
+				return doInternalErrorPost(InternalError_Callback_003)
 			}
 		}
 
@@ -413,7 +431,7 @@ func (s *service) Do(c echo.Context) error {
 			user, err := linkUser(candidateUserID, externalIdentity)
 			if err != nil {
 				log.Error().Err(err).Msg("LinkUsers")
-				return doInternalErrorPost()
+				return doInternalErrorPost(InternalError_Callback_004)
 			}
 			return loginLinkedUser(user)
 		}
@@ -483,13 +501,14 @@ func (s *service) Do(c echo.Context) error {
 					user, err := doAutoCreateUser()
 					if err != nil {
 						log.Error().Err(err).Msg("doAutoCreateUser")
-						return doInternalErrorPost()
+						return doInternalErrorPost(InternalError_Callback_005)
 					}
 					return loginLinkedUser(user)
 
 				}
 				// we bounce the user back to go through a sigunup flow
-				return doInternalErrorPost()
+				msg := utils.LocalizeWithInterperlate(localizer, "username.not.found", map[string]string{"username": externalIdentity.Email})
+				return doInternalErrorPost(msg)
 			}
 
 		}
@@ -499,7 +518,7 @@ func (s *service) Do(c echo.Context) error {
 			user, err := doAutoCreateUser()
 			if err != nil {
 				log.Error().Err(err).Msg("doAutoCreateUser")
-				return doInternalErrorPost()
+				return doInternalErrorPost(InternalError_Callback_006)
 			}
 			emailVerificationRequired := idp.EmailVerificationRequired
 			if !emailVerificationRequired {
