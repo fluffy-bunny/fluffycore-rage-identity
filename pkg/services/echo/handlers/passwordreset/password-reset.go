@@ -91,6 +91,7 @@ type PasswordResetPostRequest struct {
 	ReturnUrl       string `param:"returnUrl" query:"returnUrl" form:"returnUrl" json:"returnUrl" xml:"returnUrl"`
 	Password        string `param:"password" query:"password" form:"password" json:"password" xml:"password"`
 	ConfirmPassword string `param:"confirmPassword" query:"confirmPassword" form:"confirmPassword" json:"confirmPassword" xml:"confirmPassword"`
+	Action          string `param:"action" query:"action" form:"action" json:"action" xml:"action"`
 }
 
 func (s *service) validatePasswordResetGetRequest(model *PasswordResetGetRequest) error {
@@ -159,6 +160,9 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 	log.Info().Interface("model", model).Msg("model")
 
+	if model.Action == "cancel" {
+		return s.TeleportToPath(c, wellknown_echo.OIDCLoginPath)
+	}
 	if fluffycore_utils.IsEmptyOrNil(model.Password) || fluffycore_utils.IsEmptyOrNil(model.ConfirmPassword) {
 		return s.DoGet(c)
 	}

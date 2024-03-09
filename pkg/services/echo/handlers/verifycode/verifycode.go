@@ -89,6 +89,7 @@ type VerifyCodePostRequest struct {
 	Code      string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
 	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
 	Type      string `param:"type" query:"type" form:"type" json:"type" xml:"type"`
+	Action    string `param:"action" query:"action" form:"action" json:"action" xml:"action"`
 }
 
 func (s *service) validateVerifyCodeGetRequest(model *VerifyCodeGetRequest) error {
@@ -180,6 +181,9 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 	if model.Type == "GET" {
 		return s.DoGet(c)
+	}
+	if model.Action == "cancel" {
+		return s.TeleportToPath(c, wellknown_echo.OIDCLoginPath)
 	}
 	getVerificationCodeCookieResponse, err := s.wellknownCookies.GetVerificationCodeCookie(c)
 	if err != nil {

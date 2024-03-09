@@ -103,6 +103,7 @@ type SignupPostRequest struct {
 	UserName string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
 	Password string `param:"password" query:"password" form:"password" json:"password" xml:"password"`
 	Type     string `param:"type" query:"type" form:"type" json:"type" xml:"type"`
+	Action   string `param:"action" query:"action" form:"action" json:"action" xml:"action"`
 }
 
 func (s *service) DoGet(c echo.Context) error {
@@ -183,6 +184,7 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 
 	}
+
 	// is the request get or post?
 	model := &SignupPostRequest{}
 	if err := c.Bind(model); err != nil {
@@ -192,6 +194,9 @@ func (s *service) DoPost(c echo.Context) error {
 	log.Info().Interface("model", model).Msg("model")
 	if model.Type == "GET" {
 		return s.DoGet(c)
+	}
+	if model.Action == "cancel" {
+		return s.TeleportToPath(c, wellknown_echo.OIDCLoginPath)
 	}
 	errors, err := s.validateSignupPostRequest(model)
 	if err != nil {

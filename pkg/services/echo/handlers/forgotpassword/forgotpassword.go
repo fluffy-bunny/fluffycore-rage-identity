@@ -165,7 +165,7 @@ func (s *service) DoPost(c echo.Context) error {
 		return s.DoGet(c)
 	}
 	if model.Action == "cancel" {
-		s.TeleportToPath(c, wellknown_echo.OIDCLoginPath)
+		return s.TeleportToPath(c, wellknown_echo.OIDCLoginPath)
 	}
 	// NOTE: We don't want to give bots the ability to probe our service to see if an email exists.
 	// we check here and we redirect to the enter code in all cases.
