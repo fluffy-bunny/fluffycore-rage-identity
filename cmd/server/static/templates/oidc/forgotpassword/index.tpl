@@ -31,6 +31,10 @@
               
                             <button type="submit" class="btn btn-primary btn-block">{{ call .LocalizeMessage "next" }}</button>
                         </form>
+                         <form action="{{ $paths.ForgotPassword }}" method="post">
+                            <input type="hidden" name="directive"   value="cancel">
+                            <button type="submit" class="btn btn-outline-primary me-2 ">{{ call .LocalizeMessage "cancel" }}</button>
+                        </form>
                     </div>
                 </div>
             </div>

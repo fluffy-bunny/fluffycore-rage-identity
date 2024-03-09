@@ -188,3 +188,8 @@ func (b *BaseHandler) TeleportBackToLogin(c echo.Context, msg string) error {
 	return b.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
 
 }
+func (b *BaseHandler) TeleportToPath(c echo.Context, path string) error {
+	formParams := []models.FormParam{}
+	return b.RenderAutoPost(c, path, formParams)
+
+}
