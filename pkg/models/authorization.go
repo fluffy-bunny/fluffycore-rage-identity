@@ -24,6 +24,7 @@ const (
 	SignupDirective        string = "signup"
 	PasswordResetDirective string = "password-reset"
 	VerifyEmailDirective   string = "verify-email"
+	CancelDirective        string = "cancel"
 )
 const (
 	InternalError            string = "internal-error"

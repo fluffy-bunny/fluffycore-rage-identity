@@ -47,6 +47,22 @@ func init() {
 	var _ contracts_handler.IHandler = stemService
 }
 
+const (
+	// make sure only one is shown.  This is an internal error code to point the developer to the code that is failing
+	InternalError_OIDCLogin_001 = "rg-oidclogin-001"
+	InternalError_OIDCLogin_002 = "rg-oidclogin-002"
+	InternalError_OIDCLogin_003 = "rg-oidclogin-003"
+	InternalError_OIDCLogin_004 = "rg-oidclogin-004"
+	InternalError_OIDCLogin_005 = "rg-oidclogin-005"
+	InternalError_OIDCLogin_006 = "rg-oidclogin-006"
+	InternalError_OIDCLogin_007 = "rg-oidclogin-007"
+	InternalError_OIDCLogin_008 = "rg-oidclogin-008"
+	InternalError_OIDCLogin_009 = "rg-oidclogin-009"
+	InternalError_OIDCLogin_010 = "rg-oidclogin-010"
+	InternalError_OIDCLogin_011 = "rg-oidclogin-011"
+	InternalError_OIDCLogin_099 = "rg-oidclogin-099"
+)
+
 func (s *service) Ctor(
 	config *contracts_config.Config,
 	container di.Container,
@@ -115,18 +131,22 @@ func (s *service) DoGet(c echo.Context) error {
 	log := zerolog.Ctx(ctx).With().Logger()
 	model := &LoginGetRequest{}
 	if err := c.Bind(model); err != nil {
-		return err
+		log.Error().Err(err).Msg("Bind")
+		return s.TeleportBackToLogin(c, InternalError_OIDCLogin_099)
 	}
 	log.Info().Interface("model", model).Msg("model")
 
-	var rows []row
+	var errors []string
+	if !fluffycore_utils.IsEmptyOrNil(model.Error) {
+		errors = append(errors, model.Error)
+	}
 	session, err := s.getSession()
 	if err != nil {
-		rows = append(rows, row{Key: "error", Value: err.Error()})
+		errors = append(errors, err.Error())
 	}
 	dd, err := session.Get("request")
 	if err != nil {
-		rows = append(rows, row{Key: "error", Value: err.Error()})
+		errors = append(errors, err.Error())
 	}
 	dd2 := dd.(*proto_oidc_models.AuthorizationRequest)
 
@@ -139,12 +159,12 @@ func (s *service) DoGet(c echo.Context) error {
 	}
 	idps, err := s.GetIDPs(ctx)
 	if err != nil {
-		rows = append(rows, row{Key: "error", Value: err.Error()})
+		errors = append(errors, err.Error())
 	}
 
 	return s.Render(c, http.StatusOK, "oidc/oidclogin/index",
 		map[string]interface{}{
-			"errors":    rows,
+			"errors":    errors,
 			"idps":      idps,
 			"email":     model.Email,
 			"directive": models.LoginDirective,
@@ -160,7 +180,8 @@ func (s *service) DoPost(c echo.Context) error {
 	log := zerolog.Ctx(ctx).With().Logger()
 	model := &LoginPostRequest{}
 	if err := c.Bind(model); err != nil {
-		return err
+		log.Error().Err(err).Msg("Bind")
+		return s.TeleportBackToLogin(c, InternalError_OIDCLogin_099)
 	}
 	log.Info().Interface("model", model).Msg("model")
 	if fluffycore_utils.IsEmptyOrNil(model.UserName) {
@@ -294,7 +315,7 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SetVerificationCodeCookie")
-			return c.Redirect(http.StatusFound, "/error")
+			return s.TeleportBackToLogin(c, InternalError_OIDCLogin_001)
 		}
 		s.EmailService().SendSimpleEmail(ctx,
 			&contracts_email.SendSimpleEmailRequest{
@@ -406,7 +427,7 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 	if err != nil {
 		log.Error().Err(err).Msg("SetAuthCookie")
 		// redirect to error page
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_OIDCLogin_002)
 	}
 	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
 		State:                     authorizationFinal.Request.Code,
@@ -415,7 +436,7 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 	if err != nil {
 		log.Warn().Err(err).Msg("StoreAuthorizationRequestState")
 		// redirect to error page
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_OIDCLogin_003)
 	}
 	s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
 		State: state,

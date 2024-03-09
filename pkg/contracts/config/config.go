@@ -6,7 +6,6 @@ import (
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	fluffycore_contracts_config "github.com/fluffy-bunny/fluffycore/contracts/config"
-	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
 	fluffycore_echo_contracts_cookies "github.com/fluffy-bunny/fluffycore/echo/contracts/cookies"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 )
@@ -79,20 +78,18 @@ type InitialConfig struct {
 type Config struct {
 	fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
 
-	ConfigFiles               ConfigFiles                             `json:"configFiles"`
-	JWTValidators             JWTValidators                           `json:"jwtValidators"`
-	DDProfilerConfig          *fluffycore_contracts_ddprofiler.Config `json:"ddProfilerConfig"`
-	Echo                      *EchoConfig                             `json:"echo"`
-	InMemoryClients           InMemoryClients                         `json:"inMemoryClients"`
-	OIDCConfig                *OIDCConfig                             `json:"oidcConfig"`
-	BackingCache              *BackingCacheConfig                     `json:"backingCache"`
-	AutolinkOnEmailMatch      bool                                    `json:"autolinkOnEmailMatch"`
-	EmailVerificationRequired bool                                    `json:"emailVerificationRequired"`
-	EmailConfig               *contracts_email.EmailConfig            `json:"emailConfig"`
-	SelfIDPConfig             *SelfIDPConfig                          `json:"selfIDPConfig"`
-	CookieConfig              *CookieConfig                           `json:"cookieConfig"`
-	SystemConfig              *SystemConfig                           `json:"systemConfig"`
-	SessionConfig             *contracts_sessions.SessionConfig       `json:"sessionConfig"`
+	ConfigFiles               ConfigFiles                       `json:"configFiles"`
+	Echo                      *EchoConfig                       `json:"echo"`
+	InMemoryClients           InMemoryClients                   `json:"inMemoryClients"`
+	OIDCConfig                *OIDCConfig                       `json:"oidcConfig"`
+	BackingCache              *BackingCacheConfig               `json:"backingCache"`
+	AutolinkOnEmailMatch      bool                              `json:"autolinkOnEmailMatch"`
+	EmailVerificationRequired bool                              `json:"emailVerificationRequired"`
+	EmailConfig               *contracts_email.EmailConfig      `json:"emailConfig"`
+	SelfIDPConfig             *SelfIDPConfig                    `json:"selfIDPConfig"`
+	CookieConfig              *CookieConfig                     `json:"cookieConfig"`
+	SystemConfig              *SystemConfig                     `json:"systemConfig"`
+	SessionConfig             *contracts_sessions.SessionConfig `json:"sessionConfig"`
 }
 
 // ConfigDefaultJSON default json

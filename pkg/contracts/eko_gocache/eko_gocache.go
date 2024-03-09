@@ -5,7 +5,7 @@ import (
 )
 
 type (
-	IOIDCFlowCache interface {
+	IAuthorizationRequestStateCache interface {
 		fluffycore_contracts_eko_gocache.IGoCache
 	}
 

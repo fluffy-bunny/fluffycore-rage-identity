@@ -60,7 +60,7 @@ func MyConfigServices(ctx context.Context, builder di.ContainerBuilder) {
 	fmt.Println("MyConfigServices")
 	services_user_id_generator.AddSingletonIUserIdGenerator(builder)
 	services_oidcuser_inmemory.AddSingletonIFluffyCoreUserServiceServer(builder)
-	services_oidcflowstore.AddSingletonIOIDCFlowStore(builder)
+	services_oidcflowstore.AddSingletonAuthorizationRequestStateStoreServer(builder)
 
 	// Account Handlers
 	//--------------------------------------------------------

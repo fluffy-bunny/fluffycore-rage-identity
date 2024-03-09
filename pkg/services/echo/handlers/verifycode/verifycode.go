@@ -34,6 +34,23 @@ func init() {
 	var _ contracts_handler.IHandler = stemService
 }
 
+const (
+	// make sure only one is shown.  This is an internal error code to point the developer to the code that is failing
+	InternalError_VerifyCode_001 = "rg-verifycode-001"
+	InternalError_VerifyCode_002 = "rg-verifycode-002"
+	InternalError_VerifyCode_003 = "rg-verifycode-003"
+	InternalError_VerifyCode_004 = "rg-verifycode-004"
+	InternalError_VerifyCode_005 = "rg-verifycode-005"
+	InternalError_VerifyCode_006 = "rg-verifycode-006"
+	InternalError_VerifyCode_007 = "rg-verifycode-007"
+	InternalError_VerifyCode_008 = "rg-verifycode-008"
+	InternalError_VerifyCode_009 = "rg-verifycode-009"
+	InternalError_VerifyCode_010 = "rg-verifycode-010"
+	InternalError_VerifyCode_011 = "rg-verifycode-011"
+	InternalError_VerifyCode_099 = "rg-verifycode-099" // 99 is a bind problem
+
+)
+
 func (s *service) Ctor(
 	container di.Container,
 	wellknownCookies contracts_cookies.IWellknownCookies,
@@ -72,6 +89,7 @@ type VerifyCodePostRequest struct {
 	Code      string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
 	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
 	Type      string `param:"type" query:"type" form:"type" json:"type" xml:"type"`
+	Action    string `param:"action" query:"action" form:"action" json:"action" xml:"action"`
 }
 
 func (s *service) validateVerifyCodeGetRequest(model *VerifyCodeGetRequest) error {
@@ -94,13 +112,13 @@ func (s *service) DoGet(c echo.Context) error {
 	model := &VerifyCodeGetRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("c.Bind")
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_VerifyCode_099)
 	}
 	log.Info().Interface("model", model).Msg("model")
 	err := s.validateVerifyCodeGetRequest(model)
 	if err != nil {
 		log.Error().Err(err).Msg("validateVerifyCodeGetRequest")
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_VerifyCode_001)
 	}
 
 	err = s.Render(c, http.StatusOK, "oidc/verifycode/index",
@@ -147,7 +165,7 @@ func (s *service) DoPost(c echo.Context) error {
 	log := zerolog.Ctx(ctx).With().Logger()
 	model := &VerifyCodePostRequest{}
 	if err := c.Bind(model); err != nil {
-		return err
+		return s.TeleportBackToLogin(c, InternalError_VerifyCode_099)
 	}
 	log.Info().Interface("model", model).Msg("model")
 
@@ -163,6 +181,9 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 	if model.Type == "GET" {
 		return s.DoGet(c)
+	}
+	if model.Action == "cancel" {
+		return s.TeleportToPath(c, wellknown_echo.OIDCLoginPath)
 	}
 	getVerificationCodeCookieResponse, err := s.wellknownCookies.GetVerificationCodeCookie(c)
 	if err != nil {
@@ -208,7 +229,7 @@ func (s *service) DoPost(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("UpdateUser")
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_VerifyCode_002)
 	}
 	// one time only
 	s.wellknownCookies.DeleteVerificationCodeCookie(c)
@@ -224,7 +245,7 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SetPasswordResetCookie")
-			return c.Redirect(http.StatusFound, "/error")
+			return s.TeleportBackToLogin(c, InternalError_VerifyCode_003)
 		}
 		return s.RenderAutoPost(c, wellknown_echo.PasswordResetPath,
 			[]models.FormParam{})

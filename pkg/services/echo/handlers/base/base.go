@@ -178,3 +178,18 @@ func (b *BaseHandler) GetIDPs(ctx context.Context) ([]*proto_oidc_models.IDP, er
 	}
 	return listIDPResponse.Idps, nil
 }
+func (b *BaseHandler) TeleportBackToLogin(c echo.Context, msg string) error {
+	formParams := []models.FormParam{
+		{
+			Name:  "error",
+			Value: msg,
+		},
+	}
+	return b.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
+
+}
+func (b *BaseHandler) TeleportToPath(c echo.Context, path string) error {
+	formParams := []models.FormParam{}
+	return b.RenderAutoPost(c, path, formParams)
+
+}
