@@ -175,7 +175,7 @@ func (s *service) DoPost(c echo.Context) error {
 
 	if err != nil {
 		st, ok := status.FromError(err)
-		if ok && st.Code() != codes.NotFound {
+		if ok && st.Code() == codes.NotFound {
 			err = nil
 		}
 		if err != nil {
