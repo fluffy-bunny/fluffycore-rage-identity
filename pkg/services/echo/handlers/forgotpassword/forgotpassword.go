@@ -87,9 +87,9 @@ type ForgotPasswordGetRequest struct {
 }
 
 type ForgotPasswordPostRequest struct {
-	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
-	Email     string `param:"email" query:"email" form:"email" json:"email" xml:"email"`
-	Type      string `param:"type" query:"type" form:"type" json:"type" xml:"type"`
+	Email  string `param:"email" query:"email" form:"email" json:"email" xml:"email"`
+	Type   string `param:"type" query:"type" form:"type" json:"type" xml:"type"`
+	Action string `param:"action" query:"action" form:"action" json:"action" xml:"action"`
 }
 
 func (s *service) validateForgotPasswordGetRequest(request *ForgotPasswordGetRequest) error {
@@ -164,7 +164,7 @@ func (s *service) DoPost(c echo.Context) error {
 	if model.Type == "GET" {
 		return s.DoGet(c)
 	}
-	if model.Directive == models.CancelDirective {
+	if model.Action == "cancel" {
 		s.TeleportToPath(c, wellknown_echo.OIDCLoginPath)
 	}
 	// NOTE: We don't want to give bots the ability to probe our service to see if an email exists.
