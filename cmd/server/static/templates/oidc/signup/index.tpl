@@ -33,7 +33,12 @@
                                 <label for="password" class="form-label">Password</label>
                                 <input type="password" class="form-control" id="password" name="password" required >
                             </div>
-                            <button type="submit" class="btn btn-primary btn-block">{{ call .LocalizeMessage "next" }}</button>
+                            <div class="d-flex justify-content-between">
+                                <button type="submit" class="btn btn-outline-primary" name="action" value="cancel" formnovalidate>{{ call .LocalizeMessage "cancel" }}</button>
+                                <div class="btn-group">
+                                    <button type="submit" class="btn btn-primary" name="action" value="next">{{ call .LocalizeMessage "next" }}</button>
+                                </div>
+                            </div>                        
                         </form>
  
                          <hr>

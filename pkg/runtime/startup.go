@@ -7,30 +7,23 @@ import (
 	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	pkg_auth "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/auth"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	oidcserver "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/oidcserver"
 	services "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services"
 	services_health "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/health"
 	pkg_types "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/types"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
-	pkg_version "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/version"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidcuser "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
-	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
 	fluffycore_contracts_middleware "github.com/fluffy-bunny/fluffycore/contracts/middleware"
-	fluffycore_contracts_middleware_auth_jwt "github.com/fluffy-bunny/fluffycore/contracts/middleware/auth/jwt"
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
 	core_echo_runtime "github.com/fluffy-bunny/fluffycore/echo/runtime"
-	fluffycore_middleware_auth_jwt "github.com/fluffy-bunny/fluffycore/middleware/auth/jwt"
-	fluffycore_middleware_claimsprincipal "github.com/fluffy-bunny/fluffycore/middleware/claimsprincipal"
 	fluffycore_middleware_correlation "github.com/fluffy-bunny/fluffycore/middleware/correlation"
 	fluffycore_middleware_dicontext "github.com/fluffy-bunny/fluffycore/middleware/dicontext"
 	fluffycore_middleware_logging "github.com/fluffy-bunny/fluffycore/middleware/logging"
 	core_runtime "github.com/fluffy-bunny/fluffycore/runtime"
-	fluffycore_services_ddprofiler "github.com/fluffy-bunny/fluffycore/services/ddprofiler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	fluffycore_utils_redact "github.com/fluffy-bunny/fluffycore/utils/redact"
 	status "github.com/gogo/status"
@@ -49,7 +42,6 @@ type (
 		configOptions *fluffycore_contracts_runtime.ConfigOptions
 		config        *contracts_config.Config
 
-		ddProfiler        fluffycore_contracts_ddprofiler.IDataDogProfiler
 		oidcserverFuture  async.Future[fluffycore_async.AsyncResponse]
 		oidcserverRuntime *core_echo_runtime.Runtime
 		ext               pkg_types.ConfigureServices
@@ -142,26 +134,9 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 	config := s.configOptions.Destination.(*contracts_config.Config)
 	wellknown_echo.OAuth2CallbackPath = config.OIDCConfig.OAuth2CallbackPath
 
-	config.DDProfilerConfig.ApplicationEnvironment = config.ApplicationEnvironment
-	config.DDProfilerConfig.ServiceName = config.ApplicationName
-	config.DDProfilerConfig.Version = pkg_version.Version()
-	di.AddInstance[*fluffycore_contracts_ddprofiler.Config](builder, config.DDProfilerConfig)
-
 	services.ConfigureServices(ctx, config, builder)
-	fluffycore_services_ddprofiler.AddSingletonIProfiler(builder)
 	services_health.AddHealthService(builder)
 
-	issuerConfigs := &fluffycore_contracts_middleware_auth_jwt.IssuerConfigs{}
-	for idx := range s.config.JWTValidators.Issuers {
-		issuerConfigs.IssuerConfigs = append(issuerConfigs.IssuerConfigs,
-			&fluffycore_contracts_middleware_auth_jwt.IssuerConfig{
-				OAuth2Config: &fluffycore_contracts_middleware_auth_jwt.OAuth2Config{
-					Issuer:  s.config.JWTValidators.Issuers[idx],
-					JWKSUrl: s.config.JWTValidators.JWKSURLS[idx],
-				},
-			})
-	}
-	fluffycore_middleware_auth_jwt.AddValidators(builder, issuerConfigs)
 	log.Info().Interface("config", config).Msg("config")
 
 }
@@ -181,16 +156,6 @@ func (s *startup) Configure(ctx context.Context, rootContainer di.Container, una
 	unaryServerInterceptorBuilder.Use(fluffycore_middleware_dicontext.UnaryServerInterceptor(rootContainer))
 	log.Info().Msg("adding streamServerInterceptorBuilder: fluffycore_middleware_dicontext.StreamServerInterceptor")
 	streamServerInterceptorBuilder.Use(fluffycore_middleware_dicontext.StreamServerInterceptor(rootContainer))
-
-	// auth
-	log.Info().Msg("adding unaryServerInterceptorBuilder: fluffycore_middleware_auth_jwt.UnaryServerInterceptor")
-	unaryServerInterceptorBuilder.Use(fluffycore_middleware_auth_jwt.UnaryServerInterceptor(rootContainer))
-
-	// Here the gating happens
-	grpcEntrypointClaimsMap := pkg_auth.BuildGrpcEntrypointPermissionsClaimsMap()
-	// claims principal
-	log.Info().Msg("adding unaryServerInterceptorBuilder: fluffycore_middleware_claimsprincipal.UnaryServerInterceptor")
-	unaryServerInterceptorBuilder.Use(fluffycore_middleware_claimsprincipal.FinalAuthVerificationMiddlewareUsingClaimsMapWithZeroTrustV2(grpcEntrypointClaimsMap))
 
 	// last is the recovery middleware
 	customFunc := func(p interface{}) (err error) {
@@ -255,8 +220,6 @@ func (s *startup) OnPreServerStartup(ctx context.Context) error {
 		}
 	})
 
-	s.ddProfiler = di.Get[fluffycore_contracts_ddprofiler.IDataDogProfiler](s.RootContainer)
-	s.ddProfiler.Start(ctx)
 	return nil
 }
 
@@ -269,7 +232,4 @@ func (s *startup) OnPreServerShutdown(ctx context.Context) {
 	s.oidcserverFuture.Join()
 	log.Info().Msg("oidcserverRuntime shutdown complete")
 
-	log.Info().Msg("Stopping Datadog Tracer and Profiler")
-	s.ddProfiler.Stop(ctx)
-	log.Info().Msg("Datadog Tracer and Profiler stopped")
 }

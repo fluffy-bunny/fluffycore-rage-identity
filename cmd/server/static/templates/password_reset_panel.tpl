@@ -17,7 +17,12 @@
                 <label for="confirmPassword" class="form-label">{{ call .LocalizeMessage "confirm_password" }}</label>
                 <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required >
             </div>
-            <button type="submit" class="btn btn-primary btn-block">{{ call .LocalizeMessage "next" }}</button>
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-outline-primary" name="action" value="cancel" formnovalidate>{{ call .LocalizeMessage "cancel" }}</button>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary" name="action" value="next">{{ call .LocalizeMessage "next" }}</button>
+                </div>
+            </div>                        
         </form>
     </div>
 </div>

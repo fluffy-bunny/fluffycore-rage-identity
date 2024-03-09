@@ -3,6 +3,7 @@
   "hello": "Hello!",
   "login": "Sign In",
   "signup": "Sign Up",
+  "cancel": "Cancel",
   "verifycode": "Verify Code",
   "forgot_password": "Forgot Password?",
   "next": "Next",

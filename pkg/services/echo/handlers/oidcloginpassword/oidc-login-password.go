@@ -45,6 +45,23 @@ func init() {
 	var _ contracts_handler.IHandler = stemService
 }
 
+const (
+	// make sure only one is shown.  This is an internal error code to point the developer to the code that is failing
+	InternalError_OIDCLoginPassword_001 = "rg-oidclogin-password-001"
+	InternalError_OIDCLoginPassword_002 = "rg-oidclogin-password-002"
+	InternalError_OIDCLoginPassword_003 = "rg-oidclogin-password-003"
+	InternalError_OIDCLoginPassword_004 = "rg-oidclogin-password-004"
+	InternalError_OIDCLoginPassword_005 = "rg-oidclogin-password-005"
+	InternalError_OIDCLoginPassword_006 = "rg-oidclogin-password-006"
+	InternalError_OIDCLoginPassword_007 = "rg-oidclogin-password-007"
+	InternalError_OIDCLoginPassword_008 = "rg-oidclogin-password-008"
+	InternalError_OIDCLoginPassword_009 = "rg-oidclogin-password-009"
+	InternalError_OIDCLoginPassword_010 = "rg-oidclogin-password-010"
+	InternalError_OIDCLoginPassword_011 = "rg-oidclogin-password-011"
+
+	InternalError_OIDCLoginPassword_099 = "rg-oidclogin-password-099"
+)
+
 func (s *service) Ctor(
 	config *contracts_config.Config,
 	container di.Container,
@@ -111,7 +128,8 @@ func (s *service) DoGet(c echo.Context) error {
 	log := zerolog.Ctx(ctx).With().Logger()
 	model := &LoginGetRequest{}
 	if err := c.Bind(model); err != nil {
-		return err
+		log.Error().Err(err).Msg("Bind")
+		return s.TeleportBackToLogin(c, InternalError_OIDCLoginPassword_099)
 	}
 	log.Info().Interface("model", model).Msg("model")
 	var rows []row
@@ -155,7 +173,8 @@ func (s *service) DoPost(c echo.Context) error {
 	log := zerolog.Ctx(ctx).With().Logger()
 	model := &LoginPasswordPostRequest{}
 	if err := c.Bind(model); err != nil {
-		return err
+		log.Error().Err(err).Msg("Bind")
+		return s.TeleportBackToLogin(c, InternalError_OIDCLoginPassword_099)
 	}
 	log.Info().Interface("model", model).Msg("model")
 	if fluffycore_utils.IsEmptyOrNil(model.Password) {
@@ -215,7 +234,7 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SetVerificationCodeCookie")
-			return c.Redirect(http.StatusFound, "/error")
+			return s.TeleportBackToLogin(c, InternalError_OIDCLoginPassword_001)
 		}
 		s.EmailService().SendSimpleEmail(ctx,
 			&contracts_email.SendSimpleEmailRequest{
@@ -399,7 +418,7 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 	if err != nil {
 		log.Error().Err(err).Msg("SetAuthCookie")
 		// redirect to error page
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_OIDCLoginPassword_002)
 	}
 	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
 		State:                     authorizationFinal.Request.Code,
@@ -408,7 +427,7 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 	if err != nil {
 		log.Warn().Err(err).Msg("StoreAuthorizationRequestState")
 		// redirect to error page
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_OIDCLoginPassword_003)
 	}
 	s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
 		State: state,
