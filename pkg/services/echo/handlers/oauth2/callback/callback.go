@@ -463,45 +463,40 @@ func (s *service) Do(c echo.Context) error {
 			}
 			return createUserResponse.User, nil
 		}
-		// not found, redirect to OIDC LoginPage telling the user to do the signup dance
-		if externalOauth2State.Request.Directive == models.LoginDirective {
-
-			// a perfect email match beats out a candidate user
+		// in both cases we do an auto link if we get a perfect hit.
+		// a perfect email match beats out a candidate user
+		//--------------------------------------------------------------------------------------------
+		// auto link if we get an email hit
+		user, err := getUserByEmail(externalIdentity.Email)
+		if err == nil && user != nil {
+			// Perfect email match
 			//--------------------------------------------------------------------------------------------
-
-			// auto link if we get an email hit
-			user, err := getUserByEmail(externalIdentity.Email)
-			if err == nil && user != nil {
-				// Perfect email match
-				//--------------------------------------------------------------------------------------------
-				return linkUserAndLogin(user.RootIdentity.Subject, externalIdentity)
-			} else {
-				// do we have a candidate user to link to?
-				if !fluffycore_utils.IsEmptyOrNil(authorizationFinal.Request.CandidateUserId) {
-					// CandidateUserID hint
-					//--------------------------------------------------------------------------------------------
-					return linkUserAndLogin(authorizationFinal.Request.CandidateUserId, externalIdentity)
-				}
-
-				// is AUTO-ACCOUNT creation enabled for this IDP?
-				if idp.AutoCreate {
-					user, err := doAutoCreateUser()
-					if err != nil {
-						log.Error().Err(err).Msg("doAutoCreateUser")
-						return s.TeleportBackToLogin(c, InternalError_Callback_005)
-					}
-					return loginLinkedUser(user)
-
-				}
-				// we bounce the user back to go through a sigunup flow
-				msg := utils.LocalizeWithInterperlate(localizer, "username.not.found", map[string]string{"username": externalIdentity.Email})
-				return s.TeleportBackToLogin(c, msg)
-			}
-
+			return linkUserAndLogin(user.RootIdentity.Subject, externalIdentity)
 		}
 
-		if externalOauth2State.Request.Directive == models.SignupDirective {
+		switch externalOauth2State.Request.Directive {
+		case models.LoginDirective:
+			// do we have a candidate user to link to?
+			if !fluffycore_utils.IsEmptyOrNil(authorizationFinal.Request.CandidateUserId) {
+				// CandidateUserID hint
+				//--------------------------------------------------------------------------------------------
+				return linkUserAndLogin(authorizationFinal.Request.CandidateUserId, externalIdentity)
+			}
 
+			// is AUTO-ACCOUNT creation enabled for this IDP?
+			if idp.AutoCreate {
+				user, err := doAutoCreateUser()
+				if err != nil {
+					log.Error().Err(err).Msg("doAutoCreateUser")
+					return s.TeleportBackToLogin(c, InternalError_Callback_005)
+				}
+				return loginLinkedUser(user)
+
+			}
+			// we bounce the user back to go through a sigunup flow
+			msg := utils.LocalizeWithInterperlate(localizer, "username.not.found", map[string]string{"username": externalIdentity.Email})
+			return s.TeleportBackToLogin(c, msg)
+		case models.SignupDirective:
 			user, err := doAutoCreateUser()
 			if err != nil {
 				log.Error().Err(err).Msg("doAutoCreateUser")
@@ -512,9 +507,7 @@ func (s *service) Do(c echo.Context) error {
 				return loginLinkedUser(user)
 			}
 			return doEmailVerification(user)
-
 		}
-
 	}
 	return s.TeleportBackToLogin(c, InternalError_Callback_011)
 }
