@@ -45,6 +45,22 @@ func init() {
 	var _ contracts_handler.IHandler = stemService
 }
 
+const (
+	// make sure only one is shown.  This is an internal error code to point the developer to the code that is failing
+	InternalError_ExternalIDP_001 = "rg-external-idp-001"
+	InternalError_ExternalIDP_002 = "rg-external-idp-002"
+	InternalError_ExternalIDP_003 = "rg-external-idp-003"
+	InternalError_ExternalIDP_004 = "rg-external-idp-004"
+	InternalError_ExternalIDP_005 = "rg-external-idp-005"
+	InternalError_ExternalIDP_006 = "rg-external-idp-006"
+	InternalError_ExternalIDP_007 = "rg-external-idp-007"
+	InternalError_ExternalIDP_008 = "rg-external-idp-008"
+	InternalError_ExternalIDP_009 = "rg-external-idp-009"
+	InternalError_ExternalIDP_010 = "rg-external-idp-010"
+	InternalError_ExternalIDP_011 = "rg-external-idp-011"
+	InternalError_ExternalIDP_099 = "rg-external-idp-099" // 99 is a bind problem
+)
+
 func (s *service) Ctor(
 	config *contracts_config.Config,
 	container di.Container,
@@ -117,20 +133,21 @@ func (s *service) DoPost(c echo.Context) error {
 	log := zerolog.Ctx(ctx).With().Logger()
 	model := &ExternalIDPAuthRequest{}
 	if err := c.Bind(model); err != nil {
-		return err
+		log.Error().Err(err).Msg("c.Bind")
+		return s.TeleportBackToLogin(c, InternalError_ExternalIDP_099)
 	}
 	if err := s.validateLoginGetRequest(model); err != nil {
 		log.Error().Err(err).Msg("validateLoginGetRequest")
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_ExternalIDP_002)
 	}
 	log.Info().Interface("model", model).Msg("model")
 	session, err := s.getSession()
 	if err != nil {
+		return s.TeleportBackToLogin(c, InternalError_ExternalIDP_003)
 	}
 	dd, err := session.Get("request")
 	if err != nil {
-		log.Error().Err(err).Msg("session.Get")
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_ExternalIDP_004)
 	}
 	dd2 := dd.(*proto_oidc_models.AuthorizationRequest)
 	getIDPBySlugResponse, err := s.IdpServiceServer().GetIDPBySlug(ctx,
@@ -139,7 +156,7 @@ func (s *service) DoPost(c echo.Context) error {
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("GetIDPBySlug")
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_ExternalIDP_005)
 	}
 	idp := getIDPBySlugResponse.Idp
 	externalState := xid.New().String()
@@ -169,7 +186,7 @@ func (s *service) DoPost(c echo.Context) error {
 				if err != nil {
 					log.Error().Err(err).Msg("SetExternalOauth2Cookie")
 					// redirect to error page
-					return c.Redirect(http.StatusFound, "/error")
+					return s.TeleportBackToLogin(c, InternalError_ExternalIDP_006)
 				}
 				getConfigResponse, err := s.oauth2Factory.GetConfig(ctx,
 					&contracts_oauth2factory.GetConfigRequest{
@@ -177,7 +194,7 @@ func (s *service) DoPost(c echo.Context) error {
 					})
 				if err != nil {
 					log.Error().Err(err).Msg("Failed to get oauth2Config")
-					return c.Redirect(http.StatusFound, "/error")
+					return s.TeleportBackToLogin(c, InternalError_ExternalIDP_007)
 				}
 				oauth2Config := getConfigResponse.Config
 				u := oauth2Config.AuthCodeURL(externalState,
@@ -209,7 +226,7 @@ func (s *service) DoPost(c echo.Context) error {
 				if err != nil {
 					log.Error().Err(err).Msg("SetExternalOauth2Cookie")
 					// redirect to error page
-					return c.Redirect(http.StatusFound, "/error")
+					return s.TeleportBackToLogin(c, InternalError_ExternalIDP_008)
 				}
 				scopes := strings.Split(v.Oauth2.Scope, " ")
 				config := oauth2.Config{
@@ -251,7 +268,7 @@ func (s *service) DoPost(c echo.Context) error {
 				if err != nil {
 					log.Error().Err(err).Msg("SetExternalOauth2Cookie")
 					// redirect to error page
-					return c.Redirect(http.StatusFound, "/error")
+					return s.TeleportBackToLogin(c, InternalError_ExternalIDP_009)
 				}
 				getConfigResponse, err := s.oauth2Factory.GetConfig(ctx,
 					&contracts_oauth2factory.GetConfigRequest{
@@ -259,7 +276,7 @@ func (s *service) DoPost(c echo.Context) error {
 					})
 				if err != nil {
 					log.Error().Err(err).Msg("Failed to get oauth2Config")
-					return c.Redirect(http.StatusFound, "/error")
+					return s.TeleportBackToLogin(c, InternalError_ExternalIDP_010)
 				}
 				oauth2Config := getConfigResponse.Config
 				authCodeOptions := []oauth2.AuthCodeOption{
@@ -270,8 +287,7 @@ func (s *service) DoPost(c echo.Context) error {
 			}
 		}
 	}
-
-	return c.Redirect(http.StatusFound, "/error")
+	return s.TeleportBackToLogin(c, InternalError_ExternalIDP_011)
 
 }
 

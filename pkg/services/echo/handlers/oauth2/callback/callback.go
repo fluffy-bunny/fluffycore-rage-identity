@@ -67,6 +67,7 @@ const (
 	InternalError_Callback_009 = "rg-callback-009"
 	InternalError_Callback_010 = "rg-callback-010"
 	InternalError_Callback_011 = "rg-callback-011"
+	InternalError_Callback_099 = "rg-callback-099" // 99 is a bind problem
 )
 
 func (s *service) Ctor(
@@ -129,7 +130,8 @@ func (s *service) Do(c echo.Context) error {
 	log := zerolog.Ctx(ctx).With().Logger()
 	model := &CallbackRequest{}
 	if err := c.Bind(model); err != nil {
-		return err
+		log.Error().Err(err).Msg("c.Bind")
+		return s.TeleportBackToLogin(c, InternalError_Callback_099)
 	}
 	log = log.With().Interface("model", model).Logger()
 
@@ -149,21 +151,6 @@ func (s *service) Do(c echo.Context) error {
 		&contracts_cookies.DeleteExternalOauth2CookieRequest{
 			State: model.State,
 		})
-
-	doInternalErrorPost := func(msg string) error {
-		formParams := []models.FormParam{
-			{
-				Name:  "state",
-				Value: parentState,
-			},
-			{
-				Name:  "error",
-				Value: msg,
-			},
-		}
-		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
-
-	}
 
 	doLoginBounceBack := func() error {
 		formParams := []models.FormParam{
@@ -191,7 +178,7 @@ func (s *service) Do(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SetVerificationCodeCookie")
-			return c.Redirect(http.StatusFound, "/error")
+			return s.TeleportBackToLogin(c, InternalError_Callback_007)
 		}
 		_, err = s.EmailService().SendSimpleEmail(ctx,
 			&contracts_email.SendSimpleEmailRequest{
@@ -204,7 +191,7 @@ func (s *service) Do(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SendSimpleEmail")
-			return c.Redirect(http.StatusFound, "/error")
+			return s.TeleportBackToLogin(c, InternalError_Callback_009)
 		}
 		formParams := []models.FormParam{
 			{
@@ -239,7 +226,7 @@ func (s *service) Do(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("GetAuthorizationRequestState")
-		return doInternalErrorPost(InternalError_Callback_001)
+		return s.TeleportBackToLogin(c, InternalError_Callback_001)
 	}
 	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 
@@ -249,7 +236,7 @@ func (s *service) Do(c echo.Context) error {
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("GetIDPBySlug")
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_Callback_008)
 	}
 	var exchangeCodeResponse *contracts_codeexchange.ExchangeCodeResponse
 	idp := getIDPBySlugResponse.Idp
@@ -364,7 +351,7 @@ func (s *service) Do(c echo.Context) error {
 			})
 			if err != nil {
 				log.Error().Err(err).Msg("StoreAuthorizationRequestState")
-				return doInternalErrorPost(InternalError_Callback_002)
+				return s.TeleportBackToLogin(c, InternalError_Callback_002)
 			}
 			// redirect back
 			return doLoginBounceBack()
@@ -387,7 +374,7 @@ func (s *service) Do(c echo.Context) error {
 				err = nil
 			} else {
 				log.Error().Err(err).Msg("GetUser")
-				return doInternalErrorPost(InternalError_Callback_003)
+				return s.TeleportBackToLogin(c, InternalError_Callback_003)
 			}
 		}
 
@@ -431,7 +418,7 @@ func (s *service) Do(c echo.Context) error {
 			user, err := linkUser(candidateUserID, externalIdentity)
 			if err != nil {
 				log.Error().Err(err).Msg("LinkUsers")
-				return doInternalErrorPost(InternalError_Callback_004)
+				return s.TeleportBackToLogin(c, InternalError_Callback_004)
 			}
 			return loginLinkedUser(user)
 		}
@@ -501,14 +488,14 @@ func (s *service) Do(c echo.Context) error {
 					user, err := doAutoCreateUser()
 					if err != nil {
 						log.Error().Err(err).Msg("doAutoCreateUser")
-						return doInternalErrorPost(InternalError_Callback_005)
+						return s.TeleportBackToLogin(c, InternalError_Callback_005)
 					}
 					return loginLinkedUser(user)
 
 				}
 				// we bounce the user back to go through a sigunup flow
 				msg := utils.LocalizeWithInterperlate(localizer, "username.not.found", map[string]string{"username": externalIdentity.Email})
-				return doInternalErrorPost(msg)
+				return s.TeleportBackToLogin(c, msg)
 			}
 
 		}
@@ -518,7 +505,7 @@ func (s *service) Do(c echo.Context) error {
 			user, err := doAutoCreateUser()
 			if err != nil {
 				log.Error().Err(err).Msg("doAutoCreateUser")
-				return doInternalErrorPost(InternalError_Callback_006)
+				return s.TeleportBackToLogin(c, InternalError_Callback_006)
 			}
 			emailVerificationRequired := idp.EmailVerificationRequired
 			if !emailVerificationRequired {
@@ -529,7 +516,7 @@ func (s *service) Do(c echo.Context) error {
 		}
 
 	}
-	return c.Redirect(http.StatusTemporaryRedirect, "/error?state="+parentState)
+	return s.TeleportBackToLogin(c, InternalError_Callback_011)
 }
 
 // IsMetadataBoolSet checks if the key is set in the metadata and if the value is a boolean

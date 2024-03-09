@@ -37,6 +37,23 @@ func init() {
 	var _ contracts_handler.IHandler = stemService
 }
 
+const (
+	// make sure only one is shown.  This is an internal error code to point the developer to the code that is failing
+	InternalError_PasswordReset_001 = "rg-password-reset-001"
+	InternalError_PasswordReset_002 = "rg-password-reset-002"
+	InternalError_PasswordReset_003 = "rg-password-reset-003"
+	InternalError_PasswordReset_004 = "rg-password-reset-004"
+	InternalError_PasswordReset_005 = "rg-password-reset-005"
+	InternalError_PasswordReset_006 = "rg-password-reset-006"
+	InternalError_PasswordReset_007 = "rg-password-reset-007"
+	InternalError_PasswordReset_008 = "rg-password-reset-008"
+	InternalError_PasswordReset_009 = "rg-password-reset-009"
+	InternalError_PasswordReset_010 = "rg-password-reset-010"
+	InternalError_PasswordReset_011 = "rg-password-reset-011"
+
+	InternalError_PasswordReset_099 = "rg-password-reset-099"
+)
+
 func (s *service) Ctor(
 	container di.Container,
 	wellknownCookies contracts_cookies.IWellknownCookies,
@@ -90,13 +107,13 @@ func (s *service) DoGet(c echo.Context) error {
 	model := &PasswordResetGetRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("c.Bind")
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_PasswordReset_099)
 	}
 	log.Info().Interface("model", model).Msg("model")
 	err := s.validatePasswordResetGetRequest(model)
 	if err != nil {
 		log.Error().Err(err).Msg("validatePasswordResetGetRequest")
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_PasswordReset_002)
 	}
 
 	err = s.Render(c, http.StatusOK, "oidc/passwordreset/index",
@@ -137,7 +154,8 @@ func (s *service) DoPost(c echo.Context) error {
 	log := zerolog.Ctx(ctx).With().Logger()
 	model := &PasswordResetPostRequest{}
 	if err := c.Bind(model); err != nil {
-		return err
+		log.Error().Err(err).Msg("c.Bind")
+		return s.TeleportBackToLogin(c, InternalError_PasswordReset_099)
 	}
 	log.Info().Interface("model", model).Msg("model")
 
@@ -159,17 +177,17 @@ func (s *service) DoPost(c echo.Context) error {
 	getPasswordResetCookieResponse, err := s.wellknownCookies.GetPasswordResetCookie(c)
 	if err != nil {
 		log.Error().Err(err).Msg("GetPasswordResetCookie")
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_PasswordReset_003)
 	}
 	if getPasswordResetCookieResponse == nil {
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_PasswordReset_004)
 	}
 	if getPasswordResetCookieResponse.PasswordReset == nil {
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_PasswordReset_005)
 	}
 	if fluffycore_utils.IsEmptyOrNil(getPasswordResetCookieResponse.PasswordReset.Subject) {
 		s.wellknownCookies.DeletePasswordResetCookie(c)
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_PasswordReset_006)
 	}
 	hashPasswordResponse, err := s.passwordHasher.HashPassword(ctx,
 		&contracts_identity.HashPasswordRequest{
@@ -177,7 +195,7 @@ func (s *service) DoPost(c echo.Context) error {
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("GeneratePasswordHash")
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_PasswordReset_007)
 	}
 
 	getUserResponse, err := s.RageUserService().GetRageUser(ctx,
@@ -188,7 +206,7 @@ func (s *service) DoPost(c echo.Context) error {
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("ListUser")
-		return c.Redirect(http.StatusFound, "/Error")
+		return s.TeleportBackToLogin(c, InternalError_PasswordReset_008)
 	}
 
 	_, err = s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
@@ -205,7 +223,7 @@ func (s *service) DoPost(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("UpdateUser")
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_PasswordReset_009)
 	}
 
 	// send the email
@@ -217,7 +235,7 @@ func (s *service) DoPost(c echo.Context) error {
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("SendEmail")
-		return c.Redirect(http.StatusFound, "/error")
+		return s.TeleportBackToLogin(c, InternalError_PasswordReset_010)
 	}
 	if !fluffycore_utils.IsEmptyOrNil(model.ReturnUrl) {
 		return c.Redirect(http.StatusFound, model.ReturnUrl)
