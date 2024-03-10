@@ -11,6 +11,7 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/eko_gocache"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
+	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	services_client_inmemory "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/client/inmemory"
 	services_codeexchanges_genericoidc "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/codeexchanges/genericoidc"
 	services_codeexchanges_github "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/codeexchanges/github"
@@ -27,6 +28,7 @@ import (
 	services_selfoauth2provider "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/selfoauth2provider"
 	services_tokenservice "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/tokenservice"
 	services_util "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/util"
+	services_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/webauthn"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	fluffycore_contracts_jwtminter "github.com/fluffy-bunny/fluffycore/contracts/jwtminter"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
@@ -95,6 +97,7 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	config.SessionConfig.Domain = config.SystemConfig.Domain
 
 	di.AddInstance[*contracts_sessions.SessionConfig](builder, config.SessionConfig)
+	di.AddInstance[*contracts_webauthn.WebAuthNConfig](builder, config.WebAuthNConfig)
 
 	OnConfigureServicesLoadOIDCClients(ctx, config, builder)
 	OnConfigureServicesLoadIDPs(ctx, config, builder)
@@ -132,6 +135,7 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	services_cookies.AddSingletonIWellknownCookies(builder)
 
 	services_selfoauth2provider.AddSingletonISelfOAuth2Provider(builder)
+	services_webauthn.AddSingletonIWebAuthN(builder)
 	return nil
 }
 func OnConfigureServicesLoadIDPs(ctx context.Context, config *contracts_config.Config, builder di.ContainerBuilder) error {

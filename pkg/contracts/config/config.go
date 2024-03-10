@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
+	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	fluffycore_contracts_config "github.com/fluffy-bunny/fluffycore/contracts/config"
 	fluffycore_echo_contracts_cookies "github.com/fluffy-bunny/fluffycore/echo/contracts/cookies"
@@ -90,6 +91,7 @@ type Config struct {
 	CookieConfig              *CookieConfig                     `json:"cookieConfig"`
 	SystemConfig              *SystemConfig                     `json:"systemConfig"`
 	SessionConfig             *contracts_sessions.SessionConfig `json:"sessionConfig"`
+	WebAuthNConfig            contracts_webauthn.WebAuthNConfig `json:"webAuthNConfig"`
 }
 
 // ConfigDefaultJSON default json
@@ -173,6 +175,11 @@ const configDefaultJSONTemplate = `
 	"systemConfig": {
 		"domain": "@@CHANGEME@@",
 		"developerMode": false
+	},
+	"webAuthNConfig": {
+		"rpDisplayName": "RAGE",
+		"rpID": "[the domain]",
+		"rpOrigins": []
 	}
 
 

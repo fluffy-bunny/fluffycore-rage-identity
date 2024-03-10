@@ -39,6 +39,10 @@ var (
 	WebAuthN_Register_ProcessRegistrationAttestation = "/webauthn/register/process_registration_attestation"
 	WebAuthN_Login_GetCredentialRequestOptions       = "/webauthn/login/get_credential_request_options"
 	WebAuthN_Login_ProcessLoginAssertion             = "/webauthn/login/process_login_assertion"
+	WebAuthN_Register_Begin                          = "/webauthn/register/begin/user"
+	WebAuthN_Register_Finish                         = "/webauthn/register/finish"
+	WebAuthN_Login_Begin                             = "/webauthn/login/begin/user"
+	WebAuthN_Login_Finish                            = "/webauthn/login/finish"
 )
 
 type Paths struct {

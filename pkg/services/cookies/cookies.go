@@ -358,3 +358,64 @@ func (s *service) GetExternalOauth2Cookie(c echo.Context, request *contracts_coo
 		ExternalOAuth2State: &value,
 	}, nil
 }
+
+func (s *service) validateSetWebAuthNCookieRequest(c echo.Context, request *contracts_cookies.SetWebAuthNCookieRequest) error {
+	if request == nil {
+		return status.Error(codes.InvalidArgument, "request is nil")
+	}
+	if request.Value == nil {
+		return status.Error(codes.InvalidArgument, "request.Value is nil")
+	}
+	if request.Value.Identity == nil {
+		return status.Error(codes.InvalidArgument, "request.Value.Identity is nil")
+	}
+	return nil
+}
+
+func (s *service) SetWebAuthNCookie(c echo.Context, request *contracts_cookies.SetWebAuthNCookieRequest) error {
+	// TODO: Configurable expiration
+	err := s.validateSetWebAuthNCookieRequest(c, request)
+	if err != nil {
+		return err
+	}
+	b, err := json.Marshal(request.Value)
+	if err != nil {
+		return err
+	}
+	value := make(map[string]interface{})
+	err = json.Unmarshal(b, &value)
+	if err != nil {
+		return err
+	}
+	_, err = s.secureCookies.SetCookie(c,
+		&fluffycore_contracts_cookies.SetCookieRequest{
+			Name:     contracts_cookies.CookieNameWebAuthN,
+			Value:    value,
+			HttpOnly: false,
+			Expires:  time.Now().Add(30 * time.Minute),
+			Path:     "/",
+			Domain:   s.cookieConfig.Domain,
+		})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (s *service) DeleteWebAuthNCookie(c echo.Context) {
+	s.secureCookies.DeleteCookie(c,
+		&fluffycore_contracts_cookies.DeleteCookieRequest{
+			Name:   contracts_cookies.CookieNameWebAuthN,
+			Path:   "/",
+			Domain: s.cookieConfig.Domain,
+		})
+}
+func (s *service) GetWebAuthNCookie(c echo.Context) (*contracts_cookies.GetWebAuthNCookieResponse, error) {
+	var value contracts_cookies.WebAuthNCookie
+	err := GetCookie(c, s.secureCookies, contracts_cookies.CookieNameWebAuthN, &value)
+	if err != nil {
+		return nil, err
+	}
+	return &contracts_cookies.GetWebAuthNCookieResponse{
+		Value: &value,
+	}, nil
+}

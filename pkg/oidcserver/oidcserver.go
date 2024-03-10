@@ -26,6 +26,10 @@ import (
 	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/swagger"
 	services_handlers_token_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/token_endpoint"
 	services_handlers_verifycode "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/verifycode"
+	services_handlers_webauthn_loginbegin "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn/loginbegin"
+	services_handlers_webauthn_loginfinish "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn/loginfinish"
+	services_handlers_webauthn_registrationbegin "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn/registrationbegin"
+	services_handlers_webauthn_registrationfinish "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn/registrationfinish"
 	services_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/oidc_session"
 	pkg_types "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/types"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
@@ -182,6 +186,12 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_verifycode.AddScopedIHandler(builder)
 	services_handlers_passwordreset.AddScopedIHandler(builder)
 
+	// WebAuthN Handlers
+	//--------------------------------------------------------
+	services_handlers_webauthn_registrationbegin.AddScopedIHandler(builder)
+	services_handlers_webauthn_registrationfinish.AddScopedIHandler(builder)
+	services_handlers_webauthn_loginbegin.AddScopedIHandler(builder)
+	services_handlers_webauthn_loginfinish.AddScopedIHandler(builder)
 	// sessions
 	//----------------
 	fluffycore_echo_services_sessions_memory_session_store.AddSingletonBackendSessionStore(builder)
