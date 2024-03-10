@@ -28,6 +28,7 @@ var (
 	PasswordResetPath                                = "/password-reset"
 	ProfilePath                                      = "/profile"
 	PersonalInformationPath                          = "/profile/personal-information"
+	PasskeyManagementPath                            = "/passkey-management"
 	ReadyPath                                        = "/ready"
 	SignupPath                                       = "/signup"
 	SwaggerPath                                      = "/swagger/*"
@@ -51,6 +52,7 @@ type Paths struct {
 	Home                string
 	Login               string
 	Logout              string
+	PasskeyManagement   string
 	PersonalInformation string
 	Profile             string
 	OIDCLogin           string
@@ -68,6 +70,7 @@ func NewPaths() *Paths {
 		Home:                HomePath,
 		Login:               LoginPath,
 		Logout:              LogoutPath,
+		PasskeyManagement:   PasskeyManagementPath,
 		PersonalInformation: PersonalInformationPath,
 		Profile:             ProfilePath,
 		OIDCLogin:           OIDCLoginPath,
