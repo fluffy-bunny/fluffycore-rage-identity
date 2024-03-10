@@ -1,9 +1,7 @@
 syntax = "proto3";
 
 option go_package = "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models;models";
-option java_multiple_files = true;
-option java_package = "com.fluffybunny.rageoidc.models";
-option csharp_namespace = "FluffyBunny.RageOidc.Oidc.Models";
+ 
 
 
 package proto.oidc.models;
@@ -11,7 +9,7 @@ package proto.oidc.models;
 import "google/protobuf/descriptor.proto";
 import "google/protobuf/wrappers.proto";
 import "proto/types/filter.proto";
- 
+import "proto/types/webauthn/webauthn.proto";
 
 enum RageUserState {
     USER_STATE_UNSPECIFIED = 0;
@@ -134,12 +132,20 @@ message RecoveryUpdate{
     EmailUpdate email = 1;
 }
 
+message WebAuthN {
+    repeated proto.types.webauthn.Credential credentials = 1;
+}
+message WebAuthNUpdate {
+    repeated proto.types.webauthn.CredentialArrayUpdate credentials = 1;
+}
 message RageUser {
     RageUserState       state = 2;
     Identity            root_identity = 3;
     LinkedIdentities    linked_identities = 4;
     Recovery            recovery = 5;
     Password            password = 6;
+    WebAuthN            webauthn = 7;
+
 }
 message RageUsers {
     repeated RageUser users = 1;
@@ -150,6 +156,7 @@ message RageUserUpdate {
     LinkedIdentitiesUpdate  linked_identities = 3;
     RecoveryUpdate          recovery = 4;
     PasswordUpdate          password = 5;
+    WebAuthNUpdate          webauthn = 6;
  }
 
 
