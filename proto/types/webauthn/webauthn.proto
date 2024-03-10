@@ -5,6 +5,7 @@ option go_package = "github.com/fluffy-bunny/fluffycore-rage-identity/proto/type
 package proto.types.webauthn;
 
 import "google/protobuf/descriptor.proto";
+import "google/protobuf/wrappers.proto";
 
 message Credential {
     // user friendly name to identity the credential
@@ -71,6 +72,10 @@ message Authenticator {
 message CredentialArrayUpdate {
     message Granular{
         repeated Credential add = 1;
-        repeated bytes remove = 2;
+        repeated string remove = 2;
+     }
+     oneof update {
+        Granular granular = 1;
+        google.protobuf.BoolValue delete_all = 2;
      }
 }

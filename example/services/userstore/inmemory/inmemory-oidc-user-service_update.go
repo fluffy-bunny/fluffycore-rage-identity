@@ -7,6 +7,7 @@ import (
 	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
+	proto_types_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types/webauthn"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	zerolog "github.com/rs/zerolog"
@@ -59,6 +60,43 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 		if updateRageUser.State != nil {
 			rageUser.State = updateRageUser.State.Value
 		}
+		doWebAuthNUpdate := func() error {
+			webAuthNUpdate := updateRageUser.Webauthn
+			if webAuthNUpdate == nil || webAuthNUpdate.Credentials == nil {
+				// nothing to do
+				return nil
+			}
+			if rageUser.Webauthn == nil {
+				rageUser.Webauthn = &proto_oidc_models.WebAuthN{}
+			}
+			switch v := webAuthNUpdate.Credentials.Update.(type) {
+			case *proto_types_webauthn.CredentialArrayUpdate_DeleteAll:
+				if v.DeleteAll.Value {
+					rageUser.Webauthn.Credentials = make([]*proto_types_webauthn.Credential, 0)
+				}
+			case *proto_types_webauthn.CredentialArrayUpdate_Granular_:
+				mapExisting := make(map[string]*proto_types_webauthn.Credential)
+				for _, vv := range rageUser.Webauthn.Credentials {
+					mapExisting[vv.Name] = vv
+				}
+				for _, name := range v.Granular.Remove {
+					delete(mapExisting, name)
+				}
+				for _, vvv := range v.Granular.Add {
+					mapExisting[vvv.Name] = vvv
+				}
+				rageUser.Webauthn.Credentials = make([]*proto_types_webauthn.Credential, 0)
+				for _, vvvv := range mapExisting {
+					rageUser.Webauthn.Credentials = append(rageUser.Webauthn.Credentials, vvvv)
+				}
+
+			}
+			return nil
+		}
+		err := doWebAuthNUpdate()
+		if err != nil {
+			return err
+		}
 		doRecoveryUpdate := func() error {
 			recoveryUpdate := updateRageUser.Recovery
 			if recoveryUpdate == nil {
@@ -82,7 +120,7 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 			}
 			return nil
 		}
-		err := doRecoveryUpdate()
+		err = doRecoveryUpdate()
 		if err != nil {
 			return err
 		}

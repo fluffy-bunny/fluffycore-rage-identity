@@ -2,5 +2,12 @@
   "systemConfig": {
     "domain": "localhost",
     "developerMode": false
-  }
+  },
+  "webAuthNConfig": {
+		"rpDisplayName": "RAGE",
+		"rpID": "01d4-47-150-126-75.ngrok-free.app",
+		"rpOrigins": [
+      "https://01d4-47-150-126-75.ngrok-free.app"
+    ]
+	}
 }

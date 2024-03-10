@@ -79,19 +79,19 @@ type InitialConfig struct {
 type Config struct {
 	fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
 
-	ConfigFiles               ConfigFiles                       `json:"configFiles"`
-	Echo                      *EchoConfig                       `json:"echo"`
-	InMemoryClients           InMemoryClients                   `json:"inMemoryClients"`
-	OIDCConfig                *OIDCConfig                       `json:"oidcConfig"`
-	BackingCache              *BackingCacheConfig               `json:"backingCache"`
-	AutolinkOnEmailMatch      bool                              `json:"autolinkOnEmailMatch"`
-	EmailVerificationRequired bool                              `json:"emailVerificationRequired"`
-	EmailConfig               *contracts_email.EmailConfig      `json:"emailConfig"`
-	SelfIDPConfig             *SelfIDPConfig                    `json:"selfIDPConfig"`
-	CookieConfig              *CookieConfig                     `json:"cookieConfig"`
-	SystemConfig              *SystemConfig                     `json:"systemConfig"`
-	SessionConfig             *contracts_sessions.SessionConfig `json:"sessionConfig"`
-	WebAuthNConfig            contracts_webauthn.WebAuthNConfig `json:"webAuthNConfig"`
+	ConfigFiles               ConfigFiles                        `json:"configFiles"`
+	Echo                      *EchoConfig                        `json:"echo"`
+	InMemoryClients           InMemoryClients                    `json:"inMemoryClients"`
+	OIDCConfig                *OIDCConfig                        `json:"oidcConfig"`
+	BackingCache              *BackingCacheConfig                `json:"backingCache"`
+	AutolinkOnEmailMatch      bool                               `json:"autolinkOnEmailMatch"`
+	EmailVerificationRequired bool                               `json:"emailVerificationRequired"`
+	EmailConfig               *contracts_email.EmailConfig       `json:"emailConfig"`
+	SelfIDPConfig             *SelfIDPConfig                     `json:"selfIDPConfig"`
+	CookieConfig              *CookieConfig                      `json:"cookieConfig"`
+	SystemConfig              *SystemConfig                      `json:"systemConfig"`
+	SessionConfig             *contracts_sessions.SessionConfig  `json:"sessionConfig"`
+	WebAuthNConfig            *contracts_webauthn.WebAuthNConfig `json:"webAuthNConfig"`
 }
 
 // ConfigDefaultJSON default json

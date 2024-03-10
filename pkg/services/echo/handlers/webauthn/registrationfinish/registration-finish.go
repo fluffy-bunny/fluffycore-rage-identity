@@ -9,7 +9,9 @@ import (
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	services_handlers_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
+	proto_types_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types/webauthn"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
@@ -138,7 +140,46 @@ func (s *service) Do(c echo.Context) error {
 	}
 
 	// we need to add the credentials to the user.
-	// TODO: Add creds to user database
+	transport := []string{}
+	for _, t := range credential.Transport {
+		transport = append(transport, string(t))
+	}
+	// TODO: need to get some friendly name for the registration.
+	s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
+		User: &proto_oidc_models.RageUserUpdate{
+			RootIdentity: &proto_oidc_models.IdentityUpdate{
+				Subject: subject,
+			},
+			Webauthn: &proto_oidc_models.WebAuthNUpdate{
+				Credentials: &proto_types_webauthn.CredentialArrayUpdate{
+					Update: &proto_types_webauthn.CredentialArrayUpdate_Granular_{
+						Granular: &proto_types_webauthn.CredentialArrayUpdate_Granular{
+							Add: []*proto_types_webauthn.Credential{
+								{
+									ID:              credential.ID,
+									PublicKey:       credential.PublicKey,
+									AttestationType: credential.AttestationType,
+									Transport:       transport,
+									Flags: &proto_types_webauthn.CredentialFlags{
+										UserPresent:    credential.Flags.UserPresent,
+										UserVerified:   credential.Flags.UserVerified,
+										BackupEligible: credential.Flags.BackupEligible,
+										BackupState:    credential.Flags.BackupState,
+									},
+									Authenticator: &proto_types_webauthn.Authenticator{
+										Aaguid:       credential.Authenticator.AAGUID,
+										SignCount:    credential.Authenticator.SignCount,
+										CloneWarning: credential.Authenticator.CloneWarning,
+										Attachment:   string(credential.Authenticator.Attachment),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
 	return c.JSON(http.StatusOK, credential)
 
 }

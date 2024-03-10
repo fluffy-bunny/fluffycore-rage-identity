@@ -136,7 +136,7 @@ message WebAuthN {
     repeated proto.types.webauthn.Credential credentials = 1;
 }
 message WebAuthNUpdate {
-    repeated proto.types.webauthn.CredentialArrayUpdate credentials = 1;
+    proto.types.webauthn.CredentialArrayUpdate credentials = 1;
 }
 message RageUser {
     RageUserState       state = 2;
