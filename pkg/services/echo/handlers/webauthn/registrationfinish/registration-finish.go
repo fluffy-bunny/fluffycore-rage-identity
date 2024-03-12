@@ -16,6 +16,7 @@ import (
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	webauthn_protocol "github.com/go-webauthn/webauthn/protocol"
+	uuid "github.com/gofrs/uuid"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
@@ -186,6 +187,11 @@ func (s *service) Do(c echo.Context) error {
 		log.Error().Err(err).Msg("UpdateUser")
 		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_RegisterFinish_003)
 	}
+	aaguid, _ := uuid.FromBytes(credential.Authenticator.AAGUID)
+
+	friendlyName := s.webAuthN.GetFriendlyNameByAAGUID(aaguid)
+	log.Info().Str("friendlyName", friendlyName).Msg("friendlyName")
+
 	return c.JSON(http.StatusOK, credential)
 
 }

@@ -16,6 +16,7 @@ require (
 	github.com/fluffy-bunny/fluffycore v1.0.87
 	github.com/go-oauth2/oauth2/v4 v4.5.2
 	github.com/go-webauthn/webauthn v0.10.1
+	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/gogo/status v1.1.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1

@@ -4,7 +4,7 @@
   },
   "selfIDPConfig": {
     "authority": "https://${DOMAIN}",
-    "redirectUrl": "${NGROK_URL}/auth/callback"
+    "redirectUrl": "https://${DOMAIN}/auth/callback"
   },
   "systemConfig": {
     "domain": "${DOMAIN}",

@@ -2,6 +2,7 @@ package webauthn
 
 import (
 	go_webauthn "github.com/go-webauthn/webauthn/webauthn"
+	uuid "github.com/gofrs/uuid"
 )
 
 type (
@@ -12,5 +13,6 @@ type (
 	}
 	IWebAuthN interface {
 		GetWebAuthN() *go_webauthn.WebAuthn
+		GetFriendlyNameByAAGUID(aaguid uuid.UUID) string
 	}
 )
