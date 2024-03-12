@@ -1,13 +1,18 @@
 {
+  "oidcConfig": {
+    "baseUrl": "https://${DOMAIN}"
+  },
+  "selfIDPConfig": {
+    "authority": "https://${DOMAIN}",
+    "redirectUrl": "${NGROK_URL}/auth/callback"
+  },
   "systemConfig": {
-    "domain": "7622-2600-1700-7700-394f-48eb-831c-4d8b-d3a0.ngrok-free.app",
+    "domain": "${DOMAIN}",
     "developerMode": false
   },
   "webAuthNConfig": {
     "rpDisplayName": "RAGE",
-    "rpID": "7622-2600-1700-7700-394f-48eb-831c-4d8b-d3a0.ngrok-free.app",
-    "rpOrigins": [
-      "https://7622-2600-1700-7700-394f-48eb-831c-4d8b-d3a0.ngrok-free.app"
-    ]
+    "rpID": "${DOMAIN}",
+    "rpOrigins": ["https://${DOMAIN}"]
   }
 }

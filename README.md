@@ -224,3 +224,34 @@ go build .
 
 
 ```
+
+## PassKeys
+
+For developement we need https.  This is where ngrok comes in.  
+
+```powershell
+ngrok http http://localhost:9044
+```
+
+This will give you your ngrok url.  
+
+```cmd
+ngrok 
+Forwarding  https://3156-47-150-126-75.ngrok-free.app -> http://localhost:9044    
+```
+
+Update [.env.ngrok](./.env.ngrok) with the ngrok domain.  In this case it would be `3156-47-150-126-75.ngrok-free.app`   
+
+We launch the server using vscode [launch.json](./.vscode/launch.json)
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "server-ngrok"
+        }
+    ]
+}
+```
+

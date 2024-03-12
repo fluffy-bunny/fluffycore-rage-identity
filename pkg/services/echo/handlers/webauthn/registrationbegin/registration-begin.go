@@ -9,7 +9,6 @@ import (
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	services_handlers_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
-	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
@@ -127,9 +126,7 @@ func (s *service) Do(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_RegisterBegin_002)
 	}
 	cookieValue := &contracts_cookies.WebAuthNCookie{
-		Identity: &proto_oidc_models.Identity{
-			Subject: subject,
-		},
+		Identity:    getRageUserResponse.User.RootIdentity,
 		SessionData: webAuthNSession,
 	}
 	err = s.cookies.SetWebAuthNCookie(c, &contracts_cookies.SetWebAuthNCookieRequest{
