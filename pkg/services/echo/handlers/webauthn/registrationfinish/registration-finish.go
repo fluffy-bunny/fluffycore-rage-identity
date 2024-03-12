@@ -147,7 +147,12 @@ func (s *service) Do(c echo.Context) error {
 		transport = append(transport, string(t))
 	}
 
-	// TODO: need to get some friendly name for the registration.
+	// get the friendly name
+	aaguid, _ := uuid.FromBytes(credential.Authenticator.AAGUID)
+
+	friendlyName := s.webAuthN.GetFriendlyNameByAAGUID(aaguid)
+	log.Debug().Str("friendlyName", friendlyName).Msg("friendlyName")
+
 	_, err = s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
 		User: &proto_oidc_models.RageUserUpdate{
 			RootIdentity: &proto_oidc_models.IdentityUpdate{
@@ -174,6 +179,7 @@ func (s *service) Do(c echo.Context) error {
 										SignCount:    credential.Authenticator.SignCount,
 										CloneWarning: credential.Authenticator.CloneWarning,
 										Attachment:   string(credential.Authenticator.Attachment),
+										FriendlyName: friendlyName,
 									},
 								},
 							},
@@ -187,10 +193,6 @@ func (s *service) Do(c echo.Context) error {
 		log.Error().Err(err).Msg("UpdateUser")
 		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_RegisterFinish_003)
 	}
-	aaguid, _ := uuid.FromBytes(credential.Authenticator.AAGUID)
-
-	friendlyName := s.webAuthN.GetFriendlyNameByAAGUID(aaguid)
-	log.Info().Str("friendlyName", friendlyName).Msg("friendlyName")
 
 	return c.JSON(http.StatusOK, credential)
 

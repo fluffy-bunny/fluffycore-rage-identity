@@ -66,6 +66,8 @@ message Authenticator {
 
 	// Attachment is the authenticatorAttachment value returned by the request.
     string attachment = 4;
+
+    string friendly_name = 5;
 }
  
 
