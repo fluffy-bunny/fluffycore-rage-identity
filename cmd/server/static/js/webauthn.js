@@ -147,6 +147,7 @@ function LoginUser() {
         "json"
       ).then((finishResponse) => {
         console.log("finishResponse: ", finishResponse);
+        window.location.href = finishResponse.redirectUri;
       });
     })
     .then((success) => {
