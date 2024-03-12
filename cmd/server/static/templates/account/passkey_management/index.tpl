@@ -8,12 +8,166 @@
 <body>
     <!-- Page content -->
     <div class="container">
-    <div class="text-center mt-5">
-        <h1>{{ call .LocalizeMessage "passkey_management" }}</h1>
+        <div class="text-center mt-5">
+            <h1>{{ call .LocalizeMessage "passkey_management" }}</h1>
+            <button class="btn btn-outline-primary" onclick="registerUser()">{{ call .LocalizeMessage "register" }}</button>
+        </div>
+    </div>
+    <script>
 
-         
-    </div>
-    </div>
+        $(document).ready(function() {
+            if (!window.PublicKeyCredential) {
+                alert("Client not capable. Handle error.");
+                return;
+            }
+        })
+
+        function bufferDecode(base64URL) {
+            const base64 = base64URL
+                .replace(/\-/g, '+')
+                .replace(/\_/g, '/');
+            return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+        }
+
+        function bufferEncode(value) {
+            return btoa(String.fromCharCode.apply(null, new Uint8Array(value)))
+              .replace(/\+/g, "-")
+              .replace(/\//g, "_")
+              .replace(/=/g, "");
+        }
+
+        function registerUser() {
+            username = $("#email").val()
+            if (username === "") {
+              alert("Please enter a username");
+              return;
+            }
+
+            $.get(
+                '/webauthn/register/begin',
+                null,
+                function (data) {
+                    return data
+                },
+                'json')
+                .then((beginResponse) => {
+                    console.log("beginResponse:", beginResponse);
+
+                    beginResponse.publicKey.challenge = bufferDecode(beginResponse.publicKey.challenge);
+                    beginResponse.publicKey.user.id = bufferDecode(beginResponse.publicKey.user.id);
+
+                    //if (beginResponse.publicKey.excludeCredentials) {
+                    //  for (var i = 0; i < beginResponse.publicKey.excludeCredentials.length; i++) {
+                    //    beginResponse.publicKey.excludeCredentials[i].id = bufferDecode(beginResponse.publicKey.excludeCredentials[i].id);
+                    //  }
+                    //}
+
+                    return navigator.credentials.create({
+                        publicKey: beginResponse.publicKey
+                    })
+                })
+                .then((credentialsResponse) => {
+                    console.log("credentialsResponse:",credentialsResponse);
+
+                    let attestationObject = credentialsResponse.response.attestationObject;
+                    let clientDataJSON = credentialsResponse.response.clientDataJSON;
+                    let rawId = credentialsResponse.rawId;
+
+                    $.post(
+                        '/webauthn/register/finish',
+                        JSON.stringify({
+                            id: credentialsResponse.id,
+                            rawId: bufferEncode(rawId),
+                            type: credentialsResponse.type,
+                            response: {
+                              attestationObject: bufferEncode(attestationObject),
+                              clientDataJSON: bufferEncode(clientDataJSON),
+                            },
+                          }),
+                        function (data) {
+                            return data
+                        },
+                        'json')
+                        .then((finishResponse) => {
+                            console.log("finishResponse:", finishResponse);
+                        })
+                })
+                .then((success) => {
+                    console.log("success:", success);
+                    alert("successfully registered !")
+                })
+                .catch((error) => {
+                  console.log("failed:", error)
+                  alert("occur exception")
+                })
+        }
+        
+        function LoginUser() {
+            username = $("#email").val()
+            if (username === "") {
+              alert("Please enter a username");
+              return;
+            }
+
+            $.get(
+                '/login/begin/' + username,
+                null,
+                function (data) {
+                    return data
+                },
+                'json')
+                .then((beginResponse) => {
+                    console.log("beginResponse: ", beginResponse);
+
+                    beginResponse.publicKey.challenge = bufferDecode(beginResponse.publicKey.challenge);
+                    beginResponse.publicKey.allowCredentials.forEach(function (allowCredential) {
+                        allowCredential.id = bufferDecode(allowCredential.id);
+                    });
+
+                    return navigator.credentials.get({
+                        publicKey: beginResponse.publicKey
+                    })
+                })
+                .then((getCredential) => {
+                    console.log("getCredential: ", getCredential);
+
+                    let authData = getCredential.response.authenticatorData;
+                    let clientDataJSON = getCredential.response.clientDataJSON;
+                    let rawId = getCredential.rawId;
+                    let sig = getCredential.response.signature;
+                    let userHandle = getCredential.response.userHandle;
+
+                    $.post(
+                        '/login/finish/' + username,
+                        JSON.stringify({
+                          id: getCredential.id,
+                          rawId: bufferEncode(rawId),
+                          type: getCredential.type,
+                          response: {
+                            authenticatorData: bufferEncode(authData),
+                            clientDataJSON: bufferEncode(clientDataJSON),
+                            signature: bufferEncode(sig),
+                            userHandle: bufferEncode(userHandle),
+                          },
+                        }),
+                        function (data) {
+                          return data
+                        },
+                        'json')
+                        .then((finishResponse) => {
+                            console.log("finishResponse: ", finishResponse);
+                        })
+                })
+                .then((success) => {
+                    alert("successfully logged in " + username + "!")
+                    return
+                })
+                .catch((error) => {
+                  console.log(error)
+                  alert("failed to login " + username)
+                })
+        }
+    </script>
 </body>
 
 

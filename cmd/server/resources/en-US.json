@@ -43,6 +43,8 @@
   "username.is.empty": "The username is empty",
   "username.not.valid": "The username {username} is not a valid email address",
   "model.is.invalid": "[internal] The model is invalid",
-  "pass_keys": "Pass Keys",
-  "passkey_management": "Manage Pass Keys"
+  "pass_keys": "Passkeys",
+  "passkey": "Passkey",
+  "passkey_management": "Manage Pass Keys",
+  "register": "Register"
 }

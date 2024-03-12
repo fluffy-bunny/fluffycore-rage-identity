@@ -78,7 +78,7 @@ type PersonalInformationGetRequest struct {
 	ReturnUrl string `param:"returnUrl" query:"returnUrl" form:"returnUrl" json:"returnUrl" xml:"returnUrl"`
 }
 
-type PersonalInformationPostRequest struct {
+type PasskeyManagementPostRequest struct {
 	Action      string `param:"action" query:"action" form:"action" json:"action" xml:"action"`
 	ReturnUrl   string `param:"returnUrl" query:"returnUrl" form:"returnUrl" json:"returnUrl" xml:"returnUrl"`
 	GivenName   string `param:"given_name" query:"given_name" form:"given_name" json:"given_name" xml:"given_name"`
@@ -166,7 +166,7 @@ func (s *service) DoGet(c echo.Context) error {
 	return err
 }
 
-func (s *service) validatePersonalInformationPostRequest(request *PersonalInformationPostRequest) ([]string, error) {
+func (s *service) validatePersonalInformationPostRequest(request *PasskeyManagementPostRequest) ([]string, error) {
 	localizer := s.Localizer().GetLocalizer()
 
 	errors := make([]string, 0)
@@ -183,18 +183,35 @@ func (s *service) validatePersonalInformationPostRequest(request *PersonalInform
 	}
 	return nil, nil
 }
+func (s *service) DoPostRegister(c echo.Context) error {
+	r := c.Request()
+	// is the request get or post?
+	ctx := r.Context()
+	log := zerolog.Ctx(ctx).With().Logger()
+
+	user, err := s.getUser(c)
+	if err != nil {
+		return c.Redirect(http.StatusFound, "/error")
+	}
+	log.Info().Interface("user", user).Msg("user")
+	return c.Redirect(http.StatusFound, "/error")
+
+}
 
 func (s *service) DoPost(c echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
-	model := &PersonalInformationPostRequest{}
+	model := &PasskeyManagementPostRequest{}
 	if err := c.Bind(model); err != nil {
 		return err
 	}
 	log.Info().Interface("model", model).Msg("model")
-
+	switch model.Action {
+	case "register":
+		return s.DoPostRegister(c)
+	}
 	user, err := s.getUser(c)
 	if err != nil {
 		return c.Redirect(http.StatusFound, "/error")

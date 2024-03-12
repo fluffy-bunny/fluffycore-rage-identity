@@ -70,6 +70,16 @@ type (
 	GetWebAuthNCookieResponse struct {
 		Value *WebAuthNCookie `json:"webAuthNCookie"`
 	}
+	SigninUserNameCookie struct {
+		Email      string `json:"email"`
+		HasPasskey bool   `json:"hasPasskey"`
+	}
+	SetSigninUserNameCookieRequest struct {
+		Value *SigninUserNameCookie `json:"signinUserNameCookie"`
+	}
+	GetSigninUserNameCookieResponse struct {
+		Value *SigninUserNameCookie `json:"signinUserNameCookie"`
+	}
 	IWellknownCookies interface {
 		// External OAuth2 Cookie
 		//---------------------------------------------------------------------
@@ -106,6 +116,12 @@ type (
 		SetWebAuthNCookie(c echo.Context, request *SetWebAuthNCookieRequest) error
 		DeleteWebAuthNCookie(c echo.Context)
 		GetWebAuthNCookie(c echo.Context) (*GetWebAuthNCookieResponse, error)
+
+		// SigninUserName Cookie
+		//---------------------------------------------------------------------
+		SetSigninUserNameCookie(c echo.Context, request *SetSigninUserNameCookieRequest) error
+		DeleteSigninUserNameCookie(c echo.Context)
+		GetSigninUserNameCookie(c echo.Context) (*GetSigninUserNameCookieResponse, error)
 	}
 )
 
@@ -117,4 +133,5 @@ const (
 	LoginRequest                          = "_loginRequest"
 	CookieNameExternalOauth2StateTemplate = "_externalOauth2State_{state}"
 	CookieNameWebAuthN                    = "_webAuthN"
+	CookieNameSigninUserName              = "_signinUserName"
 )

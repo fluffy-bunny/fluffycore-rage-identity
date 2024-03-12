@@ -56,7 +56,7 @@ func (s *service) Ctor(
 func AddSingletonIWellknownCookies(cb di.ContainerBuilder) {
 	di.AddSingleton[contracts_cookies.IWellknownCookies](cb, stemService.Ctor)
 }
-func (s *service) validateSetVerificationCodeCookieRequest(c echo.Context, request *contracts_cookies.SetVerificationCodeCookieRequest) error {
+func (s *service) validateSetVerificationCodeCookieRequest(request *contracts_cookies.SetVerificationCodeCookieRequest) error {
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is nil")
 	}
@@ -75,7 +75,7 @@ func (s *service) validateSetVerificationCodeCookieRequest(c echo.Context, reque
 	return nil
 }
 func (s *service) SetVerificationCodeCookie(c echo.Context, request *contracts_cookies.SetVerificationCodeCookieRequest) error {
-	err := s.validateSetVerificationCodeCookieRequest(c, request)
+	err := s.validateSetVerificationCodeCookieRequest(request)
 	if err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func (s *service) GetVerificationCodeCookie(c echo.Context) (*contracts_cookies.
 		VerificationCode: &value,
 	}, nil
 }
-func (s *service) validateSetPasswordResetCookieRequest(c echo.Context, request *contracts_cookies.SetPasswordResetCookieRequest) error {
+func (s *service) validateSetPasswordResetCookieRequest(request *contracts_cookies.SetPasswordResetCookieRequest) error {
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is nil")
 	}
@@ -112,7 +112,7 @@ func (s *service) validateSetPasswordResetCookieRequest(c echo.Context, request 
 	return nil
 }
 func (s *service) SetPasswordResetCookie(c echo.Context, request *contracts_cookies.SetPasswordResetCookieRequest) error {
-	err := s.validateSetPasswordResetCookieRequest(c, request)
+	err := s.validateSetPasswordResetCookieRequest(request)
 	if err != nil {
 		return err
 	}
@@ -138,7 +138,7 @@ func (s *service) GetPasswordResetCookie(c echo.Context) (*contracts_cookies.Get
 		PasswordReset: &value,
 	}, nil
 }
-func (s *service) validateSetAccountStateCookieRequest(c echo.Context, request *contracts_cookies.SetAccountStateCookieRequest) error {
+func (s *service) validateSetAccountStateCookieRequest(request *contracts_cookies.SetAccountStateCookieRequest) error {
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is nil")
 	}
@@ -155,7 +155,7 @@ func (s *service) validateSetAccountStateCookieRequest(c echo.Context, request *
 
 }
 func (s *service) SetAccountStateCookie(c echo.Context, request *contracts_cookies.SetAccountStateCookieRequest) error {
-	err := s.validateSetAccountStateCookieRequest(c, request)
+	err := s.validateSetAccountStateCookieRequest(request)
 	if err != nil {
 		return err
 	}
@@ -181,7 +181,7 @@ func (s *service) GetAccountStateCookie(c echo.Context) (*contracts_cookies.GetA
 	}, nil
 }
 
-func (s *service) validateSetAuthCookieRequest(c echo.Context, request *contracts_cookies.SetAuthCookieRequest) error {
+func (s *service) validateSetAuthCookieRequest(request *contracts_cookies.SetAuthCookieRequest) error {
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is nil")
 	}
@@ -195,7 +195,7 @@ func (s *service) validateSetAuthCookieRequest(c echo.Context, request *contract
 }
 func (s *service) SetAuthCookie(c echo.Context, request *contracts_cookies.SetAuthCookieRequest) error {
 	// TODO: Configurable expiration
-	err := s.validateSetAuthCookieRequest(c, request)
+	err := s.validateSetAuthCookieRequest(request)
 	if err != nil {
 		return err
 	}
@@ -259,7 +259,7 @@ func (s *service) GetInsecureCookie(c echo.Context, name string) (interface{}, e
 	}
 	return value, nil
 }
-func (s *service) validateSetExternalOauth2CookieRequest(c echo.Context, request *contracts_cookies.SetExternalOauth2CookieRequest) error {
+func (s *service) validateSetExternalOauth2CookieRequest(request *contracts_cookies.SetExternalOauth2CookieRequest) error {
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is nil")
 	}
@@ -282,7 +282,7 @@ func (s *service) makeExternalOAuth2CookieName(state string) string {
 	return result
 }
 func (s *service) SetExternalOauth2Cookie(c echo.Context, request *contracts_cookies.SetExternalOauth2CookieRequest) error {
-	err := s.validateSetExternalOauth2CookieRequest(c, request)
+	err := s.validateSetExternalOauth2CookieRequest(request)
 	if err != nil {
 		return err
 	}
@@ -359,7 +359,9 @@ func (s *service) GetExternalOauth2Cookie(c echo.Context, request *contracts_coo
 	}, nil
 }
 
-func (s *service) validateSetWebAuthNCookieRequest(c echo.Context, request *contracts_cookies.SetWebAuthNCookieRequest) error {
+// WebAuthN Cookie
+// ---------------------------------------------------------------------
+func (s *service) validateSetWebAuthNCookieRequest(request *contracts_cookies.SetWebAuthNCookieRequest) error {
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is nil")
 	}
@@ -371,10 +373,9 @@ func (s *service) validateSetWebAuthNCookieRequest(c echo.Context, request *cont
 	}
 	return nil
 }
-
 func (s *service) SetWebAuthNCookie(c echo.Context, request *contracts_cookies.SetWebAuthNCookieRequest) error {
 	// TODO: Configurable expiration
-	err := s.validateSetWebAuthNCookieRequest(c, request)
+	err := s.validateSetWebAuthNCookieRequest(request)
 	if err != nil {
 		return err
 	}
@@ -416,6 +417,69 @@ func (s *service) GetWebAuthNCookie(c echo.Context) (*contracts_cookies.GetWebAu
 		return nil, err
 	}
 	return &contracts_cookies.GetWebAuthNCookieResponse{
+		Value: &value,
+	}, nil
+}
+
+// SigninUserName Cookie
+// ---------------------------------------------------------------------
+func (s *service) validateSetSigninUserNameCookieRequest(request *contracts_cookies.SetSigninUserNameCookieRequest) error {
+	if request == nil {
+		return status.Error(codes.InvalidArgument, "request is nil")
+	}
+	if request.Value == nil {
+		return status.Error(codes.InvalidArgument, "request.Value is nil")
+	}
+	if fluffycore_utils.IsEmptyOrNil(request.Value.Email) {
+		return status.Error(codes.InvalidArgument, "Email is empty")
+
+	}
+	return nil
+}
+func (s *service) SetSigninUserNameCookie(c echo.Context, request *contracts_cookies.SetSigninUserNameCookieRequest) error {
+	// TODO: Configurable expiration
+	err := s.validateSetSigninUserNameCookieRequest(request)
+	if err != nil {
+		return err
+	}
+	b, err := json.Marshal(request.Value)
+	if err != nil {
+		return err
+	}
+	value := make(map[string]interface{})
+	err = json.Unmarshal(b, &value)
+	if err != nil {
+		return err
+	}
+	_, err = s.secureCookies.SetCookie(c,
+		&fluffycore_contracts_cookies.SetCookieRequest{
+			Name:     contracts_cookies.CookieNameSigninUserName,
+			Value:    value,
+			HttpOnly: false,
+			Expires:  time.Now().Add(30 * time.Minute),
+			Path:     "/",
+			Domain:   s.cookieConfig.Domain,
+		})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (s *service) DeleteSigninUserNameCookie(c echo.Context) {
+	s.secureCookies.DeleteCookie(c,
+		&fluffycore_contracts_cookies.DeleteCookieRequest{
+			Name:   contracts_cookies.CookieNameSigninUserName,
+			Path:   "/",
+			Domain: s.cookieConfig.Domain,
+		})
+}
+func (s *service) GetSigninUserNameCookie(c echo.Context) (*contracts_cookies.GetSigninUserNameCookieResponse, error) {
+	var value contracts_cookies.SigninUserNameCookie
+	err := GetCookie(c, s.secureCookies, contracts_cookies.CookieNameSigninUserName, &value)
+	if err != nil {
+		return nil, err
+	}
+	return &contracts_cookies.GetSigninUserNameCookieResponse{
 		Value: &value,
 	}, nil
 }

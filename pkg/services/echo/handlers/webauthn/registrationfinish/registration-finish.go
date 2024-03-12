@@ -138,14 +138,16 @@ func (s *service) Do(c echo.Context) error {
 		log.Error().Err(err).Msg("CreateCredential")
 		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_RegisterFinish_002)
 	}
+	log.Debug().Interface("credential", credential).Msg("CreateCredential")
 
 	// we need to add the credentials to the user.
 	transport := []string{}
 	for _, t := range credential.Transport {
 		transport = append(transport, string(t))
 	}
+
 	// TODO: need to get some friendly name for the registration.
-	s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
+	_, err = s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
 		User: &proto_oidc_models.RageUserUpdate{
 			RootIdentity: &proto_oidc_models.IdentityUpdate{
 				Subject: subject,
@@ -180,6 +182,10 @@ func (s *service) Do(c echo.Context) error {
 			},
 		},
 	})
+	if err != nil {
+		log.Error().Err(err).Msg("UpdateUser")
+		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_RegisterFinish_003)
+	}
 	return c.JSON(http.StatusOK, credential)
 
 }
