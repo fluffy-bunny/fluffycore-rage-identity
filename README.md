@@ -229,6 +229,10 @@ go build .
 
 For developement we need https.  This is where ngrok comes in.  
 
+**NOTE**: Because we use ngrok we don't have a stable domain.  So all IDP logins will fail, because we need to register a stable https domain with google, github, microsoft, azure, etc.  
+
+Passkey development can only work for simple username/password accounts.  
+
 ```powershell
 ngrok http http://localhost:9044
 ```
@@ -240,7 +244,7 @@ ngrok
 Forwarding  https://3156-47-150-126-75.ngrok-free.app -> http://localhost:9044    
 ```
 
-Update [.env.ngrok](./.env.ngrok) with the ngrok domain.  In this case it would be `3156-47-150-126-75.ngrok-free.app`   
+Update [.env.ngrok](./.env.ngrok) with the ngrok domain.  In this case it would be `3156-47-150-126-75.ngrok-free.app`  
 
 We launch the server using vscode [launch.json](./.vscode/launch.json)
 
@@ -254,4 +258,3 @@ We launch the server using vscode [launch.json](./.vscode/launch.json)
     ]
 }
 ```
-
