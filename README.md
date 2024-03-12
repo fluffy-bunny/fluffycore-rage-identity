@@ -213,6 +213,8 @@ go build .
 .\oidc-client.exe serve --acr_values "urn:mastodon:idp:mapped-enterprise"  --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
 ```
 
+.\oidc-client.exe serve    --authority https://3156-47-150-126-75.ngrok-free.app --client_id go-client --client_secret secret --port 5556
+
 ### Docker Clients
 
 ```bash
