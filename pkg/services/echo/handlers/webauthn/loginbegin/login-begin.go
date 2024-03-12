@@ -87,8 +87,8 @@ func (s *service) Do(c echo.Context) error {
 	// get the user from the store
 	getRageUserResponse, err := s.RageUserService().GetRageUser(ctx,
 		&proto_oidc_user.GetRageUserRequest{
-			By: &proto_oidc_user.GetRageUserRequest_Subject{
-				Subject: signinResponse.Value.Email,
+			By: &proto_oidc_user.GetRageUserRequest_Email{
+				Email: signinResponse.Value.Email,
 			},
 		})
 	if err != nil {

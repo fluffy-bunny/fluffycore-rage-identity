@@ -25,6 +25,7 @@ var (
 	OIDCAuthorizationEndpointPath                    = "/oidc/v1/auth"
 	OIDCLoginPath                                    = "/oidc-login"
 	OIDCLoginPasswordPath                            = "/oidc-login-password"
+	OIDCLoginPasskeyPath                             = "/oidc-login-passkey"
 	PasswordResetPath                                = "/password-reset"
 	ProfilePath                                      = "/profile"
 	PersonalInformationPath                          = "/profile/personal-information"
@@ -57,6 +58,7 @@ type Paths struct {
 	Profile             string
 	OIDCLogin           string
 	OIDCLoginPassword   string
+	OIDCLoginPasskey    string
 	Signup              string
 	ForgotPassword      string
 	VerifyCode          string
@@ -75,6 +77,7 @@ func NewPaths() *Paths {
 		Profile:             ProfilePath,
 		OIDCLogin:           OIDCLoginPath,
 		OIDCLoginPassword:   OIDCLoginPasswordPath,
+		OIDCLoginPasskey:    OIDCLoginPasskeyPath,
 		Signup:              SignupPath,
 		ForgotPassword:      ForgotPasswordPath,
 		VerifyCode:          VerifyCodePath,

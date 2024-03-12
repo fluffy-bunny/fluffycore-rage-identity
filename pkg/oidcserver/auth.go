@@ -40,6 +40,7 @@ func RequiresNoAuth() map[string]bool {
 			wellknown_echo.OIDCAuthorizationEndpointPath:   true,
 			wellknown_echo.OIDCLoginPath:                   true,
 			wellknown_echo.OIDCLoginPasswordPath:           true,
+			wellknown_echo.OIDCLoginPasskeyPath:            true,
 			wellknown_echo.PasswordResetPath:               true,
 			wellknown_echo.ReadyPath:                       true,
 			wellknown_echo.SignupPath:                      true,

@@ -48,8 +48,10 @@
                          {{ if .hasPasskey }}
                          <hr>
                          <div class="d-flex justify-content-center">
-                                <button class="btn btn-outline-primary" onclick="loginUsingPasskey()">{{ call .LocalizeMessage "passkey" }}</button>
-                        </div>
+                            <form action="{{ $paths.OIDCLoginPasskey }}" method="post">
+                                <button type="submit" class="btn btn-outline-primary me-2 ">{{ call .LocalizeMessage "passkey" }}</button>
+                            </form>
+                         </div>
                         {{end}}
                         <hr>
                         <p class="text-center">{{ call .LocalizeMessage "or_signin_with" }}</p>
@@ -72,8 +74,5 @@
 </body>
     
 {{template "footer" .}}
-<script src="/static/js/webauthn.js"></script>
-
- 
 {{template "html_end" .}}
 {{end}}

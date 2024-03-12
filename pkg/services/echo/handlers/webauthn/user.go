@@ -2,6 +2,7 @@ package webauthn
 
 import (
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
+	protocol "github.com/go-webauthn/webauthn/protocol"
 	go_webauthn "github.com/go-webauthn/webauthn/webauthn"
 )
 
@@ -55,7 +56,37 @@ func (s *WebAuthNUser) WebAuthnDisplayName() string {
 
 // WebAuthnCredentials provides the list of Credential objects owned by the user.
 func (s *WebAuthNUser) WebAuthnCredentials() []go_webauthn.Credential {
-	return nil
+	if s.RageUser.Webauthn == nil {
+		return nil
+	}
+	response := make([]go_webauthn.Credential, 0)
+
+	for _, v := range s.RageUser.Webauthn.Credentials {
+		transport := make([]protocol.AuthenticatorTransport, 0)
+		for _, t := range v.Transport {
+			transport = append(transport, protocol.AuthenticatorTransport(t))
+		}
+		response = append(response, go_webauthn.Credential{
+			ID:              v.ID,
+			PublicKey:       v.PublicKey,
+			AttestationType: v.AttestationType,
+			Transport:       transport,
+			Flags: go_webauthn.CredentialFlags{
+				UserPresent:    v.Flags.UserPresent,
+				UserVerified:   v.Flags.UserVerified,
+				BackupEligible: v.Flags.BackupEligible,
+				BackupState:    v.Flags.BackupState,
+			},
+			Authenticator: go_webauthn.Authenticator{
+				AAGUID:       v.Authenticator.Aaguid,
+				SignCount:    v.Authenticator.SignCount,
+				CloneWarning: v.Authenticator.CloneWarning,
+				Attachment:   protocol.AuthenticatorAttachment(v.Authenticator.Attachment),
+			},
+		},
+		)
+	}
+	return response
 }
 
 // WebAuthnIcon is a deprecated option.
