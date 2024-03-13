@@ -12,6 +12,7 @@
             "program": "${workspaceFolder}/cmd/server",
             "env": {
                 "ENABLE_GRPC_SERVER_REFLECTION": "true",
+                "DOMAIN":"localhost",                
                 "RAGE_APPLICATION_NAME": "server",
                 "RAGE_APPLICATION_ENVIRONMENT":"Development",
                 "APPLICATION_ENVIRONMENT":"Development",
