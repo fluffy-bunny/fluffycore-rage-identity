@@ -177,6 +177,7 @@ func (s *service) DoPost(c echo.Context) error {
 	if err != nil {
 		return doErrorReturn()
 	}
+	localizer := s.Localizer().GetLocalizer()
 
 	getPasswordResetCookieResponse, err := s.wellknownCookies.GetPasswordResetCookie(c)
 	if err != nil {
@@ -193,15 +194,6 @@ func (s *service) DoPost(c echo.Context) error {
 		s.wellknownCookies.DeletePasswordResetCookie(c)
 		return s.TeleportBackToLogin(c, InternalError_PasswordReset_006)
 	}
-	hashPasswordResponse, err := s.passwordHasher.HashPassword(ctx,
-		&contracts_identity.HashPasswordRequest{
-			Password: model.Password,
-		})
-	if err != nil {
-		log.Error().Err(err).Msg("GeneratePasswordHash")
-		return s.TeleportBackToLogin(c, InternalError_PasswordReset_007)
-	}
-
 	getUserResponse, err := s.RageUserService().GetRageUser(ctx,
 		&proto_oidc_user.GetRageUserRequest{
 			By: &proto_oidc_user.GetRageUserRequest_Subject{
@@ -211,6 +203,24 @@ func (s *service) DoPost(c echo.Context) error {
 	if err != nil {
 		log.Error().Err(err).Msg("ListUser")
 		return s.TeleportBackToLogin(c, InternalError_PasswordReset_008)
+	}
+
+	// do password acceptablity check
+	err = s.passwordHasher.IsAcceptablePassword(getUserResponse.User, model.Password)
+	if err != nil {
+		log.Error().Err(err).Msg("IsAcceptablePassword")
+		msg := utils.LocalizeSimple(localizer, "password.is.not.acceptable")
+		errors = append(errors, msg)
+		return doErrorReturn()
+	}
+	// hash the password
+	hashPasswordResponse, err := s.passwordHasher.HashPassword(ctx,
+		&contracts_identity.HashPasswordRequest{
+			Password: model.Password,
+		})
+	if err != nil {
+		log.Error().Err(err).Msg("GeneratePasswordHash")
+		return s.TeleportBackToLogin(c, InternalError_PasswordReset_007)
 	}
 
 	_, err = s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
@@ -255,15 +265,6 @@ func (s *service) DoPost(c echo.Context) error {
 
 }
 
-// HealthCheck godoc
-// @Summary get the home page.
-// @Description get the home page.
-// @Tags root
-// @Accept */*
-// @Produce json
-// @Param       code            		query     string  true  "code"
-// @Success 200 {object} string
-// @Router /login [get,post]
 func (s *service) Do(c echo.Context) error {
 
 	r := c.Request()

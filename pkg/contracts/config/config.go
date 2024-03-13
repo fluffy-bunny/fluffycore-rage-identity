@@ -30,19 +30,14 @@ type (
 	InMemoryClients struct {
 		Clients []*proto_oidc_models.Client `json:"clients"`
 	}
-)
-type EchoConfig struct {
-	Port                 int                                                    `json:"port"`
-	SecureCookies        *fluffycore_echo_contracts_cookies.SecureCookiesConfig `json:"secureCookies"`
-	DisableSecureCookies bool                                                   `json:"disableSecureCookies"`
-}
-
-const (
-	BackingCacheTypeInMemory = "in-memory"
-	BackingCacheTypeRedis    = "redis"
-)
-
-type (
+	EchoConfig struct {
+		Port                 int                                                    `json:"port"`
+		SecureCookies        *fluffycore_echo_contracts_cookies.SecureCookiesConfig `json:"secureCookies"`
+		DisableSecureCookies bool                                                   `json:"disableSecureCookies"`
+	}
+	PasswordConfig struct {
+		MinEntropyBits float64 `json:"minEntropyBits"`
+	}
 	InMemoryCacheConfig struct {
 		DefaultExpirationSeconds int `json:"defaultExpirationSeconds"`
 		CleanupIntervalSeconds   int `json:"cleanupIntervalSeconds"`
@@ -51,48 +46,53 @@ type (
 		Type          string              `json:"type"`
 		InMemoryCache InMemoryCacheConfig `json:"inMemoryCache"`
 	}
+
+	SelfIDPConfig struct {
+		ClientID     string   `json:"clientId"`
+		ClientSecret string   `json:"clientSecret"`
+		RedirectURL  string   `json:"redirectUrl"`
+		Authority    string   `json:"authority"`
+		Scopes       []string `json:"scopes"`
+	}
+
+	OIDCConfig struct {
+		BaseUrl            string `json:"baseUrl"`
+		OAuth2CallbackPath string `json:"oauth2CallbackPath"`
+	}
+	CookieConfig struct {
+		Domain string `json:"domain"`
+	}
+	SystemConfig struct {
+		DeveloperMode bool   `json:"developerMode"`
+		Domain        string `json:"domain"`
+	}
+	InitialConfig struct {
+		ConfigFiles ConfigFiles `json:"configFiles"`
+	}
+	Config struct {
+		fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
+
+		ConfigFiles               ConfigFiles                        `json:"configFiles"`
+		Echo                      *EchoConfig                        `json:"echo"`
+		InMemoryClients           InMemoryClients                    `json:"inMemoryClients"`
+		OIDCConfig                *OIDCConfig                        `json:"oidcConfig"`
+		BackingCache              *BackingCacheConfig                `json:"backingCache"`
+		AutolinkOnEmailMatch      bool                               `json:"autolinkOnEmailMatch"`
+		EmailVerificationRequired bool                               `json:"emailVerificationRequired"`
+		EmailConfig               *contracts_email.EmailConfig       `json:"emailConfig"`
+		SelfIDPConfig             *SelfIDPConfig                     `json:"selfIDPConfig"`
+		CookieConfig              *CookieConfig                      `json:"cookieConfig"`
+		SystemConfig              *SystemConfig                      `json:"systemConfig"`
+		SessionConfig             *contracts_sessions.SessionConfig  `json:"sessionConfig"`
+		WebAuthNConfig            *contracts_webauthn.WebAuthNConfig `json:"webAuthNConfig"`
+		PasswordConfig            *PasswordConfig                    `json:"passwordConfig"`
+	}
 )
 
-type SelfIDPConfig struct {
-	ClientID     string   `json:"clientId"`
-	ClientSecret string   `json:"clientSecret"`
-	RedirectURL  string   `json:"redirectUrl"`
-	Authority    string   `json:"authority"`
-	Scopes       []string `json:"scopes"`
-}
-
-type OIDCConfig struct {
-	BaseUrl            string `json:"baseUrl"`
-	OAuth2CallbackPath string `json:"oauth2CallbackPath"`
-}
-type CookieConfig struct {
-	Domain string `json:"domain"`
-}
-type SystemConfig struct {
-	DeveloperMode bool   `json:"developerMode"`
-	Domain        string `json:"domain"`
-}
-type InitialConfig struct {
-	ConfigFiles ConfigFiles `json:"configFiles"`
-}
-
-type Config struct {
-	fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
-
-	ConfigFiles               ConfigFiles                        `json:"configFiles"`
-	Echo                      *EchoConfig                        `json:"echo"`
-	InMemoryClients           InMemoryClients                    `json:"inMemoryClients"`
-	OIDCConfig                *OIDCConfig                        `json:"oidcConfig"`
-	BackingCache              *BackingCacheConfig                `json:"backingCache"`
-	AutolinkOnEmailMatch      bool                               `json:"autolinkOnEmailMatch"`
-	EmailVerificationRequired bool                               `json:"emailVerificationRequired"`
-	EmailConfig               *contracts_email.EmailConfig       `json:"emailConfig"`
-	SelfIDPConfig             *SelfIDPConfig                     `json:"selfIDPConfig"`
-	CookieConfig              *CookieConfig                      `json:"cookieConfig"`
-	SystemConfig              *SystemConfig                      `json:"systemConfig"`
-	SessionConfig             *contracts_sessions.SessionConfig  `json:"sessionConfig"`
-	WebAuthNConfig            *contracts_webauthn.WebAuthNConfig `json:"webAuthNConfig"`
-}
+const (
+	BackingCacheTypeInMemory = "in-memory"
+	BackingCacheTypeRedis    = "redis"
+)
 
 // ConfigDefaultJSON default json
 const configDefaultJSONTemplate = `
@@ -180,11 +180,23 @@ const configDefaultJSONTemplate = `
 		"rpDisplayName": "RAGE",
 		"rpID": "[the domain]",
 		"rpOrigins": []
+	},
+	"passwordConfig": {
+		"minEntropyBits": 60
 	}
-
-
   }
 `
+
+/*
+	Minimum length of 8 characters
+	At least 2 uppercase letters
+	At least 1 special character (such as !, @, #, $, &, )
+	At least 2 digits
+	At least 3 lowercase letters
+
+	pattern := `^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{8}$`
+
+*/
 
 var ConfigDefaultJSON = []byte(``)
 

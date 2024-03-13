@@ -86,6 +86,8 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	di.AddInstance[*contracts_email.EmailConfig](builder, config.EmailConfig)
 	di.AddInstance[*contracts_config.EchoConfig](builder, config.Echo)
 	di.AddInstance[*contracts_config.BackingCacheConfig](builder, config.BackingCache)
+	di.AddInstance[*contracts_config.PasswordConfig](builder, config.PasswordConfig)
+
 	if config.CookieConfig == nil {
 		config.CookieConfig = &contracts_config.CookieConfig{}
 	}

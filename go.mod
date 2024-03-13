@@ -136,6 +136,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.50.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
+	github.com/wagslane/go-password-validator v0.3.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/ziflex/lecho/v3 v3.5.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
