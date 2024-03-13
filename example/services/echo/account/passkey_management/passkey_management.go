@@ -8,7 +8,6 @@ import (
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
-	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
@@ -21,9 +20,8 @@ type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
 
-		wellknownCookies            contracts_cookies.IWellknownCookies
-		passwordHasher              contracts_identity.IPasswordHasher
-		fluffyCoreUserServiceServer proto_external_user.IFluffyCoreUserServiceServer
+		wellknownCookies contracts_cookies.IWellknownCookies
+		passwordHasher   contracts_identity.IPasswordHasher
 	}
 )
 
@@ -41,13 +39,11 @@ func (s *service) Ctor(
 	container di.Container,
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	passwordHasher contracts_identity.IPasswordHasher,
-	fluffyCoreUserServiceServer proto_external_user.IFluffyCoreUserServiceServer,
 ) (*service, error) {
 	return &service{
-		BaseHandler:                 services_echo_handlers_base.NewBaseHandler(container),
-		wellknownCookies:            wellknownCookies,
-		passwordHasher:              passwordHasher,
-		fluffyCoreUserServiceServer: fluffyCoreUserServiceServer,
+		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
+		wellknownCookies: wellknownCookies,
+		passwordHasher:   passwordHasher,
 	}, nil
 }
 
