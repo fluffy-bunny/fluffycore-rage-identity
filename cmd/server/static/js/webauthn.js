@@ -17,13 +17,7 @@ function bufferEncode(value) {
     .replace(/=/g, "");
 }
 
-function registerUser() {
-  username = $("#email").val();
-  if (username === "") {
-    alert("Please enter a username");
-    return;
-  }
-
+function registerUser(returnUrl) {
   $.get(
     "/webauthn/register/begin",
     null,
@@ -76,6 +70,7 @@ function registerUser() {
         "json"
       ).then((finishResponse) => {
         console.log("finishResponse:", finishResponse);
+        window.location.href = returnUrl;
       });
     })
     .then((success) => {
@@ -89,12 +84,6 @@ function registerUser() {
 }
 
 function LoginUser() {
-  username = $("#email").val();
-  if (username === "") {
-    alert("Please enter a username");
-    return;
-  }
-
   $.get(
     "/webauthn/login/begin",
     null,
