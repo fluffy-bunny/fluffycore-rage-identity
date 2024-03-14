@@ -354,7 +354,7 @@ func (s *service) DoPost(c echo.Context) error {
 		return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
 	}
 	hasPasskey := false
-	if user.Webauthn != nil && fluffycore_utils.IsNotEmptyOrNil(user.Webauthn.Credentials) {
+	if user.WebAuthN != nil && fluffycore_utils.IsNotEmptyOrNil(user.WebAuthN.Credentials) {
 		hasPasskey = true
 	}
 	err = s.wellknownCookies.SetSigninUserNameCookie(c, &contracts_cookies.SetSigninUserNameCookieRequest{

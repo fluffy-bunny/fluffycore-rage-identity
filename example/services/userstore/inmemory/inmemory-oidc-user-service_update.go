@@ -62,22 +62,22 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 			rageUser.State = updateRageUser.State.Value
 		}
 		doWebAuthNUpdate := func() error {
-			webAuthNUpdate := updateRageUser.Webauthn
+			webAuthNUpdate := updateRageUser.WebAuthN
 			if webAuthNUpdate == nil || webAuthNUpdate.Credentials == nil {
 				// nothing to do
 				return nil
 			}
-			if rageUser.Webauthn == nil {
-				rageUser.Webauthn = &proto_oidc_models.WebAuthN{}
+			if rageUser.WebAuthN == nil {
+				rageUser.WebAuthN = &proto_oidc_models.WebAuthN{}
 			}
 			switch v := webAuthNUpdate.Credentials.Update.(type) {
 			case *proto_types_webauthn.CredentialArrayUpdate_DeleteAll:
 				if v.DeleteAll.Value {
-					rageUser.Webauthn.Credentials = make([]*proto_types_webauthn.Credential, 0)
+					rageUser.WebAuthN.Credentials = make([]*proto_types_webauthn.Credential, 0)
 				}
 			case *proto_types_webauthn.CredentialArrayUpdate_Granular_:
 				mapExisting := make(map[uuid.UUID]*proto_types_webauthn.Credential)
-				for _, credential := range rageUser.Webauthn.Credentials {
+				for _, credential := range rageUser.WebAuthN.Credentials {
 					aaguid, _ := uuid.FromBytes(credential.Authenticator.AAGUID)
 					mapExisting[aaguid] = credential
 				}
@@ -89,9 +89,9 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 					aaguid, _ := uuid.FromBytes(credential.Authenticator.AAGUID)
 					mapExisting[aaguid] = credential
 				}
-				rageUser.Webauthn.Credentials = make([]*proto_types_webauthn.Credential, 0)
+				rageUser.WebAuthN.Credentials = make([]*proto_types_webauthn.Credential, 0)
 				for _, credential := range mapExisting {
-					rageUser.Webauthn.Credentials = append(rageUser.Webauthn.Credentials, credential)
+					rageUser.WebAuthN.Credentials = append(rageUser.WebAuthN.Credentials, credential)
 				}
 
 			}

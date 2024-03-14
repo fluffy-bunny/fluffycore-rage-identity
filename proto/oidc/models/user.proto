@@ -144,7 +144,7 @@ message RageUser {
     LinkedIdentities    linked_identities = 4;
     Recovery            recovery = 5;
     Password            password = 6;
-    WebAuthN            webauthn = 7;
+    WebAuthN            web_auth_n = 7;
 
 }
 message RageUsers {
@@ -156,7 +156,7 @@ message RageUserUpdate {
     LinkedIdentitiesUpdate  linked_identities = 3;
     RecoveryUpdate          recovery = 4;
     PasswordUpdate          password = 5;
-    WebAuthNUpdate          webauthn = 6;
+    WebAuthNUpdate          web_auth_n = 6;
  }
 
 

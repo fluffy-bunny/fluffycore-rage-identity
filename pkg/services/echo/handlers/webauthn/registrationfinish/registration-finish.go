@@ -158,7 +158,7 @@ func (s *service) Do(c echo.Context) error {
 			RootIdentity: &proto_oidc_models.IdentityUpdate{
 				Subject: subject,
 			},
-			Webauthn: &proto_oidc_models.WebAuthNUpdate{
+			WebAuthN: &proto_oidc_models.WebAuthNUpdate{
 				Credentials: &proto_types_webauthn.CredentialArrayUpdate{
 					Update: &proto_types_webauthn.CredentialArrayUpdate_Granular_{
 						Granular: &proto_types_webauthn.CredentialArrayUpdate_Granular{

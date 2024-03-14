@@ -56,12 +56,12 @@ func (s *WebAuthNUser) WebAuthnDisplayName() string {
 
 // WebAuthnCredentials provides the list of Credential objects owned by the user.
 func (s *WebAuthNUser) WebAuthnCredentials() []go_webauthn.Credential {
-	if s.RageUser.Webauthn == nil {
+	if s.RageUser.WebAuthN == nil {
 		return nil
 	}
 	response := make([]go_webauthn.Credential, 0)
 
-	for _, v := range s.RageUser.Webauthn.Credentials {
+	for _, v := range s.RageUser.WebAuthN.Credentials {
 		transport := make([]protocol.AuthenticatorTransport, 0)
 		for _, t := range v.Transport {
 			transport = append(transport, protocol.AuthenticatorTransport(t))

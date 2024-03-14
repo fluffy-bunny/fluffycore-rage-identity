@@ -56,6 +56,17 @@
                                 <input type="hidden" name="action" value="passkeys">
                                 <button type="submit" class="btn btn-primary btn-block">{{ call .LocalizeMessage "passkey_management" }}</button>
                             </form>
+                            {{ if .user.RageUser.WebAuthN }}
+                            <div class="error-container">
+                                <ul class="error-list">
+                                    {{range $idx, $credential := .user.RageUser.WebAuthN.Credentials}}
+                                        <li class="error-list-item">
+                                            {{ $credential.Name }}
+                                        </li>
+                                    {{end}}
+                                </ul>
+                            </div>
+                            {{ end }}
                         </div>
                     </div>
                 </div>

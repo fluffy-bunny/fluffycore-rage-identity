@@ -12,9 +12,6 @@ import "proto/oidc/models/user.proto";
 import "google/protobuf/timestamp.proto";
 import "proto/types/filter.proto";
 
-
-
- 
  
 message Address {
     string street = 1;

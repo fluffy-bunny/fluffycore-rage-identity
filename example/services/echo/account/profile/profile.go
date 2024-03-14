@@ -107,6 +107,7 @@ func (s *service) DoGet(c echo.Context) error {
 			"given_name":   user.Profile.GivenName,
 			"family_name":  user.Profile.FamilyName,
 			"phone_number": phoneNumber,
+			"user":         user,
 		})
 }
 
