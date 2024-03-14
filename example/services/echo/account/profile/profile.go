@@ -107,7 +107,15 @@ func (s *service) DoGet(c echo.Context) error {
 			"given_name":   user.Profile.GivenName,
 			"family_name":  user.Profile.FamilyName,
 			"phone_number": phoneNumber,
+			"user":         user,
 		})
+}
+
+func (s *service) DoPasskeyManagment(c echo.Context) error {
+	redirectUrl := fmt.Sprintf("%s?action=edit&returnUrl=%s",
+		wellknown_echo.PasskeyManagementPath,
+		wellknown_echo.ProfilePath)
+	return c.Redirect(http.StatusFound, redirectUrl)
 }
 func (s *service) DoPersonalInformationEdit(c echo.Context) error {
 	redirectUrl := fmt.Sprintf("%s?action=edit&returnUrl=%s",
@@ -173,6 +181,9 @@ func (s *service) Do(c echo.Context) error {
 			return s.DoPasswordReset(c)
 		case "pi.edit":
 			return s.DoPersonalInformationEdit(c)
+		case "passkeys":
+			return s.DoPasskeyManagment(c)
+
 		}
 		return s.DoGet(c)
 	}

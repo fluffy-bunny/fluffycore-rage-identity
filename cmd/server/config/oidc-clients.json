@@ -2,7 +2,9 @@
   "clients": [
     {
       "client_id": "go-client",
-      "allowed_grant_types": ["authorization_code"],
+      "allowed_grant_types": [
+        "authorization_code"
+      ],
       "client_secrets": [
         {
           "id": "cim6nke5cpqs73cqthgg",
@@ -11,11 +13,15 @@
           "hash": "$argon2id$v=19$m=16,t=2,p=1$MTIzNDU2Nzg$ZlgCW0V2GfYHJSpwaUWU1w"
         }
       ],
-      "allowed_redirect_uris": ["http://localhost:5556/auth/callback"]
+      "allowed_redirect_uris": [
+        "http://localhost:5556/auth/callback"
+      ]
     },
     {
       "client_id": "self-client",
-      "allowed_grant_types": ["authorization_code"],
+      "allowed_grant_types": [
+        "authorization_code"
+      ],
       "client_secrets": [
         {
           "id": "cim6nke5cpqs73cqthgg",
@@ -26,6 +32,7 @@
       ],
       "allowed_redirect_uris": [
         "http://localhost:9044/auth/callback",
+        "https://7622-2600-1700-7700-394f-48eb-831c-4d8b-d3a0.ngrok-free.app/auth/callback",
         "http://host.docker.internal:9044/auth/callback2"
       ]
     }

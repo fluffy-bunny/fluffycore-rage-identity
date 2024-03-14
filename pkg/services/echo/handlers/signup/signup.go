@@ -260,14 +260,6 @@ func (s *service) DoPost(c echo.Context) error {
 			utils.LocalizeWithInterperlate(localizer, "username.already.exists", map[string]string{"username": model.UserName}),
 		})
 	}
-	// TODO: check password strength
-	hashPasswordResponse, err := s.passwordHasher.HashPassword(ctx, &contracts_identity.HashPasswordRequest{
-		Password: model.Password,
-	})
-	if err != nil {
-		log.Error().Err(err).Msg("GeneratePasswordHash")
-		return s.TeleportBackToLogin(c, InternalError_Signup_004)
-	}
 	subjectId := s.userIdGenerator.GenerateUserId()
 	user := &proto_oidc_models.RageUser{
 		RootIdentity: &proto_oidc_models.Identity{
@@ -276,11 +268,28 @@ func (s *service) DoPost(c echo.Context) error {
 			IdpSlug:       models.RootIdp,
 			EmailVerified: false,
 		},
-		Password: &proto_oidc_models.Password{
-			Hash: hashPasswordResponse.HashedPassword,
-		},
 		State: proto_oidc_models.RageUserState_USER_STATE_PENDING,
 	}
+
+	//  check password strength
+	err = s.passwordHasher.IsAcceptablePassword(user, model.Password)
+	if err != nil {
+		return doError([]string{
+			utils.LocalizeWithInterperlate(localizer, "password.is.not.acceptable",
+				map[string]string{"username": model.UserName}),
+		})
+	}
+	hashPasswordResponse, err := s.passwordHasher.HashPassword(ctx, &contracts_identity.HashPasswordRequest{
+		Password: model.Password,
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("GeneratePasswordHash")
+		return s.TeleportBackToLogin(c, InternalError_Signup_004)
+	}
+	user.Password = &proto_oidc_models.Password{
+		Hash: hashPasswordResponse.HashedPassword,
+	}
+
 	_, err = s.RageUserService().CreateRageUser(ctx, &proto_oidc_user.CreateRageUserRequest{
 		User: user,
 	})

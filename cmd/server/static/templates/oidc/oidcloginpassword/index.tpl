@@ -45,12 +45,20 @@
                                 <button type="submit" class="btn btn-link text-muted">{{ call .LocalizeMessage "signup" }}</button>
                             </form>    
                          </p>
+                         {{ if .hasPasskey }}
                          <hr>
+                         <div class="d-flex justify-content-center">
+                            <form action="{{ $paths.OIDCLoginPasskey }}" method="post">
+                                <button type="submit" class="btn btn-outline-primary me-2 ">{{ call .LocalizeMessage "passkey" }}</button>
+                            </form>
+                         </div>
+                        {{end}}
+                        <hr>
                         <p class="text-center">{{ call .LocalizeMessage "or_signin_with" }}</p>
                         <div class="d-flex justify-content-center">
                             {{range $idx,$idp := .idps}}
                                 <form action="{{ $paths.ExternalIDP }}" method="post">
-                                     <input type="hidden" name="directive"   value="{{ $directive }}">
+                                    <input type="hidden" name="directive"   value="{{ $directive }}">
                                     <input type="hidden" name="idp_hint"    value="{{$idp.Slug}}">
                                     <button type="submit" class="btn btn-outline-primary me-2 ">{{$idp.Name}}</button>
                                 </form>

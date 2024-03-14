@@ -25,9 +25,11 @@ var (
 	OIDCAuthorizationEndpointPath                    = "/oidc/v1/auth"
 	OIDCLoginPath                                    = "/oidc-login"
 	OIDCLoginPasswordPath                            = "/oidc-login-password"
+	OIDCLoginPasskeyPath                             = "/oidc-login-passkey"
 	PasswordResetPath                                = "/password-reset"
 	ProfilePath                                      = "/profile"
 	PersonalInformationPath                          = "/profile/personal-information"
+	PasskeyManagementPath                            = "/passkey-management"
 	ReadyPath                                        = "/ready"
 	SignupPath                                       = "/signup"
 	SwaggerPath                                      = "/swagger/*"
@@ -39,6 +41,10 @@ var (
 	WebAuthN_Register_ProcessRegistrationAttestation = "/webauthn/register/process_registration_attestation"
 	WebAuthN_Login_GetCredentialRequestOptions       = "/webauthn/login/get_credential_request_options"
 	WebAuthN_Login_ProcessLoginAssertion             = "/webauthn/login/process_login_assertion"
+	WebAuthN_Register_Begin                          = "/webauthn/register/begin"
+	WebAuthN_Register_Finish                         = "/webauthn/register/finish"
+	WebAuthN_Login_Begin                             = "/webauthn/login/begin"
+	WebAuthN_Login_Finish                            = "/webauthn/login/finish"
 )
 
 type Paths struct {
@@ -47,10 +53,12 @@ type Paths struct {
 	Home                string
 	Login               string
 	Logout              string
+	PasskeyManagement   string
 	PersonalInformation string
 	Profile             string
 	OIDCLogin           string
 	OIDCLoginPassword   string
+	OIDCLoginPasskey    string
 	Signup              string
 	ForgotPassword      string
 	VerifyCode          string
@@ -64,10 +72,12 @@ func NewPaths() *Paths {
 		Home:                HomePath,
 		Login:               LoginPath,
 		Logout:              LogoutPath,
+		PasskeyManagement:   PasskeyManagementPath,
 		PersonalInformation: PersonalInformationPath,
 		Profile:             ProfilePath,
 		OIDCLogin:           OIDCLoginPath,
 		OIDCLoginPassword:   OIDCLoginPasswordPath,
+		OIDCLoginPasskey:    OIDCLoginPasskeyPath,
 		Signup:              SignupPath,
 		ForgotPassword:      ForgotPasswordPath,
 		VerifyCode:          VerifyCodePath,

@@ -40,6 +40,7 @@ func RequiresNoAuth() map[string]bool {
 			wellknown_echo.OIDCAuthorizationEndpointPath:   true,
 			wellknown_echo.OIDCLoginPath:                   true,
 			wellknown_echo.OIDCLoginPasswordPath:           true,
+			wellknown_echo.OIDCLoginPasskeyPath:            true,
 			wellknown_echo.PasswordResetPath:               true,
 			wellknown_echo.ReadyPath:                       true,
 			wellknown_echo.SignupPath:                      true,
@@ -48,6 +49,14 @@ func RequiresNoAuth() map[string]bool {
 			wellknown_echo.VerifyCodePath:                  true,
 			wellknown_echo.WellKnownJWKS:                   true,
 			wellknown_echo.WellKnownOpenIDCOnfiguationPath: true,
+			// WebAuthN Registrationhandlers: Must be authenticated
+			//----------------------------------------------------
+			//			wellknown_echo.WebAuthN_Register_Begin:  true,
+			//			wellknown_echo.WebAuthN_Register_Finish: true,
+			// WebAuthN Loginhandlers: Must NOT be authenticated
+			//----------------------------------------------------
+			wellknown_echo.WebAuthN_Login_Begin:  true,
+			wellknown_echo.WebAuthN_Login_Finish: true,
 		}
 	}
 	return requiresNoAuthPaths

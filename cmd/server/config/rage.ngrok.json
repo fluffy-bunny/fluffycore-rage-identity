@@ -1,0 +1,18 @@
+{
+  "oidcConfig": {
+    "baseUrl": "https://${DOMAIN}"
+  },
+  "selfIDPConfig": {
+    "authority": "https://${DOMAIN}",
+    "redirectUrl": "https://${DOMAIN}/auth/callback"
+  },
+  "systemConfig": {
+    "domain": "${DOMAIN}",
+    "developerMode": false
+  },
+  "webAuthNConfig": {
+    "rpDisplayName": "RAGE",
+    "rpID": "${DOMAIN}",
+    "rpOrigins": ["https://${DOMAIN}"]
+  }
+}

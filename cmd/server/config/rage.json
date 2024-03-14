@@ -2,5 +2,10 @@
   "systemConfig": {
     "domain": "localhost",
     "developerMode": false
+  },
+  "webAuthNConfig": {
+    "rpDisplayName": "RAGE",
+    "rpID": "${DOMAIN}",
+    "rpOrigins": ["https://${DOMAIN}"]
   }
 }

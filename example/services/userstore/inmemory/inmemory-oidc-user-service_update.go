@@ -7,7 +7,9 @@ import (
 	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
+	proto_types_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types/webauthn"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
+	uuid "github.com/gofrs/uuid"
 	status "github.com/gogo/status"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
@@ -59,6 +61,46 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 		if updateRageUser.State != nil {
 			rageUser.State = updateRageUser.State.Value
 		}
+		doWebAuthNUpdate := func() error {
+			webAuthNUpdate := updateRageUser.WebAuthN
+			if webAuthNUpdate == nil || webAuthNUpdate.Credentials == nil {
+				// nothing to do
+				return nil
+			}
+			if rageUser.WebAuthN == nil {
+				rageUser.WebAuthN = &proto_oidc_models.WebAuthN{}
+			}
+			switch v := webAuthNUpdate.Credentials.Update.(type) {
+			case *proto_types_webauthn.CredentialArrayUpdate_DeleteAll:
+				if v.DeleteAll.Value {
+					rageUser.WebAuthN.Credentials = make([]*proto_types_webauthn.Credential, 0)
+				}
+			case *proto_types_webauthn.CredentialArrayUpdate_Granular_:
+				mapExisting := make(map[uuid.UUID]*proto_types_webauthn.Credential)
+				for _, credential := range rageUser.WebAuthN.Credentials {
+					aaguid, _ := uuid.FromBytes(credential.Authenticator.AAGUID)
+					mapExisting[aaguid] = credential
+				}
+				for _, aaGUID := range v.Granular.RemoveAAGUIDs {
+					aaguid, _ := uuid.FromBytes(aaGUID)
+					delete(mapExisting, aaguid)
+				}
+				for _, credential := range v.Granular.Add {
+					aaguid, _ := uuid.FromBytes(credential.Authenticator.AAGUID)
+					mapExisting[aaguid] = credential
+				}
+				rageUser.WebAuthN.Credentials = make([]*proto_types_webauthn.Credential, 0)
+				for _, credential := range mapExisting {
+					rageUser.WebAuthN.Credentials = append(rageUser.WebAuthN.Credentials, credential)
+				}
+
+			}
+			return nil
+		}
+		err := doWebAuthNUpdate()
+		if err != nil {
+			return err
+		}
 		doRecoveryUpdate := func() error {
 			recoveryUpdate := updateRageUser.Recovery
 			if recoveryUpdate == nil {
@@ -82,7 +124,7 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 			}
 			return nil
 		}
-		err := doRecoveryUpdate()
+		err = doRecoveryUpdate()
 		if err != nil {
 			return err
 		}

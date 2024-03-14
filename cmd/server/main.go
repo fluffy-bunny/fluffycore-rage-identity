@@ -11,6 +11,7 @@ import (
 	services_handlers_account_home "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/home"
 	services_handlers_account_login "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/login"
 	services_handlers_account_logout "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/logout"
+	services_handlers_account_passkey_management "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/passkey_management"
 	services_handlers_account_personal_information "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/personal_information"
 	services_handlers_account_profile "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/profile"
 	services_oidcflowstore "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/oidcflowstore"
@@ -70,6 +71,7 @@ func MyConfigServices(ctx context.Context, builder di.ContainerBuilder) {
 	services_handlers_account_login.AddScopedIHandler(builder)
 	services_handlers_account_logout.AddScopedIHandler(builder)
 	services_handlers_account_personal_information.AddScopedIHandler(builder)
+	services_handlers_account_passkey_management.AddScopedIHandler(builder)
 	services_handlers_account_profile.AddScopedIHandler(builder)
 
 }

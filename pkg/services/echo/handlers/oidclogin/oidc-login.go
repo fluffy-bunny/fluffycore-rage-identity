@@ -353,15 +353,25 @@ func (s *service) DoPost(c echo.Context) error {
 		}
 		return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
 	}
+	hasPasskey := false
+	if user.WebAuthN != nil && fluffycore_utils.IsNotEmptyOrNil(user.WebAuthN.Credentials) {
+		hasPasskey = true
+	}
+	err = s.wellknownCookies.SetSigninUserNameCookie(c, &contracts_cookies.SetSigninUserNameCookieRequest{
+		Value: &contracts_cookies.SigninUserNameCookie{
+			Email:      model.UserName,
+			HasPasskey: hasPasskey,
+		},
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("SetSigninUserNameCookie")
+		return s.TeleportBackToLogin(c, InternalError_OIDCLogin_004)
+	}
 	return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPasswordPath,
 		[]models.FormParam{
 			{
 				Name:  "state",
 				Value: authorizationRequest.State,
-			},
-			{
-				Name:  "email",
-				Value: model.UserName,
 			},
 			{
 				Name:  "directive",
