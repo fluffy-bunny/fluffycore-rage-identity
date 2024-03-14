@@ -42,5 +42,10 @@
   "username.already.exists": "The username {username} already exists",
   "username.is.empty": "The username is empty",
   "username.not.valid": "The username {username} is not a valid email address",
-  "model.is.invalid": "[internal] The model is invalid"
+  "model.is.invalid": "[internal] The model is invalid",
+  "pass_keys": "Passkeys",
+  "passkey": "Passkey",
+  "passkey_management": "Manage Pass Keys",
+  "register": "Register",
+  "password.is.not.acceptable": "Password validation failed. Please choose a stronger password, and ensure that it is not the same as your username."
 }

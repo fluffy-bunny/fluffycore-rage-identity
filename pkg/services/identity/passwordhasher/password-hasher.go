@@ -2,17 +2,25 @@ package passwordhasher
 
 import (
 	"context"
+	"regexp"
+	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
+	passwordvalidator "github.com/wagslane/go-password-validator"
 	codes "google.golang.org/grpc/codes"
 )
 
 type (
-	service struct{}
+	service struct {
+		config          *contracts_config.PasswordConfig
+		regexExpression *regexp.Regexp
+	}
 )
 
 var stemService = (*service)(nil)
@@ -20,8 +28,12 @@ var stemService = (*service)(nil)
 func init() {
 	var _ contracts_identity.IPasswordHasher = stemService
 }
-func (s *service) Ctor() (contracts_identity.IPasswordHasher, error) {
-	return &service{}, nil
+func (s *service) Ctor(config *contracts_config.PasswordConfig) (contracts_identity.IPasswordHasher, error) {
+	// Compile the regex
+
+	return &service{
+		config: config,
+	}, nil
 }
 
 func AddSingletonIPasswordHasher(cb di.ContainerBuilder) {
@@ -76,4 +88,21 @@ func (s *service) VerifyPassword(ctx context.Context, request *contracts_identit
 		return status.Error(codes.NotFound, "Password does not match")
 	}
 	return nil
+}
+func (s *service) IsAcceptablePassword(user *proto_oidc_models.RageUser, password string) error {
+	if user == nil {
+		return status.Error(codes.InvalidArgument, "user is nil")
+	}
+	if fluffycore_utils.IsEmptyOrNil(password) {
+		return status.Error(codes.InvalidArgument, "Password is empty")
+	}
+	// stupidity check
+	emailAndPasswordTheSame := strings.EqualFold(user.RootIdentity.Email, password)
+	if emailAndPasswordTheSame {
+		return status.Error(codes.InvalidArgument, "Password cannot be the same as the email")
+	}
+	// regex expression check
+	err := passwordvalidator.Validate(password, s.config.MinEntropyBits)
+	return err
+
 }

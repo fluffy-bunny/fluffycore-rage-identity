@@ -36,6 +36,7 @@ type (
 		wellknownCookies contracts_cookies.IWellknownCookies
 		passwordHasher   contracts_identity.IPasswordHasher
 		oidcSession      contracts_oidc_session.IOIDCSession
+		signinResponse   *contracts_cookies.GetSigninUserNameCookieResponse
 	}
 )
 
@@ -97,7 +98,6 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type LoginGetRequest struct {
-	Email     string `param:"email" query:"email" form:"email" json:"email" xml:"email"`
 	Error     string `param:"error" query:"error" form:"error" json:"error" xml:"error"`
 	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
 }
@@ -156,10 +156,11 @@ func (s *service) DoGet(c echo.Context) error {
 
 	return s.Render(c, http.StatusOK, "oidc/oidcloginpassword/index",
 		map[string]interface{}{
-			"errors":    rows,
-			"idps":      idps,
-			"email":     model.Email,
-			"directive": models.LoginDirective,
+			"errors":     rows,
+			"idps":       idps,
+			"email":      s.signinResponse.Value.Email,
+			"directive":  models.LoginDirective,
+			"hasPasskey": s.signinResponse.Value.HasPasskey,
 		})
 }
 
@@ -190,6 +191,8 @@ func (s *service) DoPost(c echo.Context) error {
 	if err != nil {
 		errors = append(errors, err.Error())
 	}
+	idps, _ := s.GetIDPs(ctx)
+
 	authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
 
 	model.UserName = strings.ToLower(model.UserName)
@@ -198,9 +201,11 @@ func (s *service) DoPost(c echo.Context) error {
 		return s.Render(c, http.StatusBadRequest,
 			"oidc/oidcloginpassword/index",
 			map[string]interface{}{
-				"email":     model.UserName,
-				"errors":    errors,
-				"directive": models.LoginDirective,
+				"errors":     errors,
+				"email":      s.signinResponse.Value.Email,
+				"idps":       idps,
+				"directive":  models.LoginDirective,
+				"hasPasskey": s.signinResponse.Value.HasPasskey,
 			})
 	}
 	// does the user exist.
@@ -374,6 +379,15 @@ func (s *service) DoPost(c echo.Context) error {
 func (s *service) Do(c echo.Context) error {
 
 	r := c.Request()
+	ctx := r.Context()
+	log := zerolog.Ctx(ctx).With().Logger()
+	signinResponse, err := s.wellknownCookies.GetSigninUserNameCookie(c)
+	if err != nil {
+		log.Error().Err(err).Msg("GetSigninUserNameCookie")
+		return s.TeleportBackToLogin(c, InternalError_OIDCLoginPassword_004)
+	}
+	s.signinResponse = signinResponse
+
 	// is the request get or post?
 	switch r.Method {
 	case http.MethodGet:

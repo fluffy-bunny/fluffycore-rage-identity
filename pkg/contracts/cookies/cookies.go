@@ -2,6 +2,7 @@ package cookies
 
 import (
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
+	go_webauthn "github.com/go-webauthn/webauthn/webauthn"
 	echo "github.com/labstack/echo/v4"
 )
 
@@ -59,6 +60,26 @@ type (
 	GetAuthCookieResponse struct {
 		AuthCookie *AuthCookie `json:"authCookie"`
 	}
+	WebAuthNCookie struct {
+		Identity    *proto_oidc_models.Identity `json:"identity"`
+		SessionData *go_webauthn.SessionData    `json:"sessionData"`
+	}
+	SetWebAuthNCookieRequest struct {
+		Value *WebAuthNCookie `json:"webAuthNCookie"`
+	}
+	GetWebAuthNCookieResponse struct {
+		Value *WebAuthNCookie `json:"webAuthNCookie"`
+	}
+	SigninUserNameCookie struct {
+		Email      string `json:"email"`
+		HasPasskey bool   `json:"hasPasskey"`
+	}
+	SetSigninUserNameCookieRequest struct {
+		Value *SigninUserNameCookie `json:"signinUserNameCookie"`
+	}
+	GetSigninUserNameCookieResponse struct {
+		Value *SigninUserNameCookie `json:"signinUserNameCookie"`
+	}
 	IWellknownCookies interface {
 		// External OAuth2 Cookie
 		//---------------------------------------------------------------------
@@ -90,6 +111,17 @@ type (
 		SetInsecureCookie(c echo.Context, name string, value interface{}) error
 		DeleteInsecureCookie(c echo.Context, name string)
 		GetInsecureCookie(c echo.Context, name string) (interface{}, error)
+		// WebAuthN Cookie
+		//---------------------------------------------------------------------
+		SetWebAuthNCookie(c echo.Context, request *SetWebAuthNCookieRequest) error
+		DeleteWebAuthNCookie(c echo.Context)
+		GetWebAuthNCookie(c echo.Context) (*GetWebAuthNCookieResponse, error)
+
+		// SigninUserName Cookie
+		//---------------------------------------------------------------------
+		SetSigninUserNameCookie(c echo.Context, request *SetSigninUserNameCookieRequest) error
+		DeleteSigninUserNameCookie(c echo.Context)
+		GetSigninUserNameCookie(c echo.Context) (*GetSigninUserNameCookieResponse, error)
 	}
 )
 
@@ -100,4 +132,6 @@ const (
 	CookieNameAuth                        = "_auth"
 	LoginRequest                          = "_loginRequest"
 	CookieNameExternalOauth2StateTemplate = "_externalOauth2State_{state}"
+	CookieNameWebAuthN                    = "_webAuthN"
+	CookieNameSigninUserName              = "_signinUserName"
 )

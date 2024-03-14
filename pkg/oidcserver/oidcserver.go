@@ -20,12 +20,17 @@ import (
 	services_handlers_jwks_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/jwks_endpoint"
 	services_handlers_oauth2_callback "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oauth2/callback"
 	services_handlers_oidclogin "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidclogin"
+	services_handlers_oidcloginpasskey "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidcloginpasskey"
 	services_handlers_oidcloginpassword "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidcloginpassword"
 	services_handlers_passwordreset "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/passwordreset"
 	services_handlers_signup "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/signup"
 	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/swagger"
 	services_handlers_token_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/token_endpoint"
 	services_handlers_verifycode "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/verifycode"
+	services_handlers_webauthn_loginbegin "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn/loginbegin"
+	services_handlers_webauthn_loginfinish "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn/loginfinish"
+	services_handlers_webauthn_registrationbegin "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn/registrationbegin"
+	services_handlers_webauthn_registrationfinish "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn/registrationfinish"
 	services_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/oidc_session"
 	pkg_types "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/types"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
@@ -171,6 +176,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_error.AddScopedIHandler(builder)
 	services_handlers_oidclogin.AddScopedIHandler(builder)
 	services_handlers_oidcloginpassword.AddScopedIHandler(builder)
+	services_handlers_oidcloginpasskey.AddScopedIHandler(builder)
 	services_handlers_externalidp.AddScopedIHandler(builder)
 	services_handlers_swagger.AddScopedIHandler(builder)
 	services_handlers_discovery_endpoint.AddScopedIHandler(builder)
@@ -182,6 +188,12 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_verifycode.AddScopedIHandler(builder)
 	services_handlers_passwordreset.AddScopedIHandler(builder)
 
+	// WebAuthN Handlers
+	//--------------------------------------------------------
+	services_handlers_webauthn_registrationbegin.AddScopedIHandler(builder)
+	services_handlers_webauthn_registrationfinish.AddScopedIHandler(builder)
+	services_handlers_webauthn_loginbegin.AddScopedIHandler(builder)
+	services_handlers_webauthn_loginfinish.AddScopedIHandler(builder)
 	// sessions
 	//----------------
 	fluffycore_echo_services_sessions_memory_session_store.AddSingletonBackendSessionStore(builder)
