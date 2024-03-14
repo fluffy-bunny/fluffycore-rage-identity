@@ -175,7 +175,7 @@ func (s *service) Do(c echo.Context) error {
 										BackupState:    credential.Flags.BackupState,
 									},
 									Authenticator: &proto_types_webauthn.Authenticator{
-										Aaguid:       credential.Authenticator.AAGUID,
+										AAGUID:       credential.Authenticator.AAGUID,
 										SignCount:    credential.Authenticator.SignCount,
 										CloneWarning: credential.Authenticator.CloneWarning,
 										Attachment:   string(credential.Authenticator.Attachment),

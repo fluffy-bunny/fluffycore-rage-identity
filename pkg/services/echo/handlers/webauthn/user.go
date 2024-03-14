@@ -78,7 +78,7 @@ func (s *WebAuthNUser) WebAuthnCredentials() []go_webauthn.Credential {
 				BackupState:    v.Flags.BackupState,
 			},
 			Authenticator: go_webauthn.Authenticator{
-				AAGUID:       v.Authenticator.Aaguid,
+				AAGUID:       v.Authenticator.AAGUID,
 				SignCount:    v.Authenticator.SignCount,
 				CloneWarning: v.Authenticator.CloneWarning,
 				Attachment:   protocol.AuthenticatorAttachment(v.Authenticator.Attachment),

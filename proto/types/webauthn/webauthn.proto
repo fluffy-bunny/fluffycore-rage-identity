@@ -50,7 +50,7 @@ message CredentialFlags {
 message Authenticator {
 	// The AAGUID of the authenticator. An AAGUID is defined as an array containing the globally unique
     // identifier of the authenticator model being sought.
-  bytes aaguid = 1;
+    bytes a_a_g_u_i_d = 1;
 
   	// SignCount -Upon a new login operation, the Relying Party compares the stored signature counter value
 	// with the new sign_count value returned in the assertion’s authenticator data. If this new
@@ -74,7 +74,7 @@ message Authenticator {
 message CredentialArrayUpdate {
     message Granular{
         repeated Credential add = 1;
-        repeated string remove = 2;
+        repeated bytes      remove_a_a_g_u_i_ds = 2;
      }
      oneof update {
         Granular granular = 1;
