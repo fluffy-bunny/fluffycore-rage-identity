@@ -61,7 +61,7 @@
                                 <ul class="error-list">
                                     {{range $idx, $credential := .user.RageUser.WebAuthN.Credentials}}
                                         <li class="error-list-item">
-                                            {{ $credential.Name }}
+                                            {{ $credential.Authenticator.FriendlyName }}
                                         </li>
                                     {{end}}
                                 </ul>
