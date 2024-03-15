@@ -15,7 +15,7 @@ require (
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.2
 	github.com/fluffy-bunny/fluffycore v1.0.87
 	github.com/go-oauth2/oauth2/v4 v4.5.2
-	github.com/go-webauthn/webauthn v0.10.1
+	github.com/go-webauthn/webauthn v0.10.2
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/gogo/status v1.1.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
@@ -31,6 +31,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/swaggo/echo-swagger v1.4.1
 	github.com/swaggo/swag v1.16.3
+	github.com/wagslane/go-password-validator v0.3.0
 	github.com/wamuir/svg-qr-code v0.0.0-20210725140500-9525ec975db7
 	github.com/xlzd/gotp v0.1.0
 	golang.org/x/net v0.22.0
@@ -54,7 +55,7 @@ require (
 	github.com/felixge/fgprof v0.9.3 // indirect
 	github.com/fluffy-bunny/viperEx v0.0.32 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
-	github.com/fxamacker/cbor/v2 v2.5.0 // indirect
+	github.com/fxamacker/cbor/v2 v2.6.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-jose/go-jose/v3 v3.0.1 // indirect
 	github.com/go-openapi/jsonpointer v0.20.2 // indirect
@@ -62,13 +63,13 @@ require (
 	github.com/go-openapi/spec v0.20.14 // indirect
 	github.com/go-openapi/swag v0.22.9 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
-	github.com/go-webauthn/x v0.1.8 // indirect
+	github.com/go-webauthn/x v0.1.9 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gogo/googleapis v1.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.0 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
 	github.com/golang-migrate/migrate/v4 v4.17.0 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
@@ -136,7 +137,6 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.50.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	github.com/wagslane/go-password-validator v0.3.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/ziflex/lecho/v3 v3.5.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
