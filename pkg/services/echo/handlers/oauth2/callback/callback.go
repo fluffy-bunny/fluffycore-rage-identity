@@ -304,7 +304,7 @@ func (s *service) Do(c echo.Context) error {
 			Subject: rawToken.Subject(),
 			Email:   email.(string),
 			Acr: []string{
-				fmt.Sprintf("urn:mastodon:idp:%s", externalOauth2State.Request.IdpHint),
+				fmt.Sprintf("urn:rage:idp:%s", externalOauth2State.Request.IdpHint),
 			},
 			Amr: []string{
 				models.AMRIdp,
@@ -339,7 +339,7 @@ func (s *service) Do(c echo.Context) error {
 				Subject: user.RootIdentity.Subject,
 				Email:   user.RootIdentity.Email,
 				Acr: []string{
-					fmt.Sprintf("urn:mastodon:idp:%s", externalOauth2State.Request.IdpHint),
+					fmt.Sprintf("urn:rage:idp:%s", externalOauth2State.Request.IdpHint),
 				},
 				Amr: []string{
 					models.AMRIdp,

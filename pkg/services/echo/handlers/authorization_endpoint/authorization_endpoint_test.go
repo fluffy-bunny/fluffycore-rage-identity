@@ -8,17 +8,17 @@ import (
 
 func TestIdpUrnExtraction(t *testing.T) {
 
-	template := "urn:mastodon:idp:google"
+	template := "urn:rage:idp:google"
 	info, err := extractIdpSlug(template)
 	require.NoError(t, err)
 	require.Equal(t, "google", info["idp_hint"])
 
-	template = "urn:mastodon:idp:"
+	template = "urn:rage:idp:"
 	info, err = extractIdpSlug(template)
 	require.NoError(t, err)
 	require.Equal(t, "", info["idp_hint"])
 
-	template = "urn:mastodon:idp"
+	template = "urn:rage:idp"
 	info, err = extractIdpSlug(template)
 	require.Error(t, err)
 	require.Empty(t, info)
@@ -32,12 +32,12 @@ func TestIdpUrnExtraction(t *testing.T) {
 
 func TestRootCandidateUrnExtraction(t *testing.T) {
 
-	template := "urn:mastodon:root_candidate:123"
+	template := "urn:rage:root_candidate:123"
 	info, err := extractRootCandidate(template)
 	require.NoError(t, err)
 	require.Equal(t, "123", info["user_id"])
 
-	template = "urn:mastodon:root_candidate:"
+	template = "urn:rage:root_candidate:"
 	info, err = extractRootCandidate(template)
 	require.NoError(t, err)
 	require.Equal(t, "", info["user_id"])
@@ -47,12 +47,12 @@ func TestRootCandidateUrnExtraction(t *testing.T) {
 	require.Error(t, err)
 	require.Empty(t, info)
 
-	template = "urn:mastodon:idp:google"
+	template = "urn:rage:idp:google"
 	info, err = extractRootCandidate(template)
 	require.Error(t, err)
 	require.Empty(t, info)
 
-	template = "urn:mastodon:root_candidate"
+	template = "urn:rage:root_candidate"
 	info, err = extractRootCandidate(template)
 	require.Error(t, err)
 	require.Empty(t, info)

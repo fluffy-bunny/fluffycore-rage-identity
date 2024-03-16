@@ -333,8 +333,8 @@ func (s *service) DoPost(c echo.Context) error {
 		},
 	}
 
-	// "urn:mastodon:idp:google", "urn:mastodon:idp:spacex", "urn:mastodon:idp:github-enterprise", etc.
-	// "urn:mastodon:password", "urn:mastodon:2fa", "urn:mastodon:email", etc.
+	// "urn:rage:idp:google", "urn:rage:idp:spacex", "urn:rage:idp:github-enterprise", etc.
+	// "urn:rage:password", "urn:rage:2fa", "urn:rage:email", etc.
 	// we are done with the state now.  Lets map it to the code so it can be looked up by the client.
 	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
 		State:                     authorizationFinal.Request.Code,

@@ -31,6 +31,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/swaggo/echo-swagger v1.4.1
 	github.com/swaggo/swag v1.16.3
+	github.com/wagslane/go-password-validator v0.3.0
 	github.com/wamuir/svg-qr-code v0.0.0-20210725140500-9525ec975db7
 	github.com/xlzd/gotp v0.1.0
 	golang.org/x/net v0.22.0
@@ -136,7 +137,6 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.50.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	github.com/wagslane/go-password-validator v0.3.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/ziflex/lecho/v3 v3.5.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
