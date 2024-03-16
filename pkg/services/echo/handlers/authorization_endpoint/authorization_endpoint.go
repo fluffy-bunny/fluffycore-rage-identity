@@ -259,7 +259,7 @@ func (s *service) Do(c echo.Context) error {
 
 func extractIdpSlug(template string) (map[string]string, error) {
 	// Define the regular expression pattern
-	pattern := `^urn:mastodon:idp:([^:]+)?$`
+	pattern := `^urn:rage:idp:([^:]+)?$`
 
 	// Compile the regular expression
 	re, err := regexp.Compile(pattern)
@@ -281,7 +281,7 @@ func extractIdpSlug(template string) (map[string]string, error) {
 }
 func extractRootCandidate(template string) (map[string]string, error) {
 	// Define the regular expression pattern
-	pattern := `^urn:mastodon:root_candidate:([^:]+)?$`
+	pattern := `^urn:rage:root_candidate:([^:]+)?$`
 
 	// Compile the regular expression
 	re, err := regexp.Compile(pattern)

@@ -47,7 +47,7 @@ func (s *service) validateTokenEndpointAuthorizationCodeRequest(req *TokenEndpoi
 }
 func extractIdpSlug(template string) (string, error) {
 	// Define the regular expression pattern
-	pattern := `^urn:mastodon:idp:([^:]+)?$`
+	pattern := `^urn:rage:idp:([^:]+)?$`
 
 	// Compile the regular expression
 	re, err := regexp.Compile(pattern)
