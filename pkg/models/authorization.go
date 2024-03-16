@@ -35,8 +35,8 @@ const (
 
 // urn prefixes
 const (
-	URNIdpPrefix     string = "urn:mastodon:idp:{idp_hint}"
-	URLRootCandidate string = "urn:mastodon:root_candidate:{user_id}"
+	URNIdpPrefix     string = "urn:rage:idp:{idp_hint}"
+	URLRootCandidate string = "urn:rage:root_candidate:{user_id}"
 )
 
 const (

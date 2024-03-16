@@ -206,57 +206,57 @@ go build .
 
 .\oidc-client.exe serve    --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
 
-.\oidc-client.exe serve --acr_values "urn:mastodon:idp:google-social"   --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
+.\oidc-client.exe serve --acr_values "urn:rage:idp:google-social"   --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
 
-.\oidc-client.exe serve --acr_values "urn:mastodon:idp:mapped-enterprise" --acr_values "urn:mastodon:root_candidate:cnf07331og1ecp4r680g"  --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
+.\oidc-client.exe serve --acr_values "urn:rage:idp:mapped-enterprise" --acr_values "urn:rage:root_candidate:cnf07331og1ecp4r680g"  --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
 
-.\oidc-client.exe serve --acr_values "urn:mastodon:idp:mapped-enterprise"  --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
+.\oidc-client.exe serve --acr_values "urn:rage:idp:mapped-enterprise"  --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
 ```
 
-.\oidc-client.exe serve    --authority https://3156-47-150-126-75.ngrok-free.app --client_id go-client --client_secret secret --port 5556
+.\oidc-client.exe serve --authority https://3156-47-150-126-75.ngrok-free.app --client_id go-client --client_secret secret --port 5556
 
 ### Docker Clients
 
 ```bash
 .\oidc-client.exe serve    --authority https://rage.localhost.dev --client_id go-client --client_secret secret --port 5556
 
-.\oidc-client.exe serve --acr_values "urn:mastodon:idp:mapped-enterprise"   --authority https://rage.localhost.dev --client_id go-client --client_secret secret --port 5556
+.\oidc-client.exe serve --acr_values "urn:rage:idp:mapped-enterprise"   --authority https://rage.localhost.dev --client_id go-client --client_secret secret --port 5556
 
-.\oidc-client.exe serve --acr_values "urn:mastodon:idp:mapped-enterprise" --acr_values "urn:mastodon:root_candidate:cnf08ok1fnuu73eq91vg"   --authority https://rage.localhost.dev --client_id go-client --client_secret secret --port 5556
+.\oidc-client.exe serve --acr_values "urn:rage:idp:mapped-enterprise" --acr_values "urn:rage:root_candidate:cnf08ok1fnuu73eq91vg"   --authority https://rage.localhost.dev --client_id go-client --client_secret secret --port 5556
 
 
 ```
 
 ## PassKeys
 
-For developement we need https.  This is where ngrok comes in.  
+For developement we need https. This is where ngrok comes in.
 
-**NOTE**: Because we use ngrok we don't have a stable domain.  So all IDP logins will fail, because we need to register a stable https domain with google, github, microsoft, azure, etc.  
+**NOTE**: Because we use ngrok we don't have a stable domain. So all IDP logins will fail, because we need to register a stable https domain with google, github, microsoft, azure, etc.
 
-Passkey development can only work for simple username/password accounts.  
+Passkey development can only work for simple username/password accounts.
 
 ```powershell
 ngrok http http://localhost:9044
 ```
 
-This will give you your ngrok url.  
+This will give you your ngrok url.
 
 ```cmd
-ngrok 
-Forwarding  https://3156-47-150-126-75.ngrok-free.app -> http://localhost:9044    
+ngrok
+Forwarding  https://3156-47-150-126-75.ngrok-free.app -> http://localhost:9044
 ```
 
-Update [.env.ngrok](./.env.ngrok) with the ngrok domain.  In this case it would be `3156-47-150-126-75.ngrok-free.app`  
+Update [.env.ngrok](./.env.ngrok) with the ngrok domain. In this case it would be `3156-47-150-126-75.ngrok-free.app`
 
 We launch the server using vscode [launch.json](./.vscode/launch.json)
 
 ```json
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "server-ngrok"
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "server-ngrok"
+    }
+  ]
 }
 ```
