@@ -178,6 +178,11 @@ func (s *service) ListUser(ctx context.Context, request *proto_external_user.Lis
 		return true
 
 	}).SelectT(func(c *proto_external_models.ExampleUser) *proto_external_models.ExampleUser {
+		if c.RageUser.TOTP != nil {
+			// TODO: THIS MUST BE ENCRYPTED AT REST
+			// if there is a TOTP secret, we need to return it
+			// it better be encrypted at rest
+		}
 		return s.makeExampleUserCopy(c)
 	}).ToSlice(&users)
 

@@ -148,7 +148,29 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 		if err != nil {
 			return err
 		}
-
+		doTOTPUpdate := func() error {
+			totpUpdate := updateRageUser.TOTP
+			if totpUpdate == nil {
+				// nothing to do
+				return nil
+			}
+			if rageUser.TOTP == nil {
+				rageUser.TOTP = &proto_oidc_models.TOTP{}
+			}
+			totp := rageUser.TOTP
+			if totpUpdate.Secret != nil {
+				// TODO: THIS MUST BE ENCRYPTED AT REST
+				totp.Secret = totpUpdate.Secret.Value
+			}
+			if totpUpdate.Enabled != nil {
+				totp.Enabled = totpUpdate.Enabled.Value
+			}
+			return nil
+		}
+		err = doTOTPUpdate()
+		if err != nil {
+			return err
+		}
 		doRootIdentityUpdate := func() error {
 			rootIdentityUpdate := updateRageUser.RootIdentity
 			if rootIdentityUpdate == nil {
