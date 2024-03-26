@@ -33,6 +33,7 @@ var (
 	ReadyPath                                        = "/ready"
 	SignupPath                                       = "/signup"
 	SwaggerPath                                      = "/swagger/*"
+	TOTPPath                                         = "/totp-management"
 	UserInfoPath                                     = "/v1/userinfo"
 	VerifyCodePath                                   = "/verify-code"
 	WellKnownJWKS                                    = "/.well-known/jwks"
@@ -60,6 +61,7 @@ type Paths struct {
 	OIDCLoginPassword   string
 	OIDCLoginPasskey    string
 	Signup              string
+	TOTP                string
 	ForgotPassword      string
 	VerifyCode          string
 	PasswordReset       string
@@ -79,6 +81,7 @@ func NewPaths() *Paths {
 		OIDCLoginPassword:   OIDCLoginPasswordPath,
 		OIDCLoginPasskey:    OIDCLoginPasskeyPath,
 		Signup:              SignupPath,
+		TOTP:                TOTPPath,
 		ForgotPassword:      ForgotPasswordPath,
 		VerifyCode:          VerifyCodePath,
 		PasswordReset:       PasswordResetPath,

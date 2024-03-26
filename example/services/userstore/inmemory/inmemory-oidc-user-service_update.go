@@ -158,12 +158,11 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 				rageUser.TOTP = &proto_oidc_models.TOTP{}
 			}
 			totp := rageUser.TOTP
-			if totpUpdate.Secret != nil {
-				// TODO: THIS MUST BE ENCRYPTED AT REST
-				totp.Secret = totpUpdate.Secret.Value
-			}
 			if totpUpdate.Enabled != nil {
 				totp.Enabled = totpUpdate.Enabled.Value
+			}
+			if totpUpdate.Verified != nil {
+				totp.Verified = totpUpdate.Verified.Value
 			}
 			return nil
 		}

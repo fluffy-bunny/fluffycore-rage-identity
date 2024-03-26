@@ -141,10 +141,11 @@ message WebAuthNUpdate {
 message TOTP {
     string secret = 1;
     bool enabled = 2;
+    bool verified = 3;
 }
 message TOTPUpdate {
-    google.protobuf.StringValue secret = 1;
     google.protobuf.BoolValue enabled = 2;
+    google.protobuf.BoolValue verified = 3;
 }
 message RageUser {
     RageUserState       state = 2;
