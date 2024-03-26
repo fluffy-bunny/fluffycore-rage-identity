@@ -48,5 +48,6 @@
   "passkey_management": "Manage Pass Keys",
   "register": "Register",
   "password.is.not.acceptable": "Password validation failed. Please choose a stronger password, and ensure that it is not the same as your username.",
-  "totp_management": "Manage Two Factor Authentication"
+  "totp_management": "Manage Two Factor Authentication",
+  "totp_enter_placeholder": "Enter the code from your authenticator app"
 }

@@ -7,8 +7,8 @@ import (
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	"github.com/rs/xid"
 	zerolog "github.com/rs/zerolog"
+	gotp "github.com/xlzd/gotp"
 	codes "google.golang.org/grpc/codes"
 )
 
@@ -74,7 +74,7 @@ func (s *service) CreateUser(ctx context.Context, request *proto_external_user.C
 
 	// create the user
 	user.RageUser.TOTP = &proto_oidc_models.TOTP{
-		Secret:   xid.New().String(),
+		Secret:   gotp.RandomSecret(16),
 		Enabled:  false,
 		Verified: false, // need to get the code from the auth app and verify it
 	}

@@ -2,6 +2,7 @@
 {{template "html_begin" .}}
 {{template "header" .}}
 {{template "navbar" .}}
+{{ $returnUrl   := .returnUrl }}
 
 <body>
     <!-- Page content -->
@@ -14,6 +15,15 @@
                 <!-- Display QR code here (you'll need a library like QRCode.js) -->
                 <img src="data:image/png;base64,{{ .pngQRCode }}" alt="QR Code" style="max-width: 100%; max-height: 100%;" />
             </div>
+         </div>
+        <form action="{{ .formAction }}" method="post">
+            <input type="hidden" name="returnUrl" value="{{ $returnUrl }}">
+            <div class="mb-3">
+                <label for="code" class="form-label">{{ call .LocalizeMessage "code" }}</label>
+                <input type="code" class="form-control" id="code" name="code" placeholder="{{ call .LocalizeMessage "totp_enter_placeholder" }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">{{ call .LocalizeMessage "verifycode" }}</button>
+        </form>
     </div>
 </body>
 

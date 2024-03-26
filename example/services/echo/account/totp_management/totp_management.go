@@ -2,6 +2,7 @@ package totp_management
 
 import (
 	"net/http"
+	"time"
 
 	"encoding/base64"
 
@@ -21,6 +22,7 @@ import (
 	qrcode "github.com/skip2/go-qrcode"
 	gotp "github.com/xlzd/gotp"
 	codes "google.golang.org/grpc/codes"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type (
@@ -63,6 +65,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 		stemService.Ctor,
 		[]contracts_handler.HTTPVERB{
 			contracts_handler.GET,
+			contracts_handler.POST,
 		},
 		wellknown_echo.TOTPPath,
 	)
@@ -78,9 +81,7 @@ type TOTPManagmentGetRequest struct {
 }
 
 func (s *service) validateTOTPManagementGetRequest(model *TOTPManagmentGetRequest) error {
-	if fluffycore_utils.IsEmptyOrNil(model.Action) {
-		return status.Error(codes.InvalidArgument, "Action is empty")
-	}
+
 	if fluffycore_utils.IsEmptyOrNil(model.ReturnUrl) {
 		model.ReturnUrl = "/"
 	}
@@ -116,6 +117,71 @@ func (s *service) getUser(c echo.Context) (*proto_external_models.ExampleUser, e
 	return getUserResponse.User, nil
 
 }
+
+type TOTPManagmentPostRequest struct {
+	Code      string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
+	ReturnUrl string `param:"returnUrl" query:"returnUrl" form:"returnUrl" json:"returnUrl" xml:"returnUrl"`
+}
+
+func (s *service) validateTOTPManagmentPostRequest(model *TOTPManagmentPostRequest) error {
+	if fluffycore_utils.IsEmptyOrNil(model.Code) {
+		return status.Error(codes.InvalidArgument, "Code is empty")
+	}
+	if fluffycore_utils.IsEmptyOrNil(model.ReturnUrl) {
+		model.ReturnUrl = "/"
+	}
+	return nil
+}
+func (s *service) DoPost(c echo.Context) error {
+	r := c.Request()
+	// is the request get or post?
+
+	ctx := r.Context()
+	log := zerolog.Ctx(ctx).With().Logger()
+	model := &TOTPManagmentPostRequest{}
+	if err := c.Bind(model); err != nil {
+		log.Error().Err(err).Msg("c.Bind")
+		return c.Redirect(http.StatusFound, "/error")
+	}
+	err := s.validateTOTPManagmentPostRequest(model)
+	if err != nil {
+		log.Error().Err(err).Msg("validateTOTPManagmentPostRequest")
+		return s.DoGet(c)
+	}
+	user, err := s.getUser(c)
+	if err != nil {
+		return c.Redirect(http.StatusFound, "/error")
+	}
+
+	rageUser := user.RageUser
+	totpSecret := rageUser.TOTP.Secret
+	otp := gotp.NewDefaultTOTP(totpSecret)
+	valid := otp.Verify(model.Code, time.Now().Unix())
+	if !valid {
+		return s.DoGet(c)
+	}
+	user.RageUser.TOTP.Enabled = true
+	user.RageUser.TOTP.Verified = true
+
+	_, err = s.fluffyCoreUserServiceServer.UpdateUser(ctx, &proto_external_user.UpdateUserRequest{
+		User: &proto_external_models.ExampleUserUpdate{
+			Id: user.Id,
+			RageUser: &proto_oidc_models.RageUserUpdate{
+				TOTP: &proto_oidc_models.TOTPUpdate{
+					Enabled:  &wrapperspb.BoolValue{Value: true},
+					Verified: &wrapperspb.BoolValue{Value: true},
+				},
+			},
+		},
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("fluffyCoreUserServiceServer.UpdateUser")
+		return c.Redirect(http.StatusFound, "/error")
+	}
+	// redirect to retururl
+	return c.Redirect(http.StatusFound, model.ReturnUrl)
+}
+
 func (s *service) DoGet(c echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
@@ -151,9 +217,11 @@ func (s *service) DoGet(c echo.Context) error {
 
 	err = s.Render(c, http.StatusOK, templateName,
 		map[string]interface{}{
-			"action":    model.Action,
-			"returnUrl": model.ReturnUrl,
-			"pngQRCode": base64Str,
+			"action":     model.Action,
+			"returnUrl":  model.ReturnUrl,
+			"formAction": wellknown_echo.TOTPPath,
+			"verified":   rageUser.TOTP.Verified,
+			"pngQRCode":  base64Str,
 		})
 	return err
 }
@@ -165,6 +233,8 @@ func (s *service) Do(c echo.Context) error {
 	switch r.Method {
 	case http.MethodGet:
 		return s.DoGet(c)
+	case http.MethodPost:
+		return s.DoPost(c)
 	}
 	// return not found
 	return c.NoContent(http.StatusNotFound)
