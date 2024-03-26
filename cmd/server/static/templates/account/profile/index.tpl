@@ -40,6 +40,10 @@
                                 <input type="hidden" name="action" value="password-reset">
                                 <button type="submit" class="btn btn-primary btn-block">{{ call .LocalizeMessage "password_reset" }}</button>
                             </form>
+                            <form action="{{ $paths.Profile }}" method="post">
+                                <input type="hidden" name="action" value="totp-management">
+                                <button type="submit" class="btn btn-primary btn-block">{{ call .LocalizeMessage "totp_management" }}</button>
+                            </form>
                         </div>
                     </div>
                 </div>
