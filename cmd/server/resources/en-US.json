@@ -49,5 +49,7 @@
   "register": "Register",
   "password.is.not.acceptable": "Password validation failed. Please choose a stronger password, and ensure that it is not the same as your username.",
   "totp_management": "Manage Two Factor Authentication",
-  "totp_enter_placeholder": "Enter the code from your authenticator app"
+  "totp_enter_placeholder": "Enter the code from your authenticator app",
+  "totp_unenroll": "Unenroll this account from your authenticator app",
+  "totp_enroll": "Enroll this account in your authenticator app"
 }

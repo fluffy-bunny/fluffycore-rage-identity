@@ -2,6 +2,7 @@ package totp_management
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"encoding/base64"
@@ -37,6 +38,8 @@ type (
 
 const (
 	templateName = "account/totp_management/index"
+	unenroll     = "unenroll"
+	enroll       = "enroll"
 )
 
 var stemService = (*service)(nil)
@@ -120,16 +123,28 @@ func (s *service) getUser(c echo.Context) (*proto_external_models.ExampleUser, e
 
 type TOTPManagmentPostRequest struct {
 	Code      string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
+	Action    string `param:"action" query:"action" form:"action" json:"action" xml:"action"`
 	ReturnUrl string `param:"returnUrl" query:"returnUrl" form:"returnUrl" json:"returnUrl" xml:"returnUrl"`
 }
 
 func (s *service) validateTOTPManagmentPostRequest(model *TOTPManagmentPostRequest) error {
-	if fluffycore_utils.IsEmptyOrNil(model.Code) {
+	if fluffycore_utils.IsEmptyOrNil(model.Action) {
+		return status.Error(codes.InvalidArgument, "Action is empty")
+	}
+	isRemove := strings.EqualFold(model.Action, unenroll)
+	isVerify := strings.EqualFold(model.Action, enroll)
+	if !isRemove && !isVerify {
+		return status.Error(codes.InvalidArgument, "Action is invalid")
+	}
+	if isVerify && fluffycore_utils.IsEmptyOrNil(model.Code) {
 		return status.Error(codes.InvalidArgument, "Code is empty")
 	}
 	if fluffycore_utils.IsEmptyOrNil(model.ReturnUrl) {
 		model.ReturnUrl = "/"
 	}
+
+	// case insensitive compare
+
 	return nil
 }
 func (s *service) DoPost(c echo.Context) error {
@@ -148,12 +163,31 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("validateTOTPManagmentPostRequest")
 		return s.DoGet(c)
 	}
+
 	user, err := s.getUser(c)
 	if err != nil {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 
 	rageUser := user.RageUser
+	if model.Action == unenroll {
+		_, err = s.fluffyCoreUserServiceServer.UpdateUser(ctx, &proto_external_user.UpdateUserRequest{
+			User: &proto_external_models.ExampleUserUpdate{
+				Id: user.Id,
+				RageUser: &proto_oidc_models.RageUserUpdate{
+					TOTP: &proto_oidc_models.TOTPUpdate{
+						Enabled:  &wrapperspb.BoolValue{Value: false},
+						Verified: &wrapperspb.BoolValue{Value: false},
+					},
+				},
+			},
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("fluffyCoreUserServiceServer.UpdateUser")
+			return c.Redirect(http.StatusFound, "/error")
+		}
+		return s.DoGet(c)
+	}
 	totpSecret := rageUser.TOTP.Secret
 	otp := gotp.NewDefaultTOTP(totpSecret)
 	valid := otp.Verify(model.Code, time.Now().Unix())
