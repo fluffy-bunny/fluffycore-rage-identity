@@ -38,7 +38,8 @@ type (
 
 const (
 	templateName = "account/totp_management/index"
-	unenroll     = "unenroll"
+	disable      = "disable"
+	enable       = "enable"
 	enroll       = "enroll"
 )
 
@@ -131,13 +132,17 @@ func (s *service) validateTOTPManagmentPostRequest(model *TOTPManagmentPostReque
 	if fluffycore_utils.IsEmptyOrNil(model.Action) {
 		return status.Error(codes.InvalidArgument, "Action is empty")
 	}
-	isRemove := strings.EqualFold(model.Action, unenroll)
+	isDisable := strings.EqualFold(model.Action, disable)
+	isEnable := strings.EqualFold(model.Action, enable)
 	isVerify := strings.EqualFold(model.Action, enroll)
-	if !isRemove && !isVerify {
-		return status.Error(codes.InvalidArgument, "Action is invalid")
+	if !isDisable && !isVerify && !isEnable {
+		return status.Error(codes.InvalidArgument, "Action is invalid, must be disable, enable, or enroll")
 	}
 	if isVerify && fluffycore_utils.IsEmptyOrNil(model.Code) {
 		return status.Error(codes.InvalidArgument, "Code is empty")
+	}
+	if isEnable && isDisable {
+		return status.Error(codes.InvalidArgument, "Action is invalid, cannot be both enable and disable")
 	}
 	if fluffycore_utils.IsEmptyOrNil(model.ReturnUrl) {
 		model.ReturnUrl = "/"
@@ -170,14 +175,13 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 
 	rageUser := user.RageUser
-	if model.Action == unenroll {
+	if model.Action == disable {
 		_, err = s.fluffyCoreUserServiceServer.UpdateUser(ctx, &proto_external_user.UpdateUserRequest{
 			User: &proto_external_models.ExampleUserUpdate{
 				Id: user.Id,
 				RageUser: &proto_oidc_models.RageUserUpdate{
 					TOTP: &proto_oidc_models.TOTPUpdate{
-						Enabled:  &wrapperspb.BoolValue{Value: false},
-						Verified: &wrapperspb.BoolValue{Value: false},
+						Enabled: &wrapperspb.BoolValue{Value: false},
 					},
 				},
 			},
@@ -186,7 +190,24 @@ func (s *service) DoPost(c echo.Context) error {
 			log.Error().Err(err).Msg("fluffyCoreUserServiceServer.UpdateUser")
 			return c.Redirect(http.StatusFound, "/error")
 		}
-		return s.DoGet(c)
+		return c.Redirect(http.StatusFound, model.ReturnUrl)
+	}
+	if model.Action == enable {
+		_, err = s.fluffyCoreUserServiceServer.UpdateUser(ctx, &proto_external_user.UpdateUserRequest{
+			User: &proto_external_models.ExampleUserUpdate{
+				Id: user.Id,
+				RageUser: &proto_oidc_models.RageUserUpdate{
+					TOTP: &proto_oidc_models.TOTPUpdate{
+						Enabled: &wrapperspb.BoolValue{Value: true},
+					},
+				},
+			},
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("fluffyCoreUserServiceServer.UpdateUser")
+			return c.Redirect(http.StatusFound, "/error")
+		}
+		return c.Redirect(http.StatusFound, model.ReturnUrl)
 	}
 	totpSecret := rageUser.TOTP.Secret
 	otp := gotp.NewDefaultTOTP(totpSecret)
@@ -255,6 +276,7 @@ func (s *service) DoGet(c echo.Context) error {
 			"returnUrl":  model.ReturnUrl,
 			"formAction": wellknown_echo.TOTPPath,
 			"verified":   rageUser.TOTP.Verified,
+			"enabled":    rageUser.TOTP.Enabled,
 			"pngQRCode":  base64Str,
 		})
 	return err
