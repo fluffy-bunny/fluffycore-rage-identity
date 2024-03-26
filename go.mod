@@ -13,7 +13,7 @@ require (
 	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/eko/gocache/lib/v4 v4.1.5
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.2
-	github.com/fluffy-bunny/fluffycore v1.0.87
+	github.com/fluffy-bunny/fluffycore v1.0.89
 	github.com/go-oauth2/oauth2/v4 v4.5.2
 	github.com/go-webauthn/webauthn v0.10.1
 	github.com/gofrs/uuid v4.4.0+incompatible
@@ -57,7 +57,7 @@ require (
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.5.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
-	github.com/go-jose/go-jose/v3 v3.0.1 // indirect
+	github.com/go-jose/go-jose/v3 v3.0.3 // indirect
 	github.com/go-openapi/jsonpointer v0.20.2 // indirect
 	github.com/go-openapi/jsonreference v0.20.4 // indirect
 	github.com/go-openapi/spec v0.20.14 // indirect
@@ -83,7 +83,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault-5 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.5.4 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.5.5 // indirect
 	github.com/jellydator/ttlcache/v2 v2.11.1 // indirect
 	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
