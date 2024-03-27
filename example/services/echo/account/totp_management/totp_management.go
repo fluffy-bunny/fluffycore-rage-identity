@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
@@ -30,6 +31,7 @@ type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
 
+		config                      *contracts_config.Config
 		wellknownCookies            contracts_cookies.IWellknownCookies
 		passwordHasher              contracts_identity.IPasswordHasher
 		fluffyCoreUserServiceServer proto_external_user.IFluffyCoreUserServiceServer
@@ -50,6 +52,7 @@ func init() {
 }
 
 func (s *service) Ctor(
+	config *contracts_config.Config,
 	container di.Container,
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	passwordHasher contracts_identity.IPasswordHasher,
@@ -57,6 +60,7 @@ func (s *service) Ctor(
 ) (*service, error) {
 	return &service{
 		BaseHandler:                 services_echo_handlers_base.NewBaseHandler(container),
+		config:                      config,
 		wellknownCookies:            wellknownCookies,
 		passwordHasher:              passwordHasher,
 		fluffyCoreUserServiceServer: fluffyCoreUserServiceServer,
@@ -265,7 +269,7 @@ func (s *service) DoGet(c echo.Context) error {
 	totpSecret := rageUser.TOTP.Secret
 	otp := gotp.NewDefaultTOTP(totpSecret)
 
-	provisioningUri := otp.ProvisioningUri(rageUser.RootIdentity.Email, "rage.identity")
+	provisioningUri := otp.ProvisioningUri(rageUser.RootIdentity.Email, s.config.TOTPIssuerName)
 	var pngB []byte
 	pngB, _ = qrcode.Encode(provisioningUri, qrcode.Medium, 256)
 	base64Str := base64.StdEncoding.EncodeToString(pngB)
