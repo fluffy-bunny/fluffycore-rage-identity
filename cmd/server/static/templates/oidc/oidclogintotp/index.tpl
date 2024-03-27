@@ -2,8 +2,8 @@
 {{template "html_begin" .}}
 {{template "header" .}}
 
- {{ $directive      := .directive }}
-{{ $paths           := .paths }}
+{{ $directive   := .directive }}
+{{ $paths       := .paths }}
 
 <body class="bg-light d-flex align-items-center min-vh-100">
     <div class="container">
@@ -25,6 +25,13 @@
                     <div class="card-body p-4">
                         <h2 class="card-title text-center mb-4">{{ call .LocalizeMessage "totp_authenticator_app_login" }}</h2>
                         <form action="{{ $paths.OIDCLoginTOTP }}" method="post">
+                             {{ if .verified }}
+                             {{ else }}
+                             {{ end }}
+                             <div class="mb-3">
+                                <label for="username" class="form-label">Email address</label>
+                                <input type="email" class="form-control" id="username" name="username" value="{{ .email }}" required readonly>
+                            </div>
                             <div class="mb-3">
                                 <label for="code" class="form-label">Code</label>
                                 <input type="text" class="form-control" id="code" name="code" required>

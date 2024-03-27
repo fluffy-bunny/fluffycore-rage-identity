@@ -1,4 +1,4 @@
-package oidcloginpassword
+package oidclogintotp
 
 import (
 	"fmt"
@@ -48,19 +48,19 @@ func init() {
 
 const (
 	// make sure only one is shown.  This is an internal error code to point the developer to the code that is failing
-	InternalError_OIDCLoginPassword_001 = "rg-oidclogin-password-001"
-	InternalError_OIDCLoginPassword_002 = "rg-oidclogin-password-002"
-	InternalError_OIDCLoginPassword_003 = "rg-oidclogin-password-003"
-	InternalError_OIDCLoginPassword_004 = "rg-oidclogin-password-004"
-	InternalError_OIDCLoginPassword_005 = "rg-oidclogin-password-005"
-	InternalError_OIDCLoginPassword_006 = "rg-oidclogin-password-006"
-	InternalError_OIDCLoginPassword_007 = "rg-oidclogin-password-007"
-	InternalError_OIDCLoginPassword_008 = "rg-oidclogin-password-008"
-	InternalError_OIDCLoginPassword_009 = "rg-oidclogin-password-009"
-	InternalError_OIDCLoginPassword_010 = "rg-oidclogin-password-010"
-	InternalError_OIDCLoginPassword_011 = "rg-oidclogin-password-011"
+	InternalError_OIDCLoginTOTP_001 = "rg-oidclogin-totp-001"
+	InternalError_OIDCLoginTOTP_002 = "rg-oidclogin-totp-002"
+	InternalError_OIDCLoginTOTP_003 = "rg-oidclogin-totp-003"
+	InternalError_OIDCLoginTOTP_004 = "rg-oidclogin-totp-004"
+	InternalError_OIDCLoginTOTP_005 = "rg-oidclogin-totp-005"
+	InternalError_OIDCLoginTOTP_006 = "rg-oidclogin-totp-006"
+	InternalError_OIDCLoginTOTP_007 = "rg-oidclogin-totp-007"
+	InternalError_OIDCLoginTOTP_008 = "rg-oidclogin-totp-008"
+	InternalError_OIDCLoginTOTP_009 = "rg-oidclogin-totp-009"
+	InternalError_OIDCLoginTOTP_010 = "rg-oidclogin-totp-010"
+	InternalError_OIDCLoginTOTP_011 = "rg-oidclogin-totp-011"
 
-	InternalError_OIDCLoginPassword_099 = "rg-oidclogin-password-099"
+	InternalError_OIDCLoginTOTP_099 = "rg-oidclogin-totp-099"
 )
 
 func (s *service) Ctor(
@@ -88,7 +88,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 			//	contracts_handler.GET,
 			contracts_handler.POST,
 		},
-		wellknown_echo.OIDCLoginPasswordPath,
+		wellknown_echo.OIDCLoginTOTPPath,
 	)
 
 }
@@ -129,38 +129,61 @@ func (s *service) DoGet(c echo.Context) error {
 	model := &LoginGetRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
-		return s.TeleportBackToLogin(c, InternalError_OIDCLoginPassword_099)
+		return s.TeleportBackToLogin(c, InternalError_OIDCLoginTOTP_099)
 	}
 	log.Info().Interface("model", model).Msg("model")
 	var rows []row
+	var errors []string
 
 	session, err := s.getSession()
 	if err != nil {
 		rows = append(rows, row{Key: "error", Value: err.Error()})
 	}
-	dd, err := session.Get("request")
+	sessionRequest, err := session.Get("request")
 	if err != nil {
 		rows = append(rows, row{Key: "error", Value: err.Error()})
 	}
-	dd2 := dd.(*proto_oidc_models.AuthorizationRequest)
+	authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
 
 	switch model.Directive {
 	case models.IdentityFound:
-		return s.handleIdentityFound(c, dd2.State)
+		return s.handleIdentityFound(c, authorizationRequest.State)
 
 	}
-	idps, err := s.GetIDPs(ctx)
+
+	renderError := func(errors []string) error {
+		return s.Render(c, http.StatusBadRequest,
+			"oidc/oidclogintotp/index",
+			map[string]interface{}{
+				"errors":    errors,
+				"email":     s.signinResponse.Value.Email,
+				"directive": models.LoginDirective,
+			})
+	}
+	// does the user exist.
+	getRageUserResponse, err := s.RageUserService().GetRageUser(ctx,
+		&proto_oidc_user.GetRageUserRequest{
+			By: &proto_oidc_user.GetRageUserRequest_Email{
+				Email: s.signinResponse.Value.Email,
+			},
+		})
 	if err != nil {
-		rows = append(rows, row{Key: "error", Value: err.Error()})
+		st, ok := status.FromError(err)
+		if ok && st.Code() != codes.NotFound {
+			log.Warn().Err(err).Msg("GetRageUser")
+			errors = append(errors, err.Error())
+			return renderError(errors)
+		}
+		err = nil
 	}
+	user := getRageUserResponse.User
 
-	return s.Render(c, http.StatusOK, "oidc/oidcloginpassword/index",
+	return s.Render(c, http.StatusOK, "oidc/oidclogintotp/index",
 		map[string]interface{}{
-			"errors":     rows,
-			"idps":       idps,
-			"email":      s.signinResponse.Value.Email,
-			"directive":  models.LoginDirective,
-			"hasPasskey": s.signinResponse.Value.HasPasskey,
+			"errors":    rows,
+			"email":     s.signinResponse.Value.Email,
+			"verified":  user.TOTP.Verified,
+			"directive": models.LoginDirective,
 		})
 }
 
@@ -175,7 +198,7 @@ func (s *service) DoPost(c echo.Context) error {
 	model := &LoginPasswordPostRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
-		return s.TeleportBackToLogin(c, InternalError_OIDCLoginPassword_099)
+		return s.TeleportBackToLogin(c, InternalError_OIDCLoginTOTP_099)
 	}
 	log.Info().Interface("model", model).Msg("model")
 	if fluffycore_utils.IsEmptyOrNil(model.Password) {
@@ -199,7 +222,7 @@ func (s *service) DoPost(c echo.Context) error {
 
 	renderError := func(errors []string) error {
 		return s.Render(c, http.StatusBadRequest,
-			"oidc/oidcloginpassword/index",
+			"oidc/oidclogintotp/index",
 			map[string]interface{}{
 				"errors":     errors,
 				"email":      s.signinResponse.Value.Email,
@@ -239,7 +262,7 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SetVerificationCodeCookie")
-			return s.TeleportBackToLogin(c, InternalError_OIDCLoginPassword_001)
+			return s.TeleportBackToLogin(c, InternalError_OIDCLoginTOTP_001)
 		}
 		s.EmailService().SendSimpleEmail(ctx,
 			&contracts_email.SendSimpleEmailRequest{
@@ -294,97 +317,76 @@ func (s *service) DoPost(c echo.Context) error {
 		errors = append(errors, ee)
 		return renderError(errors)
 	}
-	// check if multi factor is required
-	// ---------------------------------
-	if user.TOTP == nil {
-		user.TOTP = &proto_oidc_models.TOTP{
-			Enabled: false,
-		}
-	}
-	if !user.TOTP.Enabled && !s.config.MultiFactorRequired {
-		// we can process the final state now
-		err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
-			AuthCookie: &contracts_cookies.AuthCookie{
-				Identity: &proto_oidc_models.Identity{
-					Subject:       user.RootIdentity.Subject,
-					Email:         user.RootIdentity.Email,
-					EmailVerified: user.RootIdentity.EmailVerified,
-				},
+	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
+		AuthCookie: &contracts_cookies.AuthCookie{
+			Identity: &proto_oidc_models.Identity{
+				Subject:       user.RootIdentity.Subject,
+				Email:         user.RootIdentity.Email,
+				EmailVerified: user.RootIdentity.EmailVerified,
 			},
-		})
-		if err != nil {
-			log.Error().Err(err).Msg("SetAuthCookie")
-			errors = append(errors, err.Error())
-			// redirect to error page
-			return renderError(errors)
-		}
-
-		getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().
-			GetAuthorizationRequestState(ctx,
-				&proto_oidc_flows.GetAuthorizationRequestStateRequest{
-					State: authorizationRequest.State,
-				})
-		if err != nil {
-			log.Warn().Err(err).Msg("GetAuthorizationRequestState")
-			errors = append(errors, err.Error())
-			return renderError(errors)
-		}
-		authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
-		authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
-			Subject: user.RootIdentity.Subject,
-			Email:   user.RootIdentity.Email,
-			Acr: []string{
-				models.ACRPassword,
-				models.ACRIdpRoot,
-			},
-			Amr: []string{
-				models.AMRPassword,
-				// always true, as we are the root idp
-				models.AMRIdp,
-			},
-		}
-
-		// "urn:rage:idp:google", "urn:rage:idp:spacex", "urn:rage:idp:github-enterprise", etc.
-		// "urn:rage:password", "urn:rage:2fa", "urn:rage:email", etc.
-		// we are done with the state now.  Lets map it to the code so it can be looked up by the client.
-		_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx,
-			&proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-				State:                     authorizationFinal.Request.Code,
-				AuthorizationRequestState: authorizationFinal,
-			})
-		if err != nil {
-			log.Warn().Err(err).Msg("StoreAuthorizationRequestState")
-			// redirect to error page
-			errors = append(errors, err.Error())
-			return renderError(errors)
-		}
-		s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
-			State: authorizationRequest.State,
-		})
-		_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-			State:                     authorizationRequest.State,
-			AuthorizationRequestState: authorizationFinal,
-		})
-		if err != nil {
-			// redirect to error page
-			errors = append(errors, err.Error())
-			return renderError(errors)
-		}
-		// redirect to the client with the code.
-		redirectUri := authorizationFinal.Request.RedirectUri +
-			"?code=" + authorizationFinal.Request.Code +
-			"&state=" + authorizationFinal.Request.State +
-			"&iss=" + rootPath
-		return c.Redirect(http.StatusFound, redirectUri)
-	}
-	// multi factor is required
-	// ---------------------------------
-	return s.RenderAutoPost(c, wellknown_echo.OIDCLoginTOTPPath, []models.FormParam{
-		{
-			Name:  "state",
-			Value: authorizationRequest.State,
 		},
 	})
+	if err != nil {
+		log.Error().Err(err).Msg("SetAuthCookie")
+		errors = append(errors, err.Error())
+		// redirect to error page
+		return renderError(errors)
+	}
+
+	getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
+		State: authorizationRequest.State,
+	})
+	if err != nil {
+		log.Warn().Err(err).Msg("GetAuthorizationRequestState")
+		errors = append(errors, err.Error())
+		return renderError(errors)
+	}
+	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
+	authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
+		Subject: user.RootIdentity.Subject,
+		Email:   user.RootIdentity.Email,
+		Acr: []string{
+			models.ACRPassword,
+			models.ACRIdpRoot,
+		},
+		Amr: []string{
+			models.AMRPassword,
+			// always true, as we are the root idp
+			models.AMRIdp,
+		},
+	}
+
+	// "urn:rage:idp:google", "urn:rage:idp:spacex", "urn:rage:idp:github-enterprise", etc.
+	// "urn:rage:password", "urn:rage:2fa", "urn:rage:email", etc.
+	// we are done with the state now.  Lets map it to the code so it can be looked up by the client.
+	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+		State:                     authorizationFinal.Request.Code,
+		AuthorizationRequestState: authorizationFinal,
+	})
+	if err != nil {
+		log.Warn().Err(err).Msg("StoreAuthorizationRequestState")
+		// redirect to error page
+		errors = append(errors, err.Error())
+		return renderError(errors)
+	}
+	s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
+		State: authorizationRequest.State,
+	})
+	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+		State:                     authorizationRequest.State,
+		AuthorizationRequestState: authorizationFinal,
+	})
+	if err != nil {
+		// redirect to error page
+		errors = append(errors, err.Error())
+		return renderError(errors)
+	}
+	// redirect to the client with the code.
+	redirectUri := authorizationFinal.Request.RedirectUri +
+		"?code=" + authorizationFinal.Request.Code +
+		"&state=" + authorizationFinal.Request.State +
+		"&iss=" + rootPath
+	return c.Redirect(http.StatusFound, redirectUri)
 
 }
 
@@ -405,7 +407,7 @@ func (s *service) Do(c echo.Context) error {
 	signinResponse, err := s.wellknownCookies.GetSigninUserNameCookie(c)
 	if err != nil {
 		log.Error().Err(err).Msg("GetSigninUserNameCookie")
-		return s.TeleportBackToLogin(c, InternalError_OIDCLoginPassword_004)
+		return s.TeleportBackToLogin(c, InternalError_OIDCLoginTOTP_004)
 	}
 	s.signinResponse = signinResponse
 
@@ -453,7 +455,7 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 	if err != nil {
 		log.Error().Err(err).Msg("SetAuthCookie")
 		// redirect to error page
-		return s.TeleportBackToLogin(c, InternalError_OIDCLoginPassword_002)
+		return s.TeleportBackToLogin(c, InternalError_OIDCLoginTOTP_002)
 	}
 	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
 		State:                     authorizationFinal.Request.Code,
@@ -462,7 +464,7 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 	if err != nil {
 		log.Warn().Err(err).Msg("StoreAuthorizationRequestState")
 		// redirect to error page
-		return s.TeleportBackToLogin(c, InternalError_OIDCLoginPassword_003)
+		return s.TeleportBackToLogin(c, InternalError_OIDCLoginTOTP_003)
 	}
 	s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
 		State: state,

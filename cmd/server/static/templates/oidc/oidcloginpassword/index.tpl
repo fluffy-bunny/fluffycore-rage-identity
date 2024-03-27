@@ -2,7 +2,7 @@
 {{template "html_begin" .}}
 {{template "header" .}}
 
- {{ $directive   := .directive }}
+{{ $directive   := .directive }}
 {{ $paths       := .paths }}
 
 <body class="bg-light d-flex align-items-center min-vh-100">

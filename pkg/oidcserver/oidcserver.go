@@ -22,6 +22,7 @@ import (
 	services_handlers_oidclogin "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidclogin"
 	services_handlers_oidcloginpasskey "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidcloginpasskey"
 	services_handlers_oidcloginpassword "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidcloginpassword"
+	services_handlers_oidclogintotp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidclogintotp"
 	services_handlers_passwordreset "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/passwordreset"
 	services_handlers_signup "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/signup"
 	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/swagger"
@@ -176,6 +177,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_error.AddScopedIHandler(builder)
 	services_handlers_oidclogin.AddScopedIHandler(builder)
 	services_handlers_oidcloginpassword.AddScopedIHandler(builder)
+	services_handlers_oidclogintotp.AddScopedIHandler(builder)
 	services_handlers_oidcloginpasskey.AddScopedIHandler(builder)
 	services_handlers_externalidp.AddScopedIHandler(builder)
 	services_handlers_swagger.AddScopedIHandler(builder)
