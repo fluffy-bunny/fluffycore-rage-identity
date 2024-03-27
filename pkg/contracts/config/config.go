@@ -80,6 +80,7 @@ type (
 		AutolinkOnEmailMatch      bool                               `json:"autolinkOnEmailMatch"`
 		EmailVerificationRequired bool                               `json:"emailVerificationRequired"`
 		MultiFactorRequired       bool                               `json:"multiFactorRequired"`
+		TOTPIssuerName            string                             `json:"totpIssuerName"`
 		EmailConfig               *contracts_email.EmailConfig       `json:"emailConfig"`
 		SelfIDPConfig             *SelfIDPConfig                     `json:"selfIDPConfig"`
 		CookieConfig              *CookieConfig                      `json:"cookieConfig"`
@@ -111,6 +112,7 @@ const configDefaultJSONTemplate = `
 	"autolinkOnEmailMatch": true,
 	"emailVerificationRequired": true,
 	"multiFactorRequired": false,
+	"totpIssuerName": "RAGE.IDENTITY",
 	"selfIDPConfig": {
 		"clientId": "self-client",
 		"clientSecret": "secret",

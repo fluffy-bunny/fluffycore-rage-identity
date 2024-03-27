@@ -1,6 +1,7 @@
 package oidclogintotp
 
 import (
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"strings"
@@ -25,6 +26,8 @@ import (
 	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
+	qrcode "github.com/skip2/go-qrcode"
+	gotp "github.com/xlzd/gotp"
 	codes "google.golang.org/grpc/codes"
 )
 
@@ -176,14 +179,25 @@ func (s *service) DoGet(c echo.Context) error {
 		}
 		err = nil
 	}
-	user := getRageUserResponse.User
+	rageUser := getRageUserResponse.User
+
+	pngQRCode := ""
+	if !rageUser.TOTP.Verified {
+		totpSecret := rageUser.TOTP.Secret
+		otp := gotp.NewDefaultTOTP(totpSecret)
+		provisioningUri := otp.ProvisioningUri(rageUser.RootIdentity.Email, s.config.TOTPIssuerName)
+		var pngB []byte
+		pngB, _ = qrcode.Encode(provisioningUri, qrcode.Medium, 256)
+		pngQRCode = base64.StdEncoding.EncodeToString(pngB)
+	}
 
 	return s.Render(c, http.StatusOK, "oidc/oidclogintotp/index",
 		map[string]interface{}{
 			"errors":    rows,
 			"email":     s.signinResponse.Value.Email,
-			"verified":  user.TOTP.Verified,
+			"verified":  rageUser.TOTP.Verified,
 			"directive": models.LoginDirective,
+			"pngQRCode": pngQRCode,
 		})
 }
 

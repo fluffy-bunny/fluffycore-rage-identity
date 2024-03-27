@@ -23,7 +23,7 @@ import (
 	qrcode "github.com/skip2/go-qrcode"
 	gotp "github.com/xlzd/gotp"
 	codes "google.golang.org/grpc/codes"
-	"google.golang.org/protobuf/types/known/wrapperspb"
+	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type (

@@ -27,7 +27,11 @@
                         <form action="{{ $paths.OIDCLoginTOTP }}" method="post">
                              {{ if .verified }}
                              {{ else }}
-                             {{ end }}
+                            <div class="mb-3">
+                                <!-- Display QR code here (you'll need a library like QRCode.js) -->
+                                <img src="data:image/png;base64,{{ .pngQRCode }}" alt="QR Code" style="max-width: 100%; max-height: 100%;" />
+                            </div>
+                         {{ end }}
                              <div class="mb-3">
                                 <label for="username" class="form-label">Email address</label>
                                 <input type="email" class="form-control" id="username" name="username" value="{{ .email }}" required readonly>
