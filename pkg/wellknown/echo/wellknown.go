@@ -26,6 +26,7 @@ var (
 	OIDCLoginPath                                    = "/oidc-login"
 	OIDCLoginPasswordPath                            = "/oidc-login-password"
 	OIDCLoginPasskeyPath                             = "/oidc-login-passkey"
+	OIDCLoginTOTPPath                                = "/oidc-login-totp"
 	PasswordResetPath                                = "/password-reset"
 	ProfilePath                                      = "/profile"
 	PersonalInformationPath                          = "/profile/personal-information"
@@ -60,6 +61,7 @@ type Paths struct {
 	OIDCLogin           string
 	OIDCLoginPassword   string
 	OIDCLoginPasskey    string
+	OIDCLoginTOTP       string
 	Signup              string
 	TOTP                string
 	ForgotPassword      string
@@ -80,6 +82,7 @@ func NewPaths() *Paths {
 		OIDCLogin:           OIDCLoginPath,
 		OIDCLoginPassword:   OIDCLoginPasswordPath,
 		OIDCLoginPasskey:    OIDCLoginPasskeyPath,
+		OIDCLoginTOTP:       OIDCLoginTOTPPath,
 		Signup:              SignupPath,
 		TOTP:                TOTPPath,
 		ForgotPassword:      ForgotPasswordPath,

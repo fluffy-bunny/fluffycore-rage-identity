@@ -52,5 +52,6 @@
   "totp_enter_placeholder": "Enter the code from your authenticator app",
   "totp_enroll": "Enroll Two Factor Authentication",
   "totp_disable": "Disable Two Factor Authentication",
-  "totp_enable": "Enable Two Factor Authentication"
+  "totp_enable": "Enable Two Factor Authentication",
+  "totp_authenticator_app_login": "Authenticator App Login"
 }

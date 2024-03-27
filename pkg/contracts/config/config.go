@@ -79,6 +79,7 @@ type (
 		BackingCache              *BackingCacheConfig                `json:"backingCache"`
 		AutolinkOnEmailMatch      bool                               `json:"autolinkOnEmailMatch"`
 		EmailVerificationRequired bool                               `json:"emailVerificationRequired"`
+		MultiFactorRequired       bool                               `json:"multiFactorRequired"`
 		EmailConfig               *contracts_email.EmailConfig       `json:"emailConfig"`
 		SelfIDPConfig             *SelfIDPConfig                     `json:"selfIDPConfig"`
 		CookieConfig              *CookieConfig                      `json:"cookieConfig"`
@@ -109,6 +110,7 @@ const configDefaultJSONTemplate = `
 	"jwtValidators": {},
 	"autolinkOnEmailMatch": true,
 	"emailVerificationRequired": true,
+	"multiFactorRequired": false,
 	"selfIDPConfig": {
 		"clientId": "self-client",
 		"clientSecret": "secret",
