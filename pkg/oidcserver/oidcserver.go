@@ -218,12 +218,19 @@ func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 
 // Configure
 func (s *startup) Configure(e *echo.Echo, root di.Container) error {
+
 	e.Use(echo_middleware.CSRFWithConfig(echo_middleware.CSRFConfig{
 		TokenLookup:    "header:X-Csrf-Token,form:csrf",
 		CookiePath:     "/",
 		CookieSecure:   false,
 		CookieHTTPOnly: false,
 		CookieSameSite: http.SameSiteStrictMode,
+		Skipper: func(c echo.Context) bool {
+			csrfSkipperPaths := CSRFSkipperPaths()
+			currentPath := c.Request().URL.Path
+			_, ok := csrfSkipperPaths[currentPath]
+			return ok
+		},
 	}))
 	e.Use(EnsureCookieClaimsPrincipal(root))
 	e.Use(EnsureLocalizer(root))

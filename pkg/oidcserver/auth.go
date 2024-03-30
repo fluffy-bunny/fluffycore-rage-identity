@@ -17,6 +17,26 @@ type (
 	}
 )
 
+var csrfSkipperPaths map[string]bool
+
+func CSRFSkipperPaths() map[string]bool {
+	// needs to be a func as some of these are configured in.
+	if csrfSkipperPaths == nil {
+		csrfSkipperPaths = map[string]bool{
+			wellknown_echo.StaticPath:                      true,
+			wellknown_echo.WellKnownJWKS:                   true,
+			wellknown_echo.ErrorPath:                       true,
+			wellknown_echo.HealthzPath:                     true,
+			wellknown_echo.ReadyPath:                       true,
+			wellknown_echo.SwaggerPath:                     true,
+			wellknown_echo.WellKnownOpenIDCOnfiguationPath: true,
+			wellknown_echo.OAuth2TokenEndpointPath:         true,
+			wellknown_echo.UserInfoPath:                    true,
+		}
+	}
+	return csrfSkipperPaths
+}
+
 var requiresNoAuthPaths map[string]bool
 
 // everything requries auth unless otherwise documented here.
