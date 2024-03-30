@@ -10,6 +10,7 @@ import (
 
 var (
 	AboutPath           = "/about"
+	APIPath             = "/api"
 	AccountCallbackPath = "/auth/callback"
 	ErrorPath           = "/error"
 	ExternalIDPPath     = "/external-idp"
@@ -51,6 +52,7 @@ var (
 
 type Paths struct {
 	About               string
+	API                 string
 	ExternalIDP         string
 	Home                string
 	Login               string
@@ -72,6 +74,7 @@ type Paths struct {
 func NewPaths() *Paths {
 	return &Paths{
 		About:               AboutPath,
+		API:                 APIPath,
 		ExternalIDP:         ExternalIDPPath,
 		Home:                HomePath,
 		Login:               LoginPath,

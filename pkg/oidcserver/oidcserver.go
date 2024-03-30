@@ -11,6 +11,7 @@ import (
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/localizer"
 	services "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services"
+	services_handlers_api "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/api"
 	services_handlers_authorization_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/authorization_endpoint"
 	services_handlers_discovery_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/discovery_endpoint"
 	services_handlers_error "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/error"
@@ -49,6 +50,7 @@ import (
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
+	echo_middleware "github.com/labstack/echo/v4/middleware"
 	zerolog "github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
 	codes "google.golang.org/grpc/codes"
@@ -189,6 +191,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_forgotpassword.AddScopedIHandler(builder)
 	services_handlers_verifycode.AddScopedIHandler(builder)
 	services_handlers_passwordreset.AddScopedIHandler(builder)
+	services_handlers_api.AddScopedIHandler(builder)
 
 	// WebAuthN Handlers
 	//--------------------------------------------------------
@@ -217,6 +220,11 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 	e.Use(EnsureCookieClaimsPrincipal(root))
 	e.Use(EnsureLocalizer(root))
 	e.Use(EnsureAuth(root))
+	e.Use(echo_middleware.CORSWithConfig(echo_middleware.CORSConfig{
+		AllowOrigins: []string{
+			s.config.OIDCConfig.BaseUrl,
+		},
+	}))
 	return nil
 }
 func EnsureLocalizer(_ di.Container) echo.MiddlewareFunc {

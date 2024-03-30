@@ -64,5 +64,24 @@
 </body>
     
 {{template "footer" .}}
+<script>
+const url = '/api'; // relative URL
+const data = { request_type: 'InitialPageRequest', version: '1' };  
+
+fetch(url, {
+  method: 'POST', 
+  mode: 'cors', 
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify(data) 
+})
+.then(response => response.json())
+.then(data => console.log(data))
+.catch((error) => {
+  console.error('Error:', error);
+});
+
+</script>
 {{template "html_end" .}}
 {{end}}
