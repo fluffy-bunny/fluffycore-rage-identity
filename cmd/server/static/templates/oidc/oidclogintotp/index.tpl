@@ -4,6 +4,7 @@
 
 {{ $directive   := .directive }}
 {{ $paths       := .paths }}
+{{ $csrf        := .csrf }}
 
 <body class="bg-light d-flex align-items-center min-vh-100">
     <div class="container">
@@ -25,13 +26,14 @@
                     <div class="card-body p-4">
                         <h2 class="card-title text-center mb-4">{{ call .LocalizeMessage "totp_authenticator_app_login" }}</h2>
                         <form action="{{ $paths.OIDCLoginTOTP }}" method="post">
-                             {{ if .verified }}
-                             {{ else }}
+                            <input type="hidden" name="csrf" value="{{ $csrf }}">
+                            {{ if .verified }}
+                            {{ else }}
                             <div class="mb-3">
                                 <!-- Display QR code here (you'll need a library like QRCode.js) -->
                                 <img src="data:image/png;base64,{{ .pngQRCode }}" alt="QR Code" style="max-width: 100%; max-height: 100%;" />
                             </div>
-                         {{ end }}
+                            {{ end }}
                              <div class="mb-3">
                                 <label for="username" class="form-label">Email address</label>
                                 <input type="email" class="form-control" id="username" name="username" value="{{ .email }}" required readonly>

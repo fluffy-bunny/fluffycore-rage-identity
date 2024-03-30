@@ -4,6 +4,8 @@
 {{template "navbar" .}}
 
 {{ $paths       := .paths }}
+{{ $csrf        := .csrf }}
+
 <body>
     <!-- Page content -->
     <div class="container">

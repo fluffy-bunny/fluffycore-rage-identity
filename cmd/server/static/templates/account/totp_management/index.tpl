@@ -3,6 +3,7 @@
 {{template "header" .}}
 {{template "navbar" .}}
 {{ $returnUrl   := .returnUrl }}
+{{ $csrf        := .csrf }}
 
 <body>
     <!-- Page content -->

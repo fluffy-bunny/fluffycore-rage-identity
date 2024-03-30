@@ -2,6 +2,7 @@ package oidcserver
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -217,6 +218,13 @@ func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 
 // Configure
 func (s *startup) Configure(e *echo.Echo, root di.Container) error {
+	e.Use(echo_middleware.CSRFWithConfig(echo_middleware.CSRFConfig{
+		TokenLookup:    "header:X-Csrf-Token,form:csrf",
+		CookiePath:     "/",
+		CookieSecure:   false,
+		CookieHTTPOnly: false,
+		CookieSameSite: http.SameSiteStrictMode,
+	}))
 	e.Use(EnsureCookieClaimsPrincipal(root))
 	e.Use(EnsureLocalizer(root))
 	e.Use(EnsureAuth(root))

@@ -4,6 +4,7 @@
 
 {{ $directive   := .directive }}
 {{ $paths       := .paths }}
+{{ $csrf        := .csrf }}
 
 <script>
 window.onload = function() {
