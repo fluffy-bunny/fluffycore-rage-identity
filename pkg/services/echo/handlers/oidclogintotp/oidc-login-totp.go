@@ -127,7 +127,7 @@ func (s *service) getSession() (contracts_sessions.ISession, error) {
 func (s *service) generatePNGQRCode(rageUser *proto_oidc_models.RageUser) string {
 	totpSecret := rageUser.TOTP.Secret
 	otp := gotp.NewDefaultTOTP(totpSecret)
-	provisioningUri := otp.ProvisioningUri(rageUser.RootIdentity.Email, s.config.TOTPIssuerName)
+	provisioningUri := otp.ProvisioningUri(rageUser.RootIdentity.Email, s.config.TOTP.IssuerName)
 	var pngB []byte
 	pngB, _ = qrcode.Encode(provisioningUri, qrcode.Medium, 256)
 	pngQRCode := base64.StdEncoding.EncodeToString(pngB)
@@ -333,6 +333,10 @@ func (s *service) DoPost(c echo.Context) error {
 			models.AMRPassword,
 			// always true, as we are the root idp
 			models.AMRIdp,
+			// this is a multifactor
+			models.AMRMFA,
+			// this is a TOTP
+			models.AMRTOTP,
 		},
 	}
 

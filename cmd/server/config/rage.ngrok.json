@@ -1,5 +1,7 @@
 {
+  "emailVerificationRequired": true,
   "multiFactorRequired": true,
+  "multiFactorRequiredByEmailCode": true,
   "oidcConfig": {
     "baseUrl": "https://${DOMAIN}"
   },
@@ -10,6 +12,10 @@
   "systemConfig": {
     "domain": "${DOMAIN}",
     "developerMode": false
+  },
+  "totp": {
+    "enabled": false,
+    "issuerName": "EXAMPLE.RAGE.IDENTITY"
   },
   "webAuthNConfig": {
     "rpDisplayName": "RAGE",

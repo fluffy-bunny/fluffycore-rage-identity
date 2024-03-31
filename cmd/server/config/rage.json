@@ -1,12 +1,20 @@
 {
+  "emailVerificationRequired": true,
   "multiFactorRequired": true,
+  "multiFactorRequiredByEmailCode": true,
   "systemConfig": {
     "domain": "localhost",
     "developerMode": false
   },
+  "totp": {
+    "enabled": false,
+    "issuerName": "EXAMPLE.RAGE.IDENTITY"
+  },
   "webAuthNConfig": {
     "rpDisplayName": "RAGE",
     "rpID": "${DOMAIN}",
-    "rpOrigins": ["https://${DOMAIN}"]
+    "rpOrigins": [
+      "https://${DOMAIN}"
+    ]
   }
 }

@@ -226,8 +226,8 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 
 	user := getRageUserResponse.User
-	if s.config.EmailVerificationRequired && !user.RootIdentity.EmailVerified {
 
+	doEmailVerification := func(directive string) error {
 		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
 		err = s.wellknownCookies.SetVerificationCodeCookie(c,
 			&contracts_cookies.SetVerificationCodeCookieRequest{
@@ -258,7 +258,7 @@ func (s *service) DoPost(c echo.Context) error {
 			},
 			{
 				Name:  "directive",
-				Value: models.VerifyEmailDirective,
+				Value: directive,
 			},
 			{
 				Name:  "type",
@@ -273,6 +273,10 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 		}
 		return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
+	}
+
+	if s.config.EmailVerificationRequired && !user.RootIdentity.EmailVerified {
+		return doEmailVerification(models.VerifyEmailDirective)
 	}
 
 	if user.Password == nil {
@@ -301,91 +305,99 @@ func (s *service) DoPost(c echo.Context) error {
 			Enabled: false,
 		}
 	}
-	if !user.TOTP.Enabled && !s.config.MultiFactorRequired {
-		// we can process the final state now
-		err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
-			AuthCookie: &contracts_cookies.AuthCookie{
-				Identity: &proto_oidc_models.Identity{
-					Subject:       user.RootIdentity.Subject,
-					Email:         user.RootIdentity.Email,
-					EmailVerified: user.RootIdentity.EmailVerified,
+
+	if s.config.MultiFactorRequired {
+		if s.config.TOTP.Enabled && user.TOTP.Enabled {
+			// do TOTP Multi Factor
+			return s.RenderAutoPost(c, wellknown_echo.OIDCLoginTOTPPath, []models.FormParam{
+				{
+					Name:  "state",
+					Value: authorizationRequest.State,
 				},
-			},
-		})
-		if err != nil {
-			log.Error().Err(err).Msg("SetAuthCookie")
-			errors = append(errors, err.Error())
-			// redirect to error page
-			return renderError(errors)
-		}
-
-		getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().
-			GetAuthorizationRequestState(ctx,
-				&proto_oidc_flows.GetAuthorizationRequestStateRequest{
-					State: authorizationRequest.State,
-				})
-		if err != nil {
-			log.Warn().Err(err).Msg("GetAuthorizationRequestState")
-			errors = append(errors, err.Error())
-			return renderError(errors)
-		}
-		authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
-		authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
-			Subject: user.RootIdentity.Subject,
-			Email:   user.RootIdentity.Email,
-			Acr: []string{
-				models.ACRPassword,
-				models.ACRIdpRoot,
-			},
-			Amr: []string{
-				models.AMRPassword,
-				// always true, as we are the root idp
-				models.AMRIdp,
-			},
-		}
-
-		// "urn:rage:idp:google", "urn:rage:idp:spacex", "urn:rage:idp:github-enterprise", etc.
-		// "urn:rage:password", "urn:rage:2fa", "urn:rage:email", etc.
-		// we are done with the state now.  Lets map it to the code so it can be looked up by the client.
-		_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx,
-			&proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-				State:                     authorizationFinal.Request.Code,
-				AuthorizationRequestState: authorizationFinal,
 			})
-		if err != nil {
-			log.Warn().Err(err).Msg("StoreAuthorizationRequestState")
-			// redirect to error page
-			errors = append(errors, err.Error())
-			return renderError(errors)
 		}
-		s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
-			State: authorizationRequest.State,
-		})
-		_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-			State:                     authorizationRequest.State,
-			AuthorizationRequestState: authorizationFinal,
-		})
-		if err != nil {
-			// redirect to error page
-			errors = append(errors, err.Error())
-			return renderError(errors)
-		}
-		// redirect to the client with the code.
-		redirectUri := authorizationFinal.Request.RedirectUri +
-			"?code=" + authorizationFinal.Request.Code +
-			"&state=" + authorizationFinal.Request.State +
-			"&iss=" + rootPath
-		return c.Redirect(http.StatusFound, redirectUri)
+		// we must do email code as a fall back
+		return doEmailVerification(models.MFA_VerifyEmailDirective)
 	}
-	// multi factor is required
-	// ---------------------------------
-	return s.RenderAutoPost(c, wellknown_echo.OIDCLoginTOTPPath, []models.FormParam{
-		{
-			Name:  "state",
-			Value: authorizationRequest.State,
+
+	if s.config.MultiFactorRequiredByEmailCode {
+		return doEmailVerification(models.MFA_VerifyEmailDirective)
+	}
+
+	// we can process the final state now
+	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
+		AuthCookie: &contracts_cookies.AuthCookie{
+			Identity: &proto_oidc_models.Identity{
+				Subject:       user.RootIdentity.Subject,
+				Email:         user.RootIdentity.Email,
+				EmailVerified: user.RootIdentity.EmailVerified,
+			},
 		},
 	})
+	if err != nil {
+		log.Error().Err(err).Msg("SetAuthCookie")
+		errors = append(errors, err.Error())
+		// redirect to error page
+		return renderError(errors)
+	}
 
+	getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().
+		GetAuthorizationRequestState(ctx,
+			&proto_oidc_flows.GetAuthorizationRequestStateRequest{
+				State: authorizationRequest.State,
+			})
+	if err != nil {
+		log.Warn().Err(err).Msg("GetAuthorizationRequestState")
+		errors = append(errors, err.Error())
+		return renderError(errors)
+	}
+	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
+	authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
+		Subject: user.RootIdentity.Subject,
+		Email:   user.RootIdentity.Email,
+		Acr: []string{
+			models.ACRPassword,
+			models.ACRIdpRoot,
+		},
+		Amr: []string{
+			models.AMRPassword,
+			// always true, as we are the root idp
+			models.AMRIdp,
+		},
+	}
+
+	// "urn:rage:idp:google", "urn:rage:idp:spacex", "urn:rage:idp:github-enterprise", etc.
+	// "urn:rage:password", "urn:rage:2fa", "urn:rage:email", etc.
+	// we are done with the state now.  Lets map it to the code so it can be looked up by the client.
+	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx,
+		&proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+			State:                     authorizationFinal.Request.Code,
+			AuthorizationRequestState: authorizationFinal,
+		})
+	if err != nil {
+		log.Warn().Err(err).Msg("StoreAuthorizationRequestState")
+		// redirect to error page
+		errors = append(errors, err.Error())
+		return renderError(errors)
+	}
+	s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
+		State: authorizationRequest.State,
+	})
+	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+		State:                     authorizationRequest.State,
+		AuthorizationRequestState: authorizationFinal,
+	})
+	if err != nil {
+		// redirect to error page
+		errors = append(errors, err.Error())
+		return renderError(errors)
+	}
+	// redirect to the client with the code.
+	redirectUri := authorizationFinal.Request.RedirectUri +
+		"?code=" + authorizationFinal.Request.Code +
+		"&state=" + authorizationFinal.Request.State +
+		"&iss=" + rootPath
+	return c.Redirect(http.StatusFound, redirectUri)
 }
 
 // HealthCheck godoc

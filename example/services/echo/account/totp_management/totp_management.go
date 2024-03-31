@@ -269,7 +269,7 @@ func (s *service) DoGet(c echo.Context) error {
 	totpSecret := rageUser.TOTP.Secret
 	otp := gotp.NewDefaultTOTP(totpSecret)
 
-	provisioningUri := otp.ProvisioningUri(rageUser.RootIdentity.Email, s.config.TOTPIssuerName)
+	provisioningUri := otp.ProvisioningUri(rageUser.RootIdentity.Email, s.config.TOTP.IssuerName)
 	var pngB []byte
 	pngB, _ = qrcode.Encode(provisioningUri, qrcode.Medium, 256)
 	base64Str := base64.StdEncoding.EncodeToString(pngB)
