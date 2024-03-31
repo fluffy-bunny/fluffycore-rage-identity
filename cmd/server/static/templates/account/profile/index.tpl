@@ -39,10 +39,12 @@
                     <div id="collapseOpenID" class="accordion-collapse collapse" aria-labelledby="passwordManagement" data-bs-parent="#linkAccordion">
                         <div class="accordion-body">
                             <form action="{{ $paths.Profile }}" method="post">
+                                <input type="hidden" name="csrf" value="{{ $csrf }}">
                                 <input type="hidden" name="action" value="password-reset">
                                 <button type="submit" class="btn btn-primary btn-block">{{ call .LocalizeMessage "password_reset" }}</button>
                             </form>
                             <form action="{{ $paths.Profile }}" method="post">
+                                <input type="hidden" name="csrf" value="{{ $csrf }}">
                                 <input type="hidden" name="action" value="totp-management">
                                 <button type="submit" class="btn btn-primary btn-block">{{ call .LocalizeMessage "totp_management" }}</button>
                             </form>
@@ -59,6 +61,7 @@
                     <div id="collapsePassKeys" class="accordion-collapse collapse" aria-labelledby="passKeysManagement" data-bs-parent="#linkAccordion">
                         <div class="accordion-body">
                             <form action="{{ $paths.Profile }}" method="post">
+                                <input type="hidden" name="csrf" value="{{ $csrf }}">
                                 <input type="hidden" name="action" value="passkeys">
                                 <button type="submit" class="btn btn-primary btn-block">{{ call .LocalizeMessage "passkey_management" }}</button>
                             </form>

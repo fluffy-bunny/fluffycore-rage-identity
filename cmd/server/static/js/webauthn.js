@@ -52,10 +52,16 @@ function registerUser(returnUrl) {
       let attestationObject = credentialsResponse.response.attestationObject;
       let clientDataJSON = credentialsResponse.response.clientDataJSON;
       let rawId = credentialsResponse.rawId;
+      let csrf = getCSRF();
 
-      $.post(
-        "/webauthn/register/finish",
-        JSON.stringify({
+      fetch("/webauthn/register/finish", {
+        method: "POST",
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'X-Csrf-Token': csrf
+        },
+        body: JSON.stringify({
           id: credentialsResponse.id,
           rawId: bufferEncode(rawId),
           type: credentialsResponse.type,
@@ -64,14 +70,18 @@ function registerUser(returnUrl) {
             clientDataJSON: bufferEncode(clientDataJSON),
           },
         }),
-        function (data) {
-          return data;
-        },
-        "json"
-      ).then((finishResponse) => {
-        console.log("finishResponse:", finishResponse);
-        window.location.href = returnUrl;
-      });
+      })
+        .then(response => response.json())
+        .then(finishResponse => {
+          console.log("finishResponse:", finishResponse);
+          window.location.href = returnUrl;
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          // Handle errors
+        });
+
+      
     })
     .then((success) => {
       console.log("success:", success);
@@ -116,10 +126,16 @@ function LoginUser() {
       let rawId = getCredential.rawId;
       let sig = getCredential.response.signature;
       let userHandle = getCredential.response.userHandle;
+      let csrf = getCSRF();
 
-      $.post(
-        "/webauthn/login/finish",
-        JSON.stringify({
+      fetch("/webauthn/login/finish", {
+        method: "POST",
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          'X-Csrf-Token': csrf
+        },
+        body: JSON.stringify({
           id: getCredential.id,
           rawId: bufferEncode(rawId),
           type: getCredential.type,
@@ -130,14 +146,16 @@ function LoginUser() {
             userHandle: bufferEncode(userHandle),
           },
         }),
-        function (data) {
-          return data;
-        },
-        "json"
-      ).then((finishResponse) => {
-        console.log("finishResponse: ", finishResponse);
-        window.location.href = finishResponse.redirectUri;
-      });
+      })
+        .then(response => response.json())
+        .then(finishResponse => {
+          console.log("finishResponse:", finishResponse);
+          window.location.href = finishResponse.redirectUri;
+        })
+        .catch(error => {
+          console.error("Error:", error);
+          // Handle errors
+        });
     })
     .then((success) => {
       alert("successfully logged in " + username + "!");

@@ -17,6 +17,7 @@
         </div>
         {{ if .verified }}
             <form action="{{ .formAction }}" method="post">
+                <input type="hidden" name="csrf" value="{{ $csrf }}">
                 <input type="hidden" name="returnUrl" value="{{ $returnUrl }}">
                 {{ if .enabled }}
                     <input type="hidden" name="action" value="disable">
@@ -28,6 +29,7 @@
             </form>
         {{ else }}
             <form action="{{ .formAction }}" method="post">
+                <input type="hidden" name="csrf" value="{{ $csrf }}">
                 <input type="hidden" name="returnUrl" value="{{ $returnUrl }}">
                 <input type="hidden" name="action" value="enroll">
                 <div class="mb-3">
