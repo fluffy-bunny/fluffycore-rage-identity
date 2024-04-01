@@ -2,6 +2,8 @@
 {{template "html_begin" .}}
 {{template "header" .}}
 {{template "navbar" .}}
+{{ $csrf        := .csrf }}
+
 <body>
     <!-- Page content -->
     <div class="container">

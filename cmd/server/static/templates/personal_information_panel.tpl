@@ -6,10 +6,14 @@
 {{ if .displayOnly }}
     {{$readonly = "readonly"}}
 {{end}}
+{{ $csrf        := .csrf }}
+
 <div class="card shadow">
     <div class="card-body p-4">
         <h2 class="card-title text-center mb-4">{{ call .LocalizeMessage "personal_information" }}</h2>
         <form action="{{ .formAction }}" method="post">
+            <input type="hidden" name="csrf" value="{{ $csrf }}">
+    
             <input type="hidden" name="action" value="{{ .action }}">
             <input type="hidden" name="returnUrl" value="{{ $returnUrl }}">
             <div class="mb-3">

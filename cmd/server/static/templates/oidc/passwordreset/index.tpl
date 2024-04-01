@@ -2,7 +2,8 @@
 {{template "html_begin" .}}
 {{template "header" .}}
 
- {{ $paths       := .paths }}
+{{ $paths       := .paths }}
+{{ $csrf        := .csrf }}
 
 <body class="bg-light d-flex align-items-center min-vh-100">
     <div class="container">

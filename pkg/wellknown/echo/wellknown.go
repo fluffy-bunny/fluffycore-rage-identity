@@ -10,6 +10,7 @@ import (
 
 var (
 	AboutPath           = "/about"
+	APIPath             = "/api"
 	AccountCallbackPath = "/auth/callback"
 	ErrorPath           = "/error"
 	ExternalIDPPath     = "/external-idp"
@@ -24,8 +25,9 @@ var (
 	OAuth2TokenEndpointPath                          = "/token"
 	OIDCAuthorizationEndpointPath                    = "/oidc/v1/auth"
 	OIDCLoginPath                                    = "/oidc-login"
-	OIDCLoginPasswordPath                            = "/oidc-login-password"
 	OIDCLoginPasskeyPath                             = "/oidc-login-passkey"
+	OIDCLoginPasswordPath                            = "/oidc-login-password"
+	OIDCLoginTOTPPath                                = "/oidc-login-totp"
 	PasswordResetPath                                = "/password-reset"
 	ProfilePath                                      = "/profile"
 	PersonalInformationPath                          = "/profile/personal-information"
@@ -33,6 +35,7 @@ var (
 	ReadyPath                                        = "/ready"
 	SignupPath                                       = "/signup"
 	SwaggerPath                                      = "/swagger/*"
+	TOTPPath                                         = "/totp-management"
 	UserInfoPath                                     = "/v1/userinfo"
 	VerifyCodePath                                   = "/verify-code"
 	WellKnownJWKS                                    = "/.well-known/jwks"
@@ -49,6 +52,7 @@ var (
 
 type Paths struct {
 	About               string
+	API                 string
 	ExternalIDP         string
 	Home                string
 	Login               string
@@ -59,7 +63,9 @@ type Paths struct {
 	OIDCLogin           string
 	OIDCLoginPassword   string
 	OIDCLoginPasskey    string
+	OIDCLoginTOTP       string
 	Signup              string
+	TOTP                string
 	ForgotPassword      string
 	VerifyCode          string
 	PasswordReset       string
@@ -68,6 +74,7 @@ type Paths struct {
 func NewPaths() *Paths {
 	return &Paths{
 		About:               AboutPath,
+		API:                 APIPath,
 		ExternalIDP:         ExternalIDPPath,
 		Home:                HomePath,
 		Login:               LoginPath,
@@ -78,7 +85,9 @@ func NewPaths() *Paths {
 		OIDCLogin:           OIDCLoginPath,
 		OIDCLoginPassword:   OIDCLoginPasswordPath,
 		OIDCLoginPasskey:    OIDCLoginPasskeyPath,
+		OIDCLoginTOTP:       OIDCLoginTOTPPath,
 		Signup:              SignupPath,
+		TOTP:                TOTPPath,
 		ForgotPassword:      ForgotPasswordPath,
 		VerifyCode:          VerifyCodePath,
 		PasswordReset:       PasswordResetPath,

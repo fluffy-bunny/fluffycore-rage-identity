@@ -1,13 +1,15 @@
 
 {{define "password_reset_panel"}}
- {{ $paths       := .paths }}
+{{ $paths       := .paths }}
 {{ $returnUrl   := .returnUrl }}
+{{ $csrf        := .csrf }}
 
 <div class="card shadow">
     <div class="card-body p-4">
         <h2 class="card-title text-center mb-4">{{ call .LocalizeMessage "password_reset" }}</h2>
         <form action="{{ $paths.PasswordReset }}" method="post">
-             <input type="hidden" name="returnUrl" value="{{ $returnUrl }}">
+            <input type="hidden" name="csrf" value="{{ $csrf }}">
+            <input type="hidden" name="returnUrl" value="{{ $returnUrl }}">
 
             <div class="mb-3">
                 <label for="password" class="form-label">{{ call .LocalizeMessage "password" }}</label>

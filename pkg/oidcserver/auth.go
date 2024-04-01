@@ -17,6 +17,26 @@ type (
 	}
 )
 
+var csrfSkipperPaths map[string]bool
+
+func CSRFSkipperPaths() map[string]bool {
+	// needs to be a func as some of these are configured in.
+	if csrfSkipperPaths == nil {
+		csrfSkipperPaths = map[string]bool{
+			wellknown_echo.StaticPath:                      true,
+			wellknown_echo.WellKnownJWKS:                   true,
+			wellknown_echo.ErrorPath:                       true,
+			wellknown_echo.HealthzPath:                     true,
+			wellknown_echo.ReadyPath:                       true,
+			wellknown_echo.SwaggerPath:                     true,
+			wellknown_echo.WellKnownOpenIDCOnfiguationPath: true,
+			wellknown_echo.OAuth2TokenEndpointPath:         true,
+			wellknown_echo.UserInfoPath:                    true,
+		}
+	}
+	return csrfSkipperPaths
+}
+
 var requiresNoAuthPaths map[string]bool
 
 // everything requries auth unless otherwise documented here.
@@ -27,6 +47,7 @@ func RequiresNoAuth() map[string]bool {
 		requiresNoAuthPaths = map[string]bool{
 			wellknown_echo.StaticPath:                      true,
 			wellknown_echo.AboutPath:                       true,
+			wellknown_echo.APIPath:                         true,
 			wellknown_echo.AccountCallbackPath:             true,
 			wellknown_echo.ErrorPath:                       true,
 			wellknown_echo.ExternalIDPPath:                 true,
@@ -39,8 +60,9 @@ func RequiresNoAuth() map[string]bool {
 			wellknown_echo.OAuth2TokenEndpointPath:         true,
 			wellknown_echo.OIDCAuthorizationEndpointPath:   true,
 			wellknown_echo.OIDCLoginPath:                   true,
-			wellknown_echo.OIDCLoginPasswordPath:           true,
 			wellknown_echo.OIDCLoginPasskeyPath:            true,
+			wellknown_echo.OIDCLoginPasswordPath:           true,
+			wellknown_echo.OIDCLoginTOTPPath:               true,
 			wellknown_echo.PasswordResetPath:               true,
 			wellknown_echo.ReadyPath:                       true,
 			wellknown_echo.SignupPath:                      true,

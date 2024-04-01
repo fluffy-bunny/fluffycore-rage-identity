@@ -16,6 +16,7 @@
       },
       "hidden": false,
       "emailVerificationRequired": true,
+      "multiFactorRequired": true,
       "metadata": {
         "image_ref": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
       }
@@ -34,6 +35,7 @@
       },
       "hidden": false,
       "emailVerificationRequired": true,
+      "multiFactorRequired": true,
       "metadata": {
         "image_ref": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
       }
@@ -54,6 +56,7 @@
       },
       "hidden": false,
       "emailVerificationRequired": true,
+      "multiFactorRequired": true,
       "metadata": {
         "image_ref": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
       }
@@ -74,11 +77,10 @@
       },
       "hidden": true,
       "emailVerificationRequired": false,
+      "multiFactorRequired": false,
       "autoCreate": true,
       "metadata": {},
-      "claimedDomains": [
-        "mapped.com"
-      ]
+      "claimedDomains": ["mapped.com"]
     }
   ]
 }

@@ -2,7 +2,8 @@
 {{template "html_begin" .}}
 {{template "header" .}}
 
- {{ $paths       := .paths }}
+{{ $paths       := .paths }}
+{{ $csrf        := .csrf }}
 
 <body class="bg-light d-flex align-items-center min-vh-100">
     <div class="container">
@@ -26,6 +27,8 @@
                         <p>A verification code has be emailed to {{.email}} If an account exists. </p>
 
                         <form action="{{ $paths.VerifyCode }}" method="post">
+                            <input type="hidden" name="csrf" value="{{ $csrf }}">
+
                             <input type="hidden" name="email"       value="{{ .email }}">
                             <input type="hidden" name="directive"   value="{{ .directive }}">
 

@@ -14,7 +14,6 @@ services:
         max-size: "10m"
         max-file: "3"
     networks:
-      - rage
       - proxy
     extra_hosts:
       - "host.docker.internal:host-gateway"

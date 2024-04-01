@@ -5,14 +5,17 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
+	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
+	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
@@ -24,6 +27,8 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
+
+		oidcSession      contracts_oidc_session.IOIDCSession
 		wellknownCookies contracts_cookies.IWellknownCookies
 	}
 )
@@ -54,10 +59,13 @@ const (
 func (s *service) Ctor(
 	container di.Container,
 	wellknownCookies contracts_cookies.IWellknownCookies,
+	oidcSession contracts_oidc_session.IOIDCSession,
+
 ) (*service, error) {
 	return &service{
 		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
 		wellknownCookies: wellknownCookies,
+		oidcSession:      oidcSession,
 	}, nil
 }
 
@@ -216,6 +224,17 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 	}
 	userService := s.RageUserService()
+	getRageUserResponse, err := userService.GetRageUser(ctx,
+		&proto_oidc_user.GetRageUserRequest{
+			By: &proto_oidc_user.GetRageUserRequest_Subject{
+				Subject: verificationCode.Subject,
+			},
+		})
+	if err != nil {
+		log.Error().Err(err).Msg("GetRageUser")
+		return s.TeleportBackToLogin(c, InternalError_VerifyCode_002)
+	}
+	rageUser := getRageUserResponse.User
 
 	_, err = userService.UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
 		User: &proto_oidc_models.RageUserUpdate{
@@ -229,7 +248,7 @@ func (s *service) DoPost(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("UpdateUser")
-		return s.TeleportBackToLogin(c, InternalError_VerifyCode_002)
+		return s.TeleportBackToLogin(c, InternalError_VerifyCode_004)
 	}
 	// one time only
 	s.wellknownCookies.DeleteVerificationCodeCookie(c)
@@ -257,10 +276,102 @@ func (s *service) DoPost(c echo.Context) error {
 					Value: model.Email,
 				},
 			})
+	case models.MFA_VerifyEmailDirective:
+		err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
+			AuthCookie: &contracts_cookies.AuthCookie{
+				Identity: &proto_oidc_models.Identity{
+					Subject:       rageUser.RootIdentity.Subject,
+					Email:         rageUser.RootIdentity.Email,
+					EmailVerified: rageUser.RootIdentity.EmailVerified,
+				},
+			},
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("SetAuthCookie")
+			// redirect to error page
+			return s.TeleportBackToLogin(c, InternalError_VerifyCode_005)
+		}
+		session, err := s.getSession()
+		if err != nil {
+			log.Error().Err(err).Msg("getSession")
+			return s.TeleportBackToLogin(c, InternalError_VerifyCode_006)
+		}
+		sessionRequest, err := session.Get("request")
+		if err != nil {
+			log.Error().Err(err).Msg("Get")
+			return s.TeleportBackToLogin(c, InternalError_VerifyCode_007)
+		}
+		authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
+
+		getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().
+			GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
+				State: authorizationRequest.State,
+			})
+		if err != nil {
+			log.Error().Err(err).Msg("GetAuthorizationRequestState")
+			return s.TeleportBackToLogin(c, InternalError_VerifyCode_008)
+		}
+		authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
+		authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
+			Subject: rageUser.RootIdentity.Subject,
+			Email:   rageUser.RootIdentity.Email,
+			Acr: []string{
+				models.ACRPassword,
+				models.ACRIdpRoot,
+			},
+			Amr: []string{
+				models.AMRPassword,
+				// always true, as we are the root idp
+				models.AMRIdp,
+				// this is a multifactor
+				models.AMRMFA,
+				models.AMREmailCode,
+			},
+		}
+		// "urn:rage:idp:google", "urn:rage:idp:spacex", "urn:rage:idp:github-enterprise", etc.
+		// "urn:rage:password", "urn:rage:2fa", "urn:rage:email", etc.
+		// we are done with the state now.  Lets map it to the code so it can be looked up by the client.
+		_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+			State:                     authorizationFinal.Request.Code,
+			AuthorizationRequestState: authorizationFinal,
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("StoreAuthorizationRequestState")
+			// redirect to error page
+			return s.TeleportBackToLogin(c, InternalError_VerifyCode_009)
+		}
+		s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
+			State: authorizationRequest.State,
+		})
+		_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+			State:                     authorizationRequest.State,
+			AuthorizationRequestState: authorizationFinal,
+		})
+		if err != nil {
+			// redirect to error page
+			log.Error().Err(err).Msg("StoreAuthorizationRequestState")
+			return s.TeleportBackToLogin(c, InternalError_VerifyCode_010)
+		}
+		rootPath := echo_utils.GetMyRootPath(c)
+
+		// redirect to the client with the code.
+		redirectUri := authorizationFinal.Request.RedirectUri +
+			"?code=" + authorizationFinal.Request.Code +
+			"&state=" + authorizationFinal.Request.State +
+			"&iss=" + rootPath
+		return c.Redirect(http.StatusFound, redirectUri)
 	}
 
 	return c.Redirect(http.StatusFound, redirectURL)
 
+}
+func (s *service) getSession() (contracts_sessions.ISession, error) {
+	session, err := s.oidcSession.GetSession()
+
+	if err != nil {
+		return nil, err
+	}
+	return session, nil
 }
 
 // HealthCheck godoc

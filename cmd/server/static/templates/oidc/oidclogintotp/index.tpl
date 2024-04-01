@@ -1,7 +1,8 @@
-{{define "oidc/forgotpassword/index"}}
+{{define "oidc/oidclogintotp/index"}}
 {{template "html_begin" .}}
 {{template "header" .}}
 
+{{ $directive   := .directive }}
 {{ $paths       := .paths }}
 {{ $csrf        := .csrf }}
 
@@ -23,20 +24,31 @@
                 {{ end }}
                 <div class="card shadow">
                     <div class="card-body p-4">
-                        <h2 class="card-title text-center mb-4">{{ call .LocalizeMessage "forgot_password" }}</h2>
-                        <form action="{{ $paths.ForgotPassword }}" method="post">
+                        <h2 class="card-title text-center mb-4">{{ call .LocalizeMessage "totp_authenticator_app_login" }}</h2>
+                        <form action="{{ $paths.OIDCLoginTOTP }}" method="post">
+                            <input type="hidden" name="csrf" value="{{ $csrf }}">
+                            {{ if .verified }}
+                            {{ else }}
+                            <div class="mb-3">
+                                <!-- Display QR code here (you'll need a library like QRCode.js) -->
+                                <img src="data:image/png;base64,{{ .pngQRCode }}" alt="QR Code" style="max-width: 100%; max-height: 100%;" />
+                            </div>
+                            {{ end }}
                              <div class="mb-3">
-                                <label for="email" class="form-label">Email address</label>
-                                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" value="{{ .email }}" required>
+                                <label for="username" class="form-label">Email address</label>
+                                <input type="email" class="form-control" id="username" name="username" value="{{ .email }}" required readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="code" class="form-label">Code</label>
+                                <input type="text" class="form-control" id="code" name="code" required>
                             </div>
               
                             <div class="d-flex justify-content-between">
-                                <button type="submit" class="btn btn-outline-primary" name="action" value="cancel" formnovalidate>{{ call .LocalizeMessage "cancel" }}</button>
                                 <div class="btn-group">
                                     <button type="submit" class="btn btn-primary" name="action" value="next">{{ call .LocalizeMessage "next" }}</button>
                                 </div>
                             </div>
-                         </form>
+                        </form>
                     </div>
                 </div>
             </div>

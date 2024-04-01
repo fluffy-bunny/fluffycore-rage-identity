@@ -69,23 +69,30 @@ type (
 	InitialConfig struct {
 		ConfigFiles ConfigFiles `json:"configFiles"`
 	}
+	TOTPConfig struct {
+		Enabled    bool   `json:"enabled"`
+		IssuerName string `json:"issuerName"`
+	}
 	Config struct {
 		fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
 
-		ConfigFiles               ConfigFiles                        `json:"configFiles"`
-		Echo                      *EchoConfig                        `json:"echo"`
-		InMemoryClients           InMemoryClients                    `json:"inMemoryClients"`
-		OIDCConfig                *OIDCConfig                        `json:"oidcConfig"`
-		BackingCache              *BackingCacheConfig                `json:"backingCache"`
-		AutolinkOnEmailMatch      bool                               `json:"autolinkOnEmailMatch"`
-		EmailVerificationRequired bool                               `json:"emailVerificationRequired"`
-		EmailConfig               *contracts_email.EmailConfig       `json:"emailConfig"`
-		SelfIDPConfig             *SelfIDPConfig                     `json:"selfIDPConfig"`
-		CookieConfig              *CookieConfig                      `json:"cookieConfig"`
-		SystemConfig              *SystemConfig                      `json:"systemConfig"`
-		SessionConfig             *contracts_sessions.SessionConfig  `json:"sessionConfig"`
-		WebAuthNConfig            *contracts_webauthn.WebAuthNConfig `json:"webAuthNConfig"`
-		PasswordConfig            *PasswordConfig                    `json:"passwordConfig"`
+		ConfigFiles                    ConfigFiles                        `json:"configFiles"`
+		Echo                           *EchoConfig                        `json:"echo"`
+		InMemoryClients                InMemoryClients                    `json:"inMemoryClients"`
+		OIDCConfig                     *OIDCConfig                        `json:"oidcConfig"`
+		BackingCache                   *BackingCacheConfig                `json:"backingCache"`
+		AutolinkOnEmailMatch           bool                               `json:"autolinkOnEmailMatch"`
+		EmailVerificationRequired      bool                               `json:"emailVerificationRequired"`
+		MultiFactorRequired            bool                               `json:"multiFactorRequired"`
+		MultiFactorRequiredByEmailCode bool                               `json:"multiFactorRequiredByEmailCode"`
+		TOTP                           *TOTPConfig                        `json:"totp"`
+		EmailConfig                    *contracts_email.EmailConfig       `json:"emailConfig"`
+		SelfIDPConfig                  *SelfIDPConfig                     `json:"selfIDPConfig"`
+		CookieConfig                   *CookieConfig                      `json:"cookieConfig"`
+		SystemConfig                   *SystemConfig                      `json:"systemConfig"`
+		SessionConfig                  *contracts_sessions.SessionConfig  `json:"sessionConfig"`
+		WebAuthNConfig                 *contracts_webauthn.WebAuthNConfig `json:"webAuthNConfig"`
+		PasswordConfig                 *PasswordConfig                    `json:"passwordConfig"`
 	}
 )
 
@@ -109,6 +116,12 @@ const configDefaultJSONTemplate = `
 	"jwtValidators": {},
 	"autolinkOnEmailMatch": true,
 	"emailVerificationRequired": true,
+	"multiFactorRequired": false,
+	"multiFactorRequiredByEmailCode": false,
+	"totp": {
+		"enabled": false,
+		"issuerName": "RAGE.IDENTITY"
+	},
 	"selfIDPConfig": {
 		"clientId": "self-client",
 		"clientSecret": "secret",

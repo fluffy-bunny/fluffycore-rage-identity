@@ -260,3 +260,10 @@ We launch the server using vscode [launch.json](./.vscode/launch.json)
   ]
 }
 ```
+
+## Recommended Configurations
+
+- require email verification for password and social logins
+- require email multifactor
+- totp auth app is not really needed. The reason is that a users email is more important than your app. They should be doing way more multi factor over there. i.e. github, google or microsoft social. Enterprise IDPS have required multifactor and it looks like social accounts are now requiring it as well. Doing it here is just redundant and leads to account recovery problems.
+- offer passkeys
