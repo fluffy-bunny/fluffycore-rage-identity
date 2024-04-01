@@ -25,7 +25,9 @@
                     <div class="card-body p-4">
                         <h2 class="card-title text-center mb-4">{{ call .LocalizeMessage "forgot_password" }}</h2>
                         <form action="{{ $paths.ForgotPassword }}" method="post">
-                             <div class="mb-3">
+                            <input type="hidden" name="csrf" value="{{ $csrf }}">
+
+                            <div class="mb-3">
                                 <label for="email" class="form-label">Email address</label>
                                 <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" value="{{ .email }}" required>
                             </div>
