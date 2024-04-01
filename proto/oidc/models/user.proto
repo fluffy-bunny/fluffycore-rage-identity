@@ -10,6 +10,7 @@ import "google/protobuf/descriptor.proto";
 import "google/protobuf/wrappers.proto";
 import "proto/types/filter.proto";
 import "proto/types/webauthn/webauthn.proto";
+import "google/protobuf/timestamp.proto";
 
 enum RageUserState {
     USER_STATE_UNSPECIFIED = 0;
@@ -92,6 +93,7 @@ message AuthorizationRequestState {
     Identity external_identity = 4;
     string directive = 5;
 
+    google.protobuf.Timestamp updated = 51;
 }
 
 message LinkedIdentities{
