@@ -4,9 +4,11 @@ import (
 	"context"
 
 	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	zerolog "github.com/rs/zerolog"
+	gotp "github.com/xlzd/gotp"
 	codes "google.golang.org/grpc/codes"
 )
 
@@ -71,6 +73,11 @@ func (s *service) CreateUser(ctx context.Context, request *proto_external_user.C
 	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
 
 	// create the user
+	user.RageUser.TOTP = &proto_oidc_models.TOTP{
+		Secret:   gotp.RandomSecret(16),
+		Enabled:  false,
+		Verified: false, // need to get the code from the auth app and verify it
+	}
 	s.userMap[user.Id] = user
 	return &proto_external_user.CreateUserResponse{
 		User: s.makeExampleUserCopy(user),

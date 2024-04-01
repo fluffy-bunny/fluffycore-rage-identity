@@ -2,8 +2,9 @@
 {{template "html_begin" .}}
 {{template "header" .}}
 
- {{ $directive   := .directive }}
+{{ $directive   := .directive }}
 {{ $paths       := .paths }}
+{{ $csrf        := .csrf }}
 
 <body class="bg-light d-flex align-items-center min-vh-100">
     <div class="container">
@@ -25,7 +26,9 @@
                     <div class="card-body p-4">
                         <h2 class="card-title text-center mb-4">{{ call .LocalizeMessage "signup" }}</h2>
                         <form action="{{ $paths.Signup }}" method="post">
-                             <div class="mb-3">
+                            <input type="hidden" name="csrf" value="{{ $csrf }}">
+
+                            <div class="mb-3">
                                 <label for="username" class="form-label">Email address</label>
                                 <input type="email" class="form-control" id="username" name="username" value="{{ .email }}" required>
                             </div>

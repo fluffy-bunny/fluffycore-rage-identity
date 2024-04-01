@@ -20,11 +20,13 @@ const (
 	RootIdp string = "root-idp"
 )
 const (
-	LoginDirective         string = "login"
-	SignupDirective        string = "signup"
-	PasswordResetDirective string = "password-reset"
-	VerifyEmailDirective   string = "verify-email"
-	CancelDirective        string = "cancel"
+	LoginDirective           string = "login"
+	SignupDirective          string = "signup"
+	PasswordResetDirective   string = "password-reset"
+	VerifyEmailDirective     string = "verify-email"
+	MFA_VerifyEmailDirective string = "mfa-verify-email"
+
+	CancelDirective string = "cancel"
 )
 const (
 	InternalError            string = "internal-error"

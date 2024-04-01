@@ -7,6 +7,7 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/localizer"
+	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
@@ -35,6 +36,7 @@ type (
 		ScopedMemoryCache              func() fluffycore_contracts_common.IScopedMemoryCache
 		EmailService                   func() contracts_email.IEmailService
 		SessionFactory                 func() contracts_sessions.ISessionFactory
+		OIDCSession                    func() contracts_oidc_session.IOIDCSession
 
 		localizer                      contracts_localizer.ILocalizer
 		claimsPrincipal                fluffycore_contracts_common.IClaimsPrincipal
@@ -45,6 +47,7 @@ type (
 		scopedMemoryCache              fluffycore_contracts_common.IScopedMemoryCache
 		emailService                   contracts_email.IEmailService
 		sessionFactory                 contracts_sessions.ISessionFactory
+		oidcSession                    contracts_oidc_session.IOIDCSession
 	}
 )
 
@@ -60,8 +63,15 @@ func NewBaseHandler(container di.Container) *BaseHandler {
 	obj.ScopedMemoryCache = obj.getScopedMemoryCache
 	obj.EmailService = obj.getEmailService
 	obj.SessionFactory = obj.getSessionFactory
+	obj.OIDCSession = obj.getOIDCSession
 	return obj
 
+}
+func (b *BaseHandler) getOIDCSession() contracts_oidc_session.IOIDCSession {
+	if b.oidcSession == nil {
+		b.oidcSession = di.Get[contracts_oidc_session.IOIDCSession](b.Container)
+	}
+	return b.oidcSession
 }
 func (b *BaseHandler) getSessionFactory() contracts_sessions.ISessionFactory {
 	if b.sessionFactory == nil {
@@ -156,6 +166,14 @@ func (b *BaseHandler) Render(c echo.Context, code int, name string, data map[str
 			data["username"] = claims[0].Value
 		}
 	}
+	type auth struct {
+		CSRF string `param:"csrf" query:"csrf" header:"csrf" form:"csrf" json:"csrf" xml:"csrf"`
+	}
+	authArtifacts := &auth{
+		CSRF: c.Get("csrf").(string),
+	}
+	data["security"] = authArtifacts
+	data["csrf"] = authArtifacts.CSRF
 
 	return core_echo_templates.Render(c, code, name, data)
 

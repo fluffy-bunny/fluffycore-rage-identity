@@ -1,6 +1,8 @@
 {{define "oidc/autoredirect/index"}}
 {{template "html_begin" .}}
 {{template "header" .}}
+{{ $csrf        := .csrf }}
+
 <body>
 <!-- Page content-->
  

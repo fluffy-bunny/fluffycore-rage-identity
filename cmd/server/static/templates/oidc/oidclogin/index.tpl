@@ -4,6 +4,7 @@
 
 {{ $directive   := .directive }}
 {{ $paths       := .paths }}
+{{ $csrf        := .csrf }}
 
 <body class="bg-light d-flex align-items-center min-vh-100">
     <div class="container">
@@ -26,6 +27,7 @@
                     <div class="card-body p-4">
                         <h2 class="card-title text-center mb-4">{{ call .LocalizeMessage "login" }}</h2>
                         <form action="{{ $paths.OIDCLogin }}" method="post">
+                            <input type="hidden" name="csrf" value="{{ $csrf }}">
                              <div class="mb-3">
                                 <label for="username" class="form-label">Email address</label>
                                 <input type="email" class="form-control" id="username" name="username" placeholder="Enter your email" value="{{ .email }}" required>
@@ -35,11 +37,13 @@
                         </form>
                         <p class="mt-0 text-center">
                             <form action="{{ $paths.ForgotPassword }}" method="post">
-                                 <input type="hidden" name="type"       value="GET">          
+                                <input type="hidden" name="csrf" value="{{ $csrf }}">
+                                <input type="hidden" name="type"       value="GET">          
                                 <button type="submit" class="btn btn-link text-muted">{{ call .LocalizeMessage "forgot_password" }}</button>
                             </form>
                             <form action="{{ $paths.Signup }}" method="post">
-                                 <input type="hidden" name="type"       value="GET">          
+                                <input type="hidden" name="csrf" value="{{ $csrf }}">
+                                <input type="hidden" name="type"       value="GET">          
                                 <button type="submit" class="btn btn-link text-muted">{{ call .LocalizeMessage "signup" }}</button>
                             </form>    
                          </p>
@@ -48,7 +52,8 @@
                         <div class="d-flex justify-content-center">
                             {{range $idx,$idp := .idps}}
                                 <form action="{{ $paths.ExternalIDP }}" method="post">
-                                     <input type="hidden" name="directive"   value="{{ $directive }}">
+                                    <input type="hidden" name="csrf" value="{{ $csrf }}">
+                                    <input type="hidden" name="directive"   value="{{ $directive }}">
                                     <input type="hidden" name="idp_hint"    value="{{$idp.Slug}}">
                                     <button type="submit" class="btn btn-outline-primary me-2 ">{{$idp.Name}}</button>
                                 </form>
@@ -64,5 +69,43 @@
 </body>
     
 {{template "footer" .}}
+<script>
+    const url = '/api'; // relative URL
+    const data = { request_type: 'InitialPageRequest', version: '1' };  
+    let csrf = getCSRF();
+
+    fetch(url, {
+    method: 'POST', 
+    credentials: 'include', 
+    headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'X-Csrf-Token': csrf
+                },
+    body: JSON.stringify(data) 
+    })
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch((error) => {
+    console.error('Error:', error);
+    });
+
+    
+    fetch(url, {
+    method: 'POST', 
+    credentials: 'include', 
+    headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+                 },
+    body: JSON.stringify(data) 
+    })
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch((error) => {
+    console.error('Error:', error);
+    });
+     
+</script>
 {{template "html_end" .}}
 {{end}}

@@ -55,5 +55,8 @@ func (s *service) GetUser(ctx context.Context, request *proto_external_user.GetU
 			User: s.makeExampleUserCopy(user),
 		}, nil
 	}
+	// TODO: THIS MUST BE ENCRYPTED AT REST
+	// if there is a TOTP secret, we need to return it
+	// it better be encrypted at rest
 	return nil, status.Error(codes.NotFound, "User not found")
 }

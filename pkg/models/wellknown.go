@@ -20,10 +20,12 @@ const (
 	ACRPasskey  = "urn:rage:loa:passkey"
 )
 const (
-	AMRPassword = "pwd"
-	AMR2FA      = "mfa"
-	AMRIdp      = "idp"
-	AMRPasskey  = "passkey"
+	AMRPassword  = "pwd"
+	AMRMFA       = "mfa"
+	AMRIdp       = "idp"
+	AMRPasskey   = "passkey"
+	AMRTOTP      = "totp"
+	AMREmailCode = "emailcode"
 )
 
 const (

@@ -2,6 +2,7 @@ package oidcserver
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -11,6 +12,7 @@ import (
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/localizer"
 	services "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services"
+	services_handlers_api "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/api"
 	services_handlers_authorization_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/authorization_endpoint"
 	services_handlers_discovery_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/discovery_endpoint"
 	services_handlers_error "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/error"
@@ -22,6 +24,7 @@ import (
 	services_handlers_oidclogin "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidclogin"
 	services_handlers_oidcloginpasskey "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidcloginpasskey"
 	services_handlers_oidcloginpassword "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidcloginpassword"
+	services_handlers_oidclogintotp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidclogintotp"
 	services_handlers_passwordreset "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/passwordreset"
 	services_handlers_signup "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/signup"
 	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/swagger"
@@ -48,6 +51,7 @@ import (
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
+	echo_middleware "github.com/labstack/echo/v4/middleware"
 	zerolog "github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
 	codes "google.golang.org/grpc/codes"
@@ -176,6 +180,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_error.AddScopedIHandler(builder)
 	services_handlers_oidclogin.AddScopedIHandler(builder)
 	services_handlers_oidcloginpassword.AddScopedIHandler(builder)
+	services_handlers_oidclogintotp.AddScopedIHandler(builder)
 	services_handlers_oidcloginpasskey.AddScopedIHandler(builder)
 	services_handlers_externalidp.AddScopedIHandler(builder)
 	services_handlers_swagger.AddScopedIHandler(builder)
@@ -187,6 +192,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_forgotpassword.AddScopedIHandler(builder)
 	services_handlers_verifycode.AddScopedIHandler(builder)
 	services_handlers_passwordreset.AddScopedIHandler(builder)
+	services_handlers_api.AddScopedIHandler(builder)
 
 	// WebAuthN Handlers
 	//--------------------------------------------------------
@@ -212,9 +218,28 @@ func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 
 // Configure
 func (s *startup) Configure(e *echo.Echo, root di.Container) error {
+
+	e.Use(echo_middleware.CSRFWithConfig(echo_middleware.CSRFConfig{
+		TokenLookup:    "header:X-Csrf-Token,form:csrf",
+		CookiePath:     "/",
+		CookieSecure:   false,
+		CookieHTTPOnly: false,
+		CookieSameSite: http.SameSiteStrictMode,
+		Skipper: func(c echo.Context) bool {
+			csrfSkipperPaths := CSRFSkipperPaths()
+			currentPath := c.Request().URL.Path
+			_, ok := csrfSkipperPaths[currentPath]
+			return ok
+		},
+	}))
 	e.Use(EnsureCookieClaimsPrincipal(root))
 	e.Use(EnsureLocalizer(root))
 	e.Use(EnsureAuth(root))
+	e.Use(echo_middleware.CORSWithConfig(echo_middleware.CORSConfig{
+		AllowOrigins: []string{
+			s.config.OIDCConfig.BaseUrl,
+		},
+	}))
 	return nil
 }
 func EnsureLocalizer(_ di.Container) echo.MiddlewareFunc {
