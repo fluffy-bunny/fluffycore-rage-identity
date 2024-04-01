@@ -12,6 +12,7 @@ import (
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	zerolog "github.com/rs/zerolog"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type (
@@ -39,6 +40,7 @@ func AddSingletonAuthorizationRequestStateStoreServer(cb di.ContainerBuilder) {
 
 func (s *service) StoreAuthorizationRequestState(ctx context.Context, request *proto_oidc_flows.StoreAuthorizationRequestStateRequest) (*proto_oidc_flows.StoreAuthorizationRequestStateResponse, error) {
 	log := zerolog.Ctx(ctx).With().Str("state", request.State).Logger()
+	request.AuthorizationRequestState.Updated = timestamppb.Now()
 	err := s.oidcFlowCache.Set(ctx, request.State, request.AuthorizationRequestState, store.WithExpiration(30*time.Minute))
 	log.Info().Err(err).Interface("request", request).Msg("StoreAuthorizationRequestState")
 	return &proto_oidc_flows.StoreAuthorizationRequestStateResponse{}, err
