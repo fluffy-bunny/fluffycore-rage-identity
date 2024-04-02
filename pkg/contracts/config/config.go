@@ -16,6 +16,16 @@ type (
 		Issuers  []string `json:"issuers"`
 		JWKSURLS []string `json:"jwksUrls"`
 	}
+	CORSConfig struct {
+		Enabled                                  bool     `json:"enabled"`
+		AllowedOrigins                           []string `json:"allowedOrigins"`
+		AllowedMethods                           []string `json:"allowedMethods"`
+		AllowedHeaders                           []string `json:"allowedHeaders"`
+		AllowCredentials                         bool     `json:"allowCredentials"`
+		UnsafeWildcardOriginWithAllowCredentials bool     `json:"unsafeWildcardOriginWithAllowCredentials"`
+		ExposeHeaders                            []string `json:"exposeHeaders"`
+		MaxAge                                   int      `json:"maxAge"`
+	}
 	ConfigFiles struct {
 		OIDCClientPath     string `json:"oidcClientPath"`
 		IDPsPath           string `json:"idpsPath"`
@@ -93,6 +103,7 @@ type (
 		SessionConfig                  *contracts_sessions.SessionConfig  `json:"sessionConfig"`
 		WebAuthNConfig                 *contracts_webauthn.WebAuthNConfig `json:"webAuthNConfig"`
 		PasswordConfig                 *PasswordConfig                    `json:"passwordConfig"`
+		CORSConfig                     *CORSConfig                        `json:"corsConfig"`
 	}
 )
 
@@ -113,6 +124,16 @@ const configDefaultJSONTemplate = `
 	"GRPC_GATEWAY_ENABLED": true,
 	"cookieConfig": {
  	},
+	"corsConfig": {
+		"enabled": true,
+		"allowedOrigins": ["*"],
+		"allowedMethods": [],
+		"allowedHeaders": [],
+		"allowCredentials": false,
+		"unsafeWildcardOriginWithAllowCredentials": false,
+		"exposeHeaders": [],
+		"maxAge": 0
+	},
 	"jwtValidators": {},
 	"autolinkOnEmailMatch": true,
 	"emailVerificationRequired": true,

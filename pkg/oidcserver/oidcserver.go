@@ -235,11 +235,17 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 	e.Use(EnsureCookieClaimsPrincipal(root))
 	e.Use(EnsureLocalizer(root))
 	e.Use(EnsureAuth(root))
-	e.Use(echo_middleware.CORSWithConfig(echo_middleware.CORSConfig{
-		AllowOrigins: []string{
-			s.config.OIDCConfig.BaseUrl,
-		},
-	}))
+	if s.config.CORSConfig.Enabled {
+		e.Use(echo_middleware.CORSWithConfig(echo_middleware.CORSConfig{
+			AllowOrigins:                             s.config.CORSConfig.AllowedOrigins,
+			AllowMethods:                             s.config.CORSConfig.AllowedMethods,
+			AllowHeaders:                             s.config.CORSConfig.AllowedHeaders,
+			AllowCredentials:                         s.config.CORSConfig.AllowCredentials,
+			UnsafeWildcardOriginWithAllowCredentials: s.config.CORSConfig.UnsafeWildcardOriginWithAllowCredentials,
+			ExposeHeaders:                            s.config.CORSConfig.ExposeHeaders,
+			MaxAge:                                   s.config.CORSConfig.MaxAge,
+		}))
+	}
 	return nil
 }
 func EnsureLocalizer(_ di.Container) echo.MiddlewareFunc {
