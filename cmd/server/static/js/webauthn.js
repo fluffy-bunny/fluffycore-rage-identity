@@ -28,7 +28,9 @@ async function registerUser(returnUrl) {
     beginResponse.publicKey.challenge = bufferDecode(
       beginResponse.publicKey.challenge
     );
-    beginResponse.publicKey.user.id = bufferDecode(beginResponse.publicKey.user.id);
+    beginResponse.publicKey.user.id = bufferDecode(
+      beginResponse.publicKey.user.id
+    );
 
     const credentialsResponse = await navigator.credentials.create({
       publicKey: beginResponse.publicKey,
@@ -71,7 +73,6 @@ async function registerUser(returnUrl) {
   }
 }
 
-
 async function LoginUser() {
   try {
     const response = await fetch("/webauthn/login/begin");
@@ -88,9 +89,7 @@ async function LoginUser() {
       allowCredential.id = bufferDecode(allowCredential.id);
     });
 
-    const credential = await navigator.credentials.get({
-      publicKey: beginResponse.publicKey,
-    });
+    const credential = await navigator.credentials.get(beginResponse);
     console.log("getCredential: ", credential);
 
     const authData = credential.response.authenticatorData;
@@ -132,4 +131,3 @@ async function LoginUser() {
     alert("Login failed!"); // More specific message based on error
   }
 }
-
