@@ -4,11 +4,13 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-function bufferDecode(base64URL) {
-  const base64 = base64URL.replace(/\-/g, "+").replace(/\_/g, "/");
-  return Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+// Base64 to ArrayBuffer
+function bufferDecode(value) {
+  value = value.replace(/-/g, "+").replace(/_/g, "/");
+  return Uint8Array.from(atob(value), (c) => c.charCodeAt(0));
 }
 
+// ArrayBuffer to URLBase64
 function bufferEncode(value) {
   return btoa(String.fromCharCode.apply(null, new Uint8Array(value)))
     .replace(/\+/g, "-")
