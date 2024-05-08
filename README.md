@@ -16,11 +16,43 @@ No calls to the userinfo endpoint are supported. id_token is the only thing retu
 
 ## TL;DR
 
-Just build and run this thing;
+Just configure, build and run this thing;
 
-```bash
- docker build --file .\build\Dockerfile . --tag fluffycore.rage.oidc:latest
- docker-compose up -d
+### Social and Enterprise IDP
+
+These will not work out of the box.  You need to have your own credentials.
+
+The [idps.docker.json config file](./cmd/server/config/idps.docker.json) is where you can put your own social and enterprises idps.  They will pull their client_secrets from the ```.env.secrets``` file.
+
+#### .env.secrets
+
+copy ```.env.secrets.example``` to ```.env.secrets``` and fill in the blanks.
+
+```txt
+# Secrets
+#--------------------------------------------------
+GITHUB_68863c06bc5c9bd0c2f9_CLIENT_SECRET=**REDACTED**
+GOOGLE_1096301616546-edbl612881t7rkpljp3qa3juminskulo.apps.googleusercontent.com_CLIENT_SECRET=**REDACTED**
+AZUREAD_3b918868-9bff-431f-bd9c-f9896d628e6b_CLIENT_SECRET=**REDACTED**
+AZUREAD_0f81aa6c-b280-4503-b130-adc0567bfbe4_CLIENT_SECRET=**REDACTED**
+```
+
+If you do nothing then the only thing that will work will be username/password logins, and passkeys.  
+
+### Windows
+
+#### Host file
+
+```txt
+127.0.0.1 localhost.dev traefik.localhost.dev whoami.localhost.dev smtp.localhost.dev rage.localhost.dev
+```
+
+```powershell
+.\mkcert.exe -install
+.\mkcert.exe -cert-file certs/local-cert.pem -key-file certs/local-key.pem "localhost.dev" "*.localhost.dev"
+
+docker build --file .\build\Dockerfile . --tag fluffycore.rage.oidc:latest
+docker-compose up -d
 ```
 
 Now that we have the server running in docker, lets run our client locally.
@@ -29,7 +61,7 @@ Now that we have the server running in docker, lets run our client locally.
 cd cmd/go-client
 go build .
 
-$env:PORT = "5556";$env:OAUTH2_CLIENT_ID = "go-client";$env:OAUTH2_CLIENT_SECRET = "secret";$env:AUTHORITY = "http://localhost:9044/"; .\go-client.exe
+$env:PORT = "5556";$env:OAUTH2_CLIENT_ID = "go-client";$env:OAUTH2_CLIENT_SECRET = "secret";$env:AUTHORITY = "https://rage.localhost.dev"; .\go-client.exe
 ```
 
 Open your browser, [Edge](https://www.microsoft.com/en-us/edge) is best and we all know it!
@@ -42,27 +74,67 @@ You should see a json response like this.
 
 ```json
 {
-  "OAuth2Token": {
-    "access_token": "eyJhbGciOiJFUzI1NiIsImtpZCI6IjBiMmNkMmU1NGM5MjRjZTg5ZjAxMGYyNDI4NjIzNjdkIiwidHlwIjoiSldUIn0.eyJhdWQiOiJnby1jbGllbnQiLCJjbGllbnRfaWQiOiJnby1jbGllbnQiLCJlbWFpbCI6InRlc3RAdGVzdC5jb20iLCJleHAiOjE3MDc1MjQ0ODUsImlhdCI6MTcwNzUyMDg4NSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo5MDQ0IiwianRpIjoiY24zYjZ0YWkycW5iMzc4MjgwbjAiLCJuYmYiOjE3MDc1MjA1ODUsInBlcm1pc3Npb25zIjpbInJlYWQiLCJ3cml0ZSJdLCJzdWIiOiIxMjMifQ.R9zQX2njveB-iUhQTO698logMjPtFdDbe7Ne2scSoT8kcMEMk3wEIz2D8tyzcjSlsqSSoXoAP6YKo1dIfnFOOQ",
-    "token_type": "bearer",
-    "refresh_token": "refresh_token",
-    "expiry": "2024-02-09T16:21:26.0012199-08:00"
-  },
-  "IDTokenClaims": {
-    "aud": "go-client",
-    "client_id": "go-client",
-    "email": "test@test.com",
-    "exp": 1707524485,
-    "iat": 1707520885,
-    "iss": "http://localhost:9044",
-    "jti": "cn3b6tai2qnb378280mg",
-    "nbf": 1707520585,
-    "nonce": "AeJpC-NrPt0ED3-Qh2M34g",
-    "sub": "123"
-  },
-  "IDToken": "eyJhbGciOiJFUzI1NiIsImtpZCI6IjBiMmNkMmU1NGM5MjRjZTg5ZjAxMGYyNDI4NjIzNjdkIiwidHlwIjoiSldUIn0.eyJhdWQiOiJnby1jbGllbnQiLCJjbGllbnRfaWQiOiJnby1jbGllbnQiLCJlbWFpbCI6InRlc3RAdGVzdC5jb20iLCJleHAiOjE3MDc1MjQ0ODUsImlhdCI6MTcwNzUyMDg4NSwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo5MDQ0IiwianRpIjoiY24zYjZ0YWkycW5iMzc4MjgwbWciLCJuYmYiOjE3MDc1MjA1ODUsIm5vbmNlIjoiQWVKcEMtTnJQdDBFRDMtUWgyTTM0ZyIsInN1YiI6IjEyMyJ9.0KuxDAlXX4DIh5Lh0KSXTahY8gQicRYVWMd-4Ic8J5ZwbFwnrFPk_sgE2cGetcaAFiReHg1SYAszsY8Sahds6A"
+    "OAuth2Token": {
+        "access_token": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImYzZTlmMjRjYTQ3MzRjNGU4YTQ4ZDI3ZjRhMmVmMjUyIiwidHlwIjoiSldUIn0.eyJhdWQiOiJnby1jbGllbnQiLCJjbGllbnRfaWQiOiJnby1jbGllbnQiLCJleHAiOjE3MTUxODIzMTAsImlhdCI6MTcxNTE3ODcxMCwiaXNzIjoiaHR0cHM6Ly9yYWdlLmxvY2FsaG9zdC5kZXYiLCJqdGkiOiJjb3RvcGxoM2NyaHBwa2RzdHE3ZyIsIm5iZiI6MTcxNTE3ODQxMCwic3ViIjoicmFnZV9jb3RvcGpoM2NyaHBwa2RzdHByZyJ9.ivUv29f2_bwtH-h1vM0Tb9VV18-cBBKJMfGAn4oCHxxW10UVwWo2UHzDU5BCUuIuvMav8bbNNy6aWQbDFfTyoQ",
+        "token_type": "bearer",
+        "expiry": "2024-05-08T08:31:50.2769354-07:00"
+    },
+    "IDTokenClaims": {
+        "acr": [
+            "urn:rage:idp:root",
+            "urn:rage:password"
+        ],
+        "amr": [
+            "pwd",
+            "idp",
+            "mfa",
+            "emailcode"
+        ],
+        "aud": "go-client",
+        "client_id": "go-client",
+        "email": "ghstahl@gmail.com",
+        "email_verified": false,
+        "exp": 1715182310,
+        "iat": 1715178710,
+        "idp": [
+            "root"
+        ],
+        "iss": "https://rage.localhost.dev",
+        "jti": "cotoplh3crhppkdstq70",
+        "nbf": 1715178410,
+        "nonce": "NoUCzwQrGM9WXqDwNHrpWw",
+        "sub": "rage_cotopjh3crhppkdstprg"
+    },
+    "IDToken": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImYzZTlmMjRjYTQ3MzRjNGU4YTQ4ZDI3ZjRhMmVmMjUyIiwidHlwIjoiSldUIn0.eyJhY3IiOlsidXJuOnJhZ2U6aWRwOnJvb3QiLCJ1cm46cmFnZTpwYXNzd29yZCJdLCJhbXIiOlsicHdkIiwiaWRwIiwibWZhIiwiZW1haWxjb2RlIl0sImF1ZCI6ImdvLWNsaWVudCIsImNsaWVudF9pZCI6ImdvLWNsaWVudCIsImVtYWlsIjoiZ2hzdGFobEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImV4cCI6MTcxNTE4MjMxMCwiaWF0IjoxNzE1MTc4NzEwLCJpZHAiOlsicm9vdCJdLCJpc3MiOiJodHRwczovL3JhZ2UubG9jYWxob3N0LmRldiIsImp0aSI6ImNvdG9wbGgzY3JocHBrZHN0cTcwIiwibmJmIjoxNzE1MTc4NDEwLCJub25jZSI6Ik5vVUN6d1FyR005V1hxRHdOSHJwV3ciLCJzdWIiOiJyYWdlX2NvdG9wamgzY3JocHBrZHN0cHJnIn0.tWHugvPE8AN-QPicdx3Jdm1OfvpE77CtMz367tKr2_QeY9YC6Obx21AJDj0FT7qZLpjl-ylzf1MTniV2q-Wl5w"
 }
 ```
+
+***Note the following claims in the id_token;***
+
+```json
+{
+        "acr": [
+            "urn:rage:idp:root",
+            "urn:rage:password"
+        ],
+        "amr": [
+            "pwd",
+            "idp",
+            "mfa",
+            "emailcode"
+        ],
+        "idp": [
+            "root"
+        ],
+        "sub": "rage_cotopjh3crhppkdstprg"
+    }
+```
+
+Context is important.  The id_token normalizes the user to the sub claim.  No matter how you login, passkey, password, social, enterprise, etc.  The sub claim is always the same.  The id_token will contain the acr and amr claims that tell you how the user was authenticated.  The idp claim tells you where the user was authenticated.  This is important because the user can be linked to multiple external IDPs.  The id_token will tell you which one was used.
+
+In cases like github, a user will get challenged to login with their linked enterprise account, even though they are already logged in using their github username/password.  If it all goes well, the acr, amr, and idp will reflect the enterprise IDP.  
+
+If you fail the challenge, you don't get access to the github enterprise resources.
 
 ## Protos
 
