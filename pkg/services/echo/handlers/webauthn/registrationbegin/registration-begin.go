@@ -13,6 +13,8 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
+	webauthn_protocol "github.com/go-webauthn/webauthn/protocol"
+	webauthn "github.com/go-webauthn/webauthn/webauthn"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
@@ -120,7 +122,20 @@ func (s *service) Do(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_RegisterBegin_001)
 	}
 	webAuthNUser := services_handlers_webauthn.NewWebAuthNUser(getRageUserResponse.User)
-	credentialCreation, webAuthNSession, err := s.webAuthN.GetWebAuthN().BeginRegistration(webAuthNUser)
+	credentialExcludeList := []webauthn_protocol.CredentialDescriptor{}
+	if getRageUserResponse.User.WebAuthN != nil {
+		for _, cred := range getRageUserResponse.User.WebAuthN.Credentials {
+			descriptor := webauthn_protocol.CredentialDescriptor{
+				Type:         webauthn_protocol.PublicKeyCredentialType,
+				CredentialID: cred.ID,
+			}
+			credentialExcludeList = append(credentialExcludeList, descriptor)
+		}
+	}
+	credentialCreation, webAuthNSession, err := s.webAuthN.GetWebAuthN().
+		BeginRegistration(webAuthNUser,
+			webauthn.WithExclusions(credentialExcludeList),
+		)
 	if err != nil {
 		log.Error().Err(err).Msg("BeginRegistration")
 		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_RegisterBegin_002)
