@@ -88,7 +88,11 @@ func (s *service) DoPost(c echo.Context) error {
 
 	log.Debug().Msg("OIDCLoginPasskey")
 
-	return s.Render(c, http.StatusOK, "oidc/oidcloginpasskey/index", map[string]interface{}{})
+	return s.Render(c, http.StatusOK,
+		"oidc/oidcloginpasskey/index",
+		map[string]interface{}{
+			"returnFailedUrl": wellknown_echo.OIDCLoginPasswordPath,
+		})
 }
 
 func (s *service) Do(c echo.Context) error {

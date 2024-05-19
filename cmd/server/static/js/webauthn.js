@@ -75,7 +75,7 @@ async function registerUser(returnUrl) {
   }
 }
 
-async function LoginUser() {
+async function LoginUser(returnFailedUrl) {
   try {
     const response = await fetch("/webauthn/login/begin");
     if (!response.ok) {
@@ -131,5 +131,6 @@ async function LoginUser() {
   } catch (error) {
     console.error("Error:", error);
     alert("Login failed!"); // More specific message based on error
+    window.location.href = returnFailedUrl;
   }
 }

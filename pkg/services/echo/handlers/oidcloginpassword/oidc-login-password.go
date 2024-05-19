@@ -85,7 +85,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 		stemService.Ctor,
 		[]contracts_handler.HTTPVERB{
 			// Using only auto post here so that our arguments are present in the URL
-			//	contracts_handler.GET,
+			contracts_handler.GET,
 			contracts_handler.POST,
 		},
 		wellknown_echo.OIDCLoginPasswordPath,

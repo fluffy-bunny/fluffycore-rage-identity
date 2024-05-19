@@ -8,7 +8,7 @@
 
 <script>
 window.onload = function() {
-    LoginUser();
+    LoginUser({{ .returnFailedUrl }});
 };
 </script>
 
