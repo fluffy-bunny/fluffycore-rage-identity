@@ -22,6 +22,11 @@ definitions:
       redirectUri:
         type: string
     type: object
+  password.VerifyPasswordStrengthResponse:
+    properties:
+      valid:
+        type: boolean
+    type: object
   verify_username.VerifyUsernameResponse:
     properties:
       passkeyAvailable:
@@ -112,6 +117,21 @@ paths:
           schema:
             $ref: '#/definitions/api.ErrorResponse'
       summary: starts an external login ceremony with an external IDP
+      tags:
+      - root
+  /api/verify-password-strength:
+    post:
+      consumes:
+      - '*/*'
+      description: This is the configuration of the server..
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/password.VerifyPasswordStrengthResponse'
+      summary: get the login manifest.
       tags:
       - root
   /api/verify-username:

@@ -9,7 +9,6 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
-	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	passwordvalidator "github.com/wagslane/go-password-validator"
@@ -89,20 +88,31 @@ func (s *service) VerifyPassword(ctx context.Context, request *contracts_identit
 	}
 	return nil
 }
-func (s *service) IsAcceptablePassword(user *proto_oidc_models.RageUser, password string) error {
-	if user == nil {
-		return status.Error(codes.InvalidArgument, "user is nil")
+func (s *service) validateIsAcceptablePasswordRequest(request *contracts_identity.IsAcceptablePasswordRequest) error {
+	if fluffycore_utils.IsNil(request) {
+		return status.Error(codes.InvalidArgument, "request is nil")
 	}
-	if fluffycore_utils.IsEmptyOrNil(password) {
+	if fluffycore_utils.IsEmptyOrNil(request.Password) {
 		return status.Error(codes.InvalidArgument, "Password is empty")
 	}
+	if fluffycore_utils.IsEmptyOrNil(request.Email) {
+		return status.Error(codes.InvalidArgument, "Email is empty")
+	}
 	// stupidity check
-	emailAndPasswordTheSame := strings.EqualFold(user.RootIdentity.Email, password)
+	emailAndPasswordTheSame := strings.EqualFold(request.Email, request.Password)
 	if emailAndPasswordTheSame {
 		return status.Error(codes.InvalidArgument, "Password cannot be the same as the email")
 	}
+
+	return nil
+}
+func (s *service) IsAcceptablePassword(request *contracts_identity.IsAcceptablePasswordRequest) error {
+	err := s.validateIsAcceptablePasswordRequest(request)
+	if err != nil {
+		return err
+	}
 	// regex expression check
-	err := passwordvalidator.Validate(password, s.config.MinEntropyBits)
+	err = passwordvalidator.Validate(request.Password, s.config.MinEntropyBits)
 	return err
 
 }

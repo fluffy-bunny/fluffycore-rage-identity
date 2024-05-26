@@ -272,7 +272,10 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 
 	//  check password strength
-	err = s.passwordHasher.IsAcceptablePassword(user, model.Password)
+	err = s.passwordHasher.IsAcceptablePassword(&contracts_identity.IsAcceptablePasswordRequest{
+		Email:    model.UserName,
+		Password: model.Password,
+	})
 	if err != nil {
 		return doError([]string{
 			utils.LocalizeWithInterperlate(localizer, "password.is.not.acceptable",

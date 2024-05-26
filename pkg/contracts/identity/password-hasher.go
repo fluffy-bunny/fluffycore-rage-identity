@@ -2,8 +2,6 @@ package identity
 
 import (
 	"context"
-
-	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 )
 
 type (
@@ -18,9 +16,13 @@ type (
 		HashedPassword string `json:"hashedPassword" validate:"required"`
 		Password       string `json:"password" validate:"required"`
 	}
+	IsAcceptablePasswordRequest struct {
+		Email    string `json:"email" validate:"required"`
+		Password string `json:"password" validate:"required"`
+	}
 	IPasswordHasher interface {
 		// IsAcceptablePassword checks if the password is acceptable.  i.e. not the same as the username, and meets the minimum requirements
-		IsAcceptablePassword(user *proto_oidc_models.RageUser, password string) error
+		IsAcceptablePassword(request *IsAcceptablePasswordRequest) error
 		// HashPassword hashes the password
 		HashPassword(ctx context.Context, request *HashPasswordRequest) (*HashPasswordResponse, error)
 		// VerifyPassword verifies the password

@@ -133,6 +133,29 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/verify-password-strength": {
+            "post": {
+                "description": "This is the configuration of the server..",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the login manifest.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/password.VerifyPasswordStrengthResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/verify-username": {
             "post": {
                 "description": "This is the configuration of the server..",
@@ -575,6 +598,14 @@ const docTemplate = `{
             "properties": {
                 "redirectUri": {
                     "type": "string"
+                }
+            }
+        },
+        "password.VerifyPasswordStrengthResponse": {
+            "type": "object",
+            "properties": {
+                "valid": {
+                    "type": "boolean"
                 }
             }
         },
