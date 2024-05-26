@@ -70,6 +70,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/login-phase-one": {
+            "post": {
+                "description": "This is the configuration of the server..",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the login manifest.",
+                "parameters": [
+                    {
+                        "description": "LoginPhaseOneRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/login_models.LoginPhaseOneRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/login_models.LoginPhaseOneResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/manifest": {
             "get": {
                 "description": "This is the configuration of the server..",
@@ -597,6 +631,88 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "redirectUri": {
+                    "type": "string"
+                }
+            }
+        },
+        "login_models.DirectiveDisplayPasswordPage": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "hasPasskey": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "login_models.DirectiveEmailCodeChallenge": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                }
+            }
+        },
+        "login_models.DirectiveRedirect": {
+            "type": "object",
+            "properties": {
+                "formParams": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.FormParam"
+                    }
+                },
+                "redirectUri": {
+                    "type": "string"
+                },
+                "verb": {
+                    "type": "string"
+                }
+            }
+        },
+        "login_models.LoginPhaseOneRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "login_models.LoginPhaseOneResponse": {
+            "type": "object",
+            "required": [
+                "directive",
+                "email"
+            ],
+            "properties": {
+                "directive": {
+                    "type": "string"
+                },
+                "directiveDisplayPasswordPage": {
+                    "$ref": "#/definitions/login_models.DirectiveDisplayPasswordPage"
+                },
+                "directiveEmailCodeChallenge": {
+                    "$ref": "#/definitions/login_models.DirectiveEmailCodeChallenge"
+                },
+                "directiveRedirect": {
+                    "$ref": "#/definitions/login_models.DirectiveRedirect"
+                },
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.FormParam": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "value": {
                     "type": "string"
                 }
             }

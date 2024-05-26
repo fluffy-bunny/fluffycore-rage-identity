@@ -22,6 +22,59 @@ definitions:
       redirectUri:
         type: string
     type: object
+  login_models.DirectiveDisplayPasswordPage:
+    properties:
+      email:
+        type: string
+      hasPasskey:
+        type: boolean
+    type: object
+  login_models.DirectiveEmailCodeChallenge:
+    properties:
+      code:
+        type: string
+    type: object
+  login_models.DirectiveRedirect:
+    properties:
+      formParams:
+        items:
+          $ref: '#/definitions/models.FormParam'
+        type: array
+      redirectUri:
+        type: string
+      verb:
+        type: string
+    type: object
+  login_models.LoginPhaseOneRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  login_models.LoginPhaseOneResponse:
+    properties:
+      directive:
+        type: string
+      directiveDisplayPasswordPage:
+        $ref: '#/definitions/login_models.DirectiveDisplayPasswordPage'
+      directiveEmailCodeChallenge:
+        $ref: '#/definitions/login_models.DirectiveEmailCodeChallenge'
+      directiveRedirect:
+        $ref: '#/definitions/login_models.DirectiveRedirect'
+      email:
+        type: string
+    required:
+    - directive
+    - email
+    type: object
+  models.FormParam:
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+    type: object
   password.VerifyPasswordStrengthResponse:
     properties:
       valid:
@@ -76,6 +129,28 @@ paths:
           schema:
             type: string
       summary: Show the status of server.
+      tags:
+      - root
+  /api/login-phase-one:
+    post:
+      consumes:
+      - '*/*'
+      description: This is the configuration of the server..
+      parameters:
+      - description: LoginPhaseOneRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/login_models.LoginPhaseOneRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/login_models.LoginPhaseOneResponse'
+      summary: get the login manifest.
       tags:
       - root
   /api/manifest:

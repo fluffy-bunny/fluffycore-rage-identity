@@ -53,6 +53,8 @@ var (
 	API_Start_ExternalLogin    = "/api/start-external-login"
 	API_VerifyUsername         = "/api/verify-username"
 	API_VerifyPasswordStrength = "/api/verify-password-strength"
+	API_LoginPhaseOne          = "/api/login-phase-one"
+	API_LoginPassword          = "/api/login-password"
 )
 
 type Paths struct {

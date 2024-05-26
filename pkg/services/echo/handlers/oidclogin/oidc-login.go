@@ -144,17 +144,17 @@ func (s *service) DoGet(c echo.Context) error {
 	if err != nil {
 		errors = append(errors, err.Error())
 	}
-	dd, err := session.Get("request")
+	requestSession, err := session.Get("request")
 	if err != nil {
 		errors = append(errors, err.Error())
 	}
-	dd2 := dd.(*proto_oidc_models.AuthorizationRequest)
+	authorizationRequest := requestSession.(*proto_oidc_models.AuthorizationRequest)
 
-	log.Info().Interface("dd2", dd).Msg("dd2")
+	log.Info().Interface("requestSession", requestSession).Msg("requestSession")
 
 	switch model.Directive {
 	case models.IdentityFound:
-		return s.handleIdentityFound(c, dd2.State)
+		return s.handleIdentityFound(c, authorizationRequest.State)
 
 	}
 	idps, err := s.GetIDPs(ctx)

@@ -1,4 +1,4 @@
-package jwks_endpoint
+package api_manifest
 
 import (
 	"net/http"
