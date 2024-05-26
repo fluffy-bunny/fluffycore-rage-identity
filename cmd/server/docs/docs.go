@@ -24,29 +24,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/": {
-            "get": {
-                "description": "get the home page.",
-                "consumes": [
-                    "*/*"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "root"
-                ],
-                "summary": "get the home page.",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/.well-known/jwks": {
             "get": {
                 "description": "get the public keys of the server.",
@@ -59,7 +36,7 @@ const docTemplate = `{
                 "tags": [
                     "root"
                 ],
-                "summary": "get the public keys of the server.",
+                "summary": "get the public keys of the servere.",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -93,9 +70,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/about": {
+        "/api/manifest": {
             "get": {
-                "description": "get the about page.",
+                "description": "This is the configuration of the server..",
                 "consumes": [
                     "*/*"
                 ],
@@ -105,12 +82,52 @@ const docTemplate = `{
                 "tags": [
                     "root"
                 ],
-                "summary": "get the about page.",
+                "summary": "get the login manifest.",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/start-external-login": {
+            "post": {
+                "description": "starts an external login ceremony with an external IDP.",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "starts an external login ceremony with an external IDP",
+                "parameters": [
+                    {
+                        "description": "StartExternalIDPLoginRequest",
+                        "name": "external_idp",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/external_idp.StartExternalIDPLoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/external_idp.StartExternalIDPLoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.ErrorResponse"
                         }
                     }
                 }
@@ -129,6 +146,100 @@ const docTemplate = `{
                     "root"
                 ],
                 "summary": "get the error page.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/external-idp": {
+            "post": {
+                "description": "externalIDP.",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "todo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "code",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/forgot-password": {
+            "get": {
+                "description": "get the home page.",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the home page.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "code",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "get the home page.",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the home page.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "code",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -162,8 +273,77 @@ const docTemplate = `{
                 }
             }
         },
-        "/login": {
+        "/oauth2/callback": {
             "get": {
+                "description": "get the home page.",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the home page.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "code requested",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "state requested",
+                        "name": "state",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/oidc-login": {
+            "get": {
+                "description": "get the home page.",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the home page.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "code",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
                 "description": "get the home page.",
                 "consumes": [
                     "*/*"
@@ -262,6 +442,12 @@ const docTemplate = `{
                         "description": "PKCE challenge method",
                         "name": "code_challenge_method",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "acr_values requested",
+                        "name": "acr_values",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -330,6 +516,42 @@ const docTemplate = `{
                             "type": "string"
                         }
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "api.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "internalCode": {
+                    "type": "string"
+                }
+            }
+        },
+        "external_idp.StartExternalIDPLoginRequest": {
+            "type": "object",
+            "required": [
+                "directive",
+                "slug"
+            ],
+            "properties": {
+                "directive": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                }
+            }
+        },
+        "external_idp.StartExternalIDPLoginResponse": {
+            "type": "object",
+            "properties": {
+                "redirectUri": {
+                    "type": "string"
                 }
             }
         }

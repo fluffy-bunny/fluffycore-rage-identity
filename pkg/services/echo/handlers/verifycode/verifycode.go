@@ -374,15 +374,6 @@ func (s *service) getSession() (contracts_sessions.ISession, error) {
 	return session, nil
 }
 
-// HealthCheck godoc
-// @Summary get the home page.
-// @Description get the home page.
-// @Tags root
-// @Accept */*
-// @Produce json
-// @Param       code            		query     string  true  "code"
-// @Success 200 {object} string
-// @Router /login [get,post]
 func (s *service) Do(c echo.Context) error {
 
 	r := c.Request()

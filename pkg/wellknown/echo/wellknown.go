@@ -48,6 +48,9 @@ var (
 	WebAuthN_Register_Finish                         = "/webauthn/register/finish"
 	WebAuthN_Login_Begin                             = "/webauthn/login/begin"
 	WebAuthN_Login_Finish                            = "/webauthn/login/finish"
+
+	API_MANIFEST_PATH       = "/api/manifest"
+	API_Start_ExternalLogin = "/api/start-external-login"
 )
 
 type Paths struct {

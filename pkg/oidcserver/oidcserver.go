@@ -17,6 +17,8 @@ import (
 	services_handlers_discovery_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/discovery_endpoint"
 	services_handlers_error "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/error"
 	services_handlers_externalidp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/externalidp"
+	services_handlers_externalidp_api "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/externalidp/api"
+
 	services_handlers_forgotpassword "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/forgotpassword"
 	services_handlers_healthz "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/healthz"
 	services_handlers_jwks_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/jwks_endpoint"
@@ -183,6 +185,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_oidclogintotp.AddScopedIHandler(builder)
 	services_handlers_oidcloginpasskey.AddScopedIHandler(builder)
 	services_handlers_externalidp.AddScopedIHandler(builder)
+	services_handlers_externalidp_api.AddScopedIHandler(builder)
 	services_handlers_swagger.AddScopedIHandler(builder)
 	services_handlers_discovery_endpoint.AddScopedIHandler(builder)
 	services_handlers_jwks_endpoint.AddScopedIHandler(builder)

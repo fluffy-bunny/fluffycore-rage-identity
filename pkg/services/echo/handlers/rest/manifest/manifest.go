@@ -36,7 +36,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 		[]contracts_handler.HTTPVERB{
 			contracts_handler.GET,
 		},
-		wellknown_echo.WellKnownJWKS,
+		wellknown_echo.API_MANIFEST_PATH,
 	)
 
 }
@@ -45,14 +45,14 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
 
-// JWKS godoc
-// @Summary get the public keys of the servere.
-// @Description get the public keys of the server.
+// API Manifest godoc
+// @Summary get the login manifest.
+// @Description This is the configuration of the server..
 // @Tags root
 // @Accept */*
 // @Produce json
 // @Success 200 {object} string
-// @Router /.well-known/jwks [get]
+// @Router /api/manifest [get]
 func (s *service) Do(c echo.Context) error {
 	ctx := c.Request().Context()
 	publickKeys, err := s.jwtMinter.PublicKeys(ctx)

@@ -256,7 +256,7 @@ func (s *service) DoPost(c echo.Context) error {
 	return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
 }
 
-// HealthCheck godoc
+// Forgot Password godoc
 // @Summary get the home page.
 // @Description get the home page.
 // @Tags root
@@ -264,7 +264,8 @@ func (s *service) DoPost(c echo.Context) error {
 // @Produce json
 // @Param       code            		query     string  true  "code"
 // @Success 200 {object} string
-// @Router /login [get,post]
+// @Router /forgot-password [get]
+// @Router /forgot-password [post]
 func (s *service) Do(c echo.Context) error {
 
 	r := c.Request()
