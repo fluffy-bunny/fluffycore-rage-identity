@@ -7,7 +7,6 @@ import (
 	models_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
-	fluffycore_contracts_jwtminter "github.com/fluffy-bunny/fluffycore/contracts/jwtminter"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v4"
 )
@@ -15,7 +14,6 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
-		jwtMinter fluffycore_contracts_jwtminter.IJWTMinter
 	}
 )
 
@@ -28,12 +26,9 @@ func init() {
 
 func (s *service) Ctor(
 	container di.Container,
-	jwtMinter fluffycore_contracts_jwtminter.IJWTMinter,
 ) (*service, error) {
 	return &service{
 		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
-
-		jwtMinter: jwtMinter,
 	}, nil
 }
 

@@ -51,6 +51,7 @@ var (
 
 	API_MANIFEST_PATH       = "/api/manifest"
 	API_Start_ExternalLogin = "/api/start-external-login"
+	API_VerifyUsername      = "/api/verify-username"
 )
 
 type Paths struct {

@@ -127,6 +127,29 @@
                 }
             }
         },
+        "/api/verify-username": {
+            "post": {
+                "description": "This is the configuration of the server..",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the login manifest.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/verify_username.VerifyUsernameResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/error": {
             "get": {
                 "description": "get the error page.",
@@ -545,6 +568,17 @@
             "type": "object",
             "properties": {
                 "redirectUri": {
+                    "type": "string"
+                }
+            }
+        },
+        "verify_username.VerifyUsernameResponse": {
+            "type": "object",
+            "properties": {
+                "passkeyAvailable": {
+                    "type": "boolean"
+                },
+                "userName": {
                     "type": "string"
                 }
             }
