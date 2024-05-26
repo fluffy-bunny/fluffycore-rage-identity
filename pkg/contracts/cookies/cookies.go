@@ -25,9 +25,10 @@ type (
 		VerificationCode *VerificationCode `json:"verificationCode"`
 	}
 	VerificationCode struct {
-		Code    string `json:"code"`
-		Email   string `json:"email"`
-		Subject string `json:"subject"`
+		Code             string `json:"code"`
+		Email            string `json:"email"`
+		Subject          string `json:"subject"`
+		PasswordVerified bool   `json:"passwordVerified"`
 	}
 	GetVerificationCodeCookieResponse struct {
 		VerificationCode *VerificationCode `json:"verificationCode"`

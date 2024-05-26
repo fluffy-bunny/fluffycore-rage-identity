@@ -166,14 +166,15 @@ func (s *service) Do(c echo.Context) error {
 		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
 
 	}
-	doEmailVerification := func(user *proto_oidc_models.RageUser, directive string) error {
+	doEmailVerification := func(user *proto_oidc_models.RageUser, directive string, passwordVerified bool) error {
 		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
 		err = s.wellknownCookies.SetVerificationCodeCookie(c,
 			&contracts_cookies.SetVerificationCodeCookieRequest{
 				VerificationCode: &contracts_cookies.VerificationCode{
-					Subject: user.RootIdentity.Subject,
-					Email:   user.RootIdentity.Email,
-					Code:    verificationCode,
+					Subject:          user.RootIdentity.Subject,
+					Email:            user.RootIdentity.Email,
+					Code:             verificationCode,
+					PasswordVerified: passwordVerified,
 				},
 			})
 		if err != nil {
@@ -333,7 +334,8 @@ func (s *service) Do(c echo.Context) error {
 		}
 		loginLinkedUser := func(user *proto_oidc_models.RageUser, directive string) error {
 			if idp.MultiFactorRequired || !user.RootIdentity.EmailVerified {
-				return doEmailVerification(user, directive)
+				passwordVerfied := user.RootIdentity.EmailVerified
+				return doEmailVerification(user, directive, passwordVerfied)
 			}
 			authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
 				Subject: user.RootIdentity.Subject,
@@ -506,7 +508,7 @@ func (s *service) Do(c echo.Context) error {
 			if !emailVerificationRequired {
 				return loginLinkedUser(user, models.VerifyEmailDirective)
 			}
-			return doEmailVerification(user, models.VerifyEmailDirective)
+			return doEmailVerification(user, models.VerifyEmailDirective, false)
 		}
 	}
 	return s.TeleportBackToLogin(c, InternalError_Callback_011)

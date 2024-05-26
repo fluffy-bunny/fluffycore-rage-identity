@@ -200,9 +200,10 @@ func (s *service) Do(c echo.Context) error {
 		err = s.wellknownCookies.SetVerificationCodeCookie(c,
 			&contracts_cookies.SetVerificationCodeCookieRequest{
 				VerificationCode: &contracts_cookies.VerificationCode{
-					Email:   model.Email,
-					Code:    verificationCode,
-					Subject: user.RootIdentity.Subject,
+					Email:            model.Email,
+					Code:             verificationCode,
+					Subject:          user.RootIdentity.Subject,
+					PasswordVerified: false,
 				},
 			})
 		if err != nil {
