@@ -70,6 +70,35 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/login-password": {
+            "post": {
+                "description": "This is the configuration of the server..",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the login manifest.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/login_models.LoginPasswordResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/login-phase-one": {
             "post": {
                 "description": "This is the configuration of the server..",
@@ -667,6 +696,27 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "verb": {
+                    "type": "string"
+                }
+            }
+        },
+        "login_models.LoginPasswordResponse": {
+            "type": "object",
+            "required": [
+                "directive",
+                "email"
+            ],
+            "properties": {
+                "directive": {
+                    "type": "string"
+                },
+                "directiveEmailCodeChallenge": {
+                    "$ref": "#/definitions/login_models.DirectiveEmailCodeChallenge"
+                },
+                "directiveRedirect": {
+                    "$ref": "#/definitions/login_models.DirectiveRedirect"
+                },
+                "email": {
                     "type": "string"
                 }
             }

@@ -45,6 +45,20 @@ definitions:
       verb:
         type: string
     type: object
+  login_models.LoginPasswordResponse:
+    properties:
+      directive:
+        type: string
+      directiveEmailCodeChallenge:
+        $ref: '#/definitions/login_models.DirectiveEmailCodeChallenge'
+      directiveRedirect:
+        $ref: '#/definitions/login_models.DirectiveRedirect'
+      email:
+        type: string
+    required:
+    - directive
+    - email
+    type: object
   login_models.LoginPhaseOneRequest:
     properties:
       email:
@@ -129,6 +143,25 @@ paths:
           schema:
             type: string
       summary: Show the status of server.
+      tags:
+      - root
+  /api/login-password:
+    post:
+      consumes:
+      - '*/*'
+      description: This is the configuration of the server..
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/login_models.LoginPasswordResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      summary: get the login manifest.
       tags:
       - root
   /api/login-phase-one:
