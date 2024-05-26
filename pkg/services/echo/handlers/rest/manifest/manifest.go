@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	models_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
+	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
 	fluffycore_contracts_jwtminter "github.com/fluffy-bunny/fluffycore/contracts/jwtminter"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -12,6 +14,7 @@ import (
 
 type (
 	service struct {
+		*services_echo_handlers_base.BaseHandler
 		jwtMinter fluffycore_contracts_jwtminter.IJWTMinter
 	}
 )
@@ -23,8 +26,13 @@ func init() {
 
 }
 
-func (s *service) Ctor(jwtMinter fluffycore_contracts_jwtminter.IJWTMinter) (*service, error) {
+func (s *service) Ctor(
+	container di.Container,
+	jwtMinter fluffycore_contracts_jwtminter.IJWTMinter,
+) (*service, error) {
 	return &service{
+		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
+
 		jwtMinter: jwtMinter,
 	}, nil
 }
@@ -55,9 +63,18 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Router /api/manifest [get]
 func (s *service) Do(c echo.Context) error {
 	ctx := c.Request().Context()
-	publickKeys, err := s.jwtMinter.PublicKeys(ctx)
+
+	idps, err := s.GetIDPs(ctx)
 	if err != nil {
 		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
 	}
-	return c.JSONPretty(http.StatusOK, publickKeys, "  ")
+	response := &models_manifest.Manifest{}
+	for _, idp := range idps {
+		if idp.Enabled && !idp.Hidden {
+			response.SocialIdps = append(response.SocialIdps, models_manifest.IDP{
+				Slug: idp.Slug,
+			})
+		}
+	}
+	return c.JSONPretty(http.StatusOK, response, "  ")
 }
