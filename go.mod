@@ -20,13 +20,13 @@ require (
 	github.com/gogo/status v1.1.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
-	github.com/imroc/req/v3 v3.43.5
+	github.com/imroc/req/v3 v3.43.7
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/lestrrat-go/jwx/v2 v2.0.21
 	github.com/nicksnyder/go-i18n/v2 v2.4.0
 	github.com/reugn/async v0.8.0
 	github.com/rs/xid v1.5.0
-	github.com/rs/zerolog v1.32.0
+	github.com/rs/zerolog v1.33.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
