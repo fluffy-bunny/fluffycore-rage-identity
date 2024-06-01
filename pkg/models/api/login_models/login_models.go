@@ -11,6 +11,10 @@ const (
 	DIRECTIVE_LoginPhaseOne_DisplayEmailVerificationPage  = "displayEmailVerificationPage"
 	DIRECTIVE_LoginPassword_DisplayEmailCodeChallengePage = "displayEmailCodeChallengePage"
 	DIRECTIVE_LoginPassword_Redirect                      = "redirect"
+	DIRECTIVE_LoginPhaseOne_DisplayPhaseOnePage           = "displayLoginPhaseOnePage"
+	DIRECTIVE_PassowrdReset_DisplayPasswordResetPage      = "displayPasswordResetPage"
+
+	DIRECTIVE_VerifyCode_Redirect = "redirect"
 )
 
 type (
@@ -48,5 +52,12 @@ type (
 		Directive                   string                       `json:"directive" validate:"required"`
 		DirectiveRedirect           *DirectiveRedirect           `json:"directiveRedirect,omitempty"`
 		DirectiveEmailCodeChallenge *DirectiveEmailCodeChallenge `json:"directiveEmailCodeChallenge,omitempty"`
+	}
+	VerifyCodeRequest struct {
+		Code string `json:"code" validate:"required"`
+	}
+	VerifyCodeResponse struct {
+		Directive         string             `json:"directive" validate:"required"`
+		DirectiveRedirect *DirectiveRedirect `json:"directiveRedirect,omitempty"`
 	}
 )

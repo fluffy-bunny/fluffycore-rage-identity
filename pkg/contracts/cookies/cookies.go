@@ -6,6 +6,14 @@ import (
 	echo "github.com/labstack/echo/v4"
 )
 
+type VerifyCodePurpose int
+
+const (
+	VerifyCode_PasswordReset VerifyCodePurpose = iota + 1
+	VerifyCode_EmailVerification
+	VerifyCode_Challenge
+)
+
 type (
 	SetExternalOauth2CookieRequest struct {
 		State               string                                 `json:"state"`
@@ -25,10 +33,10 @@ type (
 		VerificationCode *VerificationCode `json:"verificationCode"`
 	}
 	VerificationCode struct {
-		Code             string `json:"code"`
-		Email            string `json:"email"`
-		Subject          string `json:"subject"`
-		PasswordVerified bool   `json:"passwordVerified"`
+		Code              string            `json:"code"`
+		Email             string            `json:"email"`
+		Subject           string            `json:"subject"`
+		VerifyCodePurpose VerifyCodePurpose `json:"verifyCodePurpose"`
 	}
 	GetVerificationCodeCookieResponse struct {
 		VerificationCode *VerificationCode `json:"verificationCode"`

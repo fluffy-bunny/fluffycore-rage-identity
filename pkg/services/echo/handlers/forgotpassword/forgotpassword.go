@@ -195,10 +195,10 @@ func (s *service) DoPost(c echo.Context) error {
 	verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
 	err = s.wellknownCookies.SetVerificationCodeCookie(c, &contracts_cookies.SetVerificationCodeCookieRequest{
 		VerificationCode: &contracts_cookies.VerificationCode{
-			Email:            model.Email,
-			Code:             verificationCode,
-			Subject:          subject,
-			PasswordVerified: false,
+			Email:             model.Email,
+			Code:              verificationCode,
+			Subject:           subject,
+			VerifyCodePurpose: contracts_cookies.VerifyCode_PasswordReset,
 		},
 	})
 	if err != nil {

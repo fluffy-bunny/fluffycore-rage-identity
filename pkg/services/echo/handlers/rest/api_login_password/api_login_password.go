@@ -143,15 +143,15 @@ func (s *service) Do(c echo.Context) error {
 	}
 
 	user := getRageUserResponse.User
-	doEmailVerification := func(passwordVerified bool) (string, error) {
+	doEmailVerification := func(purpose contracts_cookies.VerifyCodePurpose) (string, error) {
 		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
 		err = s.wellknownCookies.SetVerificationCodeCookie(c,
 			&contracts_cookies.SetVerificationCodeCookieRequest{
 				VerificationCode: &contracts_cookies.VerificationCode{
-					Email:            model.Email,
-					Code:             verificationCode,
-					Subject:          user.RootIdentity.Subject,
-					PasswordVerified: passwordVerified,
+					Email:             model.Email,
+					Code:              verificationCode,
+					Subject:           user.RootIdentity.Subject,
+					VerifyCodePurpose: purpose,
 				},
 			})
 		if err != nil {
@@ -173,7 +173,7 @@ func (s *service) Do(c echo.Context) error {
 	}
 
 	if s.config.EmailVerificationRequired && !user.RootIdentity.EmailVerified {
-		vCode, err := doEmailVerification(false)
+		vCode, err := doEmailVerification(contracts_cookies.VerifyCode_EmailVerification)
 		if err != nil {
 			log.Error().Err(err).Msg("doEmailVerification")
 			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
@@ -206,7 +206,7 @@ func (s *service) Do(c echo.Context) error {
 		}
 	}
 	if s.config.MultiFactorRequiredByEmailCode {
-		vCode, err := doEmailVerification(true)
+		vCode, err := doEmailVerification(contracts_cookies.VerifyCode_Challenge)
 		if err != nil {
 			log.Error().Err(err).Msg("doEmailVerification")
 			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")

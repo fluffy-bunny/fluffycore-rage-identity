@@ -227,15 +227,15 @@ func (s *service) DoPost(c echo.Context) error {
 
 	user := getRageUserResponse.User
 
-	doEmailVerification := func(directive string, passwordVerified bool) error {
+	doEmailVerification := func(directive string, purpose contracts_cookies.VerifyCodePurpose) error {
 		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
 		err = s.wellknownCookies.SetVerificationCodeCookie(c,
 			&contracts_cookies.SetVerificationCodeCookieRequest{
 				VerificationCode: &contracts_cookies.VerificationCode{
-					Email:            model.UserName,
-					Code:             verificationCode,
-					Subject:          user.RootIdentity.Subject,
-					PasswordVerified: passwordVerified,
+					Email:             model.UserName,
+					Code:              verificationCode,
+					Subject:           user.RootIdentity.Subject,
+					VerifyCodePurpose: purpose,
 				},
 			})
 		if err != nil {
@@ -277,7 +277,7 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 
 	if s.config.EmailVerificationRequired && !user.RootIdentity.EmailVerified {
-		return doEmailVerification(models.VerifyEmailDirective, false)
+		return doEmailVerification(models.VerifyEmailDirective, contracts_cookies.VerifyCode_EmailVerification)
 	}
 
 	if user.Password == nil {
@@ -318,11 +318,11 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 		}
 		// we must do email code as a fall back
-		return doEmailVerification(models.MFA_VerifyEmailDirective, true)
+		return doEmailVerification(models.MFA_VerifyEmailDirective, contracts_cookies.VerifyCode_Challenge)
 	}
 
 	if s.config.MultiFactorRequiredByEmailCode {
-		return doEmailVerification(models.MFA_VerifyEmailDirective, true)
+		return doEmailVerification(models.MFA_VerifyEmailDirective, contracts_cookies.VerifyCode_Challenge)
 	}
 
 	// we can process the final state now

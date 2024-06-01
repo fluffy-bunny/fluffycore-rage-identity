@@ -39,7 +39,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 		[]contracts_handler.HTTPVERB{
 			contracts_handler.GET,
 		},
-		wellknown_echo.API_MANIFEST_PATH,
+		wellknown_echo.API_Manifest,
 	)
 
 }

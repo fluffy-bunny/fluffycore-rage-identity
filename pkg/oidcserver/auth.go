@@ -61,12 +61,13 @@ func RequiresNoAuth() map[string]bool {
 			wellknown_echo.OIDCAuthorizationEndpointPath: true,
 			wellknown_echo.OIDCLoginPath:                 true,
 
-			wellknown_echo.API_MANIFEST_PATH:          true,
+			wellknown_echo.API_Manifest:               true,
 			wellknown_echo.API_Start_ExternalLogin:    true,
 			wellknown_echo.API_VerifyUsername:         true,
 			wellknown_echo.API_VerifyPasswordStrength: true,
 			wellknown_echo.API_LoginPhaseOne:          true,
 			wellknown_echo.API_LoginPassword:          true,
+			wellknown_echo.API_VerifyCode:             true,
 
 			wellknown_echo.OIDCLoginPasskeyPath:            true,
 			wellknown_echo.OIDCLoginPasswordPath:           true,

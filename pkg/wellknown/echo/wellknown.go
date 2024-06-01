@@ -49,12 +49,13 @@ var (
 	WebAuthN_Login_Begin                             = "/webauthn/login/begin"
 	WebAuthN_Login_Finish                            = "/webauthn/login/finish"
 
-	API_MANIFEST_PATH          = "/api/manifest"
+	API_Manifest               = "/api/manifest"
 	API_Start_ExternalLogin    = "/api/start-external-login"
 	API_VerifyUsername         = "/api/verify-username"
 	API_VerifyPasswordStrength = "/api/verify-password-strength"
 	API_LoginPhaseOne          = "/api/login-phase-one"
 	API_LoginPassword          = "/api/login-password"
+	API_VerifyCode             = "/api/verify-code"
 )
 
 type Paths struct {
