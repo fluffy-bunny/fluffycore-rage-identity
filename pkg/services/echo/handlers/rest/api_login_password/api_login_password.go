@@ -220,6 +220,7 @@ func (s *service) Do(c echo.Context) error {
 				Code: vCode,
 			}
 		}
+		return c.JSONPretty(http.StatusOK, response, "  ")
 	}
 	// we can process the final state now
 	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
