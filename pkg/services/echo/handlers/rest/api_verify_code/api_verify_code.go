@@ -176,7 +176,7 @@ func (s *service) Do(c echo.Context) error {
 			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
 		}
 		response := &login_models.VerifyCodeResponse{
-			Directive: login_models.DIRECTIVE_PassowrdReset_DisplayPasswordResetPage,
+			Directive: login_models.DIRECTIVE_PasswordReset_DisplayPasswordResetPage,
 		}
 		return c.JSONPretty(http.StatusOK, response, "  ")
 	case contracts_cookies.VerifyCode_Challenge:

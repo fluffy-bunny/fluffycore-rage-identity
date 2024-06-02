@@ -57,7 +57,8 @@ var (
 	API_LoginPassword          = "/api/login-password"
 	API_VerifyCode             = "/api/verify-code"
 	API_Signup                 = "/api/signup"
-	API_PasswordReset          = "/api/password-reset"
+	API_PasswordResetStart     = "/api/password-reset-start"
+	API_PasswordResetFinish    = "/api/password-reset-finish"
 )
 
 type Paths struct {

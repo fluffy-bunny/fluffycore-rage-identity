@@ -10,7 +10,7 @@ const (
 	DIRECTIVE_LoginPhaseOne_DisplayPasswordPage      = "displayPasswordPage"
 	DIRECTIVE_VerifyCode_DisplayVerifyCodePage       = "displayVerifyCodePage"
 	DIRECTIVE_LoginPhaseOne_DisplayPhaseOnePage      = "displayLoginPhaseOnePage"
-	DIRECTIVE_PassowrdReset_DisplayPasswordResetPage = "displayPasswordResetPage"
+	DIRECTIVE_PasswordReset_DisplayPasswordResetPage = "displayPasswordResetPage"
 )
 
 type SignupErrorReason int
@@ -76,5 +76,14 @@ type (
 		DirectiveEmailCodeChallenge *DirectiveEmailCodeChallenge `json:"directiveEmailCodeChallenge,omitempty"`
 		Message                     string                       `json:"message,omitempty"`
 		ErrorReason                 SignupErrorReason            `json:"errorReason,omitempty"`
+	}
+
+	PasswordResetStartRequest struct {
+		Email string `json:"email" validate:"required"`
+	}
+	PasswordResetStartResponse struct {
+		Email                       string                       `json:"email" validate:"required"`
+		Directive                   string                       `json:"directive" validate:"required"`
+		DirectiveEmailCodeChallenge *DirectiveEmailCodeChallenge `json:"directiveEmailCodeChallenge,omitempty"`
 	}
 )
