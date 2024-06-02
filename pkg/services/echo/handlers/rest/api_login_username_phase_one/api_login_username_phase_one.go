@@ -86,7 +86,11 @@ func (s *service) validateLoginPhaseOneRequest(model *login_models.LoginPhaseOne
 	if fluffycore_utils.IsEmptyOrNil(model.Email) {
 		return status.Error(codes.InvalidArgument, "model.Email is nil")
 	}
+	_, ok := echo_utils.IsValidEmailAddress(model.Email)
+	if !ok {
+		return status.Error(codes.InvalidArgument, "model.Email is not a valid email address")
 
+	}
 	return nil
 }
 

@@ -21,6 +21,13 @@ const (
 	SignupErrorReason_UserAlreadyExists
 )
 
+type PasswordResetErrorReason int
+
+const (
+	PasswordResetErrorReason_NoError PasswordResetErrorReason = iota
+	PasswordResetErrorReason_InvalidPassword
+)
+
 type (
 	LoginPhaseOneRequest struct {
 		Email string `json:"email" validate:"required"`
@@ -85,5 +92,13 @@ type (
 		Email                       string                       `json:"email" validate:"required"`
 		Directive                   string                       `json:"directive" validate:"required"`
 		DirectiveEmailCodeChallenge *DirectiveEmailCodeChallenge `json:"directiveEmailCodeChallenge,omitempty"`
+	}
+	PasswordResetFinishRequest struct {
+		Password        string `json:"password" validate:"required"`
+		PasswordConfirm string `json:"passwordConfirm" validate:"required"`
+	}
+	PasswordResetFinishResponse struct {
+		Directive   string                   `json:"directive" validate:"required"`
+		ErrorReason PasswordResetErrorReason `json:"errorReason,omitempty"`
 	}
 )
