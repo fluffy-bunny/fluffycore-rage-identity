@@ -89,7 +89,6 @@ func (s *service) Do(c echo.Context) error {
 	}
 	err := s.passwordHasher.IsAcceptablePassword(&contracts_identity.IsAcceptablePasswordRequest{
 		Password: model.Password,
-		Email:    model.Email,
 	})
 	if err != nil {
 		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")

@@ -148,7 +148,6 @@ func (s *service) Do(c echo.Context) error {
 	// do password acceptablity check
 	err = s.passwordHasher.IsAcceptablePassword(&contracts_identity.IsAcceptablePasswordRequest{
 		Password: model.Password,
-		Email:    getUserResponse.User.RootIdentity.Email,
 	})
 	if err != nil {
 		response.Directive = login_models.DIRECTIVE_PasswordReset_DisplayPasswordResetPage
@@ -195,6 +194,7 @@ func (s *service) Do(c echo.Context) error {
 		// eat it since we have already updated the password
 		err = nil
 	}
+	s.wellknownCookies.DeletePasswordResetCookie(c)
 	response.Directive = login_models.DIRECTIVE_LoginPhaseOne_DisplayPhaseOnePage
 
 	return c.JSONPretty(http.StatusOK, response, "  ")

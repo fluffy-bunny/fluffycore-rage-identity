@@ -179,3 +179,44 @@ fetch("/api/signup", {
   .catch((error) => {
     console.error("Error:", error);
   });
+
+// /api/password-reset-start
+//-----------------------------------------------------
+fetch("/api/password-reset-start", {
+  method: "POST",
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+  body: JSON.stringify({
+    email: "ghstahl@gmail.com",
+  }),
+})
+  .then((response) => response.json())
+  .then((data) => console.log(data))
+  .catch((error) => {
+    console.error("Error:", error);
+  });
+
+// /api/password-reset-finish
+//-----------------------------------------------------
+fetch("/api/password-reset-finish", {
+  method: "POST",
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+  body: JSON.stringify({
+    password: "http://localhost:9044/signup",
+    passwordConfirm: "http://localhost:9044/signup",
+  }),
+})
+  .then((response) => response.json())
+  .then((data) => console.log(data))
+  .catch((error) => {
+    console.error("Error:", error);
+  });

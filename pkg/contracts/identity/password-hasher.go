@@ -17,7 +17,6 @@ type (
 		Password       string `json:"password" validate:"required"`
 	}
 	IsAcceptablePasswordRequest struct {
-		Email    string `json:"email" validate:"required"`
 		Password string `json:"password" validate:"required"`
 	}
 	IPasswordHasher interface {

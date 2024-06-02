@@ -2,12 +2,11 @@ package passwordhasher
 
 import (
 	"context"
-	"regexp"
-	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
+	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
@@ -17,8 +16,7 @@ import (
 
 type (
 	service struct {
-		config          *contracts_config.PasswordConfig
-		regexExpression *regexp.Regexp
+		config *contracts_config.PasswordConfig
 	}
 )
 
@@ -95,15 +93,11 @@ func (s *service) validateIsAcceptablePasswordRequest(request *contracts_identit
 	if fluffycore_utils.IsEmptyOrNil(request.Password) {
 		return status.Error(codes.InvalidArgument, "Password is empty")
 	}
-	if fluffycore_utils.IsEmptyOrNil(request.Email) {
-		return status.Error(codes.InvalidArgument, "Email is empty")
+	// a password that looks like an email is NOT allowed
+	_, ok := echo_utils.IsValidEmailAddress(request.Password)
+	if !ok {
+		return status.Error(codes.InvalidArgument, "model.Email is not a valid email address")
 	}
-	// stupidity check
-	emailAndPasswordTheSame := strings.EqualFold(request.Email, request.Password)
-	if emailAndPasswordTheSame {
-		return status.Error(codes.InvalidArgument, "Password cannot be the same as the email")
-	}
-
 	return nil
 }
 func (s *service) IsAcceptablePassword(request *contracts_identity.IsAcceptablePasswordRequest) error {
@@ -114,5 +108,4 @@ func (s *service) IsAcceptablePassword(request *contracts_identity.IsAcceptableP
 	// regex expression check
 	err = passwordvalidator.Validate(request.Password, s.config.MinEntropyBits)
 	return err
-
 }

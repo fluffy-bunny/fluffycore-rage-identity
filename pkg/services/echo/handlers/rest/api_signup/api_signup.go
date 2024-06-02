@@ -214,7 +214,6 @@ func (s *service) Do(c echo.Context) error {
 
 	//  check password strength
 	err = s.passwordHasher.IsAcceptablePassword(&contracts_identity.IsAcceptablePasswordRequest{
-		Email:    model.Email,
 		Password: model.Password,
 	})
 	if err != nil {
