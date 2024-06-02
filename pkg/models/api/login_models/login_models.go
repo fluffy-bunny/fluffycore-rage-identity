@@ -5,16 +5,20 @@ import (
 )
 
 const (
-	DIRECTIVE_LoginPhaseOne_Redirect                      = "redirect"
-	DIRECTIVE_LoginPhaseOne_UserDoesNotExist              = "userDoesNotExist"
-	DIRECTIVE_LoginPhaseOne_DisplayPasswordPage           = "displayPasswordPage"
-	DIRECTIVE_LoginPhaseOne_DisplayEmailVerificationPage  = "displayEmailVerificationPage"
-	DIRECTIVE_LoginPassword_DisplayEmailCodeChallengePage = "displayEmailCodeChallengePage"
-	DIRECTIVE_LoginPassword_Redirect                      = "redirect"
-	DIRECTIVE_LoginPhaseOne_DisplayPhaseOnePage           = "displayLoginPhaseOnePage"
-	DIRECTIVE_PassowrdReset_DisplayPasswordResetPage      = "displayPasswordResetPage"
+	DIRECTIVE_Redirect                               = "redirect"
+	DIRECTIVE_LoginPhaseOne_UserDoesNotExist         = "userDoesNotExist"
+	DIRECTIVE_LoginPhaseOne_DisplayPasswordPage      = "displayPasswordPage"
+	DIRECTIVE_VerifyCode_DisplayVerifyCodePage       = "displayVerifyCodePage"
+	DIRECTIVE_LoginPhaseOne_DisplayPhaseOnePage      = "displayLoginPhaseOnePage"
+	DIRECTIVE_PassowrdReset_DisplayPasswordResetPage = "displayPasswordResetPage"
+)
 
-	DIRECTIVE_VerifyCode_Redirect = "redirect"
+type SignupErrorReason int
+
+const (
+	SignupErrorReason_NoError SignupErrorReason = iota
+	SignupErrorReason_InvalidPassword
+	SignupErrorReason_UserAlreadyExists
 )
 
 type (
@@ -59,5 +63,18 @@ type (
 	VerifyCodeResponse struct {
 		Directive         string             `json:"directive" validate:"required"`
 		DirectiveRedirect *DirectiveRedirect `json:"directiveRedirect,omitempty"`
+	}
+	SignupRequest struct {
+		Email    string `json:"email" validate:"required"`
+		Password string `json:"password" validate:"required"`
+	}
+
+	SignupResponse struct {
+		Email                       string                       `json:"email" validate:"required"`
+		Directive                   string                       `json:"directive" validate:"required"`
+		DirectiveRedirect           *DirectiveRedirect           `json:"directiveRedirect,omitempty"`
+		DirectiveEmailCodeChallenge *DirectiveEmailCodeChallenge `json:"directiveEmailCodeChallenge,omitempty"`
+		Message                     string                       `json:"message,omitempty"`
+		ErrorReason                 SignupErrorReason            `json:"errorReason,omitempty"`
 	}
 )

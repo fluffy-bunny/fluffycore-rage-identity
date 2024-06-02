@@ -180,7 +180,7 @@ func (s *service) Do(c echo.Context) error {
 		}
 		response := &login_models.LoginPasswordResponse{
 			Email:     model.Email,
-			Directive: login_models.DIRECTIVE_LoginPhaseOne_DisplayEmailVerificationPage,
+			Directive: login_models.DIRECTIVE_VerifyCode_DisplayVerifyCodePage,
 		}
 		if s.config.SystemConfig.DeveloperMode {
 			response.DirectiveEmailCodeChallenge = &login_models.DirectiveEmailCodeChallenge{
@@ -213,7 +213,7 @@ func (s *service) Do(c echo.Context) error {
 		}
 		response := &login_models.LoginPasswordResponse{
 			Email:     model.Email,
-			Directive: login_models.DIRECTIVE_LoginPassword_DisplayEmailCodeChallengePage,
+			Directive: login_models.DIRECTIVE_VerifyCode_DisplayVerifyCodePage,
 		}
 		if s.config.SystemConfig.DeveloperMode {
 			response.DirectiveEmailCodeChallenge = &login_models.DirectiveEmailCodeChallenge{
@@ -290,7 +290,7 @@ func (s *service) Do(c echo.Context) error {
 		"&iss=" + rootPath
 	response := &login_models.LoginPasswordResponse{
 		Email:     model.Email,
-		Directive: login_models.DIRECTIVE_LoginPassword_Redirect,
+		Directive: login_models.DIRECTIVE_Redirect,
 		DirectiveRedirect: &login_models.DirectiveRedirect{
 			RedirectURI: redirectUri,
 			VERB:        http.MethodGet,

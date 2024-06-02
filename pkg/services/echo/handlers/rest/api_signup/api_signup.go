@@ -1,7 +1,8 @@
-package api_login_username_phase_one
+package api_signup
 
 import (
 	"net/http"
+
 	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
@@ -14,7 +15,6 @@ import (
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
-	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
@@ -32,11 +32,11 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
-
 		config           *contracts_config.Config
 		wellknownCookies contracts_cookies.IWellknownCookies
 		passwordHasher   contracts_identity.IPasswordHasher
 		oidcSession      contracts_oidc_session.IOIDCSession
+		userIdGenerator  contracts_identity.IUserIdGenerator
 	}
 )
 
@@ -48,20 +48,24 @@ func init() {
 }
 
 func (s *service) Ctor(
-	container di.Container,
 	config *contracts_config.Config,
+	container di.Container,
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	passwordHasher contracts_identity.IPasswordHasher,
 	oidcSession contracts_oidc_session.IOIDCSession,
+	userIdGenerator contracts_identity.IUserIdGenerator,
 ) (*service, error) {
 	return &service{
 		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
 		config:           config,
-		wellknownCookies: wellknownCookies,
 		passwordHasher:   passwordHasher,
+		wellknownCookies: wellknownCookies,
 		oidcSession:      oidcSession,
+		userIdGenerator:  userIdGenerator,
 	}, nil
 }
+
+// 	API_VerifyCode             = "/api/signup"
 
 // AddScopedIHandler registers the *service as a singleton.
 func AddScopedIHandler(builder di.ContainerBuilder) {
@@ -70,7 +74,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 		[]contracts_handler.HTTPVERB{
 			contracts_handler.POST,
 		},
-		wellknown_echo.API_LoginPhaseOne,
+		wellknown_echo.API_Signup,
 	)
 
 }
@@ -79,43 +83,52 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
 
-func (s *service) validateLoginPhaseOneRequest(model *login_models.LoginPhaseOneRequest) error {
+func (s *service) validateSignupRequest(model *login_models.SignupRequest) error {
 	if fluffycore_utils.IsNil(model) {
 		return status.Error(codes.InvalidArgument, "model is nil")
 	}
 	if fluffycore_utils.IsEmptyOrNil(model.Email) {
 		return status.Error(codes.InvalidArgument, "model.Email is nil")
 	}
+	_, ok := echo_utils.IsValidEmailAddress(model.Email)
+	if !ok {
+		return status.Error(codes.InvalidArgument, "model.Email is not a valid email address")
 
+	}
+	if fluffycore_utils.IsEmptyOrNil(model.Password) {
+		return status.Error(codes.InvalidArgument, "model.Password is nil")
+	}
 	return nil
 }
 
-// API Manifest godoc
-// @Summary get the login manifest.
-// @Description This is the configuration of the server..
+// API VerifyCode godoc
+// @Summary verify code.
+// @Description verify code
 // @Tags root
 // @Accept */*
 // @Produce json
-// @Param		request body		login_models.LoginPhaseOneRequest	true	"LoginPhaseOneRequest"
-// @Success 200 {object} login_models.LoginPhaseOneResponse
-// @Router /api/login-phase-one [post]
+// @Param		request body		login_models.SignupRequest	true	"SignupRequest"
+// @Success 200 {object} login_models.SignupResponse
+// @Failure 302 {string} login_models.SignupResponse
+// @Failure 400 {string} login_models.SignupResponse
+// @Failure 500 {string} string
+// @Router /api/signup [post]
 func (s *service) Do(c echo.Context) error {
-	localizer := s.Localizer().GetLocalizer()
 
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
-
-	model := &login_models.LoginPhaseOneRequest{}
+	model := &login_models.SignupRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
 		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
 	}
-	if err := s.validateLoginPhaseOneRequest(model); err != nil {
-		log.Error().Err(err).Msg("validateLoginPhaseOneRequest")
+	if err := s.validateSignupRequest(model); err != nil {
+		log.Error().Err(err).Msg("validateSignupRequest")
 		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
 	}
-	response := &login_models.LoginPhaseOneResponse{
-		Email: model.Email,
+	response := &login_models.SignupResponse{
+		Email:       model.Email,
+		ErrorReason: login_models.SignupErrorReason_NoError,
 	}
 
 	session, err := s.getSession()
@@ -129,17 +142,9 @@ func (s *service) Do(c echo.Context) error {
 	}
 	authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
 
-	log.Debug().Interface("sessionRequest", sessionRequest).Msg("sessionRequest")
-
 	model.Email = strings.ToLower(model.Email)
-
-	email, ok := echo_utils.IsValidEmailAddress(model.Email)
-	if !ok {
-		msg := utils.LocalizeWithInterperlate(localizer, "username.not.valid", map[string]string{"username": model.Email})
-		return c.JSONPretty(http.StatusBadRequest, msg, "  ")
-	}
 	// get the domain from the email
-	parts := strings.Split(email, "@")
+	parts := strings.Split(model.Email, "@")
 	domainPart := parts[1]
 	// first lets see if this domain has been claimed.
 	listIDPRequest, err := s.IdpServiceServer().ListIDP(ctx, &proto_oidc_idp.ListIDPRequest{
@@ -150,12 +155,10 @@ func (s *service) Do(c echo.Context) error {
 		},
 	})
 	if err != nil {
-		log.Warn().Err(err).Msg("ListIDP")
-		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
 	}
 	if len(listIDPRequest.Idps) > 0 {
-		// an idp has claimed this domain.
-		// post to the externalIDP
+		// this domain is claimed.
 		response.Directive = login_models.DIRECTIVE_Redirect
 		response.DirectiveRedirect = &login_models.DirectiveRedirect{
 			RedirectURI: wellknown_echo.ExternalIDPPath,
@@ -187,15 +190,55 @@ func (s *service) Do(c echo.Context) error {
 	if err != nil {
 		st, ok := status.FromError(err)
 		if ok && st.Code() == codes.NotFound {
-			return c.JSONPretty(http.StatusNotFound, err.Error(), "  ")
+			err = nil
+		} else {
+			log.Error().Err(err).Msg("GetRageUser")
+			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
 		}
+	}
+	if getRageUserResponse != nil {
+		response.Message = "User already exists"
+		return c.JSONPretty(http.StatusFound, response, "  ")
+	}
+
+	subjectId := s.userIdGenerator.GenerateUserId()
+	user := &proto_oidc_models.RageUser{
+		RootIdentity: &proto_oidc_models.Identity{
+			Subject:       subjectId,
+			Email:         model.Email,
+			IdpSlug:       models.RootIdp,
+			EmailVerified: false,
+		},
+		State: proto_oidc_models.RageUserState_USER_STATE_PENDING,
+	}
+
+	//  check password strength
+	err = s.passwordHasher.IsAcceptablePassword(&contracts_identity.IsAcceptablePasswordRequest{
+		Email:    model.Email,
+		Password: model.Password,
+	})
+	if err != nil {
+		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
+	}
+	hashPasswordResponse, err := s.passwordHasher.HashPassword(ctx, &contracts_identity.HashPasswordRequest{
+		Password: model.Password,
+	})
+	if err != nil {
+		response.ErrorReason = login_models.SignupErrorReason_InvalidPassword
+		return c.JSONPretty(http.StatusBadRequest, response, "  ")
+	}
+	user.Password = &proto_oidc_models.Password{
+		Hash: hashPasswordResponse.HashedPassword,
+	}
+
+	_, err = s.RageUserService().CreateRageUser(ctx, &proto_oidc_user.CreateRageUserRequest{
+		User: user,
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("CreateUser")
 		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
 	}
-	if getRageUserResponse == nil {
-		return c.JSONPretty(http.StatusNotFound, "User not found", "  ")
-	}
-	user := getRageUserResponse.User
-	if s.config.EmailVerificationRequired && !user.RootIdentity.EmailVerified {
+	if s.config.EmailVerificationRequired {
 		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
 		err = s.wellknownCookies.SetVerificationCodeCookie(c,
 			&contracts_cookies.SetVerificationCodeCookieRequest{
@@ -231,30 +274,14 @@ func (s *service) Do(c echo.Context) error {
 		response.Directive = login_models.DIRECTIVE_VerifyCode_DisplayVerifyCodePage
 		return c.JSONPretty(http.StatusOK, response, "  ")
 	}
-	hasPasskey := false
-	if user.WebAuthN != nil && fluffycore_utils.IsNotEmptyOrNil(user.WebAuthN.Credentials) {
-		hasPasskey = true
-	}
-	err = s.wellknownCookies.SetSigninUserNameCookie(c,
-		&contracts_cookies.SetSigninUserNameCookieRequest{
-			Value: &contracts_cookies.SigninUserNameCookie{
-				Email:      model.Email,
-				HasPasskey: hasPasskey,
-			},
-		})
-	if err != nil {
-		log.Error().Err(err).Msg("SetSigninUserNameCookie")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
-	}
-	response.Directive = login_models.DIRECTIVE_LoginPhaseOne_DisplayPasswordPage
-	response.DirectiveDisplayPasswordPage = &login_models.DirectiveDisplayPasswordPage{
-		Email:      model.Email,
-		HasPasskey: hasPasskey,
-	}
+	response.Directive = login_models.DIRECTIVE_LoginPhaseOne_DisplayPhaseOnePage
+	response.Message = "User created"
 	return c.JSONPretty(http.StatusOK, response, "  ")
+
 }
 func (s *service) getSession() (contracts_sessions.ISession, error) {
 	session, err := s.oidcSession.GetSession()
+
 	if err != nil {
 		return nil, err
 	}

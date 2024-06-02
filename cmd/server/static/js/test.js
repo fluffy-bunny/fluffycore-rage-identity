@@ -109,7 +109,7 @@ fetch("/api/login-password", {
   },
   body: JSON.stringify({
     email: "ghstahl@gmail.com",
-    password: "1234"
+    password: "1234",
   }),
 })
   .then((response) => response.json())
@@ -130,7 +130,7 @@ fetch("/api/login-password", {
   },
   body: JSON.stringify({
     email: "ghstahl@gmail.com",
-    password: "http://localhost:9044/signup"
+    password: "http://localhost:9044/signup",
   }),
 })
   .then((response) => response.json())
@@ -138,4 +138,44 @@ fetch("/api/login-password", {
   .catch((error) => {
     console.error("Error:", error);
   });
- 
+
+// /api/login-password
+//-----------------------------------------------------
+fetch("/api/verify-code", {
+  method: "POST",
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+  body: JSON.stringify({
+    code: "zwDnOR",
+  }),
+})
+  .then((response) => response.json())
+  .then((data) => console.log(data))
+  .catch((error) => {
+    console.error("Error:", error);
+  });
+
+// /api/signup
+//-----------------------------------------------------
+fetch("/api/signup", {
+  method: "POST",
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+  body: JSON.stringify({
+    email: "ghstahl@gmail.com",
+    password: "http://localhost:9044/signup",
+  }),
+})
+  .then((response) => response.json())
+  .then((data) => console.log(data))
+  .catch((error) => {
+    console.error("Error:", error);
+  });

@@ -181,7 +181,7 @@ func (s *service) Do(c echo.Context) error {
 		return c.JSONPretty(http.StatusOK, response, "  ")
 	case contracts_cookies.VerifyCode_Challenge:
 		response := &login_models.VerifyCodeResponse{
-			Directive: login_models.DIRECTIVE_VerifyCode_Redirect,
+			Directive: login_models.DIRECTIVE_Redirect,
 		}
 		err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
 			AuthCookie: &contracts_cookies.AuthCookie{
