@@ -67,12 +67,13 @@ func (s *service) validateVerifyPasswordStrengthRequest(model *password.VerifyPa
 	return nil
 }
 
-// API Manifest godoc
+// API verify-password-strength godoc
 // @Summary get the login manifest.
 // @Description This is the configuration of the server..
 // @Tags root
 // @Accept */*
 // @Produce json
+// @Param		request body		password.VerifyPasswordStrengthRequest	true	"LoginPhaseOneRequest"
 // @Success 200 {object} password.VerifyPasswordStrengthResponse
 // @Router /api/verify-password-strength [post]
 func (s *service) Do(c echo.Context) error {
