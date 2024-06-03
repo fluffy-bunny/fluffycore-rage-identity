@@ -15,6 +15,29 @@ fetch("/api/manifest", {
     console.log("finishResponse:", data);
   });
 
+  
+
+// /api/start-external-login
+//-----------------------------------------------------
+fetch("/api/start-external-login", {
+  method: "POST",
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+  body: JSON.stringify({
+    slug: "google-social",
+    directive: "login",
+  }),
+})
+  .then((response) => response.json())
+  .then((data) => console.log(data))
+  .catch((error) => {
+    console.error("Error:", error);
+  });
+
 // /api/verify-username
 //-----------------------------------------------------
 fetch("/api/verify-username", {

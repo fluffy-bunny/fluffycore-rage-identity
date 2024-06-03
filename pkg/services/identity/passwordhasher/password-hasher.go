@@ -95,7 +95,8 @@ func (s *service) validateIsAcceptablePasswordRequest(request *contracts_identit
 	}
 	// a password that looks like an email is NOT allowed
 	_, ok := echo_utils.IsValidEmailAddress(request.Password)
-	if !ok {
+	if ok {
+		// email not allowed
 		return status.Error(codes.InvalidArgument, "model.Email is not a valid email address")
 	}
 	return nil
