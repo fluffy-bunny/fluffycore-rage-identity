@@ -134,7 +134,7 @@ func (s *service) Do(c echo.Context) error {
 		return s.TeleportBackToLogin(c, InternalError_Callback_099)
 	}
 	log = log.With().Interface("model", model).Logger()
-
+	var idp *proto_oidc_models.IDP
 	getExternalOauth2CookieResponse, err := s.wellknownCookies.GetExternalOauth2Cookie(c,
 		&contracts_cookies.GetExternalOauth2CookieRequest{
 			State: model.State,
@@ -166,15 +166,15 @@ func (s *service) Do(c echo.Context) error {
 		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
 
 	}
-	doEmailVerification := func(user *proto_oidc_models.RageUser) error {
+	doEmailVerification := func(user *proto_oidc_models.RageUser, directive string, purpose contracts_cookies.VerifyCodePurpose) error {
 		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
 		err = s.wellknownCookies.SetVerificationCodeCookie(c,
 			&contracts_cookies.SetVerificationCodeCookieRequest{
 				VerificationCode: &contracts_cookies.VerificationCode{
-					Subject: user.RootIdentity.Subject,
-					Email:   user.RootIdentity.Email,
-					Code:    verificationCode,
-				},
+					Subject:           user.RootIdentity.Subject,
+					Email:             user.RootIdentity.Email,
+					Code:              verificationCode,
+					VerifyCodePurpose: purpose},
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SetVerificationCodeCookie")
@@ -204,7 +204,7 @@ func (s *service) Do(c echo.Context) error {
 			},
 			{
 				Name:  "directive",
-				Value: models.VerifyEmailDirective,
+				Value: directive,
 			},
 			{
 				Name:  "type",
@@ -239,7 +239,7 @@ func (s *service) Do(c echo.Context) error {
 		return s.TeleportBackToLogin(c, InternalError_Callback_008)
 	}
 	var exchangeCodeResponse *contracts_codeexchange.ExchangeCodeResponse
-	idp := getIDPBySlugResponse.Idp
+	idp = getIDPBySlugResponse.Idp
 
 	if idp.Protocol != nil {
 		log.Info().Interface("getIDPBySlugResponse", getIDPBySlugResponse).Msg("getIDPBySlugResponse")
@@ -331,9 +331,12 @@ func (s *service) Do(c echo.Context) error {
 			return nil, status.Error(codes.NotFound, "user not found")
 
 		}
-		loginLinkedUser := func(user *proto_oidc_models.RageUser) error {
-			if !user.RootIdentity.EmailVerified {
-				return doEmailVerification(user)
+		loginLinkedUser := func(user *proto_oidc_models.RageUser, directive string) error {
+			if idp.MultiFactorRequired || !user.RootIdentity.EmailVerified {
+				if user.RootIdentity.EmailVerified {
+					return doEmailVerification(user, directive, contracts_cookies.VerifyCode_Challenge)
+				}
+				return doEmailVerification(user, directive, contracts_cookies.VerifyCode_EmailVerification)
 			}
 			authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
 				Subject: user.RootIdentity.Subject,
@@ -380,7 +383,7 @@ func (s *service) Do(c echo.Context) error {
 
 		if getRageUserResponse != nil {
 			user := getRageUserResponse.User
-			return loginLinkedUser(user)
+			return loginLinkedUser(user, models.MFA_VerifyEmailDirective)
 		}
 
 		linkUser := func(candidateUserID string, externalIdentity *proto_oidc_models.OIDCIdentity) (*proto_oidc_models.RageUser, error) {
@@ -420,7 +423,7 @@ func (s *service) Do(c echo.Context) error {
 				log.Error().Err(err).Msg("LinkUsers")
 				return s.TeleportBackToLogin(c, InternalError_Callback_004)
 			}
-			return loginLinkedUser(user)
+			return loginLinkedUser(user, models.MFA_VerifyEmailDirective)
 		}
 		doAutoCreateUser := func() (*proto_oidc_models.RageUser, error) {
 			emailVerified := false
@@ -477,7 +480,7 @@ func (s *service) Do(c echo.Context) error {
 		switch externalOauth2State.Request.Directive {
 		case models.LoginDirective:
 			// do we have a candidate user to link to?
-			if !fluffycore_utils.IsEmptyOrNil(authorizationFinal.Request.CandidateUserId) {
+			if fluffycore_utils.IsNotEmptyOrNil(authorizationFinal.Request.CandidateUserId) {
 				// CandidateUserID hint
 				//--------------------------------------------------------------------------------------------
 				return linkUserAndLogin(authorizationFinal.Request.CandidateUserId, externalIdentity)
@@ -490,7 +493,7 @@ func (s *service) Do(c echo.Context) error {
 					log.Error().Err(err).Msg("doAutoCreateUser")
 					return s.TeleportBackToLogin(c, InternalError_Callback_005)
 				}
-				return loginLinkedUser(user)
+				return loginLinkedUser(user, models.MFA_VerifyEmailDirective)
 
 			}
 			// we bounce the user back to go through a sigunup flow
@@ -504,9 +507,9 @@ func (s *service) Do(c echo.Context) error {
 			}
 			emailVerificationRequired := idp.EmailVerificationRequired
 			if !emailVerificationRequired {
-				return loginLinkedUser(user)
+				return loginLinkedUser(user, models.VerifyEmailDirective)
 			}
-			return doEmailVerification(user)
+			return doEmailVerification(user, models.VerifyEmailDirective, contracts_cookies.VerifyCode_EmailVerification)
 		}
 	}
 	return s.TeleportBackToLogin(c, InternalError_Callback_011)

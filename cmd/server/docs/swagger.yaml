@@ -1,4 +1,106 @@
 basePath: /
+definitions:
+  api.ErrorResponse:
+    properties:
+      error:
+        type: string
+      internalCode:
+        type: string
+    type: object
+  external_idp.StartExternalIDPLoginRequest:
+    properties:
+      directive:
+        type: string
+      slug:
+        type: string
+    required:
+    - directive
+    - slug
+    type: object
+  external_idp.StartExternalIDPLoginResponse:
+    properties:
+      redirectUri:
+        type: string
+    type: object
+  login_models.DirectiveDisplayPasswordPage:
+    properties:
+      email:
+        type: string
+      hasPasskey:
+        type: boolean
+    type: object
+  login_models.DirectiveEmailCodeChallenge:
+    properties:
+      code:
+        type: string
+    type: object
+  login_models.DirectiveRedirect:
+    properties:
+      formParams:
+        items:
+          $ref: '#/definitions/models.FormParam'
+        type: array
+      redirectUri:
+        type: string
+      verb:
+        type: string
+    type: object
+  login_models.LoginPasswordResponse:
+    properties:
+      directive:
+        type: string
+      directiveEmailCodeChallenge:
+        $ref: '#/definitions/login_models.DirectiveEmailCodeChallenge'
+      directiveRedirect:
+        $ref: '#/definitions/login_models.DirectiveRedirect'
+      email:
+        type: string
+    required:
+    - directive
+    - email
+    type: object
+  login_models.LoginPhaseOneRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  login_models.LoginPhaseOneResponse:
+    properties:
+      directive:
+        type: string
+      directiveDisplayPasswordPage:
+        $ref: '#/definitions/login_models.DirectiveDisplayPasswordPage'
+      directiveEmailCodeChallenge:
+        $ref: '#/definitions/login_models.DirectiveEmailCodeChallenge'
+      directiveRedirect:
+        $ref: '#/definitions/login_models.DirectiveRedirect'
+      email:
+        type: string
+    required:
+    - directive
+    - email
+    type: object
+  models.FormParam:
+    properties:
+      name:
+        type: string
+      value:
+        type: string
+    type: object
+  password.VerifyPasswordStrengthResponse:
+    properties:
+      valid:
+        type: boolean
+    type: object
+  verify_username.VerifyUsernameResponse:
+    properties:
+      passkeyAvailable:
+        type: boolean
+      userName:
+        type: string
+    type: object
 host: localhost:9044
 info:
   contact:
@@ -13,21 +115,6 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
-  /:
-    get:
-      consumes:
-      - '*/*'
-      description: get the home page.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: get the home page.
-      tags:
-      - root
   /.well-known/jwks:
     get:
       consumes:
@@ -40,7 +127,7 @@ paths:
           description: OK
           schema:
             type: string
-      summary: get the public keys of the server.
+      summary: get the public keys of the servere.
       tags:
       - root
   /.well-known/openid-configuration:
@@ -58,11 +145,52 @@ paths:
       summary: Show the status of server.
       tags:
       - root
-  /about:
+  /api/login-password:
+    post:
+      consumes:
+      - '*/*'
+      description: This is the configuration of the server..
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/login_models.LoginPasswordResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      summary: get the login manifest.
+      tags:
+      - root
+  /api/login-phase-one:
+    post:
+      consumes:
+      - '*/*'
+      description: This is the configuration of the server..
+      parameters:
+      - description: LoginPhaseOneRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/login_models.LoginPhaseOneRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/login_models.LoginPhaseOneResponse'
+      summary: get the login manifest.
+      tags:
+      - root
+  /api/manifest:
     get:
       consumes:
       - '*/*'
-      description: get the about page.
+      description: This is the configuration of the server..
       produces:
       - application/json
       responses:
@@ -70,7 +198,63 @@ paths:
           description: OK
           schema:
             type: string
-      summary: get the about page.
+      summary: get the login manifest.
+      tags:
+      - root
+  /api/start-external-login:
+    post:
+      consumes:
+      - '*/*'
+      description: starts an external login ceremony with an external IDP.
+      parameters:
+      - description: StartExternalIDPLoginRequest
+        in: body
+        name: external_idp
+        required: true
+        schema:
+          $ref: '#/definitions/external_idp.StartExternalIDPLoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/external_idp.StartExternalIDPLoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.ErrorResponse'
+      summary: starts an external login ceremony with an external IDP
+      tags:
+      - root
+  /api/verify-password-strength:
+    post:
+      consumes:
+      - '*/*'
+      description: This is the configuration of the server..
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/password.VerifyPasswordStrengthResponse'
+      summary: get the login manifest.
+      tags:
+      - root
+  /api/verify-username:
+    post:
+      consumes:
+      - '*/*'
+      description: This is the configuration of the server..
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/verify_username.VerifyUsernameResponse'
+      summary: get the login manifest.
       tags:
       - root
   /error:
@@ -88,6 +272,68 @@ paths:
       summary: get the error page.
       tags:
       - root
+  /external-idp:
+    post:
+      consumes:
+      - '*/*'
+      description: externalIDP.
+      parameters:
+      - description: code
+        in: query
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: todo
+      tags:
+      - root
+  /forgot-password:
+    get:
+      consumes:
+      - '*/*'
+      description: get the home page.
+      parameters:
+      - description: code
+        in: query
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: get the home page.
+      tags:
+      - root
+    post:
+      consumes:
+      - '*/*'
+      description: get the home page.
+      parameters:
+      - description: code
+        in: query
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: get the home page.
+      tags:
+      - root
   /healthz:
     get:
       consumes:
@@ -103,8 +349,54 @@ paths:
       summary: Show the status of server.
       tags:
       - root
-  /login:
+  /oauth2/callback:
     get:
+      consumes:
+      - '*/*'
+      description: get the home page.
+      parameters:
+      - description: code requested
+        in: query
+        name: code
+        required: true
+        type: string
+      - description: state requested
+        in: query
+        name: state
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: get the home page.
+      tags:
+      - root
+  /oidc-login:
+    get:
+      consumes:
+      - '*/*'
+      description: get the home page.
+      parameters:
+      - description: code
+        in: query
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: get the home page.
+      tags:
+      - root
+    post:
       consumes:
       - '*/*'
       description: get the home page.
@@ -168,6 +460,10 @@ paths:
         description: PKCE challenge method
         in: query
         name: code_challenge_method
+        type: string
+      - description: acr_values requested
+        in: query
+        name: acr_values
         type: string
       produces:
       - application/json

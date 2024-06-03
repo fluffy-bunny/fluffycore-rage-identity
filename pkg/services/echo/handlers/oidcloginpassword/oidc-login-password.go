@@ -227,14 +227,15 @@ func (s *service) DoPost(c echo.Context) error {
 
 	user := getRageUserResponse.User
 
-	doEmailVerification := func(directive string) error {
+	doEmailVerification := func(directive string, purpose contracts_cookies.VerifyCodePurpose) error {
 		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
 		err = s.wellknownCookies.SetVerificationCodeCookie(c,
 			&contracts_cookies.SetVerificationCodeCookieRequest{
 				VerificationCode: &contracts_cookies.VerificationCode{
-					Email:   model.UserName,
-					Code:    verificationCode,
-					Subject: user.RootIdentity.Subject,
+					Email:             model.UserName,
+					Code:              verificationCode,
+					Subject:           user.RootIdentity.Subject,
+					VerifyCodePurpose: purpose,
 				},
 			})
 		if err != nil {
@@ -276,7 +277,7 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 
 	if s.config.EmailVerificationRequired && !user.RootIdentity.EmailVerified {
-		return doEmailVerification(models.VerifyEmailDirective)
+		return doEmailVerification(models.VerifyEmailDirective, contracts_cookies.VerifyCode_EmailVerification)
 	}
 
 	if user.Password == nil {
@@ -317,11 +318,11 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 		}
 		// we must do email code as a fall back
-		return doEmailVerification(models.MFA_VerifyEmailDirective)
+		return doEmailVerification(models.MFA_VerifyEmailDirective, contracts_cookies.VerifyCode_Challenge)
 	}
 
 	if s.config.MultiFactorRequiredByEmailCode {
-		return doEmailVerification(models.MFA_VerifyEmailDirective)
+		return doEmailVerification(models.MFA_VerifyEmailDirective, contracts_cookies.VerifyCode_Challenge)
 	}
 
 	// we can process the final state now
@@ -408,7 +409,9 @@ func (s *service) DoPost(c echo.Context) error {
 // @Produce json
 // @Param       code            		query     string  true  "code"
 // @Success 200 {object} string
-// @Router /login [get,post]
+// @Router /oidc-login-password [get]
+// @Router /oidc-login-password [post]
+
 func (s *service) Do(c echo.Context) error {
 
 	r := c.Request()

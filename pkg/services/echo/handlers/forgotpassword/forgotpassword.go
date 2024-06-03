@@ -195,9 +195,10 @@ func (s *service) DoPost(c echo.Context) error {
 	verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
 	err = s.wellknownCookies.SetVerificationCodeCookie(c, &contracts_cookies.SetVerificationCodeCookieRequest{
 		VerificationCode: &contracts_cookies.VerificationCode{
-			Email:   model.Email,
-			Code:    verificationCode,
-			Subject: subject,
+			Email:             model.Email,
+			Code:              verificationCode,
+			Subject:           subject,
+			VerifyCodePurpose: contracts_cookies.VerifyCode_PasswordReset,
 		},
 	})
 	if err != nil {
@@ -256,7 +257,7 @@ func (s *service) DoPost(c echo.Context) error {
 	return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
 }
 
-// HealthCheck godoc
+// Forgot Password godoc
 // @Summary get the home page.
 // @Description get the home page.
 // @Tags root
@@ -264,7 +265,8 @@ func (s *service) DoPost(c echo.Context) error {
 // @Produce json
 // @Param       code            		query     string  true  "code"
 // @Success 200 {object} string
-// @Router /login [get,post]
+// @Router /forgot-password [get]
+// @Router /forgot-password [post]
 func (s *service) Do(c echo.Context) error {
 
 	r := c.Request()
