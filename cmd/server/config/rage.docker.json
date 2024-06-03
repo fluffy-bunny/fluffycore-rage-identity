@@ -1,6 +1,8 @@
 {
   "corsConfig": {
-    "allowedOrigins": ["https://${DOMAIN}"]
+    "allowedOrigins": [
+      "https://${DOMAIN}"
+    ]
   },
   "emailVerificationRequired": true,
   "multiFactorRequired": true,
@@ -23,6 +25,8 @@
   "webAuthNConfig": {
     "rpDisplayName": "RAGE",
     "rpID": "${DOMAIN}",
-    "rpOrigins": ["https://${DOMAIN}"]
+    "rpOrigins": [
+      "https://${DOMAIN}"
+    ]
   }
 }
