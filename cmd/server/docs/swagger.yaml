@@ -82,12 +82,119 @@ definitions:
     - directive
     - email
     type: object
+  login_models.PasswordResetErrorReason:
+    enum:
+    - 0
+    - 1
+    type: integer
+    x-enum-varnames:
+    - PasswordResetErrorReason_NoError
+    - PasswordResetErrorReason_InvalidPassword
+  login_models.PasswordResetFinishRequest:
+    properties:
+      password:
+        type: string
+      passwordConfirm:
+        type: string
+    required:
+    - password
+    - passwordConfirm
+    type: object
+  login_models.PasswordResetFinishResponse:
+    properties:
+      directive:
+        type: string
+      errorReason:
+        $ref: '#/definitions/login_models.PasswordResetErrorReason'
+    required:
+    - directive
+    type: object
+  login_models.PasswordResetStartRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  login_models.PasswordResetStartResponse:
+    properties:
+      directive:
+        type: string
+      directiveEmailCodeChallenge:
+        $ref: '#/definitions/login_models.DirectiveEmailCodeChallenge'
+      email:
+        type: string
+    required:
+    - directive
+    - email
+    type: object
+  login_models.SignupErrorReason:
+    enum:
+    - 0
+    - 1
+    - 2
+    type: integer
+    x-enum-varnames:
+    - SignupErrorReason_NoError
+    - SignupErrorReason_InvalidPassword
+    - SignupErrorReason_UserAlreadyExists
+  login_models.SignupRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  login_models.SignupResponse:
+    properties:
+      directive:
+        type: string
+      directiveEmailCodeChallenge:
+        $ref: '#/definitions/login_models.DirectiveEmailCodeChallenge'
+      directiveRedirect:
+        $ref: '#/definitions/login_models.DirectiveRedirect'
+      email:
+        type: string
+      errorReason:
+        $ref: '#/definitions/login_models.SignupErrorReason'
+      message:
+        type: string
+    required:
+    - directive
+    - email
+    type: object
+  login_models.VerifyCodeRequest:
+    properties:
+      code:
+        type: string
+    required:
+    - code
+    type: object
+  login_models.VerifyCodeResponse:
+    properties:
+      directive:
+        type: string
+      directiveRedirect:
+        $ref: '#/definitions/login_models.DirectiveRedirect'
+    required:
+    - directive
+    type: object
   models.FormParam:
     properties:
       name:
         type: string
       value:
         type: string
+    type: object
+  password.VerifyPasswordStrengthRequest:
+    properties:
+      password:
+        type: string
+    required:
+    - password
     type: object
   password.VerifyPasswordStrengthResponse:
     properties:
@@ -201,6 +308,88 @@ paths:
       summary: get the login manifest.
       tags:
       - root
+  /api/password-reset-finish:
+    post:
+      consumes:
+      - '*/*'
+      description: This is the configuration of the server..
+      parameters:
+      - description: PasswordResetStartRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/login_models.PasswordResetFinishRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/login_models.PasswordResetFinishResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: get the login manifest.
+      tags:
+      - root
+  /api/password-reset-start:
+    post:
+      consumes:
+      - '*/*'
+      description: This is the configuration of the server..
+      parameters:
+      - description: PasswordResetStartRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/login_models.PasswordResetStartRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/login_models.PasswordResetStartResponse'
+      summary: get the login manifest.
+      tags:
+      - root
+  /api/signup:
+    post:
+      consumes:
+      - '*/*'
+      description: verify code
+      parameters:
+      - description: SignupRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/login_models.SignupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/login_models.SignupResponse'
+        "302":
+          description: Found
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: verify code.
+      tags:
+      - root
   /api/start-external-login:
     post:
       consumes:
@@ -227,11 +416,44 @@ paths:
       summary: starts an external login ceremony with an external IDP
       tags:
       - root
+  /api/verify-code:
+    post:
+      consumes:
+      - '*/*'
+      description: verify code
+      parameters:
+      - description: VerifyCodeRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/login_models.VerifyCodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/login_models.VerifyCodeResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      summary: verify code.
+      tags:
+      - root
   /api/verify-password-strength:
     post:
       consumes:
       - '*/*'
       description: This is the configuration of the server..
+      parameters:
+      - description: LoginPhaseOneRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/password.VerifyPasswordStrengthRequest'
       produces:
       - application/json
       responses:

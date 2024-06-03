@@ -67,7 +67,6 @@ fetch("/api/verify-password-strength", {
     "X-Csrf-Token": getCSRF(),
   },
   body: JSON.stringify({
-    email: "ghstahl@gmail.com",
     password: "ghstahl@gmail.com_1234567890abcdefghij",
   }),
 })
@@ -139,7 +138,7 @@ fetch("/api/login-password", {
     console.error("Error:", error);
   });
 
-// /api/login-password
+// /api/verify-code
 //-----------------------------------------------------
 fetch("/api/verify-code", {
   method: "POST",
