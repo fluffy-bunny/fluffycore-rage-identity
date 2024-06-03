@@ -144,17 +144,17 @@ func (s *service) DoGet(c echo.Context) error {
 	if err != nil {
 		errors = append(errors, err.Error())
 	}
-	dd, err := session.Get("request")
+	requestSession, err := session.Get("request")
 	if err != nil {
 		errors = append(errors, err.Error())
 	}
-	dd2 := dd.(*proto_oidc_models.AuthorizationRequest)
+	authorizationRequest := requestSession.(*proto_oidc_models.AuthorizationRequest)
 
-	log.Info().Interface("dd2", dd).Msg("dd2")
+	log.Info().Interface("requestSession", requestSession).Msg("requestSession")
 
 	switch model.Directive {
 	case models.IdentityFound:
-		return s.handleIdentityFound(c, dd2.State)
+		return s.handleIdentityFound(c, authorizationRequest.State)
 
 	}
 	idps, err := s.GetIDPs(ctx)
@@ -308,9 +308,10 @@ func (s *service) DoPost(c echo.Context) error {
 		err = s.wellknownCookies.SetVerificationCodeCookie(c,
 			&contracts_cookies.SetVerificationCodeCookieRequest{
 				VerificationCode: &contracts_cookies.VerificationCode{
-					Email:   model.UserName,
-					Code:    verificationCode,
-					Subject: user.RootIdentity.Subject,
+					Email:             model.UserName,
+					Code:              verificationCode,
+					Subject:           user.RootIdentity.Subject,
+					VerifyCodePurpose: contracts_cookies.VerifyCode_EmailVerification,
 				},
 			})
 		if err != nil {
@@ -381,7 +382,7 @@ func (s *service) DoPost(c echo.Context) error {
 
 }
 
-// HealthCheck godoc
+// OIDC Login godoc
 // @Summary get the home page.
 // @Description get the home page.
 // @Tags root
@@ -389,7 +390,8 @@ func (s *service) DoPost(c echo.Context) error {
 // @Produce json
 // @Param       code            		query     string  true  "code"
 // @Success 200 {object} string
-// @Router /login [get,post]
+// @Router /oidc-login [get]
+// @Router /oidc-login [post]
 func (s *service) Do(c echo.Context) error {
 
 	r := c.Request()

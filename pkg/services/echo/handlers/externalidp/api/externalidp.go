@@ -1,4 +1,4 @@
-package externalidp
+package api
 
 import (
 	"net/http"
@@ -13,6 +13,7 @@ import (
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_oauth2factory "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oauth2factory"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
+	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/external_idp"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
@@ -87,7 +88,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 			//contracts_handler.GET,
 			contracts_handler.POST,
 		},
-		wellknown_echo.ExternalIDPPath,
+		wellknown_echo.API_Start_ExternalLogin,
 	)
 
 }
@@ -104,15 +105,10 @@ func (s *service) getSession() (contracts_sessions.ISession, error) {
 	return session, nil
 }
 
-type ExternalIDPAuthRequest struct {
-	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
-	IDPHint   string `param:"idp_hint" query:"idp_hint" form:"idp_hint" json:"idp_hint" xml:"idp_hint"`
-}
+func (s *service) validateLoginGetRequest(model *external_idp.StartExternalIDPLoginRequest) error {
 
-func (s *service) validateLoginGetRequest(model *ExternalIDPAuthRequest) error {
-
-	if fluffycore_utils.IsEmptyOrNil(model.IDPHint) {
-		return status.Error(codes.InvalidArgument, "IDPHint is required")
+	if fluffycore_utils.IsEmptyOrNil(model.Slug) {
+		return status.Error(codes.InvalidArgument, "Slug is required")
 	}
 	if fluffycore_utils.IsEmptyOrNil(model.Directive) {
 		return status.Error(codes.InvalidArgument, "Directive is required")
@@ -123,6 +119,11 @@ func (s *service) validateLoginGetRequest(model *ExternalIDPAuthRequest) error {
 	return nil
 }
 
+type ErrorResponse struct {
+	Error        string `json:"error"`
+	InternalCode string `json:"internalCode"`
+}
+
 func (s *service) DoPost(c echo.Context) error {
 	r := c.Request()
 	rootPath := echo_utils.GetMyRootPath(c)
@@ -131,32 +132,53 @@ func (s *service) DoPost(c echo.Context) error {
 	//rootPath := echo_utils.GetMyRootPath(c)
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
-	model := &ExternalIDPAuthRequest{}
+	model := &external_idp.StartExternalIDPLoginRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("c.Bind")
-		return s.TeleportBackToLogin(c, InternalError_ExternalIDP_099)
+		var response = &ErrorResponse{
+			Error:        err.Error(),
+			InternalCode: InternalError_ExternalIDP_099,
+		}
+		return c.JSON(http.StatusBadRequest, response)
 	}
 	if err := s.validateLoginGetRequest(model); err != nil {
 		log.Error().Err(err).Msg("validateLoginGetRequest")
-		return s.TeleportBackToLogin(c, InternalError_ExternalIDP_002)
+		var response = &ErrorResponse{
+			Error:        err.Error(),
+			InternalCode: InternalError_ExternalIDP_002,
+		}
+		return c.JSON(http.StatusBadRequest, response)
+
 	}
 	log.Info().Interface("model", model).Msg("model")
 	session, err := s.getSession()
 	if err != nil {
-		return s.TeleportBackToLogin(c, InternalError_ExternalIDP_003)
+		var response = &ErrorResponse{
+			Error:        err.Error(),
+			InternalCode: InternalError_ExternalIDP_003,
+		}
+		return c.JSON(http.StatusBadRequest, response)
 	}
 	dd, err := session.Get("request")
 	if err != nil {
-		return s.TeleportBackToLogin(c, InternalError_ExternalIDP_004)
+		var response = &ErrorResponse{
+			Error:        err.Error(),
+			InternalCode: InternalError_ExternalIDP_004,
+		}
+		return c.JSON(http.StatusBadRequest, response)
 	}
 	dd2 := dd.(*proto_oidc_models.AuthorizationRequest)
 	getIDPBySlugResponse, err := s.IdpServiceServer().GetIDPBySlug(ctx,
 		&proto_oidc_idp.GetIDPBySlugRequest{
-			Slug: model.IDPHint,
+			Slug: model.Slug,
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("GetIDPBySlug")
-		return s.TeleportBackToLogin(c, InternalError_ExternalIDP_005)
+		var response = &ErrorResponse{
+			Error:        err.Error(),
+			InternalCode: InternalError_ExternalIDP_005,
+		}
+		return c.JSON(http.StatusBadRequest, response)
 	}
 	idp := getIDPBySlugResponse.Idp
 	externalState := xid.New().String()
@@ -168,7 +190,7 @@ func (s *service) DoPost(c echo.Context) error {
 				codeChallenge, verifier := generateCodeChallenge()
 				externalOAuth2State := &proto_oidc_models.ExternalOauth2State{
 					Request: &proto_oidc_models.ExternalOauth2Request{
-						IdpHint:               model.IDPHint,
+						IdpHint:               model.Slug,
 						ClientId:              v.Github.ClientId,
 						State:                 dd2.State,
 						CodeChallenge:         codeChallenge,
@@ -186,21 +208,31 @@ func (s *service) DoPost(c echo.Context) error {
 				if err != nil {
 					log.Error().Err(err).Msg("SetExternalOauth2Cookie")
 					// redirect to error page
-					return s.TeleportBackToLogin(c, InternalError_ExternalIDP_006)
+					var response = &ErrorResponse{
+						Error:        err.Error(),
+						InternalCode: InternalError_ExternalIDP_006,
+					}
+					return c.JSON(http.StatusBadRequest, response)
 				}
 				getConfigResponse, err := s.oauth2Factory.GetConfig(ctx,
 					&contracts_oauth2factory.GetConfigRequest{
-						IDPHint: model.IDPHint,
+						IDPHint: model.Slug,
 					})
 				if err != nil {
 					log.Error().Err(err).Msg("Failed to get oauth2Config")
-					return s.TeleportBackToLogin(c, InternalError_ExternalIDP_007)
+					var response = &ErrorResponse{
+						Error:        err.Error(),
+						InternalCode: InternalError_ExternalIDP_007,
+					}
+					return c.JSON(http.StatusBadRequest, response)
 				}
 				oauth2Config := getConfigResponse.Config
 				u := oauth2Config.AuthCodeURL(externalState,
 					oauth2.SetAuthURLParam("code_challenge", codeChallenge),
 					oauth2.SetAuthURLParam("code_challenge_method", "S256"))
-				return c.Redirect(http.StatusFound, u)
+				return c.JSON(http.StatusOK, &external_idp.StartExternalIDPLoginResponse{
+					RedirectURI: u,
+				})
 
 			}
 		case *proto_oidc_models.Protocol_Oauth2:
@@ -208,7 +240,7 @@ func (s *service) DoPost(c echo.Context) error {
 				codeChallenge, verifier := generateCodeChallenge()
 				externalOAuth2State := &proto_oidc_models.ExternalOauth2State{
 					Request: &proto_oidc_models.ExternalOauth2Request{
-						IdpHint:               model.IDPHint,
+						IdpHint:               model.Slug,
 						ClientId:              v.Oauth2.ClientId,
 						State:                 dd2.State,
 						CodeChallenge:         codeChallenge,
@@ -226,7 +258,11 @@ func (s *service) DoPost(c echo.Context) error {
 				if err != nil {
 					log.Error().Err(err).Msg("SetExternalOauth2Cookie")
 					// redirect to error page
-					return s.TeleportBackToLogin(c, InternalError_ExternalIDP_008)
+					var response = &ErrorResponse{
+						Error:        err.Error(),
+						InternalCode: InternalError_ExternalIDP_008,
+					}
+					return c.JSON(http.StatusBadRequest, response)
 				}
 				scopes := strings.Split(v.Oauth2.Scope, " ")
 				config := oauth2.Config{
@@ -243,7 +279,9 @@ func (s *service) DoPost(c echo.Context) error {
 				u := config.AuthCodeURL(externalState,
 					oauth2.SetAuthURLParam("code_challenge", codeChallenge),
 					oauth2.SetAuthURLParam("code_challenge_method", "S256"))
-				return c.Redirect(http.StatusFound, u)
+				return c.JSON(http.StatusOK, &external_idp.StartExternalIDPLoginResponse{
+					RedirectURI: u,
+				})
 
 			}
 		case *proto_oidc_models.Protocol_Oidc:
@@ -251,7 +289,7 @@ func (s *service) DoPost(c echo.Context) error {
 				nonce := xid.New().String()
 				externalOAuth2State := &proto_oidc_models.ExternalOauth2State{
 					Request: &proto_oidc_models.ExternalOauth2Request{
-						IdpHint:     model.IDPHint,
+						IdpHint:     model.Slug,
 						ClientId:    v.Oidc.ClientId,
 						State:       dd2.State,
 						Directive:   model.Directive,
@@ -268,26 +306,40 @@ func (s *service) DoPost(c echo.Context) error {
 				if err != nil {
 					log.Error().Err(err).Msg("SetExternalOauth2Cookie")
 					// redirect to error page
-					return s.TeleportBackToLogin(c, InternalError_ExternalIDP_009)
+					var response = &ErrorResponse{
+						Error:        err.Error(),
+						InternalCode: InternalError_ExternalIDP_009,
+					}
+					return c.JSON(http.StatusBadRequest, response)
 				}
 				getConfigResponse, err := s.oauth2Factory.GetConfig(ctx,
 					&contracts_oauth2factory.GetConfigRequest{
-						IDPHint: model.IDPHint,
+						IDPHint: model.Slug,
 					})
 				if err != nil {
 					log.Error().Err(err).Msg("Failed to get oauth2Config")
-					return s.TeleportBackToLogin(c, InternalError_ExternalIDP_010)
+					var response = &ErrorResponse{
+						Error:        err.Error(),
+						InternalCode: InternalError_ExternalIDP_010,
+					}
+					return c.JSON(http.StatusBadRequest, response)
 				}
 				oauth2Config := getConfigResponse.Config
 				authCodeOptions := []oauth2.AuthCodeOption{
 					oauth2.SetAuthURLParam("nonce", nonce),
 				}
 				u := oauth2Config.AuthCodeURL(externalState, authCodeOptions...)
-				return c.Redirect(http.StatusFound, u)
+				return c.JSON(http.StatusOK, &external_idp.StartExternalIDPLoginResponse{
+					RedirectURI: u,
+				})
 			}
 		}
 	}
-	return s.TeleportBackToLogin(c, InternalError_ExternalIDP_011)
+	var response = &ErrorResponse{
+		Error:        status.Error(codes.InvalidArgument, "Unsupported Protocol").Error(),
+		InternalCode: InternalError_ExternalIDP_011,
+	}
+	return c.JSON(http.StatusBadRequest, response)
 
 }
 
@@ -313,14 +365,15 @@ func generateCodeChallenge() (string, string) {
 }
 
 // ExternalIDP godoc
-// @Summary todo
-// @Description externalIDP.
-// @Tags root
-// @Accept */*
-// @Produce json
-// @Param       code            		query     string  true  "code"
-// @Success 200 {object} string
-// @Router /external-idp [post]
+// @Summary starts an external login ceremony with an external IDP
+// @Description starts an external login ceremony with an external IDP.
+// @Tags 		root
+// @Accept 		*/*
+// @Produce 	json
+// @Param		external_idp body		external_idp.StartExternalIDPLoginRequest	true	"StartExternalIDPLoginRequest"
+// @Success 	200 				{object} 	external_idp.StartExternalIDPLoginResponse
+// @Failure		400					{object}	ErrorResponse
+// @Router /api/start-external-login [post]
 func (s *service) Do(c echo.Context) error {
 
 	r := c.Request()
