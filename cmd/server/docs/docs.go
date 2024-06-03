@@ -156,6 +156,132 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/password-reset-finish": {
+            "post": {
+                "description": "This is the configuration of the server..",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the login manifest.",
+                "parameters": [
+                    {
+                        "description": "PasswordResetStartRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/login_models.PasswordResetFinishRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/login_models.PasswordResetFinishResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/password-reset-start": {
+            "post": {
+                "description": "This is the configuration of the server..",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the login manifest.",
+                "parameters": [
+                    {
+                        "description": "PasswordResetStartRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/login_models.PasswordResetStartRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/login_models.PasswordResetStartResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/signup": {
+            "post": {
+                "description": "verify code",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "verify code.",
+                "parameters": [
+                    {
+                        "description": "SignupRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/login_models.SignupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/login_models.SignupResponse"
+                        }
+                    },
+                    "302": {
+                        "description": "Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/start-external-login": {
             "post": {
                 "description": "starts an external login ceremony with an external IDP.",
@@ -196,6 +322,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/verify-code": {
+            "post": {
+                "description": "verify code",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "verify code.",
+                "parameters": [
+                    {
+                        "description": "VerifyCodeRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/login_models.VerifyCodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/login_models.VerifyCodeResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/verify-password-strength": {
             "post": {
                 "description": "This is the configuration of the server..",
@@ -209,6 +375,17 @@ const docTemplate = `{
                     "root"
                 ],
                 "summary": "get the login manifest.",
+                "parameters": [
+                    {
+                        "description": "LoginPhaseOneRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/password.VerifyPasswordStrengthRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -756,6 +933,155 @@ const docTemplate = `{
                 }
             }
         },
+        "login_models.PasswordResetErrorReason": {
+            "type": "integer",
+            "enum": [
+                0,
+                1
+            ],
+            "x-enum-varnames": [
+                "PasswordResetErrorReason_NoError",
+                "PasswordResetErrorReason_InvalidPassword"
+            ]
+        },
+        "login_models.PasswordResetFinishRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "passwordConfirm"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "passwordConfirm": {
+                    "type": "string"
+                }
+            }
+        },
+        "login_models.PasswordResetFinishResponse": {
+            "type": "object",
+            "required": [
+                "directive"
+            ],
+            "properties": {
+                "directive": {
+                    "type": "string"
+                },
+                "errorReason": {
+                    "$ref": "#/definitions/login_models.PasswordResetErrorReason"
+                }
+            }
+        },
+        "login_models.PasswordResetStartRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "login_models.PasswordResetStartResponse": {
+            "type": "object",
+            "required": [
+                "directive",
+                "email"
+            ],
+            "properties": {
+                "directive": {
+                    "type": "string"
+                },
+                "directiveEmailCodeChallenge": {
+                    "$ref": "#/definitions/login_models.DirectiveEmailCodeChallenge"
+                },
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "login_models.SignupErrorReason": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2
+            ],
+            "x-enum-varnames": [
+                "SignupErrorReason_NoError",
+                "SignupErrorReason_InvalidPassword",
+                "SignupErrorReason_UserAlreadyExists"
+            ]
+        },
+        "login_models.SignupRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "login_models.SignupResponse": {
+            "type": "object",
+            "required": [
+                "directive",
+                "email"
+            ],
+            "properties": {
+                "directive": {
+                    "type": "string"
+                },
+                "directiveEmailCodeChallenge": {
+                    "$ref": "#/definitions/login_models.DirectiveEmailCodeChallenge"
+                },
+                "directiveRedirect": {
+                    "$ref": "#/definitions/login_models.DirectiveRedirect"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "errorReason": {
+                    "$ref": "#/definitions/login_models.SignupErrorReason"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "login_models.VerifyCodeRequest": {
+            "type": "object",
+            "required": [
+                "code"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                }
+            }
+        },
+        "login_models.VerifyCodeResponse": {
+            "type": "object",
+            "required": [
+                "directive"
+            ],
+            "properties": {
+                "directive": {
+                    "type": "string"
+                },
+                "directiveRedirect": {
+                    "$ref": "#/definitions/login_models.DirectiveRedirect"
+                }
+            }
+        },
         "models.FormParam": {
             "type": "object",
             "properties": {
@@ -763,6 +1089,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "password.VerifyPasswordStrengthRequest": {
+            "type": "object",
+            "required": [
+                "password"
+            ],
+            "properties": {
+                "password": {
                     "type": "string"
                 }
             }
