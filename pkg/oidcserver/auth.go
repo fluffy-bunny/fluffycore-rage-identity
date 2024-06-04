@@ -32,6 +32,7 @@ func CSRFSkipperPaths() map[string]bool {
 			wellknown_echo.WellKnownOpenIDCOnfiguationPath: true,
 			wellknown_echo.OAuth2TokenEndpointPath:         true,
 			wellknown_echo.UserInfoPath:                    true,
+			wellknown_echo.API_Manifest:                    true,
 		}
 	}
 	return csrfSkipperPaths
