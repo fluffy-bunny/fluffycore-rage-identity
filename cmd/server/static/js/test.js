@@ -15,8 +15,6 @@ fetch("/api/manifest", {
     console.log("finishResponse:", data);
   });
 
-  
-
 // /api/start-external-login
 //-----------------------------------------------------
 fetch("/api/start-external-login", {
@@ -33,7 +31,7 @@ fetch("/api/start-external-login", {
   }),
 })
   .then((response) => response.json())
-  .then((data) => console.log(data))
+  .then((data) => console.log(JSON.stringify(data)))
   .catch((error) => {
     console.error("Error:", error);
   });
