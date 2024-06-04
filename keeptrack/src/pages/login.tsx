@@ -1,6 +1,9 @@
+import { common } from '@mui/material/colors';
 import { stringify } from 'querystring';
 import React, { useState ,useEffect } from 'react';
 import { BrowserRouter as Router, Route } from 'react-router-dom';
+import * as myCommon from '../common.js';
+
 function LoginPage() {
     const [email, setEmail] = useState('');
     const [redirectToPassword, setRedirectToPassword] = useState(false);
@@ -8,7 +11,7 @@ function LoginPage() {
 
     useEffect(() => {
       const fetchData = async () => {
-        const response = await fetch("http://localhost:9044/api/manifest", {
+        const response = await fetch("http://localhost1.com:9044/api/manifest", {
           method: "GET",
           headers: {
             Accept: "application/json",
@@ -27,10 +30,36 @@ function LoginPage() {
       fetchData();
     }, []);
   
-    const handleSubmit = (event: React.FormEvent) => {
-      event.preventDefault();
-      setRedirectToPassword(true);
-    };
+    const handleSubmit = async (event: React.FormEvent) => {
+        event.preventDefault();
+        let csrf = myCommon.getCSRF();
+        console.log(csrf);
+        // Fetch call to validate the email
+        const response = await fetch("http://localhost1.com:9044/api/login-phase-one", {
+          method: "POST",
+          credentials: 'include', 
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "X-Csrf-Token":csrf,
+
+          },
+          body: JSON.stringify({ 
+            email: email,
+             }), // send the email as part of the request body
+        });
+      
+        if (response.ok) {
+          const data = await response.json();
+          if (data.isValid) {
+            setRedirectToPassword(true);
+          } else {
+            // Handle invalid email
+          }
+        } else {
+          // Handle error
+        }
+      };
   
     return (
       <form onSubmit={handleSubmit}>

@@ -3,6 +3,13 @@
 https://codevoweb.com/react-material-ui-and-react-hook-form-html-forms/
 https://handsonreact.com/docs/labs/ts/RunningYourProject
 
+cors workaround for develpment.
+
+add
+
+127.0.0.1 localhost1.com
+to host file on windows
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

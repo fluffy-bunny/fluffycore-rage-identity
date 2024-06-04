@@ -12,7 +12,7 @@
             "program": "${workspaceFolder}/cmd/server",
             "env": {
                 "ENABLE_GRPC_SERVER_REFLECTION": "true",
-                "DOMAIN":"localhost",                
+                "DOMAIN":"localhost1.com:9044",                
                 "RAGE_APPLICATION_NAME": "server",
                 "RAGE_APPLICATION_ENVIRONMENT":"Development",
                 "APPLICATION_ENVIRONMENT":"Development",
@@ -23,7 +23,7 @@
                 "RAGE_REST_PORT": "30052",
                 "RAGE_customString": "In Flames",
                 "RAGE_someSecret": "1234567890",
-                "RAGE_oidcConfig__baseUrl": "http://localhost:9044",
+                "RAGE_oidcConfig__baseUrl": "http://localhost1.com:9044",
                 "RAGE_jwtValidators__issuers": "http://localhost:50053,http://host.docker.internal:50053",
                 "RAGE_jwtValidators__jwksUrls": "http://localhost:50053/.well-known/jwks,http://host.docker.internal:50053/.well-known/jwks",
                 "RAGE_emailConfig__fromName": "The Perfect Corp Team",

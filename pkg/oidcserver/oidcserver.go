@@ -248,7 +248,11 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 		CookieHTTPOnly: false,
 		CookieSameSite: http.SameSiteStrictMode,
 		Skipper: func(c echo.Context) bool {
-
+			if s.config.CSRFConfig.SkipApi {
+				if strings.Contains(c.Request().URL.Path, "/api") {
+					return true
+				}
+			}
 			csrfSkipperPaths := CSRFSkipperPaths()
 			currentPath := c.Request().URL.Path
 			_, ok := csrfSkipperPaths[currentPath]

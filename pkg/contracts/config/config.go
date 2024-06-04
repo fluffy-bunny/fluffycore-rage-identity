@@ -26,6 +26,9 @@ type (
 		ExposeHeaders                            []string `json:"exposeHeaders"`
 		MaxAge                                   int      `json:"maxAge"`
 	}
+	CSRFConfig struct {
+		SkipApi bool `json:"skipApi"`
+	}
 	ConfigFiles struct {
 		OIDCClientPath     string `json:"oidcClientPath"`
 		IDPsPath           string `json:"idpsPath"`
@@ -104,6 +107,7 @@ type (
 		WebAuthNConfig                 *contracts_webauthn.WebAuthNConfig `json:"webAuthNConfig"`
 		PasswordConfig                 *PasswordConfig                    `json:"passwordConfig"`
 		CORSConfig                     *CORSConfig                        `json:"corsConfig"`
+		CSRFConfig                     *CSRFConfig                        `json:"csrfConfig"`
 	}
 )
 
@@ -124,6 +128,9 @@ const configDefaultJSONTemplate = `
 	"GRPC_GATEWAY_ENABLED": true,
 	"cookieConfig": {
  	},
+	"csrfConfig": {
+		"skipApi": false
+	},
 	"corsConfig": {
 		"enabled": true,
 		"allowedOrigins": ["*"],

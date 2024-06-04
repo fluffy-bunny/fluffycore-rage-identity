@@ -1,17 +1,28 @@
 {
+  "csrfConfig": {
+    "skipApi": true
+  },
   "corsConfig": {
+    "enabled": true,
+    "allowCredentials": true,
+    "unsafeWildcardOriginWithAllowCredentials": true,
     "allowedOrigins": [
-      "https://${DOMAIN}",
+      "http://${DOMAIN}",
+      "http://localhost1.com:3000",
+      "http://localhost1.com:3001",
       "http://localhost:3000",
-      "http://localhost:3001",
-      "http://localhost:9044"
+      "http://localhost:3001"
     ]
+  },
+  "selfIDPConfig": {
+    "redirectUrl": "http://${DOMAIN}/auth/callback",
+    "authority": "http://${DOMAIN}"
   },
   "emailVerificationRequired": true,
   "multiFactorRequired": true,
   "multiFactorRequiredByEmailCode": true,
   "systemConfig": {
-    "domain": "localhost",
+    "domain": "${DOMAIN}",
     "developerMode": false
   },
   "totp": {
@@ -21,6 +32,8 @@
   "webAuthNConfig": {
     "rpDisplayName": "RAGE",
     "rpID": "${DOMAIN}",
-    "rpOrigins": ["https://${DOMAIN}"]
+    "rpOrigins": [
+      "https://${DOMAIN}"
+    ]
   }
 }
