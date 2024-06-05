@@ -160,10 +160,9 @@ func (s *service) Do(c echo.Context) error {
 	if len(listIDPRequest.Idps) > 0 {
 		// an idp has claimed this domain.
 		// post to the externalIDP
-		response.Directive = login_models.DIRECTIVE_Redirect
-		response.DirectiveRedirect = &login_models.DirectiveRedirect{
+		response.Directive = login_models.DIRECTIVE_FormPost
+		response.DirectiveFormPost = &login_models.DirectiveFormPost{
 			RedirectURI: wellknown_echo.ExternalIDPPath,
-			VERB:        http.MethodPost,
 			FormParams: []models.FormParam{
 				{
 					Name:  "state",

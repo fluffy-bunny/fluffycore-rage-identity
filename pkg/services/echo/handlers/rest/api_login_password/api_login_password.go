@@ -293,7 +293,6 @@ func (s *service) Do(c echo.Context) error {
 		Directive: login_models.DIRECTIVE_Redirect,
 		DirectiveRedirect: &login_models.DirectiveRedirect{
 			RedirectURI: redirectUri,
-			VERB:        http.MethodGet,
 		},
 	}
 

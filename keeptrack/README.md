@@ -10,6 +10,72 @@ add
 127.0.0.1 localhost1.com
 to host file on windows
 
+## Setup Development Environment
+
+This is a workaround because the identity server uses cookies to store state.  The cookies are NOT shared accros domains and localhost is NOT a domain.  i.e. localhost:9044 is not the same thing as localhost:3000.  Its special.
+
+We will have a local domain call ```localhost1.com```. 
+
+1. Add the following to your hosts file.  On windows this is located at ```C:\Windows\System32\drivers\etc\hosts```
+
+```txt
+127.0.0.1 localhost1.com
+```
+
+2. Lets run our identity server on port 9044.  
+
+The app has been configured to be known as ```localhost1.com```.  The [config file](../cmd/server/config/rage.json) where the ```${DOMAIN}``` is set to ```localhost1.com``` in our [.vscode launch.json](../.vscode/launch.json#15) file.
+
+```json
+"DOMAIN":"localhost1.com:9044"      
+```
+
+Run the go ```server``` app using vscode debug.  
+![alt text](vscode-server-debug.png) 
+Browse to [account home](http://localhost1.com:9044) pages and click login.  This will start off our OIDC flow and drop the state cookies.  ![alt text](login-state-cookies.png)
+
+3. Lets run our react app on port 3000 or 3001.
+
+```http://localhost1.com:3000/``` is the react app.  
+![alt text](react-app-same-cookies.png)
+
+When you make fetch calls from the react app they will now use the same cookies and work.
+
+```typescript
+    const handleSubmit = async (event: React.FormEvent) => {
+        event.preventDefault();
+        let csrf = myCommon.getCSRF();
+        console.log(csrf);
+        // Fetch call to validate the email
+        const response = await fetch("http://localhost1.com:9044/api/login-phase-one", {
+          method: "POST",
+          credentials: 'include', 
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "X-Csrf-Token":csrf,
+
+          },
+          body: JSON.stringify({ 
+            email: email,
+             }), // send the email as part of the request body
+        });
+      
+        if (response.ok) {
+          const data = await response.json();
+          if (data.isValid) {
+            setRedirectToPassword(true);
+          } else {
+            // Handle invalid email
+          }
+        } else {
+          // Handle error
+        }
+      };
+```
+
+this example is what happens when the users adds their email and we need to make a call to the backend to find out what to do next.  The response can be a not found, redirect to an external SSO, or redirect to the password page.  Not found means ask the user to do a signup or pick an email that is registered.
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

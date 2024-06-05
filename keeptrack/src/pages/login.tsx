@@ -22,6 +22,7 @@ function LoginPage() {
         if (response.ok) {
           const data = await response.json();
           setSocialIdps(data.social_idps);
+          console.log(data.social_idps);
         } else {
           // Handle error
         }
@@ -51,8 +52,11 @@ function LoginPage() {
       
         if (response.ok) {
           const data = await response.json();
+          console.log(data);
+
           if (data.isValid) {
             setRedirectToPassword(true);
+
           } else {
             // Handle invalid email
           }

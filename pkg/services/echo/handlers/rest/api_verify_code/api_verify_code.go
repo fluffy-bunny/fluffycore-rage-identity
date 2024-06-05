@@ -266,7 +266,6 @@ func (s *service) Do(c echo.Context) error {
 			"&state=" + authorizationFinal.Request.State +
 			"&iss=" + rootPath
 		response.DirectiveRedirect = &login_models.DirectiveRedirect{
-			VERB:        http.MethodGet,
 			RedirectURI: redirectUri,
 		}
 		return c.JSONPretty(http.StatusOK, response, "  ")

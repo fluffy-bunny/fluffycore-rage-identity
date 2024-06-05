@@ -6,6 +6,7 @@ import (
 
 const (
 	DIRECTIVE_Redirect                               = "redirect"
+	DIRECTIVE_FormPost                               = "formPost"
 	DIRECTIVE_LoginPhaseOne_UserDoesNotExist         = "userDoesNotExist"
 	DIRECTIVE_LoginPhaseOne_DisplayPasswordPage      = "displayPasswordPage"
 	DIRECTIVE_VerifyCode_DisplayVerifyCodePage       = "displayVerifyCodePage"
@@ -33,8 +34,10 @@ type (
 		Email string `json:"email" validate:"required"`
 	}
 	DirectiveRedirect struct {
+		RedirectURI string `json:"redirectUri"`
+	}
+	DirectiveFormPost struct {
 		RedirectURI string             `json:"redirectUri"`
-		VERB        string             `json:"verb"`
 		FormParams  []models.FormParam `json:"formParams"`
 	}
 	DirectiveDisplayPasswordPage struct {
@@ -52,6 +55,7 @@ type (
 		DirectiveRedirect            *DirectiveRedirect            `json:"directiveRedirect,omitempty"`
 		DirectiveDisplayPasswordPage *DirectiveDisplayPasswordPage `json:"directiveDisplayPasswordPage,omitempty"`
 		DirectiveEmailCodeChallenge  *DirectiveEmailCodeChallenge  `json:"directiveEmailCodeChallenge,omitempty"`
+		DirectiveFormPost            *DirectiveFormPost            `json:"directiveFormPost,omitempty"`
 	}
 
 	LoginPasswordRequest struct {
@@ -81,6 +85,7 @@ type (
 		Directive                   string                       `json:"directive" validate:"required"`
 		DirectiveRedirect           *DirectiveRedirect           `json:"directiveRedirect,omitempty"`
 		DirectiveEmailCodeChallenge *DirectiveEmailCodeChallenge `json:"directiveEmailCodeChallenge,omitempty"`
+		DirectiveFormPost           *DirectiveFormPost           `json:"directiveFormPost,omitempty"`
 		Message                     string                       `json:"message,omitempty"`
 		ErrorReason                 SignupErrorReason            `json:"errorReason,omitempty"`
 	}
