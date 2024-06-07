@@ -150,7 +150,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/manifest.Manifest"
                         }
                     }
                 }
@@ -860,7 +860,7 @@ const docTemplate = `{
                 }
             }
         },
-        "login_models.DirectiveRedirect": {
+        "login_models.DirectiveFormPost": {
             "type": "object",
             "properties": {
                 "formParams": {
@@ -871,8 +871,13 @@ const docTemplate = `{
                 },
                 "redirectUri": {
                     "type": "string"
-                },
-                "verb": {
+                }
+            }
+        },
+        "login_models.DirectiveRedirect": {
+            "type": "object",
+            "properties": {
+                "redirectUri": {
                     "type": "string"
                 }
             }
@@ -924,6 +929,9 @@ const docTemplate = `{
                 },
                 "directiveEmailCodeChallenge": {
                     "$ref": "#/definitions/login_models.DirectiveEmailCodeChallenge"
+                },
+                "directiveFormPost": {
+                    "$ref": "#/definitions/login_models.DirectiveFormPost"
                 },
                 "directiveRedirect": {
                     "$ref": "#/definitions/login_models.DirectiveRedirect"
@@ -1043,6 +1051,9 @@ const docTemplate = `{
                 "directiveEmailCodeChallenge": {
                     "$ref": "#/definitions/login_models.DirectiveEmailCodeChallenge"
                 },
+                "directiveFormPost": {
+                    "$ref": "#/definitions/login_models.DirectiveFormPost"
+                },
                 "directiveRedirect": {
                     "$ref": "#/definitions/login_models.DirectiveRedirect"
                 },
@@ -1079,6 +1090,25 @@ const docTemplate = `{
                 },
                 "directiveRedirect": {
                     "$ref": "#/definitions/login_models.DirectiveRedirect"
+                }
+            }
+        },
+        "manifest.IDP": {
+            "type": "object",
+            "properties": {
+                "slug": {
+                    "type": "string"
+                }
+            }
+        },
+        "manifest.Manifest": {
+            "type": "object",
+            "properties": {
+                "social_idps": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/manifest.IDP"
+                    }
                 }
             }
         },

@@ -34,7 +34,7 @@ definitions:
       code:
         type: string
     type: object
-  login_models.DirectiveRedirect:
+  login_models.DirectiveFormPost:
     properties:
       formParams:
         items:
@@ -42,7 +42,10 @@ definitions:
         type: array
       redirectUri:
         type: string
-      verb:
+    type: object
+  login_models.DirectiveRedirect:
+    properties:
+      redirectUri:
         type: string
     type: object
   login_models.LoginPasswordResponse:
@@ -74,6 +77,8 @@ definitions:
         $ref: '#/definitions/login_models.DirectiveDisplayPasswordPage'
       directiveEmailCodeChallenge:
         $ref: '#/definitions/login_models.DirectiveEmailCodeChallenge'
+      directiveFormPost:
+        $ref: '#/definitions/login_models.DirectiveFormPost'
       directiveRedirect:
         $ref: '#/definitions/login_models.DirectiveRedirect'
       email:
@@ -154,6 +159,8 @@ definitions:
         type: string
       directiveEmailCodeChallenge:
         $ref: '#/definitions/login_models.DirectiveEmailCodeChallenge'
+      directiveFormPost:
+        $ref: '#/definitions/login_models.DirectiveFormPost'
       directiveRedirect:
         $ref: '#/definitions/login_models.DirectiveRedirect'
       email:
@@ -181,6 +188,18 @@ definitions:
         $ref: '#/definitions/login_models.DirectiveRedirect'
     required:
     - directive
+    type: object
+  manifest.IDP:
+    properties:
+      slug:
+        type: string
+    type: object
+  manifest.Manifest:
+    properties:
+      social_idps:
+        items:
+          $ref: '#/definitions/manifest.IDP'
+        type: array
     type: object
   models.FormParam:
     properties:
@@ -304,7 +323,7 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/manifest.Manifest'
       summary: get the login manifest.
       tags:
       - root

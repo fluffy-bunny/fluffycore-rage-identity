@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	models_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
+	manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -54,7 +54,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Tags root
 // @Accept */*
 // @Produce json
-// @Success 200 {object} string
+// @Success 200 {object} manifest.Manifest
 // @Router /api/manifest [get]
 func (s *service) Do(c echo.Context) error {
 	ctx := c.Request().Context()
@@ -63,10 +63,10 @@ func (s *service) Do(c echo.Context) error {
 	if err != nil {
 		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
 	}
-	response := &models_manifest.Manifest{}
+	response := &manifest.Manifest{}
 	for _, idp := range idps {
 		if idp.Enabled && !idp.Hidden {
-			response.SocialIdps = append(response.SocialIdps, models_manifest.IDP{
+			response.SocialIdps = append(response.SocialIdps, manifest.IDP{
 				Slug: idp.Slug,
 			})
 		}
