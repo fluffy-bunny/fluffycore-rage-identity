@@ -5,7 +5,9 @@
   "dependencies": {
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
+    "@fontsource/roboto": "^5.0.13",
     "@hookform/resolvers": "^3.4.2",
+    "@mui/icons-material": "^5.15.19",
     "@mui/lab": "^5.0.0-alpha.170",
     "@mui/material": "^5.15.19",
     "@testing-library/jest-dom": "^5.17.0",
@@ -15,12 +17,15 @@
     "@types/node": "^16.18.97",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
+    "axios": "^1.7.2",
     "mini.css": "^3.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.51.5",
+    "react-query": "^3.39.3",
     "react-router-dom": "^6.23.1",
     "react-scripts": "5.0.1",
+    "swagger-typescript-api": "^13.0.5",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4",
     "zod": "^3.23.8"
@@ -29,7 +34,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "generate-api": "swagger-typescript-api -p ../cmd/server/docs/swagger.json -o ./src/api --axios",
+    "prestart": "swagger-typescript-api -p ../cmd/server/docs/swagger.json -o ./src/api --axios"
   },
   "eslintConfig": {
     "extends": [
@@ -48,5 +55,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "swagger-axios-codegen": "^0.16.14"
   }
 }
