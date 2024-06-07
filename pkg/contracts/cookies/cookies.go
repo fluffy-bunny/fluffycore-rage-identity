@@ -89,6 +89,16 @@ type (
 	GetSigninUserNameCookieResponse struct {
 		Value *SigninUserNameCookie `json:"signinUserNameCookie"`
 	}
+	ErrorCookie struct {
+		Code  string `json:"code"`
+		Error string `json:"error"`
+	}
+	SetErrorCookieRequest struct {
+		Value *ErrorCookie `json:"errorCookie"`
+	}
+	GetErrorCookieResponse struct {
+		Value *ErrorCookie `json:"errorCookie"`
+	}
 	IWellknownCookies interface {
 		// External OAuth2 Cookie
 		//---------------------------------------------------------------------
@@ -131,6 +141,12 @@ type (
 		SetSigninUserNameCookie(c echo.Context, request *SetSigninUserNameCookieRequest) error
 		DeleteSigninUserNameCookie(c echo.Context)
 		GetSigninUserNameCookie(c echo.Context) (*GetSigninUserNameCookieResponse, error)
+
+		// SetErrorCookie Cookie
+		//---------------------------------------------------------------------
+		SetErrorCookie(c echo.Context, request *SetErrorCookieRequest) error
+		DeleteErrorCookie(c echo.Context)
+		GetErrorCookie(c echo.Context) (*GetErrorCookieResponse, error)
 	}
 )
 
@@ -143,4 +159,5 @@ const (
 	CookieNameExternalOauth2StateTemplate = "_externalOauth2State_{state}"
 	CookieNameWebAuthN                    = "_webAuthN"
 	CookieNameSigninUserName              = "_signinUserName"
+	CookieNameErrorName                   = "_error"
 )

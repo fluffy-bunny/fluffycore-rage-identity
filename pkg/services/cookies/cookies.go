@@ -483,3 +483,69 @@ func (s *service) GetSigninUserNameCookie(c echo.Context) (*contracts_cookies.Ge
 		Value: &value,
 	}, nil
 }
+
+// SigninUserName Cookie
+// ---------------------------------------------------------------------
+func (s *service) validateSetErrorCookieRequest(request *contracts_cookies.SetErrorCookieRequest) error {
+	if request == nil {
+		return status.Error(codes.InvalidArgument, "request is nil")
+	}
+	if request.Value == nil {
+		return status.Error(codes.InvalidArgument, "request.Value is nil")
+	}
+	if fluffycore_utils.IsEmptyOrNil(request.Value.Code) {
+		return status.Error(codes.InvalidArgument, "Code is empty")
+	}
+	if fluffycore_utils.IsEmptyOrNil(request.Value.Error) {
+		return status.Error(codes.InvalidArgument, "Error is empty")
+	}
+	return nil
+}
+
+func (s *service) SetErrorCookie(c echo.Context, request *contracts_cookies.SetErrorCookieRequest) error {
+	// TODO: Configurable expiration
+	err := s.validateSetErrorCookieRequest(request)
+	if err != nil {
+		return err
+	}
+	b, err := json.Marshal(request.Value)
+	if err != nil {
+		return err
+	}
+	value := make(map[string]interface{})
+	err = json.Unmarshal(b, &value)
+	if err != nil {
+		return err
+	}
+	_, err = s.insecureCookies.SetCookie(c,
+		&fluffycore_contracts_cookies.SetCookieRequest{
+			Name:     contracts_cookies.CookieNameErrorName,
+			Value:    value,
+			HttpOnly: false,
+			Expires:  time.Now().Add(30 * time.Minute),
+			Path:     "/",
+			Domain:   s.cookieConfig.Domain,
+		})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (s *service) DeleteErrorCookie(c echo.Context) {
+	s.insecureCookies.DeleteCookie(c,
+		&fluffycore_contracts_cookies.DeleteCookieRequest{
+			Name:   contracts_cookies.CookieNameErrorName,
+			Path:   "/",
+			Domain: s.cookieConfig.Domain,
+		})
+}
+func (s *service) GetErrorCookie(c echo.Context) (*contracts_cookies.GetErrorCookieResponse, error) {
+	var value contracts_cookies.ErrorCookie
+	err := GetCookie(c, s.insecureCookies, contracts_cookies.CookieNameErrorName, &value)
+	if err != nil {
+		return nil, err
+	}
+	return &contracts_cookies.GetErrorCookieResponse{
+		Value: &value,
+	}, nil
+}

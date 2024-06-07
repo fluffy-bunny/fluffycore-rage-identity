@@ -138,6 +138,12 @@ func (s *service) DoGet(c echo.Context) error {
 
 	var errors []string
 	if !fluffycore_utils.IsEmptyOrNil(model.Error) {
+		s.wellknownCookies.SetErrorCookie(c, &contracts_cookies.SetErrorCookieRequest{
+			Value: &contracts_cookies.ErrorCookie{
+				Code:  InternalError_OIDCLogin_099,
+				Error: model.Error,
+			},
+		})
 		errors = append(errors, model.Error)
 	}
 	session, err := s.getSession()
