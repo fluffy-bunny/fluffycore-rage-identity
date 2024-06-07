@@ -2,11 +2,20 @@ import { useMutation, useQuery } from "react-query";
 import { IconButton, Skeleton, Stack } from "@mui/material";
 import { GitHub, Google, Microsoft } from "@mui/icons-material";
 import { api } from "../../../api";
-import { ManifestIDP } from "../../../api/Api";
+import {
+  ExternalIdpStartExternalIDPLoginRequest,
+  ManifestIDP,
+} from "../../../api/Api";
 
 export const AuthSocialButtons = () => {
   const { isLoading, data } = useQuery("manifest", api.manifestList);
-  const { mutateAsync } = useMutation(api.startExternalLoginCreate);
+  const { mutateAsync } = useMutation(
+    (values: ExternalIdpStartExternalIDPLoginRequest) =>
+      api.startExternalLoginCreate(values, {
+        withCredentials: true,
+        withXSRFToken: true,
+      })
+  );
 
   if (!data || isLoading) {
     return (

@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   FormControl,
+  Link,
   Stack,
   TextField,
   Typography,
@@ -16,7 +17,13 @@ import { RoutePaths } from "../constants/routes";
 
 export const Page = () => {
   const { register, handleSubmit } = useForm<LoginModelsLoginPhaseOneRequest>();
-  const { mutateAsync, isLoading } = useMutation(api.loginPhaseOneCreate);
+  const { mutateAsync, isLoading } = useMutation(
+    (values: LoginModelsLoginPhaseOneRequest) =>
+      api.loginPhaseOneCreate(values, {
+        withXSRFToken: true,
+        withCredentials: true,
+      })
+  );
 
   return (
     <>
@@ -33,6 +40,9 @@ export const Page = () => {
             label="Email address"
             placeholder="Enter your email"
           />
+          <Box>
+            <Link href={RoutePaths.ForgotPassword}>Forgot password?</Link>
+          </Box>
         </FormControl>
         <FormControl fullWidth sx={{ marginTop: 3 }}>
           <Stack direction="row">
