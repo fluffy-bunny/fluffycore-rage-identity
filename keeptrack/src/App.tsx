@@ -1,27 +1,17 @@
-import React from "react";
-import { Route, Routes } from "react-router-dom";
+import React, { useState } from "react";
 import { RoutePaths } from "./constants/routes";
-import { AuthLayout } from "./components/auth/AuthLayout/AuthLayout";
+import { SignInPage } from "./pages/sign-in";
+import { SignUpPage } from "./pages/sign-up";
 
-const SignInPage = React.lazy(() =>
-  import("./pages/sign-in").then((module) => ({ default: module.Page }))
-);
+const pages = {
+  [RoutePaths.SignIn]: SignInPage,
+  [RoutePaths.SignUp]: SignUpPage,
+};
 
-const SignUpPage = React.lazy(() =>
-  import("./pages/sign-up").then((module) => ({ default: module.Page }))
-);
+export function App() {
+  const [currentPage, setCurrentPage] = useState(RoutePaths.SignIn);
 
-function App() {
-  return (
-    <Routes>
-      <Route path={RoutePaths.SignIn} element={<AuthLayout />}>
-        <Route index element={<SignInPage />} />
-      </Route>
-      <Route path={RoutePaths.SignUp} element={<AuthLayout />}>
-        <Route index element={<SignUpPage />} />
-      </Route>
-    </Routes>
-  );
+  const PageComponent = pages[currentPage];
+
+  return <PageComponent onNavigate={setCurrentPage} />;
 }
-
-export default App;
