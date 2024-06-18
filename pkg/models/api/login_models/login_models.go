@@ -1,12 +1,8 @@
 package login_models
 
-import (
-	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
-)
-
 const (
 	DIRECTIVE_Redirect                               = "redirect"
-	DIRECTIVE_FormPost                               = "formPost"
+	DIRECTIVE_StartExternalLogin                     = "startExternalLogin"
 	DIRECTIVE_LoginPhaseOne_UserDoesNotExist         = "userDoesNotExist"
 	DIRECTIVE_LoginPhaseOne_DisplayPasswordPage      = "displayPasswordPage"
 	DIRECTIVE_VerifyCode_DisplayVerifyCodePage       = "displayVerifyCodePage"
@@ -36,9 +32,9 @@ type (
 	DirectiveRedirect struct {
 		RedirectURI string `json:"redirectUri"`
 	}
-	DirectiveFormPost struct {
-		RedirectURI string             `json:"redirectUri"`
-		FormParams  []models.FormParam `json:"formParams"`
+
+	DirectiveStartExternalLogin struct {
+		Slug string `json:"slug"`
 	}
 	DirectiveDisplayPasswordPage struct {
 		Email      string `json:"email"`
@@ -55,7 +51,7 @@ type (
 		DirectiveRedirect            *DirectiveRedirect            `json:"directiveRedirect,omitempty"`
 		DirectiveDisplayPasswordPage *DirectiveDisplayPasswordPage `json:"directiveDisplayPasswordPage,omitempty"`
 		DirectiveEmailCodeChallenge  *DirectiveEmailCodeChallenge  `json:"directiveEmailCodeChallenge,omitempty"`
-		DirectiveFormPost            *DirectiveFormPost            `json:"directiveFormPost,omitempty"`
+		DirectiveStartExternalLogin  *DirectiveStartExternalLogin  `json:"directiveStartExternalLogin,omitempty"`
 	}
 
 	LoginPasswordRequest struct {
@@ -85,7 +81,7 @@ type (
 		Directive                   string                       `json:"directive" validate:"required"`
 		DirectiveRedirect           *DirectiveRedirect           `json:"directiveRedirect,omitempty"`
 		DirectiveEmailCodeChallenge *DirectiveEmailCodeChallenge `json:"directiveEmailCodeChallenge,omitempty"`
-		DirectiveFormPost           *DirectiveFormPost           `json:"directiveFormPost,omitempty"`
+		DirectiveStartExternalLogin *DirectiveStartExternalLogin `json:"directiveStartExternalLogin,omitempty"`
 		Message                     string                       `json:"message,omitempty"`
 		ErrorReason                 SignupErrorReason            `json:"errorReason,omitempty"`
 	}

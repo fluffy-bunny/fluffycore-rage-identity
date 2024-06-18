@@ -21,7 +21,6 @@ import (
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
-	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
@@ -131,17 +130,6 @@ func (s *service) Do(c echo.Context) error {
 		ErrorReason: login_models.SignupErrorReason_NoError,
 	}
 
-	session, err := s.getSession()
-	if err != nil {
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
-	}
-	sessionRequest, err := session.Get("request")
-	if err != nil {
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
-
-	}
-	authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
-
 	model.Email = strings.ToLower(model.Email)
 	// get the domain from the email
 	parts := strings.Split(model.Email, "@")
@@ -159,23 +147,9 @@ func (s *service) Do(c echo.Context) error {
 	}
 	if len(listIDPRequest.Idps) > 0 {
 		// this domain is claimed.
-		response.Directive = login_models.DIRECTIVE_FormPost
-		response.DirectiveFormPost = &login_models.DirectiveFormPost{
-			RedirectURI: wellknown_echo.ExternalIDPPath,
-			FormParams: []models.FormParam{
-				{
-					Name:  "state",
-					Value: authorizationRequest.State,
-				},
-				{
-					Name:  "idp_hint",
-					Value: listIDPRequest.Idps[0].Slug,
-				},
-				{
-					Name:  "directive",
-					Value: models.LoginDirective,
-				},
-			},
+		response.Directive = login_models.DIRECTIVE_StartExternalLogin
+		response.DirectiveStartExternalLogin = &login_models.DirectiveStartExternalLogin{
+			Slug: listIDPRequest.Idps[0].Slug,
 		}
 		return c.JSONPretty(http.StatusOK, response, "  ")
 	}
@@ -276,12 +250,4 @@ func (s *service) Do(c echo.Context) error {
 	response.Message = "User created"
 	return c.JSONPretty(http.StatusOK, response, "  ")
 
-}
-func (s *service) getSession() (contracts_sessions.ISession, error) {
-	session, err := s.oidcSession.GetSession()
-
-	if err != nil {
-		return nil, err
-	}
-	return session, nil
 }

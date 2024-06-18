@@ -117,6 +117,45 @@ fetch("/api/login-phase-one", {
     console.error("Error:", error);
   });
 
+// /api/login-phase-one for claimed domain
+//-----------------------------------------------------
+fetch("/api/login-phase-one", {
+  method: "POST",
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+  body: JSON.stringify({
+    email: "ghstahl@mapped.com",
+  }),
+})
+  .then((response) => response.json())
+  .then((data) => console.log(data))
+  .catch((error) => {
+    console.error("Error:", error);
+  });
+// /api/start-external-login for mapped-enterprise
+//-----------------------------------------------------
+fetch("/api/start-external-login", {
+  method: "POST",
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+  body: JSON.stringify({
+    slug: "mapped-enterprise",
+    directive: "login",
+  }),
+})
+  .then((response) => response.json())
+  .then((data) => console.log(JSON.stringify(data)))
+  .catch((error) => {
+    console.error("Error:", error);
+  });
 // /api/login-password
 //-----------------------------------------------------
 fetch("/api/login-password", {
