@@ -1,20 +1,24 @@
-import { useMutation, useQuery } from "react-query";
-import { IconButton, Skeleton, Stack } from "@mui/material";
-import { GitHub, Google, Microsoft } from "@mui/icons-material";
 import { api } from "../../../api";
 import {
   ExternalIdpStartExternalIDPLoginRequest,
   ManifestIDP,
 } from "../../../api/Api";
+import { useMutation, useQuery } from "react-query";
+import { IconButton, Skeleton, Stack } from "@mui/material";
+import { GitHub, Google, Microsoft } from "@mui/icons-material";
 
 export const AuthSocialButtons = () => {
   const { isLoading, data } = useQuery("manifest", api.manifestList);
   const { mutateAsync } = useMutation(
     (values: ExternalIdpStartExternalIDPLoginRequest) =>
-      api.startExternalLoginCreate(values, {
-        withCredentials: true,
-        withXSRFToken: true,
-      })
+      api.startExternalLoginCreate(values),
+    {
+      onSuccess: (data) => {
+        if (data.data.redirectUri) {
+          window.location.href = data.data.redirectUri;
+        }
+      },
+    }
   );
 
   if (!data || isLoading) {
