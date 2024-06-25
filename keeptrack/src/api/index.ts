@@ -1,7 +1,7 @@
 import { Api } from "./Api";
 
-export const { api, externalIdp, instance } = new Api({
-  baseURL: "http://localhost1.com:9044",
+export const { api, externalIdp, forgotPassword, instance } = new Api({
+  baseURL: process.env.REACT_APP_API_URL,
   withCredentials: true,
   withXSRFToken: true,
 });

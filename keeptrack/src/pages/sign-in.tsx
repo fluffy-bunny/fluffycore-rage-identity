@@ -1,19 +1,18 @@
 import { useForm } from "react-hook-form";
 import {
   Box,
-  Button,
   FormControl,
+  Link,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
 import { useMutation } from "react-query";
-import { api, externalIdp } from "../api";
+import { api } from "../api";
 import { LoadingButton } from "@mui/lab";
 import { LoginModelsLoginPhaseOneRequest } from "../api/Api";
 import { AuthLayout } from "../components/auth/AuthLayout/AuthLayout";
 import { AuthSocialButtons } from "../components/auth/AuthSocialButtons/AuthSocialButtons";
-import { getCSRF } from "../utils/cookies";
 import { RoutePaths } from "../constants/routes";
 
 export const SignInPage = ({
@@ -21,22 +20,28 @@ export const SignInPage = ({
 }: {
   onNavigate(route: string): void;
 }) => {
-  const { register, handleSubmit } = useForm<LoginModelsLoginPhaseOneRequest>();
+  const {
+    formState: { errors },
+    register,
+    handleSubmit,
+    getFieldState,
+  } = useForm<LoginModelsLoginPhaseOneRequest>();
   const { mutateAsync, isLoading } = useMutation(
     async (values: LoginModelsLoginPhaseOneRequest) => {
-      const response = await api.loginPhaseOneCreate(values);
+      const { data } = await api.loginPhaseOneCreate(values);
 
-      await externalIdp.externalIdpCreate(
-        {
-          ...response.data.directiveFormPost?.formParams,
-          // @ts-ignore
-          csrf: getCSRF(),
-        },
-        {
-          withCredentials: true,
-          withXSRFToken: true,
+      return api.startExternalLoginCreate({
+        // @ts-ignore
+        slug: data.directiveStartExternalLogin.slug,
+        directive: "login",
+      });
+    },
+    {
+      onSuccess: (data) => {
+        if (data.data.redirectUri) {
+          window.location.href = data.data.redirectUri;
         }
-      );
+      },
     }
   );
 
@@ -51,21 +56,36 @@ export const SignInPage = ({
       >
         <FormControl>
           <TextField
-            {...register("email")}
+            {...register("email", { required: "You must enter your email." })}
+            error={getFieldState("email").invalid}
+            helperText={errors.email?.message}
             label="Email address"
             placeholder="Enter your email"
           />
         </FormControl>
+        <Link
+          component="button"
+          onClick={() => onNavigate(RoutePaths.ForgotPassword)}
+        >
+          Forgot Password?
+        </Link>
         <FormControl fullWidth sx={{ marginTop: 3 }}>
           <Stack direction="row">
             <Stack direction="row" spacing={1} alignItems="center">
               <Typography>Sign in with socials</Typography>
               <AuthSocialButtons />
             </Stack>
-            <Stack direction="row" spacing={1} sx={{ marginLeft: "auto" }}>
-              <Button onClick={() => onNavigate(RoutePaths.SignUp)}>
+            <Stack
+              direction="row"
+              spacing={2}
+              sx={{ marginLeft: "auto", alignItems: "center" }}
+            >
+              <Link
+                component="button"
+                onClick={() => onNavigate(RoutePaths.SignUp)}
+              >
                 Sign Up
-              </Button>
+              </Link>
               <LoadingButton
                 loading={isLoading}
                 type="submit"

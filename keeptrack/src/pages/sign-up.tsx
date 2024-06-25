@@ -3,6 +3,7 @@ import {
   Box,
   Button,
   FormControl,
+  Link,
   Stack,
   TextField,
   Typography,
@@ -21,7 +22,12 @@ export const SignUpPage = ({
 }: {
   onNavigate(route: string): void;
 }) => {
-  const { register, handleSubmit } = useForm<LoginModelsSignupRequest>();
+  const {
+    formState: { errors },
+    register,
+    handleSubmit,
+    getFieldState,
+  } = useForm<LoginModelsSignupRequest>();
   const { mutateAsync, isLoading } = useMutation(
     async (values: LoginModelsSignupRequest) => {
       const response = await api.signupCreate(values, {
@@ -54,18 +60,27 @@ export const SignUpPage = ({
       >
         <FormControl>
           <TextField
-            {...register("email")}
+            {...register("email", { required: "You must enter your email." })}
+            error={getFieldState("email").invalid}
+            helperText={errors.email?.message}
             label="Email address"
             placeholder="Enter your email"
           />
         </FormControl>
         <FormControl>
           <TextField
-            {...register("password")}
+            {...register("password", {
+              required: "You must enter your password.",
+            })}
+            error={getFieldState("password").invalid}
+            helperText={errors.password?.message}
             label="Password"
             placeholder="Enter your password"
           />
         </FormControl>
+        <Link onClick={() => onNavigate(RoutePaths.ForgotPassword)}>
+          Forgot Password?
+        </Link>
         <FormControl fullWidth sx={{ marginTop: 3 }}>
           <Stack direction="row">
             <Stack direction="row" spacing={1} alignItems="center">

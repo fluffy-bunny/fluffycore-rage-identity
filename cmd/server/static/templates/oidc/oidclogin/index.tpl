@@ -13,7 +13,7 @@
 </body>
 
 {{template "footer" .}}
-    <script defer="defer" src="/static/build/static/js/main.f10b58c8.js"></script>
+    <script defer="defer" src="/static/build/static/js/main.js"></script>
 
 {{template "html_end" .}}
 {{end}}

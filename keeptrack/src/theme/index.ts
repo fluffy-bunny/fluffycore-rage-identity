@@ -1,21 +1,21 @@
-import { createTheme } from '@mui/material';
+import { createTheme } from "@mui/material";
 
 export const theme = createTheme({
   palette: {
     background: {
-      default: '#f0f4f9',
+      default: "#f0f4f9",
     },
   },
   components: {
     MuiButton: {
       defaultProps: {
-        size: 'large',
+        size: "large",
         disableElevation: true,
       },
       styleOverrides: {
         root: {
           borderRadius: 32,
-          textTransform: 'initial',
+          textTransform: "initial",
         },
       },
     },
@@ -26,7 +26,7 @@ export const theme = createTheme({
     },
     MuiFormControl: {
       defaultProps: {
-        margin: 'dense',
+        margin: "dense",
         fullWidth: true,
       },
     },
@@ -37,6 +37,17 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 32,
+        },
+      },
+    },
+    MuiLink: {
+      styleOverrides: {
+        root: {
+          fontSize: 15,
+          textDecoration: "none",
+          "&:hover": {
+            textDecoration: "underline",
+          },
         },
       },
     },

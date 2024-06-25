@@ -142,19 +142,12 @@ export interface VerifyUsernameVerifyUsernameResponse {
   userName?: string;
 }
 
-import type {
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse,
-  HeadersDefaults,
-  ResponseType,
-} from "axios";
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, HeadersDefaults, ResponseType } from "axios";
 import axios from "axios";
 
 export type QueryParamsType = Record<string | number, any>;
 
-export interface FullRequestParams
-  extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
+export interface FullRequestParams extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
   /** set parameter to `true` for call `securityWorker` for this request */
   secure?: boolean;
   /** request path */
@@ -169,15 +162,11 @@ export interface FullRequestParams
   body?: unknown;
 }
 
-export type RequestParams = Omit<
-  FullRequestParams,
-  "body" | "method" | "query" | "path"
->;
+export type RequestParams = Omit<FullRequestParams, "body" | "method" | "query" | "path">;
 
-export interface ApiConfig<SecurityDataType = unknown>
-  extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
+export interface ApiConfig<SecurityDataType = unknown> extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
   securityWorker?: (
-    securityData: SecurityDataType | null
+    securityData: SecurityDataType | null,
   ) => Promise<AxiosRequestConfig | void> | AxiosRequestConfig | void;
   secure?: boolean;
   format?: ResponseType;
@@ -197,16 +186,8 @@ export class HttpClient<SecurityDataType = unknown> {
   private secure?: boolean;
   private format?: ResponseType;
 
-  constructor({
-    securityWorker,
-    secure,
-    format,
-    ...axiosConfig
-  }: ApiConfig<SecurityDataType> = {}) {
-    this.instance = axios.create({
-      ...axiosConfig,
-      baseURL: axiosConfig.baseURL || "//localhost:9044",
-    });
+  constructor({ securityWorker, secure, format, ...axiosConfig }: ApiConfig<SecurityDataType> = {}) {
+    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "//localhost:9044" });
     this.secure = secure;
     this.format = format;
     this.securityWorker = securityWorker;
@@ -216,10 +197,7 @@ export class HttpClient<SecurityDataType = unknown> {
     this.securityData = data;
   };
 
-  protected mergeRequestParams(
-    params1: AxiosRequestConfig,
-    params2?: AxiosRequestConfig
-  ): AxiosRequestConfig {
+  protected mergeRequestParams(params1: AxiosRequestConfig, params2?: AxiosRequestConfig): AxiosRequestConfig {
     const method = params1.method || (params2 && params2.method);
 
     return {
@@ -227,11 +205,7 @@ export class HttpClient<SecurityDataType = unknown> {
       ...params1,
       ...(params2 || {}),
       headers: {
-        ...((method &&
-          this.instance.defaults.headers[
-            method.toLowerCase() as keyof HeadersDefaults
-          ]) ||
-          {}),
+        ...((method && this.instance.defaults.headers[method.toLowerCase() as keyof HeadersDefaults]) || {}),
         ...(params1.headers || {}),
         ...((params2 && params2.headers) || {}),
       },
@@ -249,15 +223,11 @@ export class HttpClient<SecurityDataType = unknown> {
   protected createFormData(input: Record<string, unknown>): FormData {
     return Object.keys(input || {}).reduce((formData, key) => {
       const property = input[key];
-      const propertyContent: any[] =
-        property instanceof Array ? property : [property];
+      const propertyContent: any[] = property instanceof Array ? property : [property];
 
       for (const formItem of propertyContent) {
         const isFileType = formItem instanceof Blob || formItem instanceof File;
-        formData.append(
-          key,
-          isFileType ? formItem : this.stringifyFormItem(formItem)
-        );
+        formData.append(key, isFileType ? formItem : this.stringifyFormItem(formItem));
       }
 
       return formData;
@@ -281,21 +251,11 @@ export class HttpClient<SecurityDataType = unknown> {
     const requestParams = this.mergeRequestParams(params, secureParams);
     const responseFormat = format || this.format || undefined;
 
-    if (
-      type === ContentType.FormData &&
-      body &&
-      body !== null &&
-      typeof body === "object"
-    ) {
+    if (type === ContentType.FormData && body && body !== null && typeof body === "object") {
       body = this.createFormData(body as Record<string, unknown>);
     }
 
-    if (
-      type === ContentType.Text &&
-      body &&
-      body !== null &&
-      typeof body !== "string"
-    ) {
+    if (type === ContentType.Text && body && body !== null && typeof body !== "string") {
       body = JSON.stringify(body);
     }
 
@@ -303,9 +263,7 @@ export class HttpClient<SecurityDataType = unknown> {
       ...requestParams,
       headers: {
         ...(requestParams.headers || {}),
-        ...(type && type !== ContentType.FormData
-          ? { "Content-Type": type }
-          : {}),
+        ...(type && type !== ContentType.FormData ? { "Content-Type": type } : {}),
       },
       params: query,
       responseType: responseFormat,
@@ -325,9 +283,7 @@ export class HttpClient<SecurityDataType = unknown> {
  *
  * This is a sample server Petstore server.
  */
-export class Api<
-  SecurityDataType extends unknown,
-> extends HttpClient<SecurityDataType> {
+export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
   wellKnown = {
     /**
      * @description get the public keys of the server.
@@ -386,10 +342,7 @@ export class Api<
      * @summary get the login manifest.
      * @request POST:/api/login-phase-one
      */
-    loginPhaseOneCreate: (
-      request: LoginModelsLoginPhaseOneRequest,
-      params: RequestParams = {}
-    ) =>
+    loginPhaseOneCreate: (request: LoginModelsLoginPhaseOneRequest, params: RequestParams = {}) =>
       this.request<LoginModelsLoginPhaseOneResponse, any>({
         path: `/api/login-phase-one`,
         method: "POST",
@@ -422,10 +375,7 @@ export class Api<
      * @summary get the login manifest.
      * @request POST:/api/password-reset-finish
      */
-    passwordResetFinishCreate: (
-      request: LoginModelsPasswordResetFinishRequest,
-      params: RequestParams = {}
-    ) =>
+    passwordResetFinishCreate: (request: LoginModelsPasswordResetFinishRequest, params: RequestParams = {}) =>
       this.request<LoginModelsPasswordResetFinishResponse, string>({
         path: `/api/password-reset-finish`,
         method: "POST",
@@ -442,10 +392,7 @@ export class Api<
      * @summary get the login manifest.
      * @request POST:/api/password-reset-start
      */
-    passwordResetStartCreate: (
-      request: LoginModelsPasswordResetStartRequest,
-      params: RequestParams = {}
-    ) =>
+    passwordResetStartCreate: (request: LoginModelsPasswordResetStartRequest, params: RequestParams = {}) =>
       this.request<LoginModelsPasswordResetStartResponse, any>({
         path: `/api/password-reset-start`,
         method: "POST",
@@ -462,10 +409,7 @@ export class Api<
      * @summary verify code.
      * @request POST:/api/signup
      */
-    signupCreate: (
-      request: LoginModelsSignupRequest,
-      params: RequestParams = {}
-    ) =>
+    signupCreate: (request: LoginModelsSignupRequest, params: RequestParams = {}) =>
       this.request<LoginModelsSignupResponse, string>({
         path: `/api/signup`,
         method: "POST",
@@ -482,10 +426,7 @@ export class Api<
      * @summary starts an external login ceremony with an external IDP
      * @request POST:/api/start-external-login
      */
-    startExternalLoginCreate: (
-      external_idp: ExternalIdpStartExternalIDPLoginRequest,
-      params: RequestParams = {}
-    ) =>
+    startExternalLoginCreate: (external_idp: ExternalIdpStartExternalIDPLoginRequest, params: RequestParams = {}) =>
       this.request<ExternalIdpStartExternalIDPLoginResponse, ApiErrorResponse>({
         path: `/api/start-external-login`,
         method: "POST",
@@ -502,10 +443,7 @@ export class Api<
      * @summary verify code.
      * @request POST:/api/verify-code
      */
-    verifyCodeCreate: (
-      request: LoginModelsVerifyCodeRequest,
-      params: RequestParams = {}
-    ) =>
+    verifyCodeCreate: (request: LoginModelsVerifyCodeRequest, params: RequestParams = {}) =>
       this.request<LoginModelsVerifyCodeResponse, string>({
         path: `/api/verify-code`,
         method: "POST",
@@ -522,10 +460,7 @@ export class Api<
      * @summary get the login manifest.
      * @request POST:/api/verify-password-strength
      */
-    verifyPasswordStrengthCreate: (
-      request: PasswordVerifyPasswordStrengthRequest,
-      params: RequestParams = {}
-    ) =>
+    verifyPasswordStrengthCreate: (request: PasswordVerifyPasswordStrengthRequest, params: RequestParams = {}) =>
       this.request<PasswordVerifyPasswordStrengthResponse, any>({
         path: `/api/verify-password-strength`,
         method: "POST",
@@ -581,7 +516,7 @@ export class Api<
         /** code */
         code: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<string, any>({
         path: `/external-idp`,
@@ -605,7 +540,7 @@ export class Api<
         /** code */
         code: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<string, any>({
         path: `/forgot-password`,
@@ -628,7 +563,7 @@ export class Api<
         /** code */
         code: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<string, any>({
         path: `/forgot-password`,
@@ -671,7 +606,7 @@ export class Api<
         /** state requested */
         state: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<string, any>({
         path: `/oauth2/callback`,
@@ -695,7 +630,7 @@ export class Api<
         /** code */
         code: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<string, any>({
         path: `/oidc-login`,
@@ -718,7 +653,7 @@ export class Api<
         /** code */
         code: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<string, any>({
         path: `/oidc-login`,
@@ -764,7 +699,7 @@ export class Api<
         /** acr_values requested */
         acr_values?: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<string, any>({
         path: `/oidc/v1/auth`,
@@ -798,7 +733,7 @@ export class Api<
         /** redirect_uri requested */
         redirect_uri: string;
       },
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
       this.request<string, any>({
         path: `/token`,
