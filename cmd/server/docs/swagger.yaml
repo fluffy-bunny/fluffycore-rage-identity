@@ -44,6 +44,16 @@ definitions:
       slug:
         type: string
     type: object
+  login_models.LoginPasswordRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
   login_models.LoginPasswordResponse:
     properties:
       directive:
@@ -265,6 +275,13 @@ paths:
       consumes:
       - '*/*'
       description: This is the configuration of the server..
+      parameters:
+      - description: LoginPasswordRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/login_models.LoginPasswordRequest'
       produces:
       - application/json
       responses:

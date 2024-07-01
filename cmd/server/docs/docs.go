@@ -83,6 +83,17 @@ const docTemplate = `{
                     "root"
                 ],
                 "summary": "get the login manifest.",
+                "parameters": [
+                    {
+                        "description": "LoginPasswordRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/login_models.LoginPasswordRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -872,6 +883,21 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "slug": {
+                    "type": "string"
+                }
+            }
+        },
+        "login_models.LoginPasswordRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
                     "type": "string"
                 }
             }

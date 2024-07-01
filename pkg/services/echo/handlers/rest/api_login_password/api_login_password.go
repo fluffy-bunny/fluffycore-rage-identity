@@ -97,6 +97,7 @@ func (s *service) validateLoginPasswordRequest(model *login_models.LoginPassword
 // @Tags root
 // @Accept */*
 // @Produce json
+// @Param		request body		login_models.LoginPasswordRequest	true	"LoginPasswordRequest"
 // @Success 200 {object} login_models.LoginPasswordResponse
 // @Failure 401 {string} string
 // @Router /api/login-password [post]
