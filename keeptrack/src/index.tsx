@@ -1,11 +1,13 @@
-import ReactDOM from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "react-query";
-import { CssBaseline, GlobalStyles, ThemeProvider } from "@mui/material";
-import { App } from "./App";
-import { theme } from "./theme";
+import { CssBaseline, GlobalStyles, ThemeProvider } from '@mui/material';
+import ReactDOM from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from 'react-query';
+
+import { App } from './App';
+import { NotificationProvider } from './contexts/NotificationContext/NotificationContext';
+import { theme } from './theme';
 
 const root = ReactDOM.createRoot(
-  document.getElementById("root") as HTMLElement
+  document.getElementById('root') as HTMLElement,
 );
 
 const queryClient = new QueryClient();
@@ -15,14 +17,16 @@ root.render(
     <CssBaseline>
       <GlobalStyles
         styles={{
-          html: { height: "100%" },
-          body: { height: "100%", margin: 0 },
-          "#root": { height: "100%", width: "100%" },
+          html: { height: '100%' },
+          body: { height: '100%', margin: 0 },
+          '#root': { height: '100%', width: '100%' },
         }}
       />
       <QueryClientProvider client={queryClient}>
-        <App />
+        <NotificationProvider>
+          <App />
+        </NotificationProvider>
       </QueryClientProvider>
     </CssBaseline>
-  </ThemeProvider>
+  </ThemeProvider>,
 );

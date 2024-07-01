@@ -1,7 +1,9 @@
 export const RoutePaths = {
-    Root: "/",
-    SignIn: "/login",
-    SignUp: "/signup",
-    ForgotPassword: "/forgot-password",
-  };
-  
+  Root: '/',
+  SignIn: '/login',
+  SignInPassword: '/login-password',
+  SignUp: '/signup',
+  ForgotPassword: '/forgot-password',
+  ResetPassword: '/reset-password',
+  VerifyCode: '/verify-code',
+};

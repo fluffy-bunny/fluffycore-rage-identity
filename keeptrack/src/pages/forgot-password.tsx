@@ -1,54 +1,57 @@
-import { useForm } from "react-hook-form";
-import {
-  Box,
-  FormControl,
-  Link,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { useMutation } from "react-query";
-import { LoadingButton } from "@mui/lab";
-import { forgotPassword } from "../api";
-import { AuthLayout } from "../components/auth/AuthLayout/AuthLayout";
-import { RoutePaths } from "../constants/routes";
-import { getCSRF } from "../utils/cookies";
+import { LoadingButton } from '@mui/lab';
+import { Box, FormControl, Link, Stack, TextField } from '@mui/material';
+import { useForm } from 'react-hook-form';
+import { useMutation } from 'react-query';
 
-export const ForgotPasswordPage = ({
-  onNavigate,
-}: {
-  onNavigate(route: string): void;
-}) => {
+import { api } from '../api';
+import { LoginModelsPasswordResetStartRequest } from '../api/Api';
+import { AuthLayout } from '../components/auth/AuthLayout/AuthLayout';
+import { RoutePaths } from '../constants/routes';
+import { useNotification } from '../contexts/NotificationContext/NotificationContext';
+import { PageProps } from '../types';
+
+export const ForgotPasswordPage: React.FC<PageProps> = ({ onNavigate }) => {
+  const { showNotification } = useNotification();
+
   const {
     formState: { errors },
     register,
     handleSubmit,
     getFieldState,
-  } = useForm<{ email: string }>();
+  } = useForm<LoginModelsPasswordResetStartRequest>();
+
   const { mutateAsync, isLoading } = useMutation(
-    forgotPassword.forgotPasswordCreate
+    (values: LoginModelsPasswordResetStartRequest) =>
+      api.passwordResetStartCreate(values, {
+        withCredentials: true,
+        withXSRFToken: true,
+      }),
+    {
+      onSuccess: (data) => {
+        if (data.data.directive === 'displayVerifyCodePage') {
+          return onNavigate(RoutePaths.VerifyCode, {
+            email: data.data.email,
+          });
+        }
+      },
+    },
   );
 
+  async function onSubmit(values: LoginModelsPasswordResetStartRequest) {
+    try {
+      await mutateAsync(values);
+    } catch (error) {
+      showNotification('Something went wrong. Please try again.', 'error');
+    }
+  }
+
   return (
-    <AuthLayout>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Forgot password
-      </Typography>
-      <Box
-        component="form"
-        onSubmit={handleSubmit((values) => {
-          // @ts-ignore
-          mutateAsync({
-            ...values,
-            // @ts-ignore
-            csrf: getCSRF(),
-          });
-        })}
-      >
+    <AuthLayout title="Forgot password">
+      <Box component="form" onSubmit={handleSubmit(onSubmit)}>
         <FormControl>
           <TextField
-            {...register("email", { required: "You must enter your email." })}
-            error={getFieldState("email").invalid}
+            {...register('email', { required: 'You must enter your email.' })}
+            error={getFieldState('email').invalid}
             helperText={errors.email?.message}
             label="Email address"
             placeholder="Enter your email"
@@ -59,7 +62,7 @@ export const ForgotPasswordPage = ({
             <Stack
               spacing={2}
               direction="row"
-              sx={{ marginLeft: "auto", alignItems: "center" }}
+              sx={{ marginLeft: 'auto', alignItems: 'center' }}
             >
               <Link
                 component="button"

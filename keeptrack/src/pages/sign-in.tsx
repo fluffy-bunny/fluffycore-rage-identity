@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { LoadingButton } from '@mui/lab';
 import {
   Box,
   FormControl,
@@ -6,58 +6,66 @@ import {
   Stack,
   TextField,
   Typography,
-} from "@mui/material";
-import { useMutation } from "react-query";
-import { api } from "../api";
-import { LoadingButton } from "@mui/lab";
-import { LoginModelsLoginPhaseOneRequest } from "../api/Api";
-import { AuthLayout } from "../components/auth/AuthLayout/AuthLayout";
-import { AuthSocialButtons } from "../components/auth/AuthSocialButtons/AuthSocialButtons";
-import { RoutePaths } from "../constants/routes";
+} from '@mui/material';
+import { useForm } from 'react-hook-form';
+import { useMutation } from 'react-query';
 
-export const SignInPage = ({
-  onNavigate,
-}: {
-  onNavigate(route: string): void;
-}) => {
+import { api } from '../api';
+import { LoginModelsLoginPhaseOneRequest } from '../api/Api';
+import { AuthLayout } from '../components/auth/AuthLayout/AuthLayout';
+import { AuthSocialButtons } from '../components/auth/AuthSocialButtons/AuthSocialButtons';
+import { RoutePaths } from '../constants/routes';
+import { useNotification } from '../contexts/NotificationContext/NotificationContext';
+import { useExternalLogin } from '../hooks/useExternalLogin';
+import { PageProps } from '../types';
+
+export const SignInPage: React.FC<PageProps> = ({ onNavigate }) => {
+  const { showNotification } = useNotification();
+  const [executeExternalLogin] = useExternalLogin();
+
   const {
     formState: { errors },
     register,
     handleSubmit,
     getFieldState,
-  } = useForm<LoginModelsLoginPhaseOneRequest>();
+  } = useForm<{ email: string; password?: string }>();
+
   const { mutateAsync, isLoading } = useMutation(
     async (values: LoginModelsLoginPhaseOneRequest) => {
-      const { data } = await api.loginPhaseOneCreate(values);
+      const { data: loginPhaseOneData } = await api.loginPhaseOneCreate(
+        values,
+        { withCredentials: true, withXSRFToken: true },
+      );
 
-      return api.startExternalLoginCreate({
-        // @ts-ignore
-        slug: data.directiveStartExternalLogin.slug,
-        directive: "login",
-      });
+      if (loginPhaseOneData.directive === 'displayPasswordPage') {
+        return onNavigate(RoutePaths.SignInPassword, {
+          email: loginPhaseOneData.email,
+        });
+      }
+
+      if (loginPhaseOneData.directive === 'startExternalLogin') {
+        return executeExternalLogin(
+          loginPhaseOneData.directiveStartExternalLogin?.slug,
+        );
+      }
     },
-    {
-      onSuccess: (data) => {
-        if (data.data.redirectUri) {
-          window.location.href = data.data.redirectUri;
-        }
-      },
-    }
   );
 
+  async function onSubmit(values: { email: string; password?: string }) {
+    try {
+      await mutateAsync(values);
+    } catch (error) {
+      showNotification('Something went wrong. Please try again.', 'error');
+    }
+  }
+
   return (
-    <AuthLayout>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Sign in
-      </Typography>
-      <Box
-        component="form"
-        onSubmit={handleSubmit((values) => mutateAsync(values))}
-      >
+    <AuthLayout title="Sign in">
+      <Box component="form" onSubmit={handleSubmit(onSubmit)}>
         <FormControl>
           <TextField
-            {...register("email", { required: "You must enter your email." })}
-            error={getFieldState("email").invalid}
+            {...register('email', { required: 'You must enter your email.' })}
+            error={getFieldState('email').invalid}
             helperText={errors.email?.message}
             label="Email address"
             placeholder="Enter your email"
@@ -78,7 +86,7 @@ export const SignInPage = ({
             <Stack
               direction="row"
               spacing={2}
-              sx={{ marginLeft: "auto", alignItems: "center" }}
+              sx={{ marginLeft: 'auto', alignItems: 'center' }}
             >
               <Link
                 component="button"

@@ -1,14 +1,15 @@
-import { api } from "../../../api";
+import { GitHub, Google, Microsoft } from '@mui/icons-material';
+import { IconButton, Skeleton, Stack } from '@mui/material';
+import { useMutation, useQuery } from 'react-query';
+
+import { api } from '../../../api';
 import {
   ExternalIdpStartExternalIDPLoginRequest,
   ManifestIDP,
-} from "../../../api/Api";
-import { useMutation, useQuery } from "react-query";
-import { IconButton, Skeleton, Stack } from "@mui/material";
-import { GitHub, Google, Microsoft } from "@mui/icons-material";
+} from '../../../api/Api';
 
 export const AuthSocialButtons = () => {
-  const { isLoading, data } = useQuery("manifest", api.manifestList);
+  const { isLoading, data } = useQuery('manifest', api.manifestList);
   const { mutateAsync } = useMutation(
     (values: ExternalIdpStartExternalIDPLoginRequest) =>
       api.startExternalLoginCreate(values),
@@ -18,7 +19,7 @@ export const AuthSocialButtons = () => {
           window.location.href = data.data.redirectUri;
         }
       },
-    }
+    },
   );
 
   if (!data || isLoading) {
@@ -44,7 +45,7 @@ export const AuthSocialButtons = () => {
             <IconButton
               key={item.slug}
               onClick={() =>
-                mutateAsync({ slug: item.slug, directive: "login" })
+                mutateAsync({ slug: item.slug, directive: 'login' })
               }
             >
               <Icon />
@@ -56,9 +57,9 @@ export const AuthSocialButtons = () => {
 };
 
 enum SocialIdps {
-  Google = "google-social",
-  Github = "github-social",
-  Microsoft = "microsoft-social",
+  Google = 'google-social',
+  Github = 'github-social',
+  Microsoft = 'microsoft-social',
 }
 
 const IconsMap: Record<SocialIdps, React.ElementType> = {

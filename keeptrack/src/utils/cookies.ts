@@ -1,17 +1,17 @@
 export function getCookieValue(name: string) {
-  const nameString = name + "=";
+  const nameString = name + '=';
 
-  const value = document.cookie.split(";").filter((item) => {
+  const value = document.cookie.split(';').filter((item) => {
     return item.includes(nameString);
   });
 
   if (value.length) {
     return value[0].substring(nameString.length, value[0].length);
   } else {
-    return "";
+    return '';
   }
 }
 
 export function getCSRF() {
-  return getCookieValue("_csrf");
+  return getCookieValue('_csrf');
 }
