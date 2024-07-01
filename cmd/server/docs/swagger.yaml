@@ -34,18 +34,14 @@ definitions:
       code:
         type: string
     type: object
-  login_models.DirectiveFormPost:
-    properties:
-      formParams:
-        items:
-          $ref: '#/definitions/models.FormParam'
-        type: array
-      redirectUri:
-        type: string
-    type: object
   login_models.DirectiveRedirect:
     properties:
       redirectUri:
+        type: string
+    type: object
+  login_models.DirectiveStartExternalLogin:
+    properties:
+      slug:
         type: string
     type: object
   login_models.LoginPasswordResponse:
@@ -77,10 +73,10 @@ definitions:
         $ref: '#/definitions/login_models.DirectiveDisplayPasswordPage'
       directiveEmailCodeChallenge:
         $ref: '#/definitions/login_models.DirectiveEmailCodeChallenge'
-      directiveFormPost:
-        $ref: '#/definitions/login_models.DirectiveFormPost'
       directiveRedirect:
         $ref: '#/definitions/login_models.DirectiveRedirect'
+      directiveStartExternalLogin:
+        $ref: '#/definitions/login_models.DirectiveStartExternalLogin'
       email:
         type: string
     required:
@@ -159,10 +155,10 @@ definitions:
         type: string
       directiveEmailCodeChallenge:
         $ref: '#/definitions/login_models.DirectiveEmailCodeChallenge'
-      directiveFormPost:
-        $ref: '#/definitions/login_models.DirectiveFormPost'
       directiveRedirect:
         $ref: '#/definitions/login_models.DirectiveRedirect'
+      directiveStartExternalLogin:
+        $ref: '#/definitions/login_models.DirectiveStartExternalLogin'
       email:
         type: string
       errorReason:
@@ -200,13 +196,6 @@ definitions:
         items:
           $ref: '#/definitions/manifest.IDP'
         type: array
-    type: object
-  models.FormParam:
-    properties:
-      name:
-        type: string
-      value:
-        type: string
     type: object
   password.VerifyPasswordStrengthRequest:
     properties:

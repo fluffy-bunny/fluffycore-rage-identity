@@ -860,24 +860,18 @@ const docTemplate = `{
                 }
             }
         },
-        "login_models.DirectiveFormPost": {
+        "login_models.DirectiveRedirect": {
             "type": "object",
             "properties": {
-                "formParams": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.FormParam"
-                    }
-                },
                 "redirectUri": {
                     "type": "string"
                 }
             }
         },
-        "login_models.DirectiveRedirect": {
+        "login_models.DirectiveStartExternalLogin": {
             "type": "object",
             "properties": {
-                "redirectUri": {
+                "slug": {
                     "type": "string"
                 }
             }
@@ -930,11 +924,11 @@ const docTemplate = `{
                 "directiveEmailCodeChallenge": {
                     "$ref": "#/definitions/login_models.DirectiveEmailCodeChallenge"
                 },
-                "directiveFormPost": {
-                    "$ref": "#/definitions/login_models.DirectiveFormPost"
-                },
                 "directiveRedirect": {
                     "$ref": "#/definitions/login_models.DirectiveRedirect"
+                },
+                "directiveStartExternalLogin": {
+                    "$ref": "#/definitions/login_models.DirectiveStartExternalLogin"
                 },
                 "email": {
                     "type": "string"
@@ -1051,11 +1045,11 @@ const docTemplate = `{
                 "directiveEmailCodeChallenge": {
                     "$ref": "#/definitions/login_models.DirectiveEmailCodeChallenge"
                 },
-                "directiveFormPost": {
-                    "$ref": "#/definitions/login_models.DirectiveFormPost"
-                },
                 "directiveRedirect": {
                     "$ref": "#/definitions/login_models.DirectiveRedirect"
+                },
+                "directiveStartExternalLogin": {
+                    "$ref": "#/definitions/login_models.DirectiveStartExternalLogin"
                 },
                 "email": {
                     "type": "string"
@@ -1109,17 +1103,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/manifest.IDP"
                     }
-                }
-            }
-        },
-        "models.FormParam": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "string"
                 }
             }
         },
