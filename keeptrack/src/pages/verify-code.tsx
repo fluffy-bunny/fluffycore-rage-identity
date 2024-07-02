@@ -9,16 +9,20 @@ import { AuthLayout } from '../components/auth/AuthLayout/AuthLayout';
 import { RoutePaths } from '../constants/routes';
 import { PageProps } from '../types';
 
-export const VerifyCodePage: React.FC<PageProps<{ email: string }>> = ({
-  pageProps,
-  onNavigate,
-}) => {
+export const VerifyCodePage: React.FC<
+  PageProps<{ email: string; code: string }>
+> = ({ pageProps, onNavigate }) => {
   const {
     formState: { errors },
     register,
     handleSubmit,
     getFieldState,
-  } = useForm<LoginModelsVerifyCodeRequest>();
+  } = useForm<LoginModelsVerifyCodeRequest>({
+    defaultValues: {
+      code: pageProps?.code,
+    },
+  });
+
   const { mutateAsync, isLoading } = useMutation(api.verifyCodeCreate, {
     onSuccess: (data) => {
       if (data.data.directiveRedirect?.redirectUri) {

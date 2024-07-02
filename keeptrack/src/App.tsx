@@ -30,6 +30,10 @@ export function App() {
 
   const PageComponent = pages[currentPageState.route];
 
+  if (!PageComponent) {
+    return <div>Page not found</div>;
+  }
+
   return (
     <PageComponent
       pageProps={currentPageState.pageProps}

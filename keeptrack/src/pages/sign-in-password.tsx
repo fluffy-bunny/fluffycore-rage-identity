@@ -41,7 +41,10 @@ export const SignInPasswordPage: React.FC<PageProps<{ email: string }>> = ({
       const { data } = await api.loginPasswordCreate(values);
 
       if (data.directive === 'displayVerifyCodePage') {
-        return onNavigate(RoutePaths.VerifyCode);
+        return onNavigate(RoutePaths.VerifyCode, {
+          email: data.email,
+          code: data.directiveEmailCodeChallenge?.code,
+        });
       }
     },
   );
@@ -65,6 +68,9 @@ export const SignInPasswordPage: React.FC<PageProps<{ email: string }>> = ({
             helperText={errors.email?.message}
             label="Email address"
             placeholder="Enter your email"
+            InputProps={{
+              readOnly: true,
+            }}
           />
         </FormControl>
         <FormControl>
@@ -75,6 +81,7 @@ export const SignInPasswordPage: React.FC<PageProps<{ email: string }>> = ({
             error={getFieldState('password').invalid}
             helperText={errors.password?.message}
             label="Password"
+            type="password"
             placeholder="Enter your password"
           />
         </FormControl>

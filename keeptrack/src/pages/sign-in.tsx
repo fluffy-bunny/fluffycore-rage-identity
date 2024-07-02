@@ -1,12 +1,5 @@
 import { LoadingButton } from '@mui/lab';
-import {
-  Box,
-  FormControl,
-  Link,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { FormControl, Link, Stack, TextField, Typography } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
 
@@ -28,7 +21,7 @@ export const SignInPage: React.FC<PageProps> = ({ onNavigate }) => {
     register,
     handleSubmit,
     getFieldState,
-  } = useForm<{ email: string; password?: string }>();
+  } = useForm<LoginModelsLoginPhaseOneRequest>();
 
   const { mutateAsync, isLoading } = useMutation(
     async (values: LoginModelsLoginPhaseOneRequest) => {
@@ -61,7 +54,7 @@ export const SignInPage: React.FC<PageProps> = ({ onNavigate }) => {
 
   return (
     <AuthLayout title="Sign in">
-      <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <FormControl>
           <TextField
             {...register('email', { required: 'You must enter your email.' })}
@@ -104,7 +97,7 @@ export const SignInPage: React.FC<PageProps> = ({ onNavigate }) => {
             </Stack>
           </Stack>
         </FormControl>
-      </Box>
+      </form>
     </AuthLayout>
   );
 };

@@ -31,6 +31,7 @@ export const ForgotPasswordPage: React.FC<PageProps> = ({ onNavigate }) => {
         if (data.data.directive === 'displayVerifyCodePage') {
           return onNavigate(RoutePaths.VerifyCode, {
             email: data.data.email,
+            code: data.data.directiveEmailCodeChallenge?.code,
           });
         }
       },

@@ -41,6 +41,7 @@ export const SignUpPage: React.FC<PageProps> = ({ onNavigate }) => {
       if (response.data.directive === 'displayVerifyCodePage') {
         return onNavigate(RoutePaths.VerifyCode, {
           email: response.data.email,
+          code: response.data.directiveEmailCodeChallenge?.code,
         });
       }
 
@@ -86,6 +87,7 @@ export const SignUpPage: React.FC<PageProps> = ({ onNavigate }) => {
             error={getFieldState('password').invalid}
             helperText={errors.password?.message}
             label="Password"
+            type="password"
             placeholder="Enter your password"
           />
         </FormControl>
