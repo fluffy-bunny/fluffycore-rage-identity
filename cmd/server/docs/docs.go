@@ -333,6 +333,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/user-identity-info": {
+            "get": {
+                "description": "get the highlevel UserIdentityInfo post login.",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the highlevel UserIdentityInfo post login.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api_user_identity_info.UserIdentityInfo"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/verify-code": {
             "post": {
                 "description": "verify code",
@@ -826,6 +867,17 @@ const docTemplate = `{
                 },
                 "internalCode": {
                     "type": "string"
+                }
+            }
+        },
+        "api_user_identity_info.UserIdentityInfo": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "passkeyEligible": {
+                    "type": "boolean"
                 }
             }
         },

@@ -7,6 +7,13 @@ definitions:
       internalCode:
         type: string
     type: object
+  api_user_identity_info.UserIdentityInfo:
+    properties:
+      email:
+        type: string
+      passkeyEligible:
+        type: boolean
+    type: object
   external_idp.StartExternalIDPLoginRequest:
     properties:
       directive:
@@ -439,6 +446,33 @@ paths:
           schema:
             $ref: '#/definitions/api.ErrorResponse'
       summary: starts an external login ceremony with an external IDP
+      tags:
+      - root
+  /api/user-identity-info:
+    get:
+      consumes:
+      - '*/*'
+      description: get the highlevel UserIdentityInfo post login.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_user_identity_info.UserIdentityInfo'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: get the highlevel UserIdentityInfo post login.
       tags:
       - root
   /api/verify-code:

@@ -279,3 +279,20 @@ fetch("/api/password-reset-finish", {
   .catch((error) => {
     console.error("Error:", error);
   });
+
+// /api/user-identity-info
+//-----------------------------------------------------
+fetch("/api/user-identity-info", {
+  method: "GET",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+})
+  .then((response) => {
+    return response.json();
+  })
+  .then((data) => {
+    console.log("finishResponse:", data);
+  });

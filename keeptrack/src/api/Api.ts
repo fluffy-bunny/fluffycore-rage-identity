@@ -14,6 +14,11 @@ export interface ApiErrorResponse {
   internalCode?: string;
 }
 
+export interface ApiUserIdentityInfoUserIdentityInfo {
+  email?: string;
+  passkeyEligible?: boolean;
+}
+
 export interface ExternalIdpStartExternalIDPLoginRequest {
   directive: string;
   slug: string;
@@ -493,6 +498,22 @@ export class Api<
         path: `/api/start-external-login`,
         method: 'POST',
         body: external_idp,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description get the highlevel UserIdentityInfo post login.
+     *
+     * @tags root
+     * @name UserIdentityInfoList
+     * @summary get the highlevel UserIdentityInfo post login.
+     * @request GET:/api/user-identity-info
+     */
+    userIdentityInfoList: (params: RequestParams = {}) =>
+      this.request<ApiUserIdentityInfoUserIdentityInfo, string>({
+        path: `/api/user-identity-info`,
+        method: 'GET',
         format: 'json',
         ...params,
       }),
