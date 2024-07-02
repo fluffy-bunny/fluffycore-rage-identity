@@ -6,7 +6,35 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 In the project directory, you can run:
 
-### `yarn start`
+## Development
+
+Run the go app.
+
+```bash
+ "name": "server-localhost1.com",
+```
+
+then navigate to.
+
+```bash
+http://localhost1.com:9044/oidc-login
+
+```
+
+This will activate the cookes that are required for api calls.
+
+```powershell
+yarn
+yarn start
+```
+
+This will launch to:
+
+```bash
+http://localhost1.com:3000/
+```
+
+You will se the login screen.
 
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
