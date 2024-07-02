@@ -14,6 +14,15 @@ definitions:
       passkeyEligible:
         type: boolean
     type: object
+  api_user_profile.Profile:
+    properties:
+      familyName:
+        type: string
+      givenName:
+        type: string
+      phoneNumber:
+        type: string
+    type: object
   external_idp.StartExternalIDPLoginRequest:
     properties:
       directive:
@@ -460,6 +469,59 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/api_user_identity_info.UserIdentityInfo'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: get the highlevel UserIdentityInfo post login.
+      tags:
+      - root
+  /api/user-profile:
+    get:
+      consumes:
+      - '*/*'
+      description: get the highlevel UserIdentityInfo post login.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_user_profile.Profile'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: get the highlevel UserIdentityInfo post login.
+      tags:
+      - root
+    post:
+      consumes:
+      - '*/*'
+      description: get the highlevel UserIdentityInfo post login.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_user_profile.Profile'
         "401":
           description: Unauthorized
           schema:

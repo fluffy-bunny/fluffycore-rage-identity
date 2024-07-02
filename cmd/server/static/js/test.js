@@ -296,3 +296,33 @@ fetch("/api/user-identity-info", {
   .then((data) => {
     console.log("finishResponse:", data);
   });
+
+//   /api/user-profile
+//-----------------------------------------------------
+fetch("/api/user-profile", {
+  method: "GET",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+})
+  .then((response) => {
+    return response.json();
+  })
+  .then((data) => {
+    console.log("finishResponse:", data);
+  });
+
+fetch("/api/user-profile", {
+  method: "POST",
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+  body: JSON.stringify({
+    givenName: 'bugs', familyName: 'bunny', phoneNumber: '555-1212'
+  }),
+});

@@ -60,6 +60,7 @@ var (
 	API_Signup                 = "/api/signup"
 	API_PasswordResetStart     = "/api/password-reset-start"
 	API_PasswordResetFinish    = "/api/password-reset-finish"
+	API_UserProfilePath        = "/api/user-profile"
 )
 
 type Paths struct {
