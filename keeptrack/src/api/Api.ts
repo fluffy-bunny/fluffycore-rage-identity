@@ -19,6 +19,12 @@ export interface ApiUserIdentityInfoUserIdentityInfo {
   passkeyEligible?: boolean;
 }
 
+export interface ApiUserProfileProfile {
+  familyName?: string;
+  givenName?: string;
+  phoneNumber?: string;
+}
+
 export interface ExternalIdpStartExternalIDPLoginRequest {
   directive: string;
   slug: string;
@@ -514,6 +520,38 @@ export class Api<
       this.request<ApiUserIdentityInfoUserIdentityInfo, string>({
         path: `/api/user-identity-info`,
         method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description get the highlevel UserIdentityInfo post login.
+     *
+     * @tags root
+     * @name UserProfileList
+     * @summary get the highlevel UserIdentityInfo post login.
+     * @request GET:/api/user-profile
+     */
+    userProfileList: (params: RequestParams = {}) =>
+      this.request<ApiUserProfileProfile, string>({
+        path: `/api/user-profile`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description get the highlevel UserIdentityInfo post login.
+     *
+     * @tags root
+     * @name UserProfileCreate
+     * @summary get the highlevel UserIdentityInfo post login.
+     * @request POST:/api/user-profile
+     */
+    userProfileCreate: (params: RequestParams = {}) =>
+      this.request<ApiUserProfileProfile, string>({
+        path: `/api/user-profile`,
+        method: 'POST',
         format: 'json',
         ...params,
       }),
