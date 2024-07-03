@@ -92,7 +92,7 @@ func (s *service) validateVerifyCodeRequest(model *login_models.VerifyCodeReques
 // @Summary verify code.
 // @Description verify code
 // @Tags root
-// @Accept */*
+// @Accept json
 // @Produce json
 // @Param		request body		login_models.VerifyCodeRequest	true	"VerifyCodeRequest"
 // @Success 200 {object} login_models.VerifyCodeResponse

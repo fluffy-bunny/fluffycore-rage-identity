@@ -388,6 +388,7 @@ export class Api<
         path: `/api/login-password`,
         method: 'POST',
         body: request,
+        type: ContentType.Json,
         format: 'json',
         ...params,
       }),
@@ -408,6 +409,7 @@ export class Api<
         path: `/api/login-phase-one`,
         method: 'POST',
         body: request,
+        type: ContentType.Json,
         format: 'json',
         ...params,
       }),
@@ -444,6 +446,7 @@ export class Api<
         path: `/api/password-reset-finish`,
         method: 'POST',
         body: request,
+        type: ContentType.Json,
         format: 'json',
         ...params,
       }),
@@ -464,6 +467,7 @@ export class Api<
         path: `/api/password-reset-start`,
         method: 'POST',
         body: request,
+        type: ContentType.Json,
         format: 'json',
         ...params,
       }),
@@ -484,6 +488,7 @@ export class Api<
         path: `/api/signup`,
         method: 'POST',
         body: request,
+        type: ContentType.Json,
         format: 'json',
         ...params,
       }),
@@ -525,11 +530,11 @@ export class Api<
       }),
 
     /**
-     * @description get the highlevel UserIdentityInfo post login.
+     * @description set user profile.
      *
      * @tags root
      * @name UserProfileList
-     * @summary get the highlevel UserIdentityInfo post login.
+     * @summary set user profile.
      * @request GET:/api/user-profile
      */
     userProfileList: (params: RequestParams = {}) =>
@@ -541,17 +546,22 @@ export class Api<
       }),
 
     /**
-     * @description get the highlevel UserIdentityInfo post login.
+     * @description get user profile.
      *
      * @tags root
      * @name UserProfileCreate
-     * @summary get the highlevel UserIdentityInfo post login.
+     * @summary get user profile.
      * @request POST:/api/user-profile
      */
-    userProfileCreate: (params: RequestParams = {}) =>
+    userProfileCreate: (
+      request: ApiUserProfileProfile,
+      params: RequestParams = {},
+    ) =>
       this.request<ApiUserProfileProfile, string>({
         path: `/api/user-profile`,
         method: 'POST',
+        body: request,
+        type: ContentType.Json,
         format: 'json',
         ...params,
       }),
@@ -572,6 +582,7 @@ export class Api<
         path: `/api/verify-code`,
         method: 'POST',
         body: request,
+        type: ContentType.Json,
         format: 'json',
         ...params,
       }),
@@ -592,6 +603,7 @@ export class Api<
         path: `/api/verify-password-strength`,
         method: 'POST',
         body: request,
+        type: ContentType.Json,
         format: 'json',
         ...params,
       }),
@@ -608,6 +620,7 @@ export class Api<
       this.request<VerifyUsernameVerifyUsernameResponse, any>({
         path: `/api/verify-username`,
         method: 'POST',
+        type: ContentType.Json,
         format: 'json',
         ...params,
       }),

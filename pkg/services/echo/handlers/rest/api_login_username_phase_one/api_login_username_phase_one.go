@@ -92,11 +92,11 @@ func (s *service) validateLoginPhaseOneRequest(model *login_models.LoginPhaseOne
 	return nil
 }
 
-// API Manifest godoc
+// API LoginUserPhaseOne godoc
 // @Summary get the login manifest.
 // @Description This is the configuration of the server..
 // @Tags root
-// @Accept */*
+// @Accept json
 // @Produce json
 // @Param		request body		login_models.LoginPhaseOneRequest	true	"LoginPhaseOneRequest"
 // @Success 200 {object} login_models.LoginPhaseOneResponse

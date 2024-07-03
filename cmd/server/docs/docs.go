@@ -74,7 +74,7 @@ const docTemplate = `{
             "post": {
                 "description": "This is the configuration of the server..",
                 "consumes": [
-                    "*/*"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -114,7 +114,7 @@ const docTemplate = `{
             "post": {
                 "description": "This is the configuration of the server..",
                 "consumes": [
-                    "*/*"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -147,9 +147,6 @@ const docTemplate = `{
         "/api/manifest": {
             "get": {
                 "description": "This is the configuration of the server..",
-                "consumes": [
-                    "*/*"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -171,7 +168,7 @@ const docTemplate = `{
             "post": {
                 "description": "This is the configuration of the server..",
                 "consumes": [
-                    "*/*"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -211,7 +208,7 @@ const docTemplate = `{
             "post": {
                 "description": "This is the configuration of the server..",
                 "consumes": [
-                    "*/*"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -245,7 +242,7 @@ const docTemplate = `{
             "post": {
                 "description": "verify code",
                 "consumes": [
-                    "*/*"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -336,9 +333,6 @@ const docTemplate = `{
         "/api/user-identity-info": {
             "get": {
                 "description": "get the highlevel UserIdentityInfo post login.",
-                "consumes": [
-                    "*/*"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -376,17 +370,14 @@ const docTemplate = `{
         },
         "/api/user-profile": {
             "get": {
-                "description": "get the highlevel UserIdentityInfo post login.",
-                "consumes": [
-                    "*/*"
-                ],
+                "description": "set user profile.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "root"
                 ],
-                "summary": "get the highlevel UserIdentityInfo post login.",
+                "summary": "set user profile.",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -415,9 +406,9 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "get the highlevel UserIdentityInfo post login.",
+                "description": "get user profile.",
                 "consumes": [
-                    "*/*"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -425,7 +416,18 @@ const docTemplate = `{
                 "tags": [
                     "root"
                 ],
-                "summary": "get the highlevel UserIdentityInfo post login.",
+                "summary": "get user profile.",
+                "parameters": [
+                    {
+                        "description": "Profile",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api_user_profile.Profile"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -458,7 +460,7 @@ const docTemplate = `{
             "post": {
                 "description": "verify code",
                 "consumes": [
-                    "*/*"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -498,7 +500,7 @@ const docTemplate = `{
             "post": {
                 "description": "This is the configuration of the server..",
                 "consumes": [
-                    "*/*"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -532,7 +534,7 @@ const docTemplate = `{
             "post": {
                 "description": "This is the configuration of the server..",
                 "consumes": [
-                    "*/*"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"

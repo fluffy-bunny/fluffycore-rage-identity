@@ -289,7 +289,7 @@ paths:
   /api/login-password:
     post:
       consumes:
-      - '*/*'
+      - application/json
       description: This is the configuration of the server..
       parameters:
       - description: LoginPasswordRequest
@@ -315,7 +315,7 @@ paths:
   /api/login-phase-one:
     post:
       consumes:
-      - '*/*'
+      - application/json
       description: This is the configuration of the server..
       parameters:
       - description: LoginPhaseOneRequest
@@ -336,8 +336,6 @@ paths:
       - root
   /api/manifest:
     get:
-      consumes:
-      - '*/*'
       description: This is the configuration of the server..
       produces:
       - application/json
@@ -352,7 +350,7 @@ paths:
   /api/password-reset-finish:
     post:
       consumes:
-      - '*/*'
+      - application/json
       description: This is the configuration of the server..
       parameters:
       - description: PasswordResetStartRequest
@@ -378,7 +376,7 @@ paths:
   /api/password-reset-start:
     post:
       consumes:
-      - '*/*'
+      - application/json
       description: This is the configuration of the server..
       parameters:
       - description: PasswordResetStartRequest
@@ -400,7 +398,7 @@ paths:
   /api/signup:
     post:
       consumes:
-      - '*/*'
+      - application/json
       description: verify code
       parameters:
       - description: SignupRequest
@@ -459,8 +457,6 @@ paths:
       - root
   /api/user-identity-info:
     get:
-      consumes:
-      - '*/*'
       description: get the highlevel UserIdentityInfo post login.
       produces:
       - application/json
@@ -486,9 +482,7 @@ paths:
       - root
   /api/user-profile:
     get:
-      consumes:
-      - '*/*'
-      description: get the highlevel UserIdentityInfo post login.
+      description: set user profile.
       produces:
       - application/json
       responses:
@@ -508,13 +502,20 @@ paths:
           description: Internal Server Error
           schema:
             type: string
-      summary: get the highlevel UserIdentityInfo post login.
+      summary: set user profile.
       tags:
       - root
     post:
       consumes:
-      - '*/*'
-      description: get the highlevel UserIdentityInfo post login.
+      - application/json
+      description: get user profile.
+      parameters:
+      - description: Profile
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api_user_profile.Profile'
       produces:
       - application/json
       responses:
@@ -534,13 +535,13 @@ paths:
           description: Internal Server Error
           schema:
             type: string
-      summary: get the highlevel UserIdentityInfo post login.
+      summary: get user profile.
       tags:
       - root
   /api/verify-code:
     post:
       consumes:
-      - '*/*'
+      - application/json
       description: verify code
       parameters:
       - description: VerifyCodeRequest
@@ -566,7 +567,7 @@ paths:
   /api/verify-password-strength:
     post:
       consumes:
-      - '*/*'
+      - application/json
       description: This is the configuration of the server..
       parameters:
       - description: LoginPhaseOneRequest
@@ -588,7 +589,7 @@ paths:
   /api/verify-username:
     post:
       consumes:
-      - '*/*'
+      - application/json
       description: This is the configuration of the server..
       produces:
       - application/json

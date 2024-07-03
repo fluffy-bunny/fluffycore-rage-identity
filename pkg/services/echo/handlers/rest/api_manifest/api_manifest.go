@@ -52,7 +52,6 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Summary get the login manifest.
 // @Description This is the configuration of the server..
 // @Tags root
-// @Accept */*
 // @Produce json
 // @Success 200 {object} manifest.Manifest
 // @Router /api/manifest [get]

@@ -104,7 +104,7 @@ func (s *service) validateSignupRequest(model *login_models.SignupRequest) error
 // @Summary verify code.
 // @Description verify code
 // @Tags root
-// @Accept */*
+// @Accept json
 // @Produce json
 // @Param		request body		login_models.SignupRequest	true	"SignupRequest"
 // @Success 200 {object} login_models.SignupResponse

@@ -73,7 +73,6 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Summary get the highlevel UserIdentityInfo post login.
 // @Description get the highlevel UserIdentityInfo post login.
 // @Tags root
-// @Accept */*
 // @Produce json
 // @Success 200 {object} api_user_identity_info.UserIdentityInfo
 // @Failure 401 {string} string

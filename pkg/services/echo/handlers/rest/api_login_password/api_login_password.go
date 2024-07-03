@@ -95,7 +95,7 @@ func (s *service) validateLoginPasswordRequest(model *login_models.LoginPassword
 // @Summary get the login manifest.
 // @Description This is the configuration of the server..
 // @Tags root
-// @Accept */*
+// @Accept  json
 // @Produce json
 // @Param		request body		login_models.LoginPasswordRequest	true	"LoginPasswordRequest"
 // @Success 200 {object} login_models.LoginPasswordResponse

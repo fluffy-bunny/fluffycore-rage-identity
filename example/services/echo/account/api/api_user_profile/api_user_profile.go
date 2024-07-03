@@ -85,18 +85,6 @@ type Profile struct {
 	PhoneNumber string `json:"phoneNumber"`
 }
 
-// API UserIdentityInfo godoc
-// @Summary get the highlevel UserIdentityInfo post login.
-// @Description get the highlevel UserIdentityInfo post login.
-// @Tags root
-// @Accept */*
-// @Produce json
-// @Success 200 {object} Profile
-// @Failure 401 {string} string
-// @Failure 404 {string} string
-// @Failure 500 {string} string
-// @Router /api/user-profile [post]
-// @Router /api/user-profile [get]
 func (s *service) Do(c echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
@@ -109,6 +97,19 @@ func (s *service) Do(c echo.Context) error {
 	// return not found
 	return c.NoContent(http.StatusNotFound)
 }
+
+// API GetUserProfile godoc
+// @Summary get user profile.
+// @Description get user profile.
+// @Tags root
+// @Accept 	json
+// @Produce json
+// @Param		request body		Profile	true	"Profile"
+// @Success 200 {object} Profile
+// @Failure 401 {string} string
+// @Failure 404 {string} string
+// @Failure 500 {string} string
+// @Router /api/user-profile [post]
 func (s *service) DoPost(c echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
@@ -168,6 +169,17 @@ func (s *service) DoPost(c echo.Context) error {
 	return c.JSONPretty(http.StatusOK, model, "  ")
 
 }
+
+// API PutUserProfile godoc
+// @Summary set user profile.
+// @Description set user profile.
+// @Tags root
+// @Produce json
+// @Success 200 {object} Profile
+// @Failure 401 {string} string
+// @Failure 404 {string} string
+// @Failure 500 {string} string
+// @Router /api/user-profile [get]
 func (s *service) DoGet(c echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
