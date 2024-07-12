@@ -50,7 +50,6 @@ export const SignInPasswordPage: React.FC<PageProps<{ email: string }>> = ({
   );
 
   async function onSubmit(values: LoginModelsLoginPasswordRequest) {
-    console.log({ values });
     try {
       await mutateAsync(values);
     } catch (error) {

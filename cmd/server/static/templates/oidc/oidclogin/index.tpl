@@ -14,6 +14,5 @@
 
 {{template "footer" .}}
     <script defer="defer" src="/static/build/static/js/main.js"></script>
-
 {{template "html_end" .}}
 {{end}}

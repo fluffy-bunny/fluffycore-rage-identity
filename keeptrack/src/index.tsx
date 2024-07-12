@@ -5,10 +5,12 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { App } from './App';
 import { NotificationProvider } from './contexts/NotificationContext/NotificationContext';
 import { theme } from './theme';
+import { AppType } from './types';
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement,
-);
+const rootElement = document.getElementById('root') as HTMLElement;
+const rootAppAttribute = rootElement.getAttribute('data-app') as AppType;
+
+const root = ReactDOM.createRoot(rootElement);
 
 const queryClient = new QueryClient();
 
@@ -24,7 +26,7 @@ root.render(
       />
       <QueryClientProvider client={queryClient}>
         <NotificationProvider>
-          <App />
+          <App app={rootAppAttribute} />
         </NotificationProvider>
       </QueryClientProvider>
     </CssBaseline>

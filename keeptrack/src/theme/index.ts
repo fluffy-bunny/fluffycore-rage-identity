@@ -36,7 +36,7 @@ export const theme = createTheme({
       },
       styleOverrides: {
         root: {
-          borderRadius: 32,
+          borderRadius: 24,
         },
       },
     },
@@ -48,6 +48,21 @@ export const theme = createTheme({
           '&:hover': {
             textDecoration: 'underline',
           },
+        },
+      },
+    },
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 4,
+        },
+      },
+    },
+    MuiListItemIcon: {
+      styleOverrides: {
+        root: {
+          minWidth: 'auto',
+          marginRight: 8,
         },
       },
     },

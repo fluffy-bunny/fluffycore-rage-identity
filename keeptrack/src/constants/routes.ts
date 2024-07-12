@@ -6,4 +6,8 @@ export const RoutePaths = {
   ForgotPassword: '/forgot-password',
   ResetPassword: '/reset-password',
   VerifyCode: '/verify-code',
+  Profile: '/profile',
+  ProfilePersonalInformation: '/profile/personal',
+  ProfileSecuritySettings: '/profile/security',
+  ProfilePasskeysManagement: '/profile/passkey-management',
 };
