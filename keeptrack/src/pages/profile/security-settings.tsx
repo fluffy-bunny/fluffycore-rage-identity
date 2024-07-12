@@ -1,44 +1,48 @@
 import { LoadingButton } from '@mui/lab';
-import { FormControl, TextField, Typography } from '@mui/material';
-import { useForm } from 'react-hook-form';
+import { Typography } from '@mui/material';
+import { useContext } from 'react';
 import { useMutation } from 'react-query';
 
 import { api } from '../../api';
-import { LoginModelsPasswordResetFinishRequest } from '../../api/Api';
 import { RoutePaths } from '../../constants/routes';
+import { AppContext } from '../../contexts/AppContext/AppContext';
 import { useNotification } from '../../contexts/NotificationContext/NotificationContext';
-import { PageProps } from '../../types';
+import { UserContext } from '../../contexts/UserContext/UserContext';
+import { AppType, PageProps } from '../../types';
 
 export const UserProfileSecuritySettingsPage: React.FC<PageProps> = ({
   onNavigate,
 }) => {
+  const { user } = useContext(UserContext);
+  const { setApp } = useContext(AppContext);
   const { showNotification } = useNotification();
 
   const { mutateAsync, isLoading } = useMutation(
-    (values: LoginModelsPasswordResetFinishRequest) =>
-      api.passwordResetFinishCreate(values, {
-        withCredentials: true,
-        withXSRFToken: true,
-      }),
+    () =>
+      api.passwordResetStartCreate(
+        {
+          email: user?.email!,
+        },
+        {
+          withCredentials: true,
+          withXSRFToken: true,
+        },
+      ),
     {
       onSuccess: (data) => {
-        if (data.data.directive === 'displayLoginPhaseOnePage') {
-          return onNavigate(RoutePaths.SignIn);
+        if (data.data.directive === 'displayVerifyCodePage') {
+          onNavigate(RoutePaths.VerifyCode, {
+            code: data.data.directiveEmailCodeChallenge?.code,
+          });
+          setApp(AppType.Auth);
         }
       },
     },
   );
 
-  const {
-    formState: { errors },
-    register,
-    handleSubmit,
-    getFieldState,
-  } = useForm<LoginModelsPasswordResetFinishRequest>();
-
-  const onSubmit = async (values: LoginModelsPasswordResetFinishRequest) => {
+  const onResetPassowrd = async () => {
     try {
-      await mutateAsync(values);
+      await mutateAsync();
     } catch (error) {
       showNotification('Something went wrong. Please try again.', 'error');
     }
@@ -49,40 +53,13 @@ export const UserProfileSecuritySettingsPage: React.FC<PageProps> = ({
       <Typography variant="h4" component="h1" gutterBottom>
         Reset Password
       </Typography>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <FormControl>
-          <TextField
-            {...register('password', {
-              required: 'You must enter your password.',
-            })}
-            error={getFieldState('password').invalid}
-            helperText={errors.password?.message}
-            label="Password"
-            type="password"
-          />
-        </FormControl>
-        <FormControl>
-          <TextField
-            {...register('passwordConfirm', {
-              required: 'You must enter your password confirmation.',
-            })}
-            error={getFieldState('passwordConfirm').invalid}
-            helperText={errors.passwordConfirm?.message}
-            label="Confirm password"
-            type="password"
-          />
-        </FormControl>
-        <FormControl>
-          <LoadingButton
-            type="submit"
-            variant="contained"
-            loading={isLoading}
-            sx={{ marginLeft: 'auto' }}
-          >
-            Save
-          </LoadingButton>
-        </FormControl>
-      </form>
+      <LoadingButton
+        variant="contained"
+        loading={isLoading}
+        onClick={onResetPassowrd}
+      >
+        Reset
+      </LoadingButton>
     </>
   );
 };

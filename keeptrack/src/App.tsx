@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { MainLayout } from './components/MainLayout/MainLayout';
 import { ProfileLayout } from './components/profile/ProfileLayout/ProfileLayout';
 import { RoutePaths } from './constants/routes';
+import { AppContext } from './contexts/AppContext/AppContext';
 import { UserProvider } from './contexts/UserContext/UserContext';
 import { ForgotPasswordPage } from './pages/forgot-password';
 import { UserProfilePasskeysManagementPage } from './pages/profile/passkeys-management';
@@ -37,7 +38,10 @@ const pages: Record<
 };
 
 export function App({ app }: { app: AppType | null }) {
-  const currentApp = app === null ? AppType.Auth : app;
+  const [currentApp, setCurrentApp] = useState<AppType>(() =>
+    app === null ? AppType.Auth : app,
+  );
+
   const [currentPageState, setCurrentPageState] = useState<{
     route: string;
     pageProps: any;
@@ -78,5 +82,14 @@ export function App({ app }: { app: AppType | null }) {
     ),
   };
 
-  return components[currentApp] || <div>Page not found</div>;
+  return (
+    <AppContext.Provider
+      value={{
+        app: currentApp,
+        setApp: (appType: AppType) => setCurrentApp(appType),
+      }}
+    >
+      {components[currentApp] || <div>Page not found</div>}
+    </AppContext.Provider>
+  );
 }

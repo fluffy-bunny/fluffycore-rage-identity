@@ -1,4 +1,4 @@
-import { CircularProgress } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import { createContext } from 'react';
 
 import {
@@ -26,7 +26,11 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const userIdentity = useUserIdentity();
 
   if (userProfile.isLoading || userIdentity.isLoading) {
-    return <CircularProgress />;
+    return (
+      <Box sx={{ display: 'flex', height: '100%' }}>
+        <CircularProgress sx={{ margin: 'auto' }} />
+      </Box>
+    );
   }
 
   return (

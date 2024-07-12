@@ -15,7 +15,10 @@ export const UserProfilePersonalInformationPage: React.FC<PageProps> = () => {
   const { showNotification } = useNotification();
 
   const { mutateAsync, isLoading } = useMutation(api.userProfileCreate, {
-    onSuccess: () => refetch?.(),
+    onSuccess: () => {
+      refetch?.();
+      showNotification('Personal information has been updated.', 'success');
+    },
   });
 
   const {
