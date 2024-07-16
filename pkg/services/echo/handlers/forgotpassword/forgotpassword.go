@@ -108,7 +108,7 @@ func (s *service) DoGet(c echo.Context) error {
 		log.Error().Err(err).Msg("c.Bind")
 		return s.TeleportBackToLogin(c, InternalError_ForgotPassword_099)
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 	err := s.validateForgotPasswordGetRequest(model)
 	if err != nil {
 		log.Error().Err(err).Msg("validateForgotPasswordGetRequest")
@@ -151,7 +151,7 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("Bind")
 		return s.TeleportBackToLogin(c, InternalError_ForgotPassword_099)
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 
 	errors, err := s.validateForgotPasswordPostRequest(model)
 	if err != nil {

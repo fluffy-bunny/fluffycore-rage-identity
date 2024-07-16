@@ -106,7 +106,7 @@ func (s *service) Do(c echo.Context) error {
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
-	log.Info().Msg("WebAuthN_Login_Finish")
+	log.Debug().Msg("WebAuthN_Login_Finish")
 	getWebAuthNCookieResponse, err := s.wellknownCookies.GetWebAuthNCookie(c)
 	if err != nil {
 		log.Error().Err(err).Msg("GetWebAuthNCookie")

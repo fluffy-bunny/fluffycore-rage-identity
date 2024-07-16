@@ -187,7 +187,7 @@ func (s *service) Do(c echo.Context) error {
 		SubjectId: "password.reset.changed.subject",
 		BodyId:    "password.reset.changed.message",
 	}
-	log.Info().Interface("sendSimpleEmailRequest", sendSimpleEmailRequest).Err(err).Msg("SendEmail Reset Password")
+	log.Debug().Interface("sendSimpleEmailRequest", sendSimpleEmailRequest).Err(err).Msg("SendEmail Reset Password")
 	_, err = s.EmailService().SendSimpleEmail(ctx, sendSimpleEmailRequest)
 	if err != nil {
 		log.Error().Interface("sendSimpleEmailRequest", sendSimpleEmailRequest).Err(err).Msg("SendEmail")

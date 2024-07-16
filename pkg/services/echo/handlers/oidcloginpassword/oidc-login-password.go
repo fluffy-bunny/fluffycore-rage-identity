@@ -131,7 +131,7 @@ func (s *service) DoGet(c echo.Context) error {
 		log.Error().Err(err).Msg("Bind")
 		return s.TeleportBackToLogin(c, InternalError_OIDCLoginPassword_099)
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 	var rows []row
 
 	session, err := s.getSession()
@@ -177,7 +177,7 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("Bind")
 		return s.TeleportBackToLogin(c, InternalError_OIDCLoginPassword_099)
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 	if fluffycore_utils.IsEmptyOrNil(model.Password) {
 		return s.DoGet(c)
 	}

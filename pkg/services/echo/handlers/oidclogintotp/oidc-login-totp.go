@@ -144,7 +144,7 @@ func (s *service) DoGet(c echo.Context) error {
 		log.Error().Err(err).Msg("Bind")
 		return s.TeleportBackToLogin(c, InternalError_OIDCLoginTOTP_099)
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 	var rows []row
 	var errors []string
 
@@ -219,7 +219,7 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("Bind")
 		return s.TeleportBackToLogin(c, InternalError_OIDCLoginTOTP_099)
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 	if fluffycore_utils.IsEmptyOrNil(model.Code) {
 		return s.DoGet(c)
 	}

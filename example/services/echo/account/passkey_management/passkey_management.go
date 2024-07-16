@@ -88,7 +88,7 @@ func (s *service) DoGet(c echo.Context) error {
 		log.Error().Err(err).Msg("c.Bind")
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 	err := s.validatePasskeyManagementGetRequest(model)
 	if err != nil {
 		log.Error().Err(err).Msg("validatePasskeyManagementGetRequest")

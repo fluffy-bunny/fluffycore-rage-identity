@@ -134,7 +134,7 @@ func (s *service) DoGet(c echo.Context) error {
 		log.Error().Err(err).Msg("Bind")
 		return s.TeleportBackToLogin(c, InternalError_OIDCLogin_099)
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 
 	var errors []string
 	if !fluffycore_utils.IsEmptyOrNil(model.Error) {
@@ -156,7 +156,7 @@ func (s *service) DoGet(c echo.Context) error {
 	}
 	authorizationRequest := requestSession.(*proto_oidc_models.AuthorizationRequest)
 
-	log.Info().Interface("requestSession", requestSession).Msg("requestSession")
+	log.Debug().Interface("requestSession", requestSession).Msg("requestSession")
 
 	switch model.Directive {
 	case models.IdentityFound:
@@ -189,7 +189,7 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("Bind")
 		return s.TeleportBackToLogin(c, InternalError_OIDCLogin_099)
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 	if fluffycore_utils.IsEmptyOrNil(model.UserName) {
 		return s.DoGet(c)
 	}

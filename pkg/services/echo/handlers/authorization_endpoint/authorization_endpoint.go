@@ -178,7 +178,7 @@ func (s *service) Do(c echo.Context) error {
 			}
 		}
 
-		log.Info().Str("idpHint", idpHint).Str("rootCandidate", candidateUserID).Msg("acrValues")
+		log.Debug().Str("idpHint", idpHint).Str("rootCandidate", candidateUserID).Msg("acrValues")
 		if !fluffycore_utils.IsEmptyOrNil(idpHint) {
 			getIDPBySlugResponse, err := s.idpServiceServer.GetIDPBySlug(ctx, &proto_oidc_idp.GetIDPBySlugRequest{
 				Slug: idpHint,
@@ -226,7 +226,7 @@ func (s *service) Do(c echo.Context) error {
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	log.Info().Interface("mm", mm).Msg("mm")
+	log.Debug().Interface("mm", mm).Msg("mm")
 	// redirect to the server Auth login pages.
 	//s
 	if fluffycore_utils.IsEmptyOrNil(model.IdpHint) {

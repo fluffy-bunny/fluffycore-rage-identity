@@ -70,7 +70,7 @@ func (s *service) GetOIDCProvider(ctx context.Context, request *contracts_oauth2
 	}
 	idp := getIDPBySlugResponse.Idp
 	if idp.Protocol != nil {
-		log.Info().Interface("getIDPBySlugResponse", getIDPBySlugResponse).Msg("getIDPBySlugResponse")
+		log.Debug().Interface("getIDPBySlugResponse", getIDPBySlugResponse).Msg("getIDPBySlugResponse")
 		switch v := idp.Protocol.Value.(type) {
 
 		case *proto_oidc_models.Protocol_Oidc:

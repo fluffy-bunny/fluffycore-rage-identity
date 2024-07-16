@@ -110,7 +110,7 @@ func (s *service) DoGet(c echo.Context) error {
 		log.Error().Err(err).Msg("c.Bind")
 		return s.TeleportBackToLogin(c, InternalError_PasswordReset_099)
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 	err := s.validatePasswordResetGetRequest(model)
 	if err != nil {
 		log.Error().Err(err).Msg("validatePasswordResetGetRequest")
@@ -158,7 +158,7 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("c.Bind")
 		return s.TeleportBackToLogin(c, InternalError_PasswordReset_099)
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 
 	if model.Action == "cancel" {
 		return s.TeleportToPath(c, wellknown_echo.OIDCLoginPath)

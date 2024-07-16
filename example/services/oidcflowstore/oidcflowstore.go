@@ -42,7 +42,7 @@ func (s *service) StoreAuthorizationRequestState(ctx context.Context, request *p
 	log := zerolog.Ctx(ctx).With().Str("state", request.State).Logger()
 	request.AuthorizationRequestState.Updated = timestamppb.Now()
 	err := s.oidcFlowCache.Set(ctx, request.State, request.AuthorizationRequestState, store.WithExpiration(30*time.Minute))
-	log.Info().Err(err).Interface("request", request).Msg("StoreAuthorizationRequestState")
+	log.Debug().Err(err).Interface("request", request).Msg("StoreAuthorizationRequestState")
 	return &proto_oidc_flows.StoreAuthorizationRequestStateResponse{}, err
 }
 func (s *service) GetAuthorizationRequestState(ctx context.Context, request *proto_oidc_flows.GetAuthorizationRequestStateRequest) (*proto_oidc_flows.GetAuthorizationRequestStateResponse, error) {
@@ -71,7 +71,7 @@ func (s *service) GetAuthorizationRequestState(ctx context.Context, request *pro
 func (s *service) DeleteAuthorizationRequestState(ctx context.Context, request *proto_oidc_flows.DeleteAuthorizationRequestStateRequest) (*proto_oidc_flows.DeleteAuthorizationRequestStateResponse, error) {
 	log := zerolog.Ctx(ctx).With().Str("state", request.State).Logger()
 	err := s.oidcFlowCache.Delete(ctx, request.State)
-	log.Info().Err(err).Msg("DeleteAuthorizationRequestState")
+	log.Debug().Err(err).Msg("DeleteAuthorizationRequestState")
 
 	return &proto_oidc_flows.DeleteAuthorizationRequestStateResponse{}, err
 }

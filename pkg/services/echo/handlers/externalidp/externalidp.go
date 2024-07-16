@@ -140,7 +140,7 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("validateLoginGetRequest")
 		return s.TeleportBackToLogin(c, InternalError_ExternalIDP_002)
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 	session, err := s.getSession()
 	if err != nil {
 		return s.TeleportBackToLogin(c, InternalError_ExternalIDP_003)
@@ -161,7 +161,7 @@ func (s *service) DoPost(c echo.Context) error {
 	idp := getIDPBySlugResponse.Idp
 	externalState := xid.New().String()
 	if idp.Protocol != nil {
-		log.Info().Interface("getIDPBySlugResponse", getIDPBySlugResponse).Msg("getIDPBySlugResponse")
+		log.Debug().Interface("getIDPBySlugResponse", getIDPBySlugResponse).Msg("getIDPBySlugResponse")
 		switch v := idp.Protocol.Value.(type) {
 		case *proto_oidc_models.Protocol_Github:
 			{
