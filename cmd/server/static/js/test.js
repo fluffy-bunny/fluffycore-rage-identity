@@ -326,3 +326,24 @@ fetch("/api/user-profile", {
     givenName: 'bugs', familyName: 'bunny', phoneNumber: '555-1212'
   }),
 });
+
+// /api/password-reset-finish
+//-----------------------------------------------------
+fetch("/api/logout", {
+  method: "POST",
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+  body: JSON.stringify({
+    
+  }),
+})
+  .then((response) => response.json())
+  .then((data) => console.log(data))
+  .catch((error) => {
+    console.error("Error:", error);
+  });
+

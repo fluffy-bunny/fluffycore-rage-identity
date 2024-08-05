@@ -144,6 +144,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/logout": {
+            "post": {
+                "description": "Logout",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "Logout.",
+                "parameters": [
+                    {
+                        "description": "LogoutRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/login_models.LogoutRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/login_models.LogoutResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/manifest": {
             "get": {
                 "description": "This is the configuration of the server..",
@@ -1105,6 +1151,23 @@ const docTemplate = `{
                     "$ref": "#/definitions/login_models.DirectiveStartExternalLogin"
                 },
                 "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "login_models.LogoutRequest": {
+            "type": "object"
+        },
+        "login_models.LogoutResponse": {
+            "type": "object",
+            "required": [
+                "directive"
+            ],
+            "properties": {
+                "directive": {
+                    "type": "string"
+                },
+                "redirectURL": {
                     "type": "string"
                 }
             }

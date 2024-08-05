@@ -76,6 +76,13 @@ export interface LoginModelsLoginPhaseOneResponse {
   email: string;
 }
 
+export type LoginModelsLogoutRequest = object;
+
+export interface LoginModelsLogoutResponse {
+  directive: string;
+  redirectURL?: string;
+}
+
 export enum LoginModelsPasswordResetErrorReason {
   PasswordResetErrorReasonNoError = 0,
   PasswordResetErrorReasonInvalidPassword = 1,
@@ -407,6 +414,27 @@ export class Api<
     ) =>
       this.request<LoginModelsLoginPhaseOneResponse, any>({
         path: `/api/login-phase-one`,
+        method: 'POST',
+        body: request,
+        type: ContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description Logout
+     *
+     * @tags root
+     * @name LogoutCreate
+     * @summary Logout.
+     * @request POST:/api/logout
+     */
+    logoutCreate: (
+      request: LoginModelsLogoutRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<LoginModelsLogoutResponse, string>({
+        path: `/api/logout`,
         method: 'POST',
         body: request,
         type: ContentType.Json,

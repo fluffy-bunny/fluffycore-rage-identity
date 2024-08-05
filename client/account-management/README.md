@@ -18,7 +18,6 @@ then navigate to.
 
 ```bash
 http://localhost1.com:9044/oidc-login
-
 ```
 
 This will activate the cookes that are required for api calls.

@@ -46,15 +46,15 @@ func RequiresNoAuth() map[string]bool {
 	// needs to be a func as some of these are configured in.
 	if requiresNoAuthPaths == nil {
 		requiresNoAuthPaths = map[string]bool{
-			wellknown_echo.StaticPath:                    true,
-			wellknown_echo.AboutPath:                     true,
-			wellknown_echo.APIPath:                       true,
-			wellknown_echo.AccountCallbackPath:           true,
-			wellknown_echo.ErrorPath:                     true,
-			wellknown_echo.ExternalIDPPath:               true,
-			wellknown_echo.ForgotPasswordPath:            true,
-			wellknown_echo.HealthzPath:                   true,
-			wellknown_echo.HomePath:                      true,
+			wellknown_echo.StaticPath:          true,
+			wellknown_echo.AboutPath:           true,
+			wellknown_echo.APIPath:             true,
+			wellknown_echo.AccountCallbackPath: true,
+			wellknown_echo.ErrorPath:           true,
+			wellknown_echo.ExternalIDPPath:     true,
+			wellknown_echo.ForgotPasswordPath:  true,
+			wellknown_echo.HealthzPath:         true,
+			//	wellknown_echo.HomePath:                      true,
 			wellknown_echo.LoginPath:                     true,
 			wellknown_echo.LogoutPath:                    true,
 			wellknown_echo.OAuth2CallbackPath:            true,
@@ -70,6 +70,7 @@ func RequiresNoAuth() map[string]bool {
 			wellknown_echo.API_LoginPassword:          true,
 			wellknown_echo.API_VerifyCode:             true,
 			wellknown_echo.API_Signup:                 true,
+			wellknown_echo.API_Logout:                 true,
 			wellknown_echo.API_PasswordResetStart:     true,
 			wellknown_echo.API_PasswordResetFinish:    true,
 

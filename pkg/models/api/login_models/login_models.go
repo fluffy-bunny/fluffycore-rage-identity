@@ -85,7 +85,11 @@ type (
 		Message                     string                       `json:"message,omitempty"`
 		ErrorReason                 SignupErrorReason            `json:"errorReason,omitempty"`
 	}
-
+	LogoutRequest  struct{}
+	LogoutResponse struct {
+		Directive   string `json:"directive" validate:"required"`
+		RedirectURL string `json:"redirectURL,omitempty"`
+	}
 	PasswordResetStartRequest struct {
 		Email string `json:"email" validate:"required"`
 	}

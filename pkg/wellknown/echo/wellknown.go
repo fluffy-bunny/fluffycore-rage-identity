@@ -61,6 +61,7 @@ var (
 	API_PasswordResetStart     = "/api/password-reset-start"
 	API_PasswordResetFinish    = "/api/password-reset-finish"
 	API_UserProfilePath        = "/api/user-profile"
+	API_Logout                 = "/api/logout"
 )
 
 type Paths struct {

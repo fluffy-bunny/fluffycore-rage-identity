@@ -109,6 +109,17 @@ definitions:
     - directive
     - email
     type: object
+  login_models.LogoutRequest:
+    type: object
+  login_models.LogoutResponse:
+    properties:
+      directive:
+        type: string
+      redirectURL:
+        type: string
+    required:
+    - directive
+    type: object
   login_models.PasswordResetErrorReason:
     enum:
     - 0
@@ -332,6 +343,36 @@ paths:
           schema:
             $ref: '#/definitions/login_models.LoginPhaseOneResponse'
       summary: get the login manifest.
+      tags:
+      - root
+  /api/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout
+      parameters:
+      - description: LogoutRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/login_models.LogoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/login_models.LogoutResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Logout.
       tags:
       - root
   /api/manifest:
