@@ -55,7 +55,10 @@ export const UserProfilePasskeysManagementPage: React.FC<PageProps> = ({
   };
 
   return (
-    <MainLayout>
+    <MainLayout
+      currentPage={RoutePaths.ProfilePersonalInformation}
+      onNavigate={onNavigate}
+    >
       <ProfileLayout
         currentPage={RoutePaths.ProfilePasskeysManagement}
         onNavigate={(route) => onNavigate(route)}

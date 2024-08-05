@@ -1,8 +1,5 @@
-import {
-  KeyboardArrowDownOutlined,
-  KeyboardArrowUpOutlined,
-} from '@mui/icons-material';
-import { Box, Button, Menu, MenuItem } from '@mui/material';
+import { AccountCircle } from '@mui/icons-material';
+import { Box, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import React, { useContext, useId } from 'react';
 import { useMutation } from 'react-query';
 
@@ -39,33 +36,24 @@ export const ProfileDropdown = () => {
   return (
     <>
       <Box sx={{ display: 'flex' }}>
-        <Button
-          id={buttonId}
-          aria-controls={open ? menuId : undefined}
-          aria-haspopup="true"
-          aria-expanded={open ? 'true' : undefined}
-          endIcon={
-            open ? <KeyboardArrowUpOutlined /> : <KeyboardArrowDownOutlined />
-          }
-          sx={{ marginX: 'auto' }}
-          onClick={handleClick}
-        >
-          {userName || user?.email}
-        </Button>
+        <Tooltip title={userName || user?.email}>
+          <IconButton
+            id={buttonId}
+            aria-controls={open ? menuId : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? 'true' : undefined}
+            color="inherit"
+            onClick={handleClick}
+          >
+            <AccountCircle />
+          </IconButton>
+        </Tooltip>
       </Box>
       <Menu
         id={menuId}
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'center',
-        }}
-        transformOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center',
-        }}
         MenuListProps={{
           'aria-labelledby': buttonId,
         }}

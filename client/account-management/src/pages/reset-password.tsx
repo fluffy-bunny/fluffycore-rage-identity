@@ -27,10 +27,8 @@ export const ResetPasswordPage: React.FC<PageProps> = ({ onNavigate }) => {
         withXSRFToken: true,
       }),
     {
-      onSuccess: (data) => {
-        if (data.data.directive === 'displayLoginPhaseOnePage') {
-          return onNavigate(RoutePaths.SignIn);
-        }
+      onSuccess: () => {
+        window.location.href = RoutePaths.Profile;
       },
     },
   );

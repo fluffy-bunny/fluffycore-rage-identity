@@ -48,7 +48,10 @@ export const UserProfileSecuritySettingsPage: React.FC<PageProps> = ({
   };
 
   return (
-    <MainLayout>
+    <MainLayout
+      currentPage={RoutePaths.ProfilePersonalInformation}
+      onNavigate={onNavigate}
+    >
       <ProfileLayout
         currentPage={RoutePaths.ProfileSecuritySettings}
         onNavigate={(route) => onNavigate(route)}

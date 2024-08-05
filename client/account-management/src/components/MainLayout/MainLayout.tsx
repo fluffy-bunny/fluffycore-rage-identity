@@ -1,66 +1,69 @@
-import { AccountBoxOutlined } from '@mui/icons-material';
-import {
-  Box,
-  Drawer,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Stack,
-} from '@mui/material';
+import { AppBar, Box, Link, Stack, Toolbar } from '@mui/material';
 import React from 'react';
 
+import { RoutePaths } from '../../constants/routes';
 import { ProfileDropdown } from '../profile/ProfileDropdown/ProfileDropdown';
 
 const navItems = [
   {
+    label: 'Mapped Account',
+    path: RoutePaths.Root,
+  },
+  {
     label: 'Profile',
-    icon: AccountBoxOutlined,
+    path: RoutePaths.ProfilePersonalInformation,
   },
 ];
 
-const DrawerWidth = 320;
-
-export const MainLayout = ({ children }: { children: React.ReactNode }) => {
+export const MainLayout = ({
+  children,
+  currentPage,
+  onNavigate,
+}: {
+  children: React.ReactNode;
+  currentPage?: string | 'default';
+  onNavigate: (path: string) => void;
+}) => {
   return (
-    <Stack direction="row" sx={{ height: '100%' }}>
-      <Drawer
-        sx={{
-          width: DrawerWidth,
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: DrawerWidth,
-            boxSizing: 'border-box',
-          },
-        }}
-        variant="permanent"
-        anchor="left"
-      >
-        <Stack sx={{ height: '100%' }}>
-          <List>
-            {navItems.map((nav) => (
-              <ListItem key={nav.label}>
-                <ListItemButton selected={true}>
-                  <ListItemIcon>
-                    <nav.icon fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText primary={nav.label} />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-          <Box sx={{ marginTop: 'auto', padding: 2 }}>
-            <ProfileDropdown />
-          </Box>
-        </Stack>
-      </Drawer>
-      <Box
-        component="main"
-        sx={{ flexGrow: 1, background: 'background.default', p: 3 }}
-      >
-        {children}
-      </Box>
-    </Stack>
+    <>
+      <Stack sx={{ height: '100%' }}>
+        <AppBar
+          position="static"
+          sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        >
+          <Toolbar sx={{ width: '100%' }}>
+            <Stack component="nav" direction="row" spacing={2}>
+              {navItems.map((nav, index) => {
+                const isActive =
+                  currentPage === 'default'
+                    ? index === 0
+                    : nav.path === currentPage;
+
+                return (
+                  <Link
+                    key={nav.label}
+                    color="inherit"
+                    component="button"
+                    sx={{ textDecoration: isActive ? 'underline' : 'none' }}
+                    onClick={() => onNavigate(nav.path)}
+                  >
+                    {nav.label}
+                  </Link>
+                );
+              })}
+            </Stack>
+            <Box sx={{ marginLeft: 'auto' }}>
+              <ProfileDropdown />
+            </Box>
+          </Toolbar>
+        </AppBar>
+        <Box
+          component="main"
+          sx={{ flexGrow: 1, background: 'background.default', p: 3 }}
+        >
+          {children}
+        </Box>
+      </Stack>
+    </>
   );
 };
