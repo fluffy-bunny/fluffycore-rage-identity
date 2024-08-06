@@ -78,6 +78,8 @@ jobs:
           if (-not (Test-Path -Path $destination -PathType Container)) {
               New-Item -Path $destination -ItemType Directory -Force
           }
+          Get-ChildItem -Path "."
+
           copy-item -Path ".\build\*" -Destination $destination -Recurse -Force
         shell: pwsh
 
@@ -92,6 +94,8 @@ jobs:
           if (-not (Test-Path -Path $destination -PathType Container)) {
               New-Item -Path $destination -ItemType Directory -Force
           }
+          Get-ChildItem -Path "."
+
           copy-item -Path ".\build\*" -Destination $destination -Recurse -Force
         shell: pwsh
 
