@@ -94,8 +94,8 @@ WORKDIR /app
 COPY --from=build /build/${THEBINARY} ./
 RUN mkdir /static
 COPY ./cmd/server/static ./static/
-COPY --from=nodejs_oidc_flows /app/build/ ./static/oidc-flows/
-COPY --from=nodejs_account_management /app/build/ ./static/account-management/
+COPY --from=nodejs_oidc_flows         /app/oidc-flows/          ./static/oidc-flows/
+COPY --from=nodejs_account_management /app/account-management/  ./static/account-management/
 
 RUN mkdir /resources
 COPY ./cmd/server/resources ./resources/
