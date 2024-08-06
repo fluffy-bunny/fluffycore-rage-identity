@@ -67,14 +67,11 @@ jobs:
           node-version: "20.x"
           registry-url: https://npm.pkg.github.com
 
-      - name: Change directory to client/account-management
-        run: cd client/account-management
-      - name: Install dependencies
-        run: yarn install
-      - name: Build the project in client/account-management
-        run: yarn build
-      - name: Copy build files to destination
+      - name: build client/account-management
         run: |
+          Set-Location -Path "client/account-management"  
+          yarn install
+          yarn build
           $destination = "..\..\cmd\server\static\account-management"
           if (-not (Test-Path -Path $destination -PathType Container)) {
               New-Item -Path $destination -ItemType Directory -Force
@@ -82,16 +79,11 @@ jobs:
           copy-item -Path ".\build\*" -Destination $destination -Recurse -Force
         shell: pwsh
 
-      - name: Change directory back to root
-        run: cd ../..
-      - name: Change directory to client/oidc-flows
-        run: cd client/oidc-flows
-      - name: Install dependencies
-        run: yarn install
-      - name: Build the project in client/oidc-flows
-        run: yarn build
-      - name: Copy build files to destination
+      - name: build client/oidc-flows
         run: |
+          Set-Location -Path "client/oidc-flows"  
+          yarn install
+          yarn build
           $destination = "..\..\cmd\server\static\oidc-flows"
           if (-not (Test-Path -Path $destination -PathType Container)) {
               New-Item -Path $destination -ItemType Directory -Force
