@@ -12,7 +12,7 @@
 </body>
 
 {{template "footer" .}}
-    <script defer="defer" src="/static/keeptrack/static/js/main.js"></script>
+    <script defer="defer" src="/static/oidc-flows/static/js/main.js"></script>
 
 {{template "html_end" .}}
 {{end}}

@@ -1,5 +1,5 @@
 {
-  "name": "keeptrack1",
+  "name": "oidc-flows",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

@@ -1,4 +1,4 @@
-FROM golang:1.22 as build
+FROM golang:1.22 AS build
 
 #!!!DO NOT REMOVE THE BELOW 3 LINES!!! Needed for github action to work
 #GHAONLY:COPY dotssh/* /root/.ssh/
@@ -37,7 +37,7 @@ ENV LDFLAGS="-X ${location}.date=${date} -X ${location}.version=${version} -X ${
 RUN --mount=type=ssh go build -a -tags netgo -ldflags "$LDFLAGS" ./cmd/$THEBINARY
 
 
-FROM alpine:latest as stage1
+FROM alpine:latest AS stage1
 
 RUN apk add -U --no-cache ca-certificates
 
