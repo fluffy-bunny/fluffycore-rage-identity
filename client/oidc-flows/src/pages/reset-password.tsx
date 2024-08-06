@@ -23,10 +23,7 @@ export const ResetPasswordPage: React.FC<PageProps> = ({ onNavigate }) => {
 
   const { mutateAsync, isLoading } = useMutation(
     (values: LoginModelsPasswordResetFinishRequest) =>
-      api.passwordResetFinishCreate(values, {
-        withCredentials: true,
-        withXSRFToken: true,
-      }),
+      api.passwordResetFinishCreate(values),
     {
       onSuccess: (data) => {
         if (data.data.directive === 'displayLoginPhaseOnePage') {

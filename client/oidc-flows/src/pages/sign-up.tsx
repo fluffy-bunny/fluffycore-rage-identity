@@ -34,10 +34,7 @@ export const SignUpPage: React.FC<PageProps> = ({ onNavigate }) => {
 
   const { mutateAsync, isLoading } = useMutation(
     async (values: LoginModelsSignupRequest) => {
-      const response = await api.signupCreate(values, {
-        withCredentials: true,
-        withXSRFToken: true,
-      });
+      const response = await api.signupCreate(values);
 
       if (response.data.directive === 'displayVerifyCodePage') {
         return onNavigate(RoutePaths.VerifyCode, {

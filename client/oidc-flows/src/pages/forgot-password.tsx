@@ -23,10 +23,7 @@ export const ForgotPasswordPage: React.FC<PageProps> = ({ onNavigate }) => {
 
   const { mutateAsync, isLoading } = useMutation(
     (values: LoginModelsPasswordResetStartRequest) =>
-      api.passwordResetStartCreate(values, {
-        withCredentials: true,
-        withXSRFToken: true,
-      }),
+      api.passwordResetStartCreate(values),
     {
       onSuccess: (data) => {
         if (data.data.directive === 'displayVerifyCodePage') {

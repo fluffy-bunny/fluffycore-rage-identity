@@ -22,10 +22,7 @@ export const ResetPasswordPage: React.FC<PageProps> = ({ onNavigate }) => {
 
   const { mutateAsync, isLoading } = useMutation(
     (values: LoginModelsPasswordResetFinishRequest) =>
-      api.passwordResetFinishCreate(values, {
-        withCredentials: true,
-        withXSRFToken: true,
-      }),
+      api.passwordResetFinishCreate(values),
     {
       onSuccess: () => {
         window.location.href = RoutePaths.Profile;
