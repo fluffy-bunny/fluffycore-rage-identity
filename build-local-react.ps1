@@ -1,4 +1,5 @@
 Set-Location -Path "client/account-management"  
+Get-ChildItem -Path "."
 yarn 
 yarn build
 $destination = "..\..\cmd\server\static\account-management"
@@ -10,6 +11,7 @@ Set-Location -Path "..\.."
  
 
 Set-Location -Path "client/oidc-flows"  
+Get-ChildItem -Path "."
 yarn 
 yarn build
 $destination = "..\..\cmd\server\static\oidc-flows"

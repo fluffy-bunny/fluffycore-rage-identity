@@ -70,6 +70,8 @@ jobs:
       - name: build client/account-management
         run: |
           Set-Location -Path "client/account-management"  
+          Get-ChildItem -Path "."
+
           yarn install
           yarn build
           $destination = "..\..\cmd\server\static\account-management"
@@ -82,6 +84,8 @@ jobs:
       - name: build client/oidc-flows
         run: |
           Set-Location -Path "client/oidc-flows"  
+          Get-ChildItem -Path "."
+
           yarn install
           yarn build
           $destination = "..\..\cmd\server\static\oidc-flows"
