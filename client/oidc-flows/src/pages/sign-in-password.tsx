@@ -92,7 +92,6 @@ export const SignInPasswordPage: React.FC<
         >
           Forgot Password?
         </Link>
-
         <FormControl fullWidth sx={{ marginTop: 3 }}>
           <Stack direction="row">
             <Stack direction="row" spacing={1} alignItems="center">

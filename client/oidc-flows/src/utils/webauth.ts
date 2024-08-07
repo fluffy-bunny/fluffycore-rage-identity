@@ -20,7 +20,7 @@ interface Response {
   publicKey: PublicKeyCredentialRequestOptions;
 }
 
-export async function loginUser() {
+export async function loginUser(callback: () => void) {
   try {
     const response = await instance.get<Response>('/webauthn/login/begin', {
       headers: { 'X-Csrf-Token': getCSRF() },
@@ -44,16 +44,14 @@ export async function loginUser() {
       beginResponse,
     )) as PublicKeyCredential;
 
-    const { authenticatorData, clientDataJSON, signature, userHandle, rawId } =
-      credential.response as AuthenticatorAssertionResponse & {
-        rawId: ArrayBuffer;
-      };
+    const { authenticatorData, clientDataJSON, signature, userHandle } =
+      credential.response as AuthenticatorAssertionResponse;
 
-    const finishResponse = await instance.post<{ redirectUrl: string }>(
+    await instance.post<{ redirectUrl: string }>(
       '/webauthn/login/finish',
       {
         id: credential.id,
-        rawId: bufferEncode(rawId),
+        rawId: bufferEncode(credential.rawId),
         type: credential.type,
         response: {
           authenticatorData: bufferEncode(authenticatorData),
@@ -69,7 +67,7 @@ export async function loginUser() {
       },
     );
 
-    window.location.href = finishResponse.data.redirectUrl;
+    callback();
   } catch (error) {
     throw error;
   }

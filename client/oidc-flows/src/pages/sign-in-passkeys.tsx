@@ -12,7 +12,7 @@ export const SignInPasskeysPage: React.FC<PageProps<{ email: string }>> = ({
   useEffect(() => {
     const run = async () => {
       try {
-        await loginUser();
+        await loginUser(() => (window.location.href = RoutePaths.Root));
       } catch (error) {
         return onNavigate(RoutePaths.SignInPassword, {
           email: pageProps?.email,
