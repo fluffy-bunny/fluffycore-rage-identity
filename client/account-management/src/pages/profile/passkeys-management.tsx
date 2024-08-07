@@ -17,7 +17,10 @@ export const UserProfilePasskeysManagementPage: React.FC<PageProps> = ({
   const { showNotification } = useNotification();
 
   const { mutateAsync, isLoading } = useMutation(() =>
-    registerUser(RoutePaths.ProfilePasskeysManagement),
+    registerUser(() => {
+      showNotification('Passkey has been registered successfully.', 'success');
+      onNavigate(RoutePaths.ProfilePasskeysManagement);
+    }),
   );
 
   const onRegister = async () => {

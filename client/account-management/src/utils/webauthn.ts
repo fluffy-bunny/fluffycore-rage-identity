@@ -20,7 +20,7 @@ interface Response {
   publicKey: PublicKeyCredentialCreationOptions;
 }
 
-export async function registerUser(returnUrl: string): Promise<void> {
+export async function registerUser(callback: () => void): Promise<void> {
   try {
     const response = await apiInstance.get('/webauthn/register/begin', {
       headers: { 'X-Csrf-Token': getCSRF() },
@@ -63,7 +63,7 @@ export async function registerUser(returnUrl: string): Promise<void> {
         },
       );
 
-      window.location.href = returnUrl;
+      callback();
     }
   } catch (error) {
     console.error('Error:', error);
