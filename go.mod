@@ -1,6 +1,8 @@
 module github.com/fluffy-bunny/fluffycore-rage-identity
 
-go 1.22
+go 1.22.0
+
+toolchain go1.22.5
 
 //replace github.com/fluffy-bunny/fluffycore => ../fluffycore
 
@@ -30,6 +32,7 @@ require (
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
+	github.com/sumup/aaguids-go v0.0.0-20240628162135-8d4ff0ce96a0
 	github.com/swaggo/echo-swagger v1.4.1
 	github.com/swaggo/swag v1.16.3
 	github.com/wagslane/go-password-validator v0.3.0

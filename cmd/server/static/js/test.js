@@ -284,6 +284,7 @@ fetch("/api/password-reset-finish", {
 //-----------------------------------------------------
 fetch("/api/user-identity-info", {
   method: "GET",
+  credentials: "include",
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",

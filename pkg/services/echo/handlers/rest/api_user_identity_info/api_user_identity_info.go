@@ -117,5 +117,17 @@ func (s *service) Do(c echo.Context) error {
 		PasskeyEligible: (user.Password != nil && fluffycore_utils.IsNotEmptyOrNil(user.Password.Hash)),
 	}
 
+	if fluffycore_utils.IsNotNil(user.WebAuthN) {
+		response.Passkeys = make([]api_user_identity_info.Passkeys, 0)
+		for _, webAuthNCreds := range user.WebAuthN.Credentials {
+			name := "Unknown"
+			if fluffycore_utils.IsNotEmptyOrNil(webAuthNCreds.Authenticator.FriendlyName) {
+				name = webAuthNCreds.Authenticator.FriendlyName
+			}
+			response.Passkeys = append(response.Passkeys, api_user_identity_info.Passkeys{
+				Name: name,
+			})
+		}
+	}
 	return c.JSONPretty(http.StatusOK, response, "  ")
 }

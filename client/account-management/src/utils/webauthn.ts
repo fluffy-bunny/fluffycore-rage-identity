@@ -38,24 +38,26 @@ export async function registerUser(callback: () => void): Promise<void> {
     const credentialsResponse = (await navigator.credentials.create({
       publicKey: beginResponse.publicKey,
     })) as PublicKeyCredential;
-
+    console.log(credentialsResponse);
+    let request = {
+      id: credentialsResponse.id,
+      rawId: bufferEncode(credentialsResponse.rawId!),
+      type: credentialsResponse.type,
+      response: {
+        attestationObject: bufferEncode(
+          (credentialsResponse.response as AuthenticatorAttestationResponse)
+            .attestationObject,
+        ),
+        clientDataJSON: bufferEncode(
+          credentialsResponse.response.clientDataJSON,
+        ),
+      },
+    };
+    //console.log(request);
     if (credentialsResponse) {
       await apiInstance.post(
         '/webauthn/register/finish',
-        {
-          id: credentialsResponse.id,
-          rawId: bufferEncode(credentialsResponse.rawId!),
-          type: credentialsResponse.type,
-          response: {
-            attestationObject: bufferEncode(
-              (credentialsResponse.response as AuthenticatorAttestationResponse)
-                .attestationObject,
-            ),
-            clientDataJSON: bufferEncode(
-              credentialsResponse.response.clientDataJSON,
-            ),
-          },
-        },
+        request,
         {
           headers: {
             'X-Csrf-Token': getCSRF(),
