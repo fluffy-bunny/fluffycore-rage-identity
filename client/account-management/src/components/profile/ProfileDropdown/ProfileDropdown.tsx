@@ -5,6 +5,7 @@ import { useMutation } from 'react-query';
 
 import { api } from '../../../api';
 import { UserContext } from '../../../contexts/UserContext/UserContext';
+import { getCSRF } from '../../../utils/cookies';
 
 export const ProfileDropdown = () => {
   const { user } = useContext(UserContext);
@@ -13,13 +14,25 @@ export const ProfileDropdown = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
-  const logoutMutation = useMutation('logout', api.logoutCreate, {
-    onSuccess: (data) => {
-      if (data.data.directive === 'redirect' && data.data.redirectURL) {
-        window.location.href = data.data.redirectURL;
-      }
+  const logoutMutation = useMutation(
+    'logout',
+    () =>
+      api.logoutCreate(
+        {},
+        {
+          headers: {
+            'X-Csrf-Token': getCSRF(),
+          },
+        },
+      ),
+    {
+      onSuccess: (data) => {
+        if (data.data.directive === 'redirect' && data.data.redirectURL) {
+          window.location.href = data.data.redirectURL;
+        }
+      },
     },
-  });
+  );
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -65,7 +78,7 @@ export const ProfileDropdown = () => {
       >
         <MenuItem
           disabled={logoutMutation.isLoading}
-          onClick={() => logoutMutation.mutateAsync({})}
+          onClick={() => logoutMutation.mutateAsync()}
         >
           Logout
         </MenuItem>

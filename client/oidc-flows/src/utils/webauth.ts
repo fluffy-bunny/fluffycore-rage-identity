@@ -1,4 +1,5 @@
 import { instance } from '../api';
+import { getCSRF } from './cookies';
 
 function bufferDecode(value: string): Uint8Array {
   value = value.replace(/-/g, '+').replace(/_/g, '/');
@@ -21,7 +22,9 @@ interface Response {
 
 export async function loginUser() {
   try {
-    const response = await instance.get<Response>('/webauthn/login/begin');
+    const response = await instance.get<Response>('/webauthn/login/begin', {
+      headers: { 'X-Csrf-Token': getCSRF() },
+    });
 
     const beginResponse: Response = response.data;
 
@@ -57,6 +60,11 @@ export async function loginUser() {
           clientDataJSON: bufferEncode(clientDataJSON),
           signature: bufferEncode(signature),
           userHandle: userHandle ? bufferEncode(userHandle) : undefined, // Handle optional userHandle
+        },
+      },
+      {
+        headers: {
+          'X-Csrf-Token': getCSRF(),
         },
       },
     );

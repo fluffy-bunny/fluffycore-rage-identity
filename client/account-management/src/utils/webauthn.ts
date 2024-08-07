@@ -1,4 +1,5 @@
 import { apiInstance } from '../api';
+import { getCSRF } from './cookies';
 
 function bufferDecode(value: string): Uint8Array {
   value = value.replace(/-/g, '+').replace(/_/g, '/');
@@ -21,7 +22,9 @@ interface Response {
 
 export async function registerUser(returnUrl: string): Promise<void> {
   try {
-    const response = await apiInstance.get('/webauthn/register/begin');
+    const response = await apiInstance.get('/webauthn/register/begin', {
+      headers: { 'X-Csrf-Token': getCSRF() },
+    });
     const beginResponse: Response = response.data;
 
     beginResponse.publicKey.challenge = bufferDecode(
@@ -37,20 +40,28 @@ export async function registerUser(returnUrl: string): Promise<void> {
     })) as PublicKeyCredential;
 
     if (credentialsResponse) {
-      await apiInstance.post('/webauthn/register/finish', {
-        id: credentialsResponse.id,
-        rawId: bufferEncode(credentialsResponse.rawId!),
-        type: credentialsResponse.type,
-        response: {
-          attestationObject: bufferEncode(
-            (credentialsResponse.response as AuthenticatorAttestationResponse)
-              .attestationObject,
-          ),
-          clientDataJSON: bufferEncode(
-            credentialsResponse.response.clientDataJSON,
-          ),
+      await apiInstance.post(
+        '/webauthn/register/finish',
+        {
+          id: credentialsResponse.id,
+          rawId: bufferEncode(credentialsResponse.rawId!),
+          type: credentialsResponse.type,
+          response: {
+            attestationObject: bufferEncode(
+              (credentialsResponse.response as AuthenticatorAttestationResponse)
+                .attestationObject,
+            ),
+            clientDataJSON: bufferEncode(
+              credentialsResponse.response.clientDataJSON,
+            ),
+          },
         },
-      });
+        {
+          headers: {
+            'X-Csrf-Token': getCSRF(),
+          },
+        },
+      );
 
       window.location.href = returnUrl;
     }
