@@ -1,34 +1,4 @@
-# Use the official Node.js image as the base image
-FROM node:20-alpine AS nodejs_oidc_flows  
 
-# Set the working directory inside the container
-WORKDIR /app
-# Copy the rest of the application code to the working directory
-COPY ./client/oidc-flows/ .
-## list the files in the current directory
-RUN ls -la
-# Install dependencies
-RUN yarn install
-# Build the project
-RUN yarn build
-## list the files in the current directory
-RUN ls -la
-
-# Use the official Node.js image as the base image
-FROM node:20-alpine AS nodejs_account_management  
-
-# Set the working directory inside the container
-WORKDIR /app
-# Copy the rest of the application code to the working directory
-COPY ./client/account-management/ .
-## list the files in the current directory
-RUN ls -la
-# Install dependencies
-RUN yarn install
-# Build the project
-RUN yarn build
-## list the files in the current directory
-RUN ls -la
 
 ## change directory to 
 FROM golang:1.22 AS build
@@ -94,8 +64,6 @@ WORKDIR /app
 COPY --from=build /build/${THEBINARY} ./
 RUN mkdir /static
 COPY ./cmd/server/static ./static/
-COPY --from=nodejs_oidc_flows         /app/oidc-flows/          ./static/oidc-flows/
-COPY --from=nodejs_account_management /app/account-management/  ./static/account-management/
 
 RUN mkdir /resources
 COPY ./cmd/server/resources ./resources/
