@@ -99,6 +99,13 @@ jobs:
       #          echo changelog: ${{needs.pre_flight.outputs.changelog}}
       - uses: actions/checkout@v4
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: static_build
+          path: "cmd/server/static/"
+      - name: Display structure of downloaded files
+        run: ls -R "cmd/server/static/"
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
