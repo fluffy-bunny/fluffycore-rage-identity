@@ -38,10 +38,6 @@ func (s *service) UnlinkRageUser(ctx context.Context, request *proto_oidc_user.U
 		log.Warn().Err(err).Msg("validateLinkUsersRequest")
 		return nil, err
 	}
-	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
-	s.rwLock.Lock()
-	defer s.rwLock.Unlock()
-	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
 	getUserResponse, err := s.GetUser(ctx, &proto_external_user.GetUserRequest{
 		Subject: request.RootSubject,
 	})
@@ -49,6 +45,11 @@ func (s *service) UnlinkRageUser(ctx context.Context, request *proto_oidc_user.U
 		return nil, err
 	}
 	user := getUserResponse.User
+
+	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
+	s.rwLock.Lock()
+	defer s.rwLock.Unlock()
+	//--~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
 
 	linkedIdentities := make([]*proto_oidc_models.Identity, 0)
 	if user.RageUser.LinkedIdentities == nil || fluffycore_utils.IsEmptyOrNil(user.RageUser.LinkedIdentities.Identities) {

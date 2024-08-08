@@ -414,6 +414,91 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/user-linked-accounts": {
+            "get": {
+                "description": "get the users linked accounts.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the users linked accounts.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api_user_identity_info.UserLinkedAccounts"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user-linked-accounts/{identity}": {
+            "delete": {
+                "description": "delete a users linked identity.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "delete a users linked identity.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "identity name",
+                        "name": "identity",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/user-profile": {
             "get": {
                 "description": "set user profile.",
@@ -998,6 +1083,22 @@ const docTemplate = `{
                 }
             }
         },
+        "api_user_identity_info.Identity": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_user_identity_info.Passkeys": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "api_user_identity_info.UserIdentityInfo": {
             "type": "object",
             "properties": {
@@ -1006,6 +1107,23 @@ const docTemplate = `{
                 },
                 "passkeyEligible": {
                     "type": "boolean"
+                },
+                "passkeys": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api_user_identity_info.Passkeys"
+                    }
+                }
+            }
+        },
+        "api_user_identity_info.UserLinkedAccounts": {
+            "type": "object",
+            "properties": {
+                "identities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api_user_identity_info.Identity"
+                    }
                 }
             }
         },

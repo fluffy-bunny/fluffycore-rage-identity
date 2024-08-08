@@ -7,12 +7,33 @@ definitions:
       internalCode:
         type: string
     type: object
+  api_user_identity_info.Identity:
+    properties:
+      name:
+        type: string
+    type: object
+  api_user_identity_info.Passkeys:
+    properties:
+      name:
+        type: string
+    type: object
   api_user_identity_info.UserIdentityInfo:
     properties:
       email:
         type: string
       passkeyEligible:
         type: boolean
+      passkeys:
+        items:
+          $ref: '#/definitions/api_user_identity_info.Passkeys'
+        type: array
+    type: object
+  api_user_identity_info.UserLinkedAccounts:
+    properties:
+      identities:
+        items:
+          $ref: '#/definitions/api_user_identity_info.Identity'
+        type: array
     type: object
   api_user_profile.Profile:
     properties:
@@ -519,6 +540,62 @@ paths:
           schema:
             type: string
       summary: get the highlevel UserIdentityInfo post login.
+      tags:
+      - root
+  /api/user-linked-accounts:
+    get:
+      description: get the users linked accounts.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_user_identity_info.UserLinkedAccounts'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: get the users linked accounts.
+      tags:
+      - root
+  /api/user-linked-accounts/{identity}:
+    delete:
+      description: delete a users linked identity.
+      parameters:
+      - description: identity name
+        in: path
+        name: identity
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: delete a users linked identity.
       tags:
       - root
   /api/user-profile:
