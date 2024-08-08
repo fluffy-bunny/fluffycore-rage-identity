@@ -38,29 +38,38 @@ jobs:
         uses: mathieudutour/github-tag-action@v6.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-
-  build:
+  build_react_apps:
     runs-on: ubuntu-latest
     needs: [pre_flight]
     steps:
       - name: Echo Tags
         run: |
-          echo new_tag: ${{needs.pre_flight.outputs.new_tag}} 
-          echo changelog: ${{needs.pre_flight.outputs.changelog}}
+          echo new_tag: ${{needs.pre_flight.outputs.new_tag}}
 
       - uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-node@v4
         with:
-          go-version: "^${{ env.GO_VERSION }}"
+          node-version: "20.x"
+          check-latest: true
 
-      - name: Build
-        run: go build -v ./...
+      - name: build client/account-management
+        run: |
+          Set-Location -Path "client/account-management"  
+          Get-ChildItem -Path "."
 
-      - name: Test
-        run: go test -v ./...
+          yarn install
+          yarn build
+          $destination = "..\..\cmd\server\static\account-management"
+          if (-not (Test-Path -Path $destination -PathType Container)) {
+              New-Item -Path $destination -ItemType Directory -Force
+          }
+          Get-ChildItem -Path "."
 
+          copy-item -Path ".\account-management\*" -Destination $destination -Recurse -Force
+        shell: pwsh
+
+      - name: build client/oidc-flows
         run: |
           Set-Location -Path "client/oidc-flows"  
           Get-ChildItem -Path "."
@@ -73,9 +82,36 @@ jobs:
           }
           Get-ChildItem -Path "."
 
-          copy-item -Path ".\build\*" -Destination $destination -Recurse -Force
+          copy-item -Path ".\oidc-flows\*" -Destination $destination -Recurse -Force
         shell: pwsh
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: static_build
+          path: "cmd/server/static/"
+  build:
+    runs-on: ubuntu-latest
+    needs: [pre_flight, build_react_apps]
+    steps:
+      - name: Echo Tags
+        run: |
+          echo new_tag: ${{needs.pre_flight.outputs.new_tag}}
+      #          echo changelog: ${{needs.pre_flight.outputs.changelog}}
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "^${{ env.GO_VERSION }}"
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Test
+        run: go test -v ./...
+
+ 
     # Create and post docker image
   build-docker-push-image:
     runs-on: ubuntu-latest
@@ -91,6 +127,14 @@ jobs:
         with:
           submodules: true
 
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: static_build
+          path: "cmd/server/static/"
+
+      - name: Display structure of downloaded files
+        run: ls -R "cmd/server/static/"
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
