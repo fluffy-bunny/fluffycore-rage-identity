@@ -21,7 +21,7 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/gogo/status v1.1.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.21.0
 	github.com/imroc/req/v3 v3.43.7
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/lestrrat-go/jwx/v2 v2.0.21
@@ -41,7 +41,7 @@ require (
 	golang.org/x/net v0.26.0
 	golang.org/x/oauth2 v0.21.0
 	golang.org/x/text v0.16.0
-	google.golang.org/genproto/googleapis/api v0.0.0-20240701130421-f6361c86f094
+	google.golang.org/genproto/googleapis/api v0.0.0-20240723171418-e6d459c13d2a
 	google.golang.org/grpc v1.65.0
 	google.golang.org/protobuf v1.34.2
 )
@@ -194,7 +194,7 @@ require (
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240701130421-f6361c86f094 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240723171418-e6d459c13d2a // indirect
 	gopkg.in/DataDog/dd-trace-go.v1 v1.64.0 // indirect
 	gopkg.in/go-jose/go-jose.v2 v2.6.3 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
