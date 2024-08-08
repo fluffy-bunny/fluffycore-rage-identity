@@ -27,7 +27,6 @@ import (
 	services_handlers_oidcloginpassword "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidcloginpassword"
 	services_handlers_oidclogintotp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidclogintotp"
 	services_handlers_passwordreset "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/passwordreset"
-
 	services_handlers_rest_api_login_password "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_login_password"
 	services_handlers_rest_api_login_username_phase_one "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_login_username_phase_one"
 	services_handlers_rest_api_logout "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_logout"
@@ -36,10 +35,10 @@ import (
 	services_handlers_rest_api_password_reset_start "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_password_reset_start"
 	services_handlers_rest_api_signup "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_signup"
 	services_handlers_rest_api_user_identity_info "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_identity_info"
+	services_handlers_rest_api_user_linked_accounts "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_linked_accounts"
 	services_handlers_rest_api_verify_code "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_verify_code"
 	services_handlers_rest_api_verify_password_strength "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_verify_password_strength"
 	services_handlers_rest_api_verify_username "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_verify_username"
-
 	services_handlers_signup "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/signup"
 	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/swagger"
 	services_handlers_token_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/token_endpoint"
@@ -199,6 +198,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_rest_api_signup.AddScopedIHandler(builder)
 	services_handlers_rest_api_logout.AddScopedIHandler(builder)
 	services_handlers_rest_api_user_identity_info.AddScopedIHandler(builder)
+	services_handlers_rest_api_user_linked_accounts.AddScopedIHandler(builder)
 	services_handlers_rest_api_verify_username.AddScopedIHandler(builder)
 	services_handlers_rest_api_password_reset_start.AddScopedIHandler(builder)
 	services_handlers_rest_api_password_reset_finish.AddScopedIHandler(builder)
