@@ -45,9 +45,8 @@ jobs:
     steps:
       - name: Echo Tags
         run: |
-          echo new_tag: ${{needs.pre_flight.outputs.new_tag}} 
-          echo changelog: ${{needs.pre_flight.outputs.changelog}}
-
+          echo new_tag: ${{needs.pre_flight.outputs.new_tag}}
+      #          echo changelog: ${{needs.pre_flight.outputs.changelog}}
       - uses: actions/checkout@v4
 
       - name: Set up Go
