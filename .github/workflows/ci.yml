@@ -61,21 +61,6 @@ jobs:
       - name: Test
         run: go test -v ./...
 
-        run: |
-          Set-Location -Path "client/oidc-flows"  
-          Get-ChildItem -Path "."
-
-          yarn install
-          yarn build
-          $destination = "..\..\cmd\server\static\oidc-flows"
-          if (-not (Test-Path -Path $destination -PathType Container)) {
-              New-Item -Path $destination -ItemType Directory -Force
-          }
-          Get-ChildItem -Path "."
-
-          copy-item -Path ".\build\*" -Destination $destination -Recurse -Force
-        shell: pwsh
-
     # Create and post docker image
   build-docker-push-image:
     runs-on: ubuntu-latest
