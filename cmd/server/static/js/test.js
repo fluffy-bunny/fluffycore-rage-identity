@@ -15,8 +15,6 @@ fetch("/api/manifest", {
     console.log("finishResponse:", data);
   });
 
-  
-
 // /api/start-external-login
 //-----------------------------------------------------
 fetch("/api/start-external-login", {
@@ -33,7 +31,7 @@ fetch("/api/start-external-login", {
   }),
 })
   .then((response) => response.json())
-  .then((data) => console.log(data))
+  .then((data) => console.log(JSON.stringify(data)))
   .catch((error) => {
     console.error("Error:", error);
   });
@@ -119,6 +117,45 @@ fetch("/api/login-phase-one", {
     console.error("Error:", error);
   });
 
+// /api/login-phase-one for claimed domain
+//-----------------------------------------------------
+fetch("/api/login-phase-one", {
+  method: "POST",
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+  body: JSON.stringify({
+    email: "ghstahl@mapped.com",
+  }),
+})
+  .then((response) => response.json())
+  .then((data) => console.log(data))
+  .catch((error) => {
+    console.error("Error:", error);
+  });
+// /api/start-external-login for mapped-enterprise
+//-----------------------------------------------------
+fetch("/api/start-external-login", {
+  method: "POST",
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+  body: JSON.stringify({
+    slug: "mapped-enterprise",
+    directive: "login",
+  }),
+})
+  .then((response) => response.json())
+  .then((data) => console.log(JSON.stringify(data)))
+  .catch((error) => {
+    console.error("Error:", error);
+  });
 // /api/login-password
 //-----------------------------------------------------
 fetch("/api/login-password", {
@@ -242,3 +279,72 @@ fetch("/api/password-reset-finish", {
   .catch((error) => {
     console.error("Error:", error);
   });
+
+// /api/user-identity-info
+//-----------------------------------------------------
+fetch("/api/user-identity-info", {
+  method: "GET",
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+})
+  .then((response) => {
+    return response.json();
+  })
+  .then((data) => {
+    console.log("finishResponse:", data);
+  });
+
+//   /api/user-profile
+//-----------------------------------------------------
+fetch("/api/user-profile", {
+  method: "GET",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+})
+  .then((response) => {
+    return response.json();
+  })
+  .then((data) => {
+    console.log("finishResponse:", data);
+  });
+
+fetch("/api/user-profile", {
+  method: "POST",
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+  body: JSON.stringify({
+    givenName: 'bugs', familyName: 'bunny', phoneNumber: '555-1212'
+  }),
+});
+
+// /api/password-reset-finish
+//-----------------------------------------------------
+fetch("/api/logout", {
+  method: "POST",
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+  body: JSON.stringify({
+    
+  }),
+})
+  .then((response) => response.json())
+  .then((data) => console.log(data))
+  .catch((error) => {
+    console.error("Error:", error);
+  });
+

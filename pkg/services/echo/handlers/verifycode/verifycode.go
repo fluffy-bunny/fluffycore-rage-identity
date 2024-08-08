@@ -122,7 +122,7 @@ func (s *service) DoGet(c echo.Context) error {
 		log.Error().Err(err).Msg("c.Bind")
 		return s.TeleportBackToLogin(c, InternalError_VerifyCode_099)
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 	err := s.validateVerifyCodeGetRequest(model)
 	if err != nil {
 		log.Error().Err(err).Msg("validateVerifyCodeGetRequest")
@@ -175,7 +175,7 @@ func (s *service) DoPost(c echo.Context) error {
 	if err := c.Bind(model); err != nil {
 		return s.TeleportBackToLogin(c, InternalError_VerifyCode_099)
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 
 	errors, err := s.validateVerifyCodePostRequest(model)
 	if err != nil {

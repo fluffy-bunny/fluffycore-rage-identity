@@ -94,7 +94,7 @@ func (s *service) SendEmail(ctx context.Context, request *contracts_email.SendEm
 		return nil, err
 	}
 	if s.config.JustLogIt {
-		log.Info().Str("to", request.ToEmail).
+		log.Debug().Str("to", request.ToEmail).
 			Str("subject", subject).Msg(renderedEmail.Text)
 		return &contracts_email.SendEmailResponse{}, nil
 	}

@@ -86,7 +86,7 @@ func (s *service) GetConfig(ctx context.Context, request *contracts_oauth2factor
 	}
 	idp := getIDPBySlugResponse.Idp
 	if idp.Protocol != nil {
-		log.Info().Interface("getIDPBySlugResponse", getIDPBySlugResponse).Msg("getIDPBySlugResponse")
+		log.Debug().Interface("getIDPBySlugResponse", getIDPBySlugResponse).Msg("getIDPBySlugResponse")
 		switch v := idp.Protocol.Value.(type) {
 		case *proto_oidc_models.Protocol_Github:
 			oauth2Config, ok := s.oauth2Configs[request.IDPHint]

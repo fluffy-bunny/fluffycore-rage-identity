@@ -1,4 +1,38 @@
-FROM golang:1.22 as build
+# Use the official Node.js image as the base image
+FROM node:20-alpine AS nodejs_oidc_flows  
+
+# Set the working directory inside the container
+WORKDIR /app
+# Copy the rest of the application code to the working directory
+COPY ./client/oidc-flows/ .
+## list the files in the current directory
+RUN ls -la
+# Install dependencies
+RUN yarn install
+# Build the project
+RUN yarn build
+## list the files in the current directory
+RUN ls -la
+
+# Use the official Node.js image as the base image
+FROM node:20-alpine AS nodejs_account_management  
+
+# Set the working directory inside the container
+WORKDIR /app
+# Copy the rest of the application code to the working directory
+COPY ./client/account-management/ .
+## list the files in the current directory
+RUN ls -la
+# Install dependencies
+RUN yarn install
+# Build the project
+RUN yarn build
+## list the files in the current directory
+RUN ls -la
+
+## change directory to 
+FROM golang:1.22 AS build
+
 
 #!!!DO NOT REMOVE THE BELOW 3 LINES!!! Needed for github action to work
 #GHAONLY:COPY dotssh/* /root/.ssh/
@@ -37,7 +71,7 @@ ENV LDFLAGS="-X ${location}.date=${date} -X ${location}.version=${version} -X ${
 RUN --mount=type=ssh go build -a -tags netgo -ldflags "$LDFLAGS" ./cmd/$THEBINARY
 
 
-FROM alpine:latest as stage1
+FROM alpine:latest AS stage1
 
 RUN apk add -U --no-cache ca-certificates
 
@@ -60,13 +94,16 @@ WORKDIR /app
 COPY --from=build /build/${THEBINARY} ./
 RUN mkdir /static
 COPY ./cmd/server/static ./static/
+COPY --from=nodejs_oidc_flows         /app/oidc-flows/          ./static/oidc-flows/
+COPY --from=nodejs_account_management /app/account-management/  ./static/account-management/
+
 RUN mkdir /resources
 COPY ./cmd/server/resources ./resources/
 
 COPY ./certs /etc/ssl/certs/
 
 COPY --from=stage1 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=stage1 /etc/passwd /etc/passwd
+COPY --from=stage1 /etc/passwd /etc/passwd 
 
 ENV PATH=/app:${PATH}
 ENV PORT="50051"

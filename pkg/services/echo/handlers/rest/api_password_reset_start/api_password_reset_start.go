@@ -94,7 +94,7 @@ func (s *service) validatePasswordResetStartRequest(model *login_models.Password
 // @Summary get the login manifest.
 // @Description This is the configuration of the server..
 // @Tags root
-// @Accept */*
+// @Accept json
 // @Produce json
 // @Param		request body		login_models.PasswordResetStartRequest	true	"PasswordResetStartRequest"
 // @Success 200 {object} login_models.PasswordResetStartResponse

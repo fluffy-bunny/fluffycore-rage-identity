@@ -52,6 +52,7 @@ var (
 	API_Manifest               = "/api/manifest"
 	API_Start_ExternalLogin    = "/api/start-external-login"
 	API_VerifyUsername         = "/api/verify-username"
+	API_UserIdentityInfo       = "/api/user-identity-info"
 	API_VerifyPasswordStrength = "/api/verify-password-strength"
 	API_LoginPhaseOne          = "/api/login-phase-one"
 	API_LoginPassword          = "/api/login-password"
@@ -59,6 +60,8 @@ var (
 	API_Signup                 = "/api/signup"
 	API_PasswordResetStart     = "/api/password-reset-start"
 	API_PasswordResetFinish    = "/api/password-reset-finish"
+	API_UserProfilePath        = "/api/user-profile"
+	API_Logout                 = "/api/logout"
 )
 
 type Paths struct {

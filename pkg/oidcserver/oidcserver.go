@@ -30,10 +30,12 @@ import (
 
 	services_handlers_rest_api_login_password "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_login_password"
 	services_handlers_rest_api_login_username_phase_one "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_login_username_phase_one"
+	services_handlers_rest_api_logout "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_logout"
 	services_handlers_rest_api_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_manifest"
 	services_handlers_rest_api_password_reset_finish "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_password_reset_finish"
 	services_handlers_rest_api_password_reset_start "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_password_reset_start"
 	services_handlers_rest_api_signup "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_signup"
+	services_handlers_rest_api_user_identity_info "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_identity_info"
 	services_handlers_rest_api_verify_code "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_verify_code"
 	services_handlers_rest_api_verify_password_strength "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_verify_password_strength"
 	services_handlers_rest_api_verify_username "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_verify_username"
@@ -195,6 +197,8 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_rest_api_manifest.AddScopedIHandler(builder)
 	services_handlers_rest_api_verify_code.AddScopedIHandler(builder)
 	services_handlers_rest_api_signup.AddScopedIHandler(builder)
+	services_handlers_rest_api_logout.AddScopedIHandler(builder)
+	services_handlers_rest_api_user_identity_info.AddScopedIHandler(builder)
 	services_handlers_rest_api_verify_username.AddScopedIHandler(builder)
 	services_handlers_rest_api_password_reset_start.AddScopedIHandler(builder)
 	services_handlers_rest_api_password_reset_finish.AddScopedIHandler(builder)
@@ -248,12 +252,19 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 		CookieHTTPOnly: false,
 		CookieSameSite: http.SameSiteStrictMode,
 		Skipper: func(c echo.Context) bool {
+			if s.config.CSRFConfig.SkipApi {
+				if strings.Contains(c.Request().URL.Path, "/api") {
+					return true
+				}
+			}
 			csrfSkipperPaths := CSRFSkipperPaths()
 			currentPath := c.Request().URL.Path
 			_, ok := csrfSkipperPaths[currentPath]
 			return ok
+
 		},
 	}))
+
 	e.Use(EnsureCookieClaimsPrincipal(root))
 	e.Use(EnsureLocalizer(root))
 	e.Use(EnsureAuth(root))

@@ -100,7 +100,7 @@ func (s *service) Do(c echo.Context) error {
 	}
 	subject := claim.Value
 
-	log.Info().Msg("WebAuthN_Register_Begin")
+	log.Debug().Msg("WebAuthN_Register_Begin")
 
 	// get the user from the store
 	getRageUserResponse, err := s.RageUserService().GetRageUser(ctx,

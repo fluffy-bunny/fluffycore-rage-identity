@@ -74,7 +74,7 @@ const docTemplate = `{
             "post": {
                 "description": "This is the configuration of the server..",
                 "consumes": [
-                    "*/*"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -83,6 +83,17 @@ const docTemplate = `{
                     "root"
                 ],
                 "summary": "get the login manifest.",
+                "parameters": [
+                    {
+                        "description": "LoginPasswordRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/login_models.LoginPasswordRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -103,7 +114,7 @@ const docTemplate = `{
             "post": {
                 "description": "This is the configuration of the server..",
                 "consumes": [
-                    "*/*"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -133,12 +144,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/logout": {
+            "post": {
+                "description": "Logout",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "Logout.",
+                "parameters": [
+                    {
+                        "description": "LogoutRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/login_models.LogoutRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/login_models.LogoutResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/manifest": {
             "get": {
                 "description": "This is the configuration of the server..",
-                "consumes": [
-                    "*/*"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -150,7 +204,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/manifest.Manifest"
                         }
                     }
                 }
@@ -160,7 +214,7 @@ const docTemplate = `{
             "post": {
                 "description": "This is the configuration of the server..",
                 "consumes": [
-                    "*/*"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -200,7 +254,7 @@ const docTemplate = `{
             "post": {
                 "description": "This is the configuration of the server..",
                 "consumes": [
-                    "*/*"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -234,7 +288,7 @@ const docTemplate = `{
             "post": {
                 "description": "verify code",
                 "consumes": [
-                    "*/*"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -322,11 +376,137 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/user-identity-info": {
+            "get": {
+                "description": "get the highlevel UserIdentityInfo post login.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the highlevel UserIdentityInfo post login.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api_user_identity_info.UserIdentityInfo"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user-profile": {
+            "get": {
+                "description": "set user profile.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "set user profile.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api_user_profile.Profile"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "get user profile.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get user profile.",
+                "parameters": [
+                    {
+                        "description": "Profile",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api_user_profile.Profile"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api_user_profile.Profile"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/verify-code": {
             "post": {
                 "description": "verify code",
                 "consumes": [
-                    "*/*"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -366,7 +546,7 @@ const docTemplate = `{
             "post": {
                 "description": "This is the configuration of the server..",
                 "consumes": [
-                    "*/*"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -400,7 +580,7 @@ const docTemplate = `{
             "post": {
                 "description": "This is the configuration of the server..",
                 "consumes": [
-                    "*/*"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
@@ -818,6 +998,31 @@ const docTemplate = `{
                 }
             }
         },
+        "api_user_identity_info.UserIdentityInfo": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "passkeyEligible": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "api_user_profile.Profile": {
+            "type": "object",
+            "properties": {
+                "familyName": {
+                    "type": "string"
+                },
+                "givenName": {
+                    "type": "string"
+                },
+                "phoneNumber": {
+                    "type": "string"
+                }
+            }
+        },
         "external_idp.StartExternalIDPLoginRequest": {
             "type": "object",
             "required": [
@@ -863,16 +1068,30 @@ const docTemplate = `{
         "login_models.DirectiveRedirect": {
             "type": "object",
             "properties": {
-                "formParams": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.FormParam"
-                    }
-                },
                 "redirectUri": {
                     "type": "string"
+                }
+            }
+        },
+        "login_models.DirectiveStartExternalLogin": {
+            "type": "object",
+            "properties": {
+                "slug": {
+                    "type": "string"
+                }
+            }
+        },
+        "login_models.LoginPasswordRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
                 },
-                "verb": {
+                "password": {
                     "type": "string"
                 }
             }
@@ -928,7 +1147,27 @@ const docTemplate = `{
                 "directiveRedirect": {
                     "$ref": "#/definitions/login_models.DirectiveRedirect"
                 },
+                "directiveStartExternalLogin": {
+                    "$ref": "#/definitions/login_models.DirectiveStartExternalLogin"
+                },
                 "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "login_models.LogoutRequest": {
+            "type": "object"
+        },
+        "login_models.LogoutResponse": {
+            "type": "object",
+            "required": [
+                "directive"
+            ],
+            "properties": {
+                "directive": {
+                    "type": "string"
+                },
+                "redirectURL": {
                     "type": "string"
                 }
             }
@@ -1046,6 +1285,9 @@ const docTemplate = `{
                 "directiveRedirect": {
                     "$ref": "#/definitions/login_models.DirectiveRedirect"
                 },
+                "directiveStartExternalLogin": {
+                    "$ref": "#/definitions/login_models.DirectiveStartExternalLogin"
+                },
                 "email": {
                     "type": "string"
                 },
@@ -1082,14 +1324,22 @@ const docTemplate = `{
                 }
             }
         },
-        "models.FormParam": {
+        "manifest.IDP": {
             "type": "object",
             "properties": {
-                "name": {
+                "slug": {
                     "type": "string"
-                },
-                "value": {
-                    "type": "string"
+                }
+            }
+        },
+        "manifest.Manifest": {
+            "type": "object",
+            "properties": {
+                "social_idps": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/manifest.IDP"
+                    }
                 }
             }
         },

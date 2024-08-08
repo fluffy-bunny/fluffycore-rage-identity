@@ -10,14 +10,12 @@ import (
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
-	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
-	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -94,11 +92,11 @@ func (s *service) validateLoginPhaseOneRequest(model *login_models.LoginPhaseOne
 	return nil
 }
 
-// API Manifest godoc
+// API LoginUserPhaseOne godoc
 // @Summary get the login manifest.
 // @Description This is the configuration of the server..
 // @Tags root
-// @Accept */*
+// @Accept json
 // @Produce json
 // @Param		request body		login_models.LoginPhaseOneRequest	true	"LoginPhaseOneRequest"
 // @Success 200 {object} login_models.LoginPhaseOneResponse
@@ -131,7 +129,6 @@ func (s *service) Do(c echo.Context) error {
 		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
 
 	}
-	authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
 
 	log.Debug().Interface("sessionRequest", sessionRequest).Msg("sessionRequest")
 
@@ -159,26 +156,13 @@ func (s *service) Do(c echo.Context) error {
 	}
 	if len(listIDPRequest.Idps) > 0 {
 		// an idp has claimed this domain.
+		// lets start that session and return the redirect URI to the externalIDP
 		// post to the externalIDP
-		response.Directive = login_models.DIRECTIVE_Redirect
-		response.DirectiveRedirect = &login_models.DirectiveRedirect{
-			RedirectURI: wellknown_echo.ExternalIDPPath,
-			VERB:        http.MethodPost,
-			FormParams: []models.FormParam{
-				{
-					Name:  "state",
-					Value: authorizationRequest.State,
-				},
-				{
-					Name:  "idp_hint",
-					Value: listIDPRequest.Idps[0].Slug,
-				},
-				{
-					Name:  "directive",
-					Value: models.LoginDirective,
-				},
-			},
+		response.Directive = login_models.DIRECTIVE_StartExternalLogin
+		response.DirectiveStartExternalLogin = &login_models.DirectiveStartExternalLogin{
+			Slug: listIDPRequest.Idps[0].Slug,
 		}
+
 		return c.JSONPretty(http.StatusOK, response, "  ")
 	}
 	// does the user exist.

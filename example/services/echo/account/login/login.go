@@ -92,7 +92,7 @@ func (s *service) Do(c echo.Context) error {
 	}
 	config := getConfigResponse.Config
 	authUrl := config.AuthCodeURL(state, oidc.Nonce(nonce))
-	log.Info().Str("authUrl", authUrl).Msg("authUrl")
+	log.Debug().Str("authUrl", authUrl).Msg("authUrl")
 
 	return c.Redirect(http.StatusFound, authUrl)
 

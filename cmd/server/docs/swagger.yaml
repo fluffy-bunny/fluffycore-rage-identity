@@ -7,6 +7,22 @@ definitions:
       internalCode:
         type: string
     type: object
+  api_user_identity_info.UserIdentityInfo:
+    properties:
+      email:
+        type: string
+      passkeyEligible:
+        type: boolean
+    type: object
+  api_user_profile.Profile:
+    properties:
+      familyName:
+        type: string
+      givenName:
+        type: string
+      phoneNumber:
+        type: string
+    type: object
   external_idp.StartExternalIDPLoginRequest:
     properties:
       directive:
@@ -36,14 +52,23 @@ definitions:
     type: object
   login_models.DirectiveRedirect:
     properties:
-      formParams:
-        items:
-          $ref: '#/definitions/models.FormParam'
-        type: array
       redirectUri:
         type: string
-      verb:
+    type: object
+  login_models.DirectiveStartExternalLogin:
+    properties:
+      slug:
         type: string
+    type: object
+  login_models.LoginPasswordRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
     type: object
   login_models.LoginPasswordResponse:
     properties:
@@ -76,11 +101,24 @@ definitions:
         $ref: '#/definitions/login_models.DirectiveEmailCodeChallenge'
       directiveRedirect:
         $ref: '#/definitions/login_models.DirectiveRedirect'
+      directiveStartExternalLogin:
+        $ref: '#/definitions/login_models.DirectiveStartExternalLogin'
       email:
         type: string
     required:
     - directive
     - email
+    type: object
+  login_models.LogoutRequest:
+    type: object
+  login_models.LogoutResponse:
+    properties:
+      directive:
+        type: string
+      redirectURL:
+        type: string
+    required:
+    - directive
     type: object
   login_models.PasswordResetErrorReason:
     enum:
@@ -156,6 +194,8 @@ definitions:
         $ref: '#/definitions/login_models.DirectiveEmailCodeChallenge'
       directiveRedirect:
         $ref: '#/definitions/login_models.DirectiveRedirect'
+      directiveStartExternalLogin:
+        $ref: '#/definitions/login_models.DirectiveStartExternalLogin'
       email:
         type: string
       errorReason:
@@ -182,12 +222,17 @@ definitions:
     required:
     - directive
     type: object
-  models.FormParam:
+  manifest.IDP:
     properties:
-      name:
+      slug:
         type: string
-      value:
-        type: string
+    type: object
+  manifest.Manifest:
+    properties:
+      social_idps:
+        items:
+          $ref: '#/definitions/manifest.IDP'
+        type: array
     type: object
   password.VerifyPasswordStrengthRequest:
     properties:
@@ -255,8 +300,15 @@ paths:
   /api/login-password:
     post:
       consumes:
-      - '*/*'
+      - application/json
       description: This is the configuration of the server..
+      parameters:
+      - description: LoginPasswordRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/login_models.LoginPasswordRequest'
       produces:
       - application/json
       responses:
@@ -274,7 +326,7 @@ paths:
   /api/login-phase-one:
     post:
       consumes:
-      - '*/*'
+      - application/json
       description: This is the configuration of the server..
       parameters:
       - description: LoginPhaseOneRequest
@@ -293,10 +345,38 @@ paths:
       summary: get the login manifest.
       tags:
       - root
+  /api/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout
+      parameters:
+      - description: LogoutRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/login_models.LogoutRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/login_models.LogoutResponse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Logout.
+      tags:
+      - root
   /api/manifest:
     get:
-      consumes:
-      - '*/*'
       description: This is the configuration of the server..
       produces:
       - application/json
@@ -304,14 +384,14 @@ paths:
         "200":
           description: OK
           schema:
-            type: string
+            $ref: '#/definitions/manifest.Manifest'
       summary: get the login manifest.
       tags:
       - root
   /api/password-reset-finish:
     post:
       consumes:
-      - '*/*'
+      - application/json
       description: This is the configuration of the server..
       parameters:
       - description: PasswordResetStartRequest
@@ -337,7 +417,7 @@ paths:
   /api/password-reset-start:
     post:
       consumes:
-      - '*/*'
+      - application/json
       description: This is the configuration of the server..
       parameters:
       - description: PasswordResetStartRequest
@@ -359,7 +439,7 @@ paths:
   /api/signup:
     post:
       consumes:
-      - '*/*'
+      - application/json
       description: verify code
       parameters:
       - description: SignupRequest
@@ -416,10 +496,93 @@ paths:
       summary: starts an external login ceremony with an external IDP
       tags:
       - root
+  /api/user-identity-info:
+    get:
+      description: get the highlevel UserIdentityInfo post login.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_user_identity_info.UserIdentityInfo'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: get the highlevel UserIdentityInfo post login.
+      tags:
+      - root
+  /api/user-profile:
+    get:
+      description: set user profile.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_user_profile.Profile'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: set user profile.
+      tags:
+      - root
+    post:
+      consumes:
+      - application/json
+      description: get user profile.
+      parameters:
+      - description: Profile
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api_user_profile.Profile'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_user_profile.Profile'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: get user profile.
+      tags:
+      - root
   /api/verify-code:
     post:
       consumes:
-      - '*/*'
+      - application/json
       description: verify code
       parameters:
       - description: VerifyCodeRequest
@@ -445,7 +608,7 @@ paths:
   /api/verify-password-strength:
     post:
       consumes:
-      - '*/*'
+      - application/json
       description: This is the configuration of the server..
       parameters:
       - description: LoginPhaseOneRequest
@@ -467,7 +630,7 @@ paths:
   /api/verify-username:
     post:
       consumes:
-      - '*/*'
+      - application/json
       description: This is the configuration of the server..
       produces:
       - application/json

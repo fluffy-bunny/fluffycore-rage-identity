@@ -76,7 +76,7 @@ func (s *service) Do(c echo.Context) error {
 		log.Error().Err(err).Msg("Bind")
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 
 	mm, err := s.wellknownCookies.GetInsecureCookie(c, contracts_cookies.LoginRequest)
 	if err != nil {
@@ -97,7 +97,7 @@ func (s *service) Do(c echo.Context) error {
 	if !isValidPath(loginRequest.ReturnUrl) {
 		loginRequest.ReturnUrl = wellknown_echo.HomePath
 	}
-	log.Info().Interface("loginRequest", loginRequest).Msg("loginRequest")
+	log.Debug().Interface("loginRequest", loginRequest).Msg("loginRequest")
 
 	getAccountStateCookieResponse, err := s.wellknownCookies.GetAccountStateCookie(c)
 	if err != nil {

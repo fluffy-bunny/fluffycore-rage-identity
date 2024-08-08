@@ -116,7 +116,7 @@ func (s *service) DoGet(c echo.Context) error {
 	if err := c.Bind(model); err != nil {
 		return s.TeleportBackToLogin(c, InternalError_Signup_099)
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 
 	type row struct {
 		Key   string
@@ -191,7 +191,7 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("Bind")
 		return s.TeleportBackToLogin(c, InternalError_Signup_099)
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 	if model.Type == "GET" {
 		return s.DoGet(c)
 	}

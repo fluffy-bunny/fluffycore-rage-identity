@@ -78,7 +78,7 @@ func (s *service) Do(c echo.Context) error {
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
-	log.Info().Msg("WebAuthN_Register_Finish")
+	log.Debug().Msg("WebAuthN_Register_Finish")
 
 	// the the user subject from claims principal
 	claimsPrincipal := s.ClaimsPrincipal()

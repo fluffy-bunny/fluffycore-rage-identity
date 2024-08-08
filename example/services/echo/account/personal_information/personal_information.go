@@ -137,7 +137,7 @@ func (s *service) DoGet(c echo.Context) error {
 		log.Error().Err(err).Msg("c.Bind")
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 	err := s.validatePersonalInformationGetRequest(model)
 	if err != nil {
 		log.Error().Err(err).Msg("validatePersonalInformationGetRequest")
@@ -193,7 +193,7 @@ func (s *service) DoPost(c echo.Context) error {
 	if err := c.Bind(model); err != nil {
 		return err
 	}
-	log.Info().Interface("model", model).Msg("model")
+	log.Debug().Interface("model", model).Msg("model")
 
 	user, err := s.getUser(c)
 	if err != nil {

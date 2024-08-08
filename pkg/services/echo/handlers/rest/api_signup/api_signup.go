@@ -11,8 +11,8 @@ import (
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
-	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
-	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
+	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
+	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
@@ -21,7 +21,6 @@ import (
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
-	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
@@ -83,7 +82,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
 
-func (s *service) validateSignupRequest(model *login_models.SignupRequest) error {
+func (s *service) validateSignupRequest(model *models_api_login_models.SignupRequest) error {
 	if fluffycore_utils.IsNil(model) {
 		return status.Error(codes.InvalidArgument, "model is nil")
 	}
@@ -105,7 +104,7 @@ func (s *service) validateSignupRequest(model *login_models.SignupRequest) error
 // @Summary verify code.
 // @Description verify code
 // @Tags root
-// @Accept */*
+// @Accept json
 // @Produce json
 // @Param		request body		login_models.SignupRequest	true	"SignupRequest"
 // @Success 200 {object} login_models.SignupResponse
@@ -117,7 +116,7 @@ func (s *service) Do(c echo.Context) error {
 
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
-	model := &login_models.SignupRequest{}
+	model := &models_api_login_models.SignupRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
 		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
@@ -126,21 +125,10 @@ func (s *service) Do(c echo.Context) error {
 		log.Error().Err(err).Msg("validateSignupRequest")
 		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
 	}
-	response := &login_models.SignupResponse{
+	response := &models_api_login_models.SignupResponse{
 		Email:       model.Email,
-		ErrorReason: login_models.SignupErrorReason_NoError,
+		ErrorReason: models_api_login_models.SignupErrorReason_NoError,
 	}
-
-	session, err := s.getSession()
-	if err != nil {
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
-	}
-	sessionRequest, err := session.Get("request")
-	if err != nil {
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
-
-	}
-	authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
 
 	model.Email = strings.ToLower(model.Email)
 	// get the domain from the email
@@ -159,24 +147,9 @@ func (s *service) Do(c echo.Context) error {
 	}
 	if len(listIDPRequest.Idps) > 0 {
 		// this domain is claimed.
-		response.Directive = login_models.DIRECTIVE_Redirect
-		response.DirectiveRedirect = &login_models.DirectiveRedirect{
-			RedirectURI: wellknown_echo.ExternalIDPPath,
-			VERB:        http.MethodPost,
-			FormParams: []models.FormParam{
-				{
-					Name:  "state",
-					Value: authorizationRequest.State,
-				},
-				{
-					Name:  "idp_hint",
-					Value: listIDPRequest.Idps[0].Slug,
-				},
-				{
-					Name:  "directive",
-					Value: models.LoginDirective,
-				},
-			},
+		response.Directive = models_api_login_models.DIRECTIVE_StartExternalLogin
+		response.DirectiveStartExternalLogin = &models_api_login_models.DirectiveStartExternalLogin{
+			Slug: listIDPRequest.Idps[0].Slug,
 		}
 		return c.JSONPretty(http.StatusOK, response, "  ")
 	}
@@ -223,7 +196,7 @@ func (s *service) Do(c echo.Context) error {
 		Password: model.Password,
 	})
 	if err != nil {
-		response.ErrorReason = login_models.SignupErrorReason_InvalidPassword
+		response.ErrorReason = models_api_login_models.SignupErrorReason_InvalidPassword
 		return c.JSONPretty(http.StatusBadRequest, response, "  ")
 	}
 	user.Password = &proto_oidc_models.Password{
@@ -266,23 +239,15 @@ func (s *service) Do(c echo.Context) error {
 			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
 		}
 		if s.config.SystemConfig.DeveloperMode {
-			response.DirectiveEmailCodeChallenge = &login_models.DirectiveEmailCodeChallenge{
+			response.DirectiveEmailCodeChallenge = &models_api_login_models.DirectiveEmailCodeChallenge{
 				Code: verificationCode,
 			}
 		}
-		response.Directive = login_models.DIRECTIVE_VerifyCode_DisplayVerifyCodePage
+		response.Directive = models_api_login_models.DIRECTIVE_VerifyCode_DisplayVerifyCodePage
 		return c.JSONPretty(http.StatusOK, response, "  ")
 	}
-	response.Directive = login_models.DIRECTIVE_LoginPhaseOne_DisplayPhaseOnePage
+	response.Directive = models_api_login_models.DIRECTIVE_LoginPhaseOne_DisplayPhaseOnePage
 	response.Message = "User created"
 	return c.JSONPretty(http.StatusOK, response, "  ")
 
-}
-func (s *service) getSession() (contracts_sessions.ISession, error) {
-	session, err := s.oidcSession.GetSession()
-
-	if err != nil {
-		return nil, err
-	}
-	return session, nil
 }

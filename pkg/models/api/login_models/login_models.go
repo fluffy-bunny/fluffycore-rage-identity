@@ -1,11 +1,8 @@
 package login_models
 
-import (
-	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
-)
-
 const (
 	DIRECTIVE_Redirect                               = "redirect"
+	DIRECTIVE_StartExternalLogin                     = "startExternalLogin"
 	DIRECTIVE_LoginPhaseOne_UserDoesNotExist         = "userDoesNotExist"
 	DIRECTIVE_LoginPhaseOne_DisplayPasswordPage      = "displayPasswordPage"
 	DIRECTIVE_VerifyCode_DisplayVerifyCodePage       = "displayVerifyCodePage"
@@ -33,9 +30,11 @@ type (
 		Email string `json:"email" validate:"required"`
 	}
 	DirectiveRedirect struct {
-		RedirectURI string             `json:"redirectUri"`
-		VERB        string             `json:"verb"`
-		FormParams  []models.FormParam `json:"formParams"`
+		RedirectURI string `json:"redirectUri"`
+	}
+
+	DirectiveStartExternalLogin struct {
+		Slug string `json:"slug"`
 	}
 	DirectiveDisplayPasswordPage struct {
 		Email      string `json:"email"`
@@ -52,6 +51,7 @@ type (
 		DirectiveRedirect            *DirectiveRedirect            `json:"directiveRedirect,omitempty"`
 		DirectiveDisplayPasswordPage *DirectiveDisplayPasswordPage `json:"directiveDisplayPasswordPage,omitempty"`
 		DirectiveEmailCodeChallenge  *DirectiveEmailCodeChallenge  `json:"directiveEmailCodeChallenge,omitempty"`
+		DirectiveStartExternalLogin  *DirectiveStartExternalLogin  `json:"directiveStartExternalLogin,omitempty"`
 	}
 
 	LoginPasswordRequest struct {
@@ -81,10 +81,15 @@ type (
 		Directive                   string                       `json:"directive" validate:"required"`
 		DirectiveRedirect           *DirectiveRedirect           `json:"directiveRedirect,omitempty"`
 		DirectiveEmailCodeChallenge *DirectiveEmailCodeChallenge `json:"directiveEmailCodeChallenge,omitempty"`
+		DirectiveStartExternalLogin *DirectiveStartExternalLogin `json:"directiveStartExternalLogin,omitempty"`
 		Message                     string                       `json:"message,omitempty"`
 		ErrorReason                 SignupErrorReason            `json:"errorReason,omitempty"`
 	}
-
+	LogoutRequest  struct{}
+	LogoutResponse struct {
+		Directive   string `json:"directive" validate:"required"`
+		RedirectURL string `json:"redirectURL,omitempty"`
+	}
 	PasswordResetStartRequest struct {
 		Email string `json:"email" validate:"required"`
 	}

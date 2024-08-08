@@ -8,6 +8,7 @@ import (
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	go_webauthn "github.com/go-webauthn/webauthn/webauthn"
 	uuid "github.com/gofrs/uuid"
+	aaguids "github.com/sumup/aaguids-go"
 )
 
 type (
@@ -63,8 +64,10 @@ func (s *service) GetWebAuthN() *go_webauthn.WebAuthn {
 	return s.w
 }
 func (s *service) GetFriendlyNameByAAGUID(aaguid uuid.UUID) string {
-	if friendlyName, ok := s.aaGUIDMap[aaguid.String()]; ok {
-		return friendlyName.Name
+	metadata, err := aaguids.GetMetadata(aaguid.String())
+
+	if err == nil {
+		return metadata.Name
 	}
 	return ""
 }

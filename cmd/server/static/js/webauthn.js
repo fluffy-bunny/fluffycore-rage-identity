@@ -21,6 +21,8 @@ function bufferEncode(value) {
 async function registerUser(returnUrl) {
   try {
     const response = await fetch("/webauthn/register/begin");
+
+    console.log(response);
     if (!response.ok) {
       throw new Error(`Error fetching begin data: ${response.status}`);
     }

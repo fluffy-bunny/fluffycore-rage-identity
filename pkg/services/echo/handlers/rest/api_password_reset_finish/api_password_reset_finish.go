@@ -96,7 +96,7 @@ func (s *service) validatePasswordResetFinishRequest(model *login_models.Passwor
 // @Summary get the login manifest.
 // @Description This is the configuration of the server..
 // @Tags root
-// @Accept */*
+// @Accept json
 // @Produce json
 // @Param		request body		login_models.PasswordResetFinishRequest	true	"PasswordResetStartRequest"
 // @Success 200 {object} login_models.PasswordResetFinishResponse
@@ -187,7 +187,7 @@ func (s *service) Do(c echo.Context) error {
 		SubjectId: "password.reset.changed.subject",
 		BodyId:    "password.reset.changed.message",
 	}
-	log.Info().Interface("sendSimpleEmailRequest", sendSimpleEmailRequest).Err(err).Msg("SendEmail Reset Password")
+	log.Debug().Interface("sendSimpleEmailRequest", sendSimpleEmailRequest).Err(err).Msg("SendEmail Reset Password")
 	_, err = s.EmailService().SendSimpleEmail(ctx, sendSimpleEmailRequest)
 	if err != nil {
 		log.Error().Interface("sendSimpleEmailRequest", sendSimpleEmailRequest).Err(err).Msg("SendEmail")

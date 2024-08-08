@@ -32,6 +32,7 @@
       ],
       "allowed_redirect_uris": [
         "http://localhost:9044/auth/callback",
+        "http://localhost1.com:9044/auth/callback",
         "https://7622-2600-1700-7700-394f-48eb-831c-4d8b-d3a0.ngrok-free.app/auth/callback",
         "http://host.docker.internal:9044/auth/callback2"
       ]

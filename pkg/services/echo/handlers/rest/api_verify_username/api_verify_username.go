@@ -84,7 +84,7 @@ func (s *service) validateVerifyUsernameRequest(model *verify_username.VerifyUse
 // @Summary get the login manifest.
 // @Description This is the configuration of the server..
 // @Tags root
-// @Accept */*
+// @Accept json
 // @Produce json
 // @Success 200 {object} verify_username.VerifyUsernameResponse
 // @Router /api/verify-username [post]

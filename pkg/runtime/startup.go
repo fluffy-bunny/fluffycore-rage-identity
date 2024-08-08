@@ -17,13 +17,18 @@ import (
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidcuser "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
+	fluffycore_contracts_GRPCClientFactory "github.com/fluffy-bunny/fluffycore/contracts/GRPCClientFactory"
+	contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_contracts_middleware "github.com/fluffy-bunny/fluffycore/contracts/middleware"
+	fluffycore_contracts_otel "github.com/fluffy-bunny/fluffycore/contracts/otel"
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
 	core_echo_runtime "github.com/fluffy-bunny/fluffycore/echo/runtime"
 	fluffycore_middleware_correlation "github.com/fluffy-bunny/fluffycore/middleware/correlation"
 	fluffycore_middleware_dicontext "github.com/fluffy-bunny/fluffycore/middleware/dicontext"
 	fluffycore_middleware_logging "github.com/fluffy-bunny/fluffycore/middleware/logging"
 	core_runtime "github.com/fluffy-bunny/fluffycore/runtime"
+	fluffycore_runtime_otel "github.com/fluffy-bunny/fluffycore/runtime/otel"
+	fluffycore_services_GRPCClientFactory "github.com/fluffy-bunny/fluffycore/services/GRPCClientFactory"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	fluffycore_utils_redact "github.com/fluffy-bunny/fluffycore/utils/redact"
 	status "github.com/gogo/status"
@@ -36,8 +41,7 @@ import (
 
 type (
 	startup struct {
-		fluffycore_contracts_runtime.UnimplementedStartup
-		RootContainer di.Container
+		*fluffycore_runtime_otel.FluffyCoreOTELStartup
 
 		configOptions *fluffycore_contracts_runtime.ConfigOptions
 		config        *contracts_config.Config
@@ -54,17 +58,21 @@ func WithConfigureServices(ext pkg_types.ConfigureServices) WithOption {
 		startup.ext = ext
 	}
 }
+func emptyEntrypointConfigs() map[string]contracts_common.IEntryPointConfig {
+	return map[string]contracts_common.IEntryPointConfig{}
+}
 func NewStartup(options ...WithOption) fluffycore_contracts_runtime.IStartup {
-	var s = &startup{}
+	var s = &startup{
+		FluffyCoreOTELStartup: fluffycore_runtime_otel.NewFluffyCoreOTELStartup(&fluffycore_runtime_otel.FluffyCoreOTELStartupConfig{
+			FuncAuthGetEntryPointConfigs: emptyEntrypointConfigs,
+		}),
+	}
 	for _, option := range options {
 		option(s)
 	}
 	return s
 }
-func (s *startup) SetRootContainer(container di.Container) {
-	s.RootContainer = container
 
-}
 func onLoadRageConfig(ctx context.Context, ragePath string) error {
 	log := zerolog.Ctx(ctx).With().Str("method", "OnConfigureServicesLoadIDPs").Logger()
 	fileContent, err := os.ReadFile(ragePath)
@@ -132,6 +140,19 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 		panic(err)
 	}
 	config := s.configOptions.Destination.(*contracts_config.Config)
+	// need to set the OTEL Config in the base startup
+	if config.OTELConfig == nil {
+		config.OTELConfig = &fluffycore_contracts_otel.OTELConfig{}
+	}
+	config.OTELConfig.ServiceName = config.ApplicationName
+	s.FluffyCoreOTELStartup.SetConfig(config.OTELConfig)
+	// add grpcclient factory that is config aware.  Will make sure that you get one that has otel tracing if enabled.
+	fluffycore_contracts_GRPCClientFactory.AddGRPCClientConfig(builder,
+		&fluffycore_contracts_GRPCClientFactory.GRPCClientConfig{
+			OTELTracingEnabled: config.OTELConfig.TracingConfig.Enabled,
+		})
+	fluffycore_services_GRPCClientFactory.AddSingletonIGRPCClientFactory(builder)
+
 	wellknown_echo.OAuth2CallbackPath = config.OIDCConfig.OAuth2CallbackPath
 
 	services.ConfigureServices(ctx, config, builder)
@@ -140,7 +161,7 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 	log.Info().Interface("config", config).Msg("config")
 
 }
-func (s *startup) Configure(ctx context.Context, rootContainer di.Container, unaryServerInterceptorBuilder fluffycore_contracts_middleware.IUnaryServerInterceptorBuilder, streamServerInterceptorBuilder fluffycore_contracts_middleware.IStreamServerInterceptorBuilder) {
+func (s *startup) ConfigureOld(ctx context.Context, rootContainer di.Container, unaryServerInterceptorBuilder fluffycore_contracts_middleware.IUnaryServerInterceptorBuilder, streamServerInterceptorBuilder fluffycore_contracts_middleware.IStreamServerInterceptorBuilder) {
 	log := zerolog.Ctx(ctx).With().Str("method", "Configure").Logger()
 
 	// puts a zerlog logger into the request context
@@ -201,6 +222,11 @@ func (s *startup) OnLoadSeedUsers(ctx context.Context) error {
 // OnPreServerStartup ...
 func (s *startup) OnPreServerStartup(ctx context.Context) error {
 	log := zerolog.Ctx(ctx).With().Str("method", "OnPreServerStartup").Logger()
+
+	err := s.FluffyCoreOTELStartup.OnPreServerStartup(ctx)
+	if err != nil {
+		return err
+	}
 	//s.OnLoadSeedUsers(ctx)
 	s.oidcserverRuntime = core_echo_runtime.New(oidcserver.NewStartup(
 		oidcserver.WithConfigureServices(s.ext),
@@ -231,5 +257,8 @@ func (s *startup) OnPreServerShutdown(ctx context.Context) {
 	s.oidcserverRuntime.Stop()
 	s.oidcserverFuture.Join()
 	log.Info().Msg("oidcserverRuntime shutdown complete")
+
+	log.Info().Msg("FluffyCoreOTELStartup stopped")
+	s.FluffyCoreOTELStartup.OnPreServerShutdown(ctx)
 
 }

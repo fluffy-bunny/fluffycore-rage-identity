@@ -111,7 +111,7 @@ func (s *service) ExchangeCode(ctx context.Context, request *contracts_codeexcha
 		log.Error().Err(err).Msg("failed to exchange code")
 		return nil, err
 	}
-	log.Info().Interface("oauth2Token", oauth2Token).Msg("callbackPath")
+	log.Debug().Interface("oauth2Token", oauth2Token).Msg("callbackPath")
 	rawIDToken, ok := oauth2Token.Extra("id_token").(string)
 	if !ok {
 		log.Error().Msg("failed to get id_token")

@@ -62,7 +62,7 @@ func (s *service) Do(c echo.Context) error {
 	log := zerolog.Ctx(ctx).With().Logger()
 	ctn := s.Container
 	descriptors := ctn.GetDescriptors()
-	log.Info().Msg("about")
+	log.Debug().Msg("about")
 	type row struct {
 		Verbs string
 		Path  string

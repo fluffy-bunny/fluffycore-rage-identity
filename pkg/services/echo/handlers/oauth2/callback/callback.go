@@ -242,7 +242,7 @@ func (s *service) Do(c echo.Context) error {
 	idp = getIDPBySlugResponse.Idp
 
 	if idp.Protocol != nil {
-		log.Info().Interface("getIDPBySlugResponse", getIDPBySlugResponse).Msg("getIDPBySlugResponse")
+		log.Debug().Interface("getIDPBySlugResponse", getIDPBySlugResponse).Msg("getIDPBySlugResponse")
 		switch idp.Protocol.Value.(type) {
 		case *proto_oidc_models.Protocol_Github:
 			{

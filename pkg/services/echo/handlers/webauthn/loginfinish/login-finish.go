@@ -95,7 +95,7 @@ func (s *service) getSession() (contracts_sessions.ISession, error) {
 }
 
 type SucessResonseJson struct {
-	RedirectUri string                  `json:"redirectUri"`
+	RedirectUrl string                  `json:"redirectUrl"`
 	Credential  *go_webauthn.Credential `json:"credential"`
 }
 
@@ -106,7 +106,7 @@ func (s *service) Do(c echo.Context) error {
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
-	log.Info().Msg("WebAuthN_Login_Finish")
+	log.Debug().Msg("WebAuthN_Login_Finish")
 	getWebAuthNCookieResponse, err := s.wellknownCookies.GetWebAuthNCookie(c)
 	if err != nil {
 		log.Error().Err(err).Msg("GetWebAuthNCookie")
@@ -214,12 +214,12 @@ func (s *service) Do(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_005)
 	}
 	// redirect to the client with the code.
-	redirectUri := authorizationFinal.Request.RedirectUri +
+	redirectUrl := authorizationFinal.Request.RedirectUri +
 		"?code=" + authorizationFinal.Request.Code +
 		"&state=" + authorizationFinal.Request.State +
 		"&iss=" + rootPath
 	successResponse := &SucessResonseJson{
-		RedirectUri: redirectUri,
+		RedirectUrl: redirectUrl,
 		Credential:  credential,
 	}
 	return c.JSON(http.StatusOK, successResponse)

@@ -256,7 +256,7 @@ We want to swag init the general dir first, which is in the cmd/server directory
 
 ```bash
 cd cmd/server
-swag init  --dir ./,../../pkg
+swag init  --dir ./,../../pkg,../../example/services/echo/account/api/api_user_profile
 ```
 
 ## GO OIDC CLIENT

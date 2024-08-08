@@ -7,6 +7,7 @@ import (
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	fluffycore_contracts_config "github.com/fluffy-bunny/fluffycore/contracts/config"
+	fluffycore_contracts_otel "github.com/fluffy-bunny/fluffycore/contracts/otel"
 	fluffycore_echo_contracts_cookies "github.com/fluffy-bunny/fluffycore/echo/contracts/cookies"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 )
@@ -25,6 +26,9 @@ type (
 		UnsafeWildcardOriginWithAllowCredentials bool     `json:"unsafeWildcardOriginWithAllowCredentials"`
 		ExposeHeaders                            []string `json:"exposeHeaders"`
 		MaxAge                                   int      `json:"maxAge"`
+	}
+	CSRFConfig struct {
+		SkipApi bool `json:"skipApi"`
 	}
 	ConfigFiles struct {
 		OIDCClientPath     string `json:"oidcClientPath"`
@@ -86,24 +90,26 @@ type (
 	Config struct {
 		fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
 
-		ConfigFiles                    ConfigFiles                        `json:"configFiles"`
-		Echo                           *EchoConfig                        `json:"echo"`
-		InMemoryClients                InMemoryClients                    `json:"inMemoryClients"`
-		OIDCConfig                     *OIDCConfig                        `json:"oidcConfig"`
-		BackingCache                   *BackingCacheConfig                `json:"backingCache"`
-		AutolinkOnEmailMatch           bool                               `json:"autolinkOnEmailMatch"`
-		EmailVerificationRequired      bool                               `json:"emailVerificationRequired"`
-		MultiFactorRequired            bool                               `json:"multiFactorRequired"`
-		MultiFactorRequiredByEmailCode bool                               `json:"multiFactorRequiredByEmailCode"`
-		TOTP                           *TOTPConfig                        `json:"totp"`
-		EmailConfig                    *contracts_email.EmailConfig       `json:"emailConfig"`
-		SelfIDPConfig                  *SelfIDPConfig                     `json:"selfIDPConfig"`
-		CookieConfig                   *CookieConfig                      `json:"cookieConfig"`
-		SystemConfig                   *SystemConfig                      `json:"systemConfig"`
-		SessionConfig                  *contracts_sessions.SessionConfig  `json:"sessionConfig"`
-		WebAuthNConfig                 *contracts_webauthn.WebAuthNConfig `json:"webAuthNConfig"`
-		PasswordConfig                 *PasswordConfig                    `json:"passwordConfig"`
-		CORSConfig                     *CORSConfig                        `json:"corsConfig"`
+		ConfigFiles                    ConfigFiles                           `json:"configFiles"`
+		Echo                           *EchoConfig                           `json:"echo"`
+		InMemoryClients                InMemoryClients                       `json:"inMemoryClients"`
+		OIDCConfig                     *OIDCConfig                           `json:"oidcConfig"`
+		BackingCache                   *BackingCacheConfig                   `json:"backingCache"`
+		AutolinkOnEmailMatch           bool                                  `json:"autolinkOnEmailMatch"`
+		EmailVerificationRequired      bool                                  `json:"emailVerificationRequired"`
+		MultiFactorRequired            bool                                  `json:"multiFactorRequired"`
+		MultiFactorRequiredByEmailCode bool                                  `json:"multiFactorRequiredByEmailCode"`
+		TOTP                           *TOTPConfig                           `json:"totp"`
+		EmailConfig                    *contracts_email.EmailConfig          `json:"emailConfig"`
+		SelfIDPConfig                  *SelfIDPConfig                        `json:"selfIDPConfig"`
+		CookieConfig                   *CookieConfig                         `json:"cookieConfig"`
+		SystemConfig                   *SystemConfig                         `json:"systemConfig"`
+		SessionConfig                  *contracts_sessions.SessionConfig     `json:"sessionConfig"`
+		WebAuthNConfig                 *contracts_webauthn.WebAuthNConfig    `json:"webAuthNConfig"`
+		PasswordConfig                 *PasswordConfig                       `json:"passwordConfig"`
+		CORSConfig                     *CORSConfig                           `json:"corsConfig"`
+		CSRFConfig                     *CSRFConfig                           `json:"csrfConfig"`
+		OTELConfig                     *fluffycore_contracts_otel.OTELConfig `json:"otelConfig"`
 	}
 )
 
@@ -124,6 +130,9 @@ const configDefaultJSONTemplate = `
 	"GRPC_GATEWAY_ENABLED": true,
 	"cookieConfig": {
  	},
+	"csrfConfig": {
+		"skipApi": false
+	},
 	"corsConfig": {
 		"enabled": true,
 		"allowedOrigins": ["*"],
@@ -217,7 +226,23 @@ const configDefaultJSONTemplate = `
 	},
 	"passwordConfig": {
 		"minEntropyBits": 60
-	}
+	},
+    "otelConfig": {
+        "serviceName": "in-environment",
+        "tracingConfig": {
+            "enabled": false,
+            "endpointType": "stdout",
+            "endpoint": "localhost:4318"
+        },
+        "metricConfig": {
+            "enabled": false,
+            "endpointType": "stdout",
+            "intervalSeconds": 10,
+            "endpoint": "localhost:4318",
+            "runtimeEnabled": false,
+            "hostEnabled": false
+        } 
+    }
   }
 `
 
