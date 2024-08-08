@@ -62,6 +62,7 @@ var (
 	API_PasswordResetFinish    = "/api/password-reset-finish"
 	API_UserProfilePath        = "/api/user-profile"
 	API_Logout                 = "/api/logout"
+	API_UserLinkedAccounts     = "/api/user-linked-accounts"
 )
 
 type Paths struct {

@@ -348,3 +348,38 @@ fetch("/api/logout", {
     console.error("Error:", error);
   });
 
+// /api/user-linked-accounts
+//-----------------------------------------------------
+fetch("/api/user-linked-accounts", {
+  method: "GET",
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+})
+  .then((response) => {
+    return response.json();
+  })
+  .then((data) => {
+    console.log("finishResponse:", data);
+  });
+
+  // /api/user-linked-accounts
+//-----------------------------------------------------
+fetch("/api/user-linked-accounts?identity=google-social", {
+  method: "DELETE",
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+})
+  .then((response) => {
+    return response.json();
+  })
+  .then((data) => {
+    console.log("finishResponse:", data);
+  });

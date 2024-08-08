@@ -111,7 +111,6 @@ jobs:
       - name: Test
         run: go test -v ./...
 
- 
     # Create and post docker image
   build-docker-push-image:
     runs-on: ubuntu-latest
@@ -170,7 +169,7 @@ jobs:
 
       - name: Build and push Base
         id: docker_build
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         env:
           version: ${{ steps.vtl.outputs.ver_semVerNoMeta }}
           date: ${{ steps.vtl.outputs.ver_created }}
