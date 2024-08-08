@@ -66,23 +66,23 @@ jobs:
           }
           Get-ChildItem -Path "."
 
-          copy-item -Path ".\build\*" -Destination $destination -Recurse -Force
+          copy-item -Path ".\account-management\*" -Destination $destination -Recurse -Force
         shell: pwsh
 
-      - name: build client/account-management
+      - name: build client/oidc-flow
         run: |
-          Set-Location -Path "client/account-management"  
+          Set-Location -Path "client/oidc-flow"  
           Get-ChildItem -Path "."
 
           yarn install
           yarn build
-          $destination = "..\..\cmd\server\static\account-management"
+          $destination = "..\..\cmd\server\static\oidc-flow"
           if (-not (Test-Path -Path $destination -PathType Container)) {
               New-Item -Path $destination -ItemType Directory -Force
           }
           Get-ChildItem -Path "."
 
-          copy-item -Path ".\build\*" -Destination $destination -Recurse -Force
+          copy-item -Path ".\oidc-flow\*" -Destination $destination -Recurse -Force
         shell: pwsh
 
       - uses: actions/upload-artifact@v4
