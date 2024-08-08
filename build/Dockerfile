@@ -1,6 +1,3 @@
-
-
-## change directory to 
 FROM golang:1.22 AS build
 
 
