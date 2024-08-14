@@ -229,7 +229,7 @@ func (s *service) Do(c echo.Context) error {
 			&contracts_email.SendSimpleEmailRequest{
 				ToEmail:   model.Email,
 				SubjectId: "email.verification.subject",
-				BodyId:    "email.verification..message",
+				BodyId:    "email.verification.message",
 				Data: map[string]string{
 					"code": verificationCode,
 				},

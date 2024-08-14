@@ -293,7 +293,7 @@ func EnsureLocalizer(_ di.Container) echo.MiddlewareFunc {
 			localizer := di.Get[contracts_localizer.ILocalizer](subContainer)
 			accept := strings.TrimSpace(c.Request().Header.Get("Accept-Language"))
 			if accept == "" {
-				accept = "en-US"
+				accept = "en"
 			}
 			localizer.Initialize(c)
 			return next(c)

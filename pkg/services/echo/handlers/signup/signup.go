@@ -318,7 +318,7 @@ func (s *service) DoPost(c echo.Context) error {
 			&contracts_email.SendSimpleEmailRequest{
 				ToEmail:   model.UserName,
 				SubjectId: "email.verification.subject",
-				BodyId:    "email.verification..message",
+				BodyId:    "email.verification.message",
 				Data: map[string]string{
 					"code": verificationCode,
 				},

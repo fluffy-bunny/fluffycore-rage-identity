@@ -23,8 +23,8 @@ func init() {
 func (s *service) Ctor() (contracts_localizer.ILocalizerBundle, error) {
 	bundle := i18n.NewBundle(language.English)
 	bundle.RegisterUnmarshalFunc("json", json.Unmarshal)
-	bundle.LoadMessageFile("resources/en-US.json")
-	bundle.LoadMessageFile("resources/fr-FR.json")
+	bundle.LoadMessageFile("resources/en.json")
+	//bundle.LoadMessageFile("resources/fr-FR.json")
 	return &service{
 		bundle: bundle,
 	}, nil
