@@ -1,6 +1,7 @@
 package api_user_identity_info
 
 import (
+	"encoding/base64"
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
@@ -116,16 +117,26 @@ func (s *service) Do(c echo.Context) error {
 		Email:           user.RootIdentity.Email,
 		PasskeyEligible: (user.Password != nil && fluffycore_utils.IsNotEmptyOrNil(user.Password.Hash)),
 	}
+	if fluffycore_utils.IsNotNil(user.LinkedIdentities) {
+		response.LinkedIdentities = make([]api_user_identity_info.LinkedIdentity, 0)
+		for _, linkedIdentity := range user.LinkedIdentities.Identities {
+			response.LinkedIdentities = append(response.LinkedIdentities, api_user_identity_info.LinkedIdentity{
+				Name: linkedIdentity.IdpSlug,
+			})
+		}
+	}
 
 	if fluffycore_utils.IsNotNil(user.WebAuthN) {
-		response.Passkeys = make([]api_user_identity_info.Passkeys, 0)
+		response.Passkeys = make([]api_user_identity_info.Passkey, 0)
 		for _, webAuthNCreds := range user.WebAuthN.Credentials {
 			name := "Unknown"
 			if fluffycore_utils.IsNotEmptyOrNil(webAuthNCreds.Authenticator.FriendlyName) {
 				name = webAuthNCreds.Authenticator.FriendlyName
 			}
-			response.Passkeys = append(response.Passkeys, api_user_identity_info.Passkeys{
-				Name: name,
+			aaGUID := base64.StdEncoding.EncodeToString(webAuthNCreds.Authenticator.AAGUID)
+			response.Passkeys = append(response.Passkeys, api_user_identity_info.Passkey{
+				AAGUID: aaGUID,
+				Name:   name,
 			})
 		}
 	}

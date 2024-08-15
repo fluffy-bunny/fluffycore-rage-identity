@@ -6,7 +6,7 @@ $destination = "..\..\cmd\server\static\account-management"
 if (-not (Test-Path -Path $destination -PathType Container)) {
     New-Item -Path $destination -ItemType Directory -Force
 }
-copy-item -Path ".\build\*" -Destination destination -Recurse -Force
+copy-item -Path ".\account-management\*" -Destination destination -Recurse -Force
 Set-Location -Path "..\.."
  
 
@@ -18,7 +18,7 @@ $destination = "..\..\cmd\server\static\oidc-flows"
 if (-not (Test-Path -Path $destination -PathType Container)) {
     New-Item -Path $destination -ItemType Directory -Force
 }
-copy-item -Path ".\build\*" -Destination $destination -Recurse -Force
+copy-item -Path ".\oidc-flows\*" -Destination $destination -Recurse -Force
 Set-Location -Path "..\.."
 
  

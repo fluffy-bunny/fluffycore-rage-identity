@@ -243,6 +243,7 @@ func local_request_ClientService_AddNewClientSecret_0(ctx context.Context, marsh
 // UnaryRPC     :call ClientServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterClientServiceHandlerFromEndpoint instead.
+// GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
 func RegisterClientServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server ClientServiceServer) error {
 
 	mux.Handle("POST", pattern_ClientService_CreateClient_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -401,21 +402,21 @@ func RegisterClientServiceHandlerServer(ctx context.Context, mux *runtime.ServeM
 // RegisterClientServiceHandlerFromEndpoint is same as RegisterClientServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
 func RegisterClientServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
-	conn, err := grpc.DialContext(ctx, endpoint, opts...)
+	conn, err := grpc.NewClient(endpoint, opts...)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if err != nil {
 			if cerr := conn.Close(); cerr != nil {
-				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+				grpclog.Errorf("Failed to close conn to %s: %v", endpoint, cerr)
 			}
 			return
 		}
 		go func() {
 			<-ctx.Done()
 			if cerr := conn.Close(); cerr != nil {
-				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+				grpclog.Errorf("Failed to close conn to %s: %v", endpoint, cerr)
 			}
 		}()
 	}()
@@ -433,7 +434,7 @@ func RegisterClientServiceHandler(ctx context.Context, mux *runtime.ServeMux, co
 // to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "ClientServiceClient".
 // Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "ClientServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "ClientServiceClient" to call the correct interceptors.
+// "ClientServiceClient" to call the correct interceptors. This client ignores the HTTP middlewares.
 func RegisterClientServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client ClientServiceClient) error {
 
 	mux.Handle("POST", pattern_ClientService_CreateClient_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {

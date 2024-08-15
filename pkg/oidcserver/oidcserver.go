@@ -36,6 +36,7 @@ import (
 	services_handlers_rest_api_signup "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_signup"
 	services_handlers_rest_api_user_identity_info "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_identity_info"
 	services_handlers_rest_api_user_linked_accounts "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_linked_accounts"
+	services_handlers_rest_api_user_remove_passkey "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_remove_passkey"
 	services_handlers_rest_api_verify_code "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_verify_code"
 	services_handlers_rest_api_verify_password_strength "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_verify_password_strength"
 	services_handlers_rest_api_verify_username "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_verify_username"
@@ -207,6 +208,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_rest_api_verify_password_strength.AddScopedIHandler(builder)
 	services_handlers_oidclogintotp.AddScopedIHandler(builder)
 	services_handlers_oidcloginpasskey.AddScopedIHandler(builder)
+	services_handlers_rest_api_user_remove_passkey.AddScopedIHandler(builder)
 	services_handlers_externalidp.AddScopedIHandler(builder)
 	services_handlers_externalidp_api.AddScopedIHandler(builder)
 	services_handlers_swagger.AddScopedIHandler(builder)

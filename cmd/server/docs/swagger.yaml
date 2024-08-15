@@ -12,8 +12,15 @@ definitions:
       name:
         type: string
     type: object
-  api_user_identity_info.Passkeys:
+  api_user_identity_info.LinkedIdentity:
     properties:
+      name:
+        type: string
+    type: object
+  api_user_identity_info.Passkey:
+    properties:
+      aaguid:
+        type: string
       name:
         type: string
     type: object
@@ -21,11 +28,15 @@ definitions:
     properties:
       email:
         type: string
+      linkedIdentities:
+        items:
+          $ref: '#/definitions/api_user_identity_info.LinkedIdentity'
+        type: array
       passkeyEligible:
         type: boolean
       passkeys:
         items:
-          $ref: '#/definitions/api_user_identity_info.Passkeys'
+          $ref: '#/definitions/api_user_identity_info.Passkey'
         type: array
     type: object
   api_user_identity_info.UserLinkedAccounts:
@@ -42,6 +53,20 @@ definitions:
       givenName:
         type: string
       phoneNumber:
+        type: string
+    type: object
+  api_user_remove_passkey.RemovePasskeyRequest:
+    properties:
+      aaguid:
+        type: string
+    required:
+    - aaguid
+    type: object
+  api_user_remove_passkey.RemovePasskeyResonse:
+    properties:
+      aaguid:
+        type: string
+      error:
         type: string
     type: object
   external_idp.StartExternalIDPLoginRequest:
@@ -654,6 +679,38 @@ paths:
           schema:
             type: string
       summary: get user profile.
+      tags:
+      - root
+  /api/user-remove-passkey:
+    post:
+      description: get the highlevel UserIdentityInfo post login.
+      parameters:
+      - description: RemovePasskeyRequest
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api_user_remove_passkey.RemovePasskeyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_user_remove_passkey.RemovePasskeyResonse'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: get the highlevel UserIdentityInfo post login.
       tags:
       - root
   /api/verify-code:

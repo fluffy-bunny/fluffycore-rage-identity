@@ -587,6 +587,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/user-remove-passkey": {
+            "post": {
+                "description": "get the highlevel UserIdentityInfo post login.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the highlevel UserIdentityInfo post login.",
+                "parameters": [
+                    {
+                        "description": "RemovePasskeyRequest",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api_user_remove_passkey.RemovePasskeyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api_user_remove_passkey.RemovePasskeyResonse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/verify-code": {
             "post": {
                 "description": "verify code",
@@ -1091,9 +1140,20 @@ const docTemplate = `{
                 }
             }
         },
-        "api_user_identity_info.Passkeys": {
+        "api_user_identity_info.LinkedIdentity": {
             "type": "object",
             "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_user_identity_info.Passkey": {
+            "type": "object",
+            "properties": {
+                "aaguid": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 }
@@ -1105,13 +1165,19 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "linkedIdentities": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api_user_identity_info.LinkedIdentity"
+                    }
+                },
                 "passkeyEligible": {
                     "type": "boolean"
                 },
                 "passkeys": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/api_user_identity_info.Passkeys"
+                        "$ref": "#/definitions/api_user_identity_info.Passkey"
                     }
                 }
             }
@@ -1137,6 +1203,28 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "phoneNumber": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_user_remove_passkey.RemovePasskeyRequest": {
+            "type": "object",
+            "required": [
+                "aaguid"
+            ],
+            "properties": {
+                "aaguid": {
+                    "type": "string"
+                }
+            }
+        },
+        "api_user_remove_passkey.RemovePasskeyResonse": {
+            "type": "object",
+            "properties": {
+                "aaguid": {
+                    "type": "string"
+                },
+                "error": {
                     "type": "string"
                 }
             }
