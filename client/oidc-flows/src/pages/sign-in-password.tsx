@@ -103,9 +103,7 @@ export const SignInPasswordPage: React.FC<
                   <Link
                     href="#"
                     onClick={withPreventDefault(() =>
-                      onNavigate(RoutePaths.SignInPassKeys, {
-                        email: pageProps?.email,
-                      }),
+                      onNavigate(RoutePaths.SignInPassKeys, pageProps),
                     )}
                   >
                     Sign in with pass keys

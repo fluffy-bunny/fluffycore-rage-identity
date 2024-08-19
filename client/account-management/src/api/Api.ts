@@ -14,15 +14,43 @@ export interface ApiErrorResponse {
   internalCode?: string;
 }
 
+export interface ApiUserIdentityInfoIdentity {
+  name?: string;
+}
+
+export interface ApiUserIdentityInfoLinkedIdentity {
+  name?: string;
+}
+
+export interface ApiUserIdentityInfoPasskey {
+  aaguid?: string;
+  name?: string;
+}
+
 export interface ApiUserIdentityInfoUserIdentityInfo {
   email?: string;
+  linkedIdentities?: ApiUserIdentityInfoLinkedIdentity[];
   passkeyEligible?: boolean;
+  passkeys?: ApiUserIdentityInfoPasskey[];
+}
+
+export interface ApiUserIdentityInfoUserLinkedAccounts {
+  identities?: ApiUserIdentityInfoIdentity[];
 }
 
 export interface ApiUserProfileProfile {
   familyName?: string;
   givenName?: string;
   phoneNumber?: string;
+}
+
+export interface ApiUserRemovePasskeyRemovePasskeyRequest {
+  aaguid: string;
+}
+
+export interface ApiUserRemovePasskeyRemovePasskeyResonse {
+  aaguid?: string;
+  error?: string;
 }
 
 export interface ExternalIdpStartExternalIDPLoginRequest {
@@ -558,6 +586,38 @@ export class Api<
       }),
 
     /**
+     * @description get the users linked accounts.
+     *
+     * @tags root
+     * @name UserLinkedAccountsList
+     * @summary get the users linked accounts.
+     * @request GET:/api/user-linked-accounts
+     */
+    userLinkedAccountsList: (params: RequestParams = {}) =>
+      this.request<ApiUserIdentityInfoUserLinkedAccounts, string>({
+        path: `/api/user-linked-accounts`,
+        method: 'GET',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description delete a users linked identity.
+     *
+     * @tags root
+     * @name UserLinkedAccountsDelete
+     * @summary delete a users linked identity.
+     * @request DELETE:/api/user-linked-accounts/{identity}
+     */
+    userLinkedAccountsDelete: (identity: string, params: RequestParams = {}) =>
+      this.request<string, string>({
+        path: `/api/user-linked-accounts/${identity}`,
+        method: 'DELETE',
+        format: 'json',
+        ...params,
+      }),
+
+    /**
      * @description set user profile.
      *
      * @tags root
@@ -587,6 +647,27 @@ export class Api<
     ) =>
       this.request<ApiUserProfileProfile, string>({
         path: `/api/user-profile`,
+        method: 'POST',
+        body: request,
+        type: ContentType.Json,
+        format: 'json',
+        ...params,
+      }),
+
+    /**
+     * @description get the highlevel UserIdentityInfo post login.
+     *
+     * @tags root
+     * @name UserRemovePasskeyCreate
+     * @summary get the highlevel UserIdentityInfo post login.
+     * @request POST:/api/user-remove-passkey
+     */
+    userRemovePasskeyCreate: (
+      request: ApiUserRemovePasskeyRemovePasskeyRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<ApiUserRemovePasskeyRemovePasskeyResonse, string>({
+        path: `/api/user-remove-passkey`,
         method: 'POST',
         body: request,
         type: ContentType.Json,

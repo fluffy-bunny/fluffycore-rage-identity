@@ -10,7 +10,7 @@ import { useUserProfile } from '../../hooks/useUserProfile';
 
 interface UserContextValue {
   user?: ApiUserProfileProfile & ApiUserIdentityInfoUserIdentityInfo;
-  refetch?: ReturnType<typeof useUserProfile>['refetch'];
+  refetch?: () => Promise<void>;
 }
 
 const defaultUserContextValue: UserContextValue = {
@@ -40,7 +40,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
           ...userProfile.data,
           ...userIdentity.data,
         },
-        refetch: userProfile.refetch,
+        refetch: async () => {
+          await Promise.all([userProfile.refetch(), userIdentity.refetch()]);
+        },
       }}
     >
       {children}

@@ -3,7 +3,7 @@ import { useQuery } from 'react-query';
 import { api } from '../api';
 
 export function useUserIdentity() {
-  const { isLoading, data } = useQuery(
+  const { isLoading, data, refetch } = useQuery(
     'user-identity',
     api.userIdentityInfoList,
   );
@@ -11,5 +11,6 @@ export function useUserIdentity() {
   return {
     isLoading,
     data: data?.data,
+    refetch,
   };
 }
