@@ -30,6 +30,7 @@
     "issuerName": "EXAMPLE.RAGE.IDENTITY"
   },
   "webAuthNConfig": {
+    "enabled": true,
     "rpDisplayName": "RAGE",
     "rpID": "${DOMAIN}",
     "rpOrigins": [

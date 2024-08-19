@@ -275,6 +275,8 @@ definitions:
     type: object
   manifest.Manifest:
     properties:
+      passkey_enabled:
+        type: boolean
       social_idps:
         items:
           $ref: '#/definitions/manifest.IDP'
@@ -698,6 +700,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/api_user_remove_passkey.RemovePasskeyResonse'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
         "401":
           description: Unauthorized
           schema:
@@ -709,7 +715,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/api_user_remove_passkey.RemovePasskeyResonse'
       summary: get the highlevel UserIdentityInfo post login.
       tags:
       - root

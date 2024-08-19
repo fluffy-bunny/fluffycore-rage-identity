@@ -207,8 +207,6 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_rest_api_login_username_phase_one.AddScopedIHandler(builder)
 	services_handlers_rest_api_verify_password_strength.AddScopedIHandler(builder)
 	services_handlers_oidclogintotp.AddScopedIHandler(builder)
-	services_handlers_oidcloginpasskey.AddScopedIHandler(builder)
-	services_handlers_rest_api_user_remove_passkey.AddScopedIHandler(builder)
 	services_handlers_externalidp.AddScopedIHandler(builder)
 	services_handlers_externalidp_api.AddScopedIHandler(builder)
 	services_handlers_swagger.AddScopedIHandler(builder)
@@ -222,12 +220,17 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_passwordreset.AddScopedIHandler(builder)
 	services_handlers_api.AddScopedIHandler(builder)
 
-	// WebAuthN Handlers
-	//--------------------------------------------------------
-	services_handlers_webauthn_registrationbegin.AddScopedIHandler(builder)
-	services_handlers_webauthn_registrationfinish.AddScopedIHandler(builder)
-	services_handlers_webauthn_loginbegin.AddScopedIHandler(builder)
-	services_handlers_webauthn_loginfinish.AddScopedIHandler(builder)
+	if s.config.WebAuthNConfig != nil && s.config.WebAuthNConfig.Enabled {
+		services_handlers_oidcloginpasskey.AddScopedIHandler(builder)
+		services_handlers_rest_api_user_remove_passkey.AddScopedIHandler(builder)
+		// WebAuthN Handlers
+		//--------------------------------------------------------
+
+		services_handlers_webauthn_registrationbegin.AddScopedIHandler(builder)
+		services_handlers_webauthn_registrationfinish.AddScopedIHandler(builder)
+		services_handlers_webauthn_loginbegin.AddScopedIHandler(builder)
+		services_handlers_webauthn_loginfinish.AddScopedIHandler(builder)
+	}
 	// sessions
 	//----------------
 	fluffycore_echo_services_sessions_memory_session_store.AddSingletonBackendSessionStore(builder)

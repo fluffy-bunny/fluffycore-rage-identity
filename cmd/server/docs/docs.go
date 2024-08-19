@@ -615,6 +615,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/api_user_remove_passkey.RemovePasskeyResonse"
                         }
                     },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
@@ -630,7 +636,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/api_user_remove_passkey.RemovePasskeyResonse"
                         }
                     }
                 }
@@ -1541,6 +1547,9 @@ const docTemplate = `{
         "manifest.Manifest": {
             "type": "object",
             "properties": {
+                "passkey_enabled": {
+                    "type": "boolean"
+                },
                 "social_idps": {
                     "type": "array",
                     "items": {
