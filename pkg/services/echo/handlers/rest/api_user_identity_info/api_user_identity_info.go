@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_user_identity_info"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
@@ -21,6 +22,8 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
+
+		webAuthNConfig *contracts_webauthn.WebAuthNConfig
 	}
 )
 
@@ -48,9 +51,11 @@ const (
 
 func (s *service) Ctor(
 	container di.Container,
+	webAuthNConfig *contracts_webauthn.WebAuthNConfig,
 ) (*service, error) {
 	return &service{
-		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:    services_echo_handlers_base.NewBaseHandler(container),
+		webAuthNConfig: webAuthNConfig,
 	}, nil
 }
 
@@ -114,9 +119,9 @@ func (s *service) Do(c echo.Context) error {
 
 	// passkey is only allowed for direct username/password users.
 	response := &api_user_identity_info.UserIdentityInfo{
-		Email:           user.RootIdentity.Email,
-		PasskeyEligible: (user.Password != nil && fluffycore_utils.IsNotEmptyOrNil(user.Password.Hash)),
+		Email: user.RootIdentity.Email,
 	}
+
 	if fluffycore_utils.IsNotNil(user.LinkedIdentities) {
 		response.LinkedIdentities = make([]api_user_identity_info.LinkedIdentity, 0)
 		for _, linkedIdentity := range user.LinkedIdentities.Identities {
@@ -125,19 +130,21 @@ func (s *service) Do(c echo.Context) error {
 			})
 		}
 	}
-
-	if fluffycore_utils.IsNotNil(user.WebAuthN) {
-		response.Passkeys = make([]api_user_identity_info.Passkey, 0)
-		for _, webAuthNCreds := range user.WebAuthN.Credentials {
-			name := "Unknown"
-			if fluffycore_utils.IsNotEmptyOrNil(webAuthNCreds.Authenticator.FriendlyName) {
-				name = webAuthNCreds.Authenticator.FriendlyName
+	if s.webAuthNConfig.Enabled {
+		response.PasskeyEligible = (user.Password != nil && fluffycore_utils.IsNotEmptyOrNil(user.Password.Hash))
+		if fluffycore_utils.IsNotNil(user.WebAuthN) {
+			response.Passkeys = make([]api_user_identity_info.Passkey, 0)
+			for _, webAuthNCreds := range user.WebAuthN.Credentials {
+				name := "Unknown"
+				if fluffycore_utils.IsNotEmptyOrNil(webAuthNCreds.Authenticator.FriendlyName) {
+					name = webAuthNCreds.Authenticator.FriendlyName
+				}
+				aaGUID := base64.StdEncoding.EncodeToString(webAuthNCreds.Authenticator.AAGUID)
+				response.Passkeys = append(response.Passkeys, api_user_identity_info.Passkey{
+					AAGUID: aaGUID,
+					Name:   name,
+				})
 			}
-			aaGUID := base64.StdEncoding.EncodeToString(webAuthNCreds.Authenticator.AAGUID)
-			response.Passkeys = append(response.Passkeys, api_user_identity_info.Passkey{
-				AAGUID: aaGUID,
-				Name:   name,
-			})
 		}
 	}
 	return c.JSONPretty(http.StatusOK, response, "  ")

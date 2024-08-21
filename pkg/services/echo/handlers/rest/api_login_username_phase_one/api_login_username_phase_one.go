@@ -10,6 +10,7 @@ import (
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
+	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
@@ -35,6 +36,8 @@ type (
 		wellknownCookies contracts_cookies.IWellknownCookies
 		passwordHasher   contracts_identity.IPasswordHasher
 		oidcSession      contracts_oidc_session.IOIDCSession
+
+		webAuthNConfig *contracts_webauthn.WebAuthNConfig
 	}
 )
 
@@ -51,6 +54,7 @@ func (s *service) Ctor(
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	passwordHasher contracts_identity.IPasswordHasher,
 	oidcSession contracts_oidc_session.IOIDCSession,
+	webAuthNConfig *contracts_webauthn.WebAuthNConfig,
 ) (*service, error) {
 	return &service{
 		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
@@ -58,6 +62,7 @@ func (s *service) Ctor(
 		wellknownCookies: wellknownCookies,
 		passwordHasher:   passwordHasher,
 		oidcSession:      oidcSession,
+		webAuthNConfig:   webAuthNConfig,
 	}, nil
 }
 
@@ -220,9 +225,13 @@ func (s *service) Do(c echo.Context) error {
 		return c.JSONPretty(http.StatusOK, response, "  ")
 	}
 	hasPasskey := false
-	if user.WebAuthN != nil && fluffycore_utils.IsNotEmptyOrNil(user.WebAuthN.Credentials) {
-		hasPasskey = true
+	if s.webAuthNConfig.Enabled {
+		// only do this check if we globally allow passkeys
+		if user.WebAuthN != nil && fluffycore_utils.IsNotEmptyOrNil(user.WebAuthN.Credentials) {
+			hasPasskey = true
+		}
 	}
+
 	err = s.wellknownCookies.SetSigninUserNameCookie(c,
 		&contracts_cookies.SetSigninUserNameCookieRequest{
 			Value: &contracts_cookies.SigninUserNameCookie{
