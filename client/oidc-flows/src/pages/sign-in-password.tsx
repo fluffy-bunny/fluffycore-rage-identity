@@ -15,13 +15,16 @@ import { LoginModelsLoginPasswordRequest } from '../api/Api';
 import { AuthLayout } from '../components/auth/AuthLayout/AuthLayout';
 import { AuthSocialButtons } from '../components/auth/AuthSocialButtons/AuthSocialButtons';
 import { RoutePaths } from '../constants/routes';
+import { useManifest } from '../contexts/ManifestContext/ManifestContext';
 import { useNotification } from '../contexts/NotificationContext/NotificationContext';
 import { PageProps } from '../types';
 import { withPreventDefault } from '../utils/links';
 
-export const SignInPasswordPage: React.FC<
-  PageProps<{ email: string; hasPasskey: boolean }>
-> = ({ pageProps, onNavigate }) => {
+export const SignInPasswordPage: React.FC<PageProps<{ email: string }>> = ({
+  pageProps,
+  onNavigate,
+}) => {
+  const manifest = useManifest();
   const { showNotification } = useNotification();
 
   const {
@@ -97,7 +100,7 @@ export const SignInPasswordPage: React.FC<
             <Stack direction="row" spacing={1} alignItems="center">
               <Typography>Sign in with socials</Typography>
               <AuthSocialButtons />
-              {pageProps?.hasPasskey && (
+              {manifest.data?.passkey_enabled && (
                 <>
                   <Typography textAlign="center">or</Typography>
                   <Link

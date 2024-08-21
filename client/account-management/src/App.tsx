@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import { RoutePaths } from './constants/routes';
+import { ManifestProvider } from './contexts/ManifestContext/ManifestContext';
 import { UserProvider } from './contexts/UserContext/UserContext';
 import { HomePage } from './pages';
 import { UserProfilePasskeysManagementPage } from './pages/profile/passkeys-management';
@@ -40,14 +41,16 @@ export function App() {
   }
 
   return (
-    <UserProvider>
-      <PageComponent
-        currentPage={currentPageState.route}
-        pageProps={currentPageState.pageProps}
-        onNavigate={(route, pageProps) =>
-          setCurrentPageState({ route, pageProps })
-        }
-      />
-    </UserProvider>
+    <ManifestProvider>
+      <UserProvider>
+        <PageComponent
+          currentPage={currentPageState.route}
+          pageProps={currentPageState.pageProps}
+          onNavigate={(route, pageProps) =>
+            setCurrentPageState({ route, pageProps })
+          }
+        />
+      </UserProvider>
+    </ManifestProvider>
   );
 }

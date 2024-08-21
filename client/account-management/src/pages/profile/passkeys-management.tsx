@@ -7,6 +7,7 @@ import { MainLayout } from '../../components/MainLayout/MainLayout';
 import { ProfileLayout } from '../../components/profile/ProfileLayout/ProfileLayout';
 import { ProfilePasskeysGrid } from '../../components/profile/ProfilePasskeysGrid/ProfilePasskeysGrid';
 import { RoutePaths } from '../../constants/routes';
+import { useManifest } from '../../contexts/ManifestContext/ManifestContext';
 import { useNotification } from '../../contexts/NotificationContext/NotificationContext';
 import { UserContext } from '../../contexts/UserContext/UserContext';
 import { usePublicKeyCredentialSupport } from '../../hooks/usePublicKeyCredentialSupport';
@@ -16,6 +17,13 @@ import { registerUser } from '../../utils/webauthn';
 export const UserProfilePasskeysManagementPage: React.FC<PageProps> = ({
   onNavigate,
 }) => {
+  const manifest = useManifest();
+
+  if (manifest.data && !manifest.data.passkey_enabled) {
+    onNavigate(RoutePaths.ProfilePersonalInformation);
+    return null;
+  }
+
   const isSupported = usePublicKeyCredentialSupport();
   const { showNotification } = useNotification();
   const { refetch } = useContext(UserContext);

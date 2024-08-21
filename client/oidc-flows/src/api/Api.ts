@@ -171,6 +171,7 @@ export interface ManifestIDP {
 }
 
 export interface ManifestManifest {
+  passkey_enabled?: boolean;
   social_idps?: ManifestIDP[];
 }
 
@@ -666,7 +667,10 @@ export class Api<
       request: ApiUserRemovePasskeyRemovePasskeyRequest,
       params: RequestParams = {},
     ) =>
-      this.request<ApiUserRemovePasskeyRemovePasskeyResonse, string>({
+      this.request<
+        ApiUserRemovePasskeyRemovePasskeyResonse,
+        string | ApiUserRemovePasskeyRemovePasskeyResonse
+      >({
         path: `/api/user-remove-passkey`,
         method: 'POST',
         body: request,

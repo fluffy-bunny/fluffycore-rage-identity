@@ -10,21 +10,7 @@ import {
 import React from 'react';
 
 import { RoutePaths } from '../../../constants/routes';
-
-const navItems = [
-  {
-    value: RoutePaths.ProfilePersonalInformation,
-    label: 'Personal Information',
-  },
-  {
-    value: RoutePaths.ProfileSecuritySettings,
-    label: 'Security settings',
-  },
-  {
-    value: RoutePaths.ProfilePasskeysManagement,
-    label: 'Passkeys management',
-  },
-];
+import { useManifest } from '../../../contexts/ManifestContext/ManifestContext';
 
 const SidebarWidth = 250;
 
@@ -37,6 +23,23 @@ export const ProfileLayout = ({
   currentPage?: string | 'default';
   onNavigate: (path: string) => void;
 }) => {
+  const manifest = useManifest();
+
+  const navItems = [
+    {
+      value: RoutePaths.ProfilePersonalInformation,
+      label: 'Personal Information',
+    },
+    {
+      value: RoutePaths.ProfileSecuritySettings,
+      label: 'Security settings',
+    },
+    manifest.data?.passkey_enabled && {
+      value: RoutePaths.ProfilePasskeysManagement,
+      label: 'Passkeys management',
+    },
+  ].filter(Boolean) as { value: string; label: string }[];
+
   return (
     <Card sx={{ height: '100%' }}>
       <CardContent sx={{ height: '100%', padding: 3 }}>
