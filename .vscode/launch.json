@@ -34,6 +34,7 @@
                 "RAGE_cookieConfig__secure": "true",
                 "RAGE_systemConfig__developerMode": "true",
                 "RAGE_GITHUB_CLIENT_ID": "bdbe2f2235eb3a02065c",
+                "RAGE_webAuthNConfig__enabled": "false",
             },
             "args": [ "serve" ]        
         },
@@ -67,6 +68,8 @@
                 "RAGE_cookieConfig__secure": "true",
                 "RAGE_systemConfig__developerMode": "true",
                 "RAGE_GITHUB_CLIENT_ID": "bdbe2f2235eb3a02065c",
+                "RAGE_webAuthNConfig__enabled": "true",
+
             },
             "args": [ "serve" ]        
         },

@@ -184,7 +184,7 @@ func (s *service) Do(c echo.Context) error {
 			&contracts_email.SendSimpleEmailRequest{
 				ToEmail:   user.RootIdentity.Email,
 				SubjectId: "email.verification.subject",
-				BodyId:    "email.verification..message",
+				BodyId:    "email.verification.message",
 				Data: map[string]string{
 					"code": verificationCode,
 				},
@@ -246,6 +246,11 @@ func (s *service) Do(c echo.Context) error {
 		switch idp.Protocol.Value.(type) {
 		case *proto_oidc_models.Protocol_Github:
 			{
+				sublog := log.With().
+					Str("externalOauth2State.Request.IdpHint", externalOauth2State.Request.IdpHint).
+					Str("externalOauth2State.Request.ClientId", externalOauth2State.Request.ClientId).
+					Logger()
+
 				exchangeCodeResponse, err = s.githubCodeExchange.ExchangeCode(ctx, &contracts_codeexchange.ExchangeCodeRequest{
 					IDPHint:      externalOauth2State.Request.IdpHint,
 					ClientID:     externalOauth2State.Request.ClientId,
@@ -254,12 +259,17 @@ func (s *service) Do(c echo.Context) error {
 					CodeVerifier: externalOauth2State.Request.CodeChallenge,
 				})
 				if err != nil {
-					log.Error().Err(err).Msg("ExchangeCode")
+					sublog.Error().Err(err).Msg("ExchangeCode")
 					return c.Redirect(http.StatusTemporaryRedirect, "/login?error=exchange_code")
 				}
 			}
 		case *proto_oidc_models.Protocol_Oidc:
 			{
+				sublog := log.With().
+					Str("externalOauth2State.Request.IdpHint", externalOauth2State.Request.IdpHint).
+					Str("externalOauth2State.Request.ClientId", externalOauth2State.Request.ClientId).
+					Logger()
+
 				exchangeCodeResponse, err = s.genericOIDCCodeExchange.ExchangeCode(ctx, &contracts_codeexchange.ExchangeCodeRequest{
 					IDPHint:  externalOauth2State.Request.IdpHint,
 					ClientID: externalOauth2State.Request.ClientId,
@@ -268,7 +278,7 @@ func (s *service) Do(c echo.Context) error {
 					//			CodeVerifier: finalCache.Request.CodeChallenge,
 				})
 				if err != nil {
-					log.Error().Err(err).Msg("ExchangeCode")
+					sublog.Error().Err(err).Msg("ExchangeCode")
 					return c.Redirect(http.StatusTemporaryRedirect, "/login?error=exchange_code")
 				}
 

@@ -74,7 +74,7 @@ func NewStartup(options ...WithOption) fluffycore_contracts_runtime.IStartup {
 }
 
 func onLoadRageConfig(ctx context.Context, ragePath string) error {
-	log := zerolog.Ctx(ctx).With().Str("method", "OnConfigureServicesLoadIDPs").Logger()
+	log := zerolog.Ctx(ctx).With().Str("method", "onLoadRageConfig").Logger()
 	fileContent, err := os.ReadFile(ragePath)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to read IDPsPath - may not be a problem if idps are comming from a DB")

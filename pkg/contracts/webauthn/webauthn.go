@@ -7,6 +7,7 @@ import (
 
 type (
 	WebAuthNConfig struct {
+		Enabled       bool     `json:"enabled"`
 		RPDisplayName string   `json:"rpDisplayName"`
 		RPID          string   `json:"rpid"`
 		RPOrigins     []string `json:"rpOrigins"`

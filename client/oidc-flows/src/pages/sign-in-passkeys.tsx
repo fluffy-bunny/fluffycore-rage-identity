@@ -5,18 +5,15 @@ import { RoutePaths } from '../constants/routes';
 import { PageProps } from '../types';
 import { loginUser } from '../utils/webauth';
 
-export const SignInPasskeysPage: React.FC<PageProps<{ email: string }>> = ({
-  onNavigate,
-  pageProps,
-}) => {
+export const SignInPasskeysPage: React.FC<
+  PageProps<{ email: string; hasPasskey: boolean }>
+> = ({ onNavigate, pageProps }) => {
   useEffect(() => {
     const run = async () => {
       try {
         await loginUser(() => (window.location.href = RoutePaths.Root));
       } catch (error) {
-        return onNavigate(RoutePaths.SignInPassword, {
-          email: pageProps?.email,
-        });
+        return onNavigate(RoutePaths.SignInPassword, pageProps);
       }
     };
 

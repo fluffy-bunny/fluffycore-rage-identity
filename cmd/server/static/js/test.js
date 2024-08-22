@@ -383,3 +383,23 @@ fetch("/api/user-linked-accounts?identity=google-social", {
   .then((data) => {
     console.log("finishResponse:", data);
   });
+
+  // /api/user-remove-passkey
+//-----------------------------------------------------
+fetch("/api/user-remove-passkey", {
+  method: "POST",
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+  body: JSON.stringify({
+    aaguid: 'AAAAAAAAAAAAAAAAAAAAAA==' 
+  }),
+}) .then((response) => {
+  return response.json();
+})
+.then((data) => {
+  console.log("finishResponse:", data);
+});

@@ -1,15 +1,16 @@
 import { GitHub, Google, Microsoft } from '@mui/icons-material';
-import { IconButton, Skeleton, Stack } from '@mui/material';
-import { useMutation, useQuery } from 'react-query';
+import { IconButton, Stack } from '@mui/material';
+import { useMutation } from 'react-query';
 
 import { api } from '../../../api';
 import {
   ExternalIdpStartExternalIDPLoginRequest,
   ManifestIDP,
 } from '../../../api/Api';
+import { useManifest } from '../../../contexts/ManifestContext/ManifestContext';
 
 export const AuthSocialButtons = () => {
-  const { isLoading, data } = useQuery('manifest', api.manifestList);
+  const { data } = useManifest();
   const { mutateAsync } = useMutation(
     (values: ExternalIdpStartExternalIDPLoginRequest) =>
       api.startExternalLoginCreate(values),
@@ -22,21 +23,9 @@ export const AuthSocialButtons = () => {
     },
   );
 
-  if (!data || isLoading) {
-    return (
-      <Stack direction="row" spacing={1}>
-        {Array.from({ length: 3 }).map((_, index) => (
-          <Skeleton key={index} variant="circular" width="40px" height="40px">
-            <IconButton />
-          </Skeleton>
-        ))}
-      </Stack>
-    );
-  }
-
   return (
     <Stack direction="row" spacing={1}>
-      {data.data.social_idps
+      {data?.social_idps
         ?.filter((item): item is Required<ManifestIDP> => !!item.slug)
         .map((item) => {
           const Icon = IconsMap[item.slug as SocialIdps];

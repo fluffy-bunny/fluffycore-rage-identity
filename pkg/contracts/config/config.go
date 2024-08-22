@@ -148,10 +148,6 @@ const configDefaultJSONTemplate = `
 	"emailVerificationRequired": true,
 	"multiFactorRequired": false,
 	"multiFactorRequiredByEmailCode": false,
-	"totp": {
-		"enabled": false,
-		"issuerName": "RAGE.IDENTITY"
-	},
 	"selfIDPConfig": {
 		"clientId": "self-client",
 		"clientSecret": "secret",
@@ -219,7 +215,12 @@ const configDefaultJSONTemplate = `
 		"domain": "@@CHANGEME@@",
 		"developerMode": false
 	},
+	"totp": {
+		"enabled": false,
+		"issuerName": "RAGE.IDENTITY"
+	},
 	"webAuthNConfig": {
+		"enabled": false,
 		"rpDisplayName": "RAGE",
 		"rpID": "[the domain]",
 		"rpOrigins": []

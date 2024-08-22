@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 import { RoutePaths } from './constants/routes';
+import { ManifestProvider } from './contexts/ManifestContext/ManifestContext';
 import { ForgotPasswordPage } from './pages/forgot-password';
 import { ResetPasswordPage } from './pages/reset-password';
 import { SignInPage } from './pages/sign-in';
@@ -40,11 +41,13 @@ export function App() {
   }
 
   return (
-    <PageComponent
-      pageProps={currentPageState.pageProps}
-      onNavigate={(route, pageProps) =>
-        setCurrentPageState({ route, pageProps })
-      }
-    />
+    <ManifestProvider>
+      <PageComponent
+        pageProps={currentPageState.pageProps}
+        onNavigate={(route, pageProps) =>
+          setCurrentPageState({ route, pageProps })
+        }
+      />
+    </ManifestProvider>
   );
 }

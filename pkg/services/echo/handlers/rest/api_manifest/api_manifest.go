@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
@@ -14,6 +15,8 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
+
+		webAuthNConfig *contracts_webauthn.WebAuthNConfig
 	}
 )
 
@@ -26,9 +29,12 @@ func init() {
 
 func (s *service) Ctor(
 	container di.Container,
+	webAuthNConfig *contracts_webauthn.WebAuthNConfig,
 ) (*service, error) {
 	return &service{
 		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
+
+		webAuthNConfig: webAuthNConfig,
 	}, nil
 }
 
@@ -69,6 +75,10 @@ func (s *service) Do(c echo.Context) error {
 				Slug: idp.Slug,
 			})
 		}
+	}
+	response.PasskeyEnabled = false
+	if s.webAuthNConfig != nil {
+		response.PasskeyEnabled = s.webAuthNConfig.Enabled
 	}
 	return c.JSONPretty(http.StatusOK, response, "  ")
 }
