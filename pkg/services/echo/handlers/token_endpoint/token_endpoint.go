@@ -21,6 +21,7 @@ type (
 		scopedMemoryCache              fluffycore_contracts_common.IScopedMemoryCache
 		authorizationRequestStateStore proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer
 		tokenService                   contracts_tokenservice.ITokenService
+		claimsaugmentor                contracts_tokenservice.IAuthorizationCodeClaimsAugmentor
 	}
 )
 
@@ -34,12 +35,14 @@ func (s *service) Ctor(
 	scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
 	authorizationRequestStateStore proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer,
 	tokenService contracts_tokenservice.ITokenService,
+	claimsaugmentor contracts_tokenservice.IAuthorizationCodeClaimsAugmentor,
 	someUtil contracts_util.ISomeUtil) (*service, error) {
 	return &service{
 		someUtil:                       someUtil,
 		scopedMemoryCache:              scopedMemoryCache,
 		authorizationRequestStateStore: authorizationRequestStateStore,
 		tokenService:                   tokenService,
+		claimsaugmentor:                claimsaugmentor,
 	}, nil
 }
 

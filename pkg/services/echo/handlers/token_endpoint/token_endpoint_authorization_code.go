@@ -145,8 +145,16 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 	idClaims.Set("idp", idpClaims)
 	//--OPTIONAL--
 
+	augmentIdentityTokenClaimsResponse, err := s.claimsaugmentor.AugmentIdentityTokenClaims(ctx,
+		&contracts_tokenservice.AugmentIdentityTokenClaimsRequest{
+			Claims: idClaims,
+		})
+	if err != nil {
+		log.Error().Err(err).Msg("AugmentIdentityTokenClaims")
+		return c.String(http.StatusBadRequest, err.Error())
+	}
 	idToken, err := s.tokenService.MintToken(ctx, &contracts_tokenservice.MintTokenRequest{
-		Claims:                  idClaims,
+		Claims:                  augmentIdentityTokenClaimsResponse.Claims,
 		DurationLifeTimeSeconds: 3600,
 		NotBeforeUnix:           0,
 	})
@@ -160,8 +168,16 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 	accessTokenClaims.Set("aud", client.ClientId)
 	accessTokenClaims.Set("sub", authorizationFinal.Identity.Subject)
 
+	augmentAccessTokenClaimsResponse, err := s.claimsaugmentor.AugmentAccessTokenClaims(ctx,
+		&contracts_tokenservice.AugmentAccessTokenClaimsRequest{
+			Claims: accessTokenClaims,
+		})
+	if err != nil {
+		log.Error().Err(err).Msg("AugmentAccessTokenClaims")
+		return c.String(http.StatusBadRequest, err.Error())
+	}
 	accessToken, err := s.tokenService.MintToken(ctx, &contracts_tokenservice.MintTokenRequest{
-		Claims:                  accessTokenClaims,
+		Claims:                  augmentAccessTokenClaimsResponse.Claims,
 		DurationLifeTimeSeconds: 3600,
 		NotBeforeUnix:           0,
 	})
