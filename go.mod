@@ -1,8 +1,8 @@
 module github.com/fluffy-bunny/fluffycore-rage-identity
 
-go 1.22.0
+go 1.23
 
-toolchain go1.22.5
+toolchain go1.23.0
 
 //replace github.com/fluffy-bunny/fluffycore => ../fluffycore
 
@@ -17,7 +17,7 @@ require (
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.3
 	github.com/fluffy-bunny/fluffycore v1.0.110
 	github.com/go-oauth2/oauth2/v4 v4.5.2
-	github.com/go-webauthn/webauthn v0.11.1
+	github.com/go-webauthn/webauthn v0.11.2
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/gogo/status v1.1.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
@@ -27,7 +27,7 @@ require (
 	github.com/lestrrat-go/jwx/v2 v2.1.1
 	github.com/nicksnyder/go-i18n/v2 v2.4.0
 	github.com/reugn/async v0.8.0
-	github.com/rs/xid v1.5.0
+	github.com/rs/xid v1.6.0
 	github.com/rs/zerolog v1.33.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/spf13/cobra v1.8.1
@@ -85,7 +85,7 @@ require (
 	github.com/go-openapi/spec v0.20.14 // indirect
 	github.com/go-openapi/swag v0.22.9 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
-	github.com/go-webauthn/x v0.1.12 // indirect
+	github.com/go-webauthn/x v0.1.14 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/gogo/googleapis v1.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect

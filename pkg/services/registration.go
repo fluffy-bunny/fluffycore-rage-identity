@@ -12,6 +12,7 @@ import (
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/eko_gocache"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
+	services_AuthorizationCodeClaimsAugmentor "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/AuthorizationCodeClaimsAugmentor"
 	services_client_inmemory "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/client/inmemory"
 	services_codeexchanges_genericoidc "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/codeexchanges/genericoidc"
 	services_codeexchanges_github "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/codeexchanges/github"
@@ -54,6 +55,7 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	services_idp_inmemory.AddSingletonIFluffyCoreIDPServiceServer(builder)
 	services_oauth2factory.AddSingletonIOAuth2Factory(builder)
 	services_tokenservice.AddSingletonITokenService(builder)
+	services_AuthorizationCodeClaimsAugmentor.AddSingletonIClaimsAugmentor(builder)
 	services_codeexchanges_github.AddSingletonIGithubCodeExchange(builder)
 	services_codeexchanges_genericoidc.AddSingletonIGenericOIDCCodeExchange(builder)
 	services_oidcproviderfactory.AddSingletonIOIDCProviderFactory(builder)
