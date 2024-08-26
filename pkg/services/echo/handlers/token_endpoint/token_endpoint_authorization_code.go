@@ -145,16 +145,24 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 	idClaims.Set("idp", idpClaims)
 	//--OPTIONAL--
 
-	augmentIdentityTokenClaimsResponse, err := s.claimsaugmentor.AugmentIdentityTokenClaims(ctx,
-		&contracts_tokenservice.AugmentIdentityTokenClaimsRequest{
-			Claims: idClaims,
+	// this one is opaque and is only really good for calling user_info endpoint
+	accessTokenClaims := fluffycore_services_claims.NewClaims()
+	accessTokenClaims.Set("client_id", client.ClientId)
+	accessTokenClaims.Set("aud", client.ClientId)
+	accessTokenClaims.Set("sub", authorizationFinal.Identity.Subject)
+
+	augmentTokenClaimsResponse, err := s.claimsaugmentor.AugmentTokenClaims(ctx,
+		&contracts_tokenservice.AugmentTokenClaimsRequest{
+			IdTokenClaims:     idClaims,
+			AccessTokenClaims: accessTokenClaims,
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("AugmentIdentityTokenClaims")
 		return c.String(http.StatusBadRequest, err.Error())
 	}
+
 	idToken, err := s.tokenService.MintToken(ctx, &contracts_tokenservice.MintTokenRequest{
-		Claims:                  augmentIdentityTokenClaimsResponse.Claims,
+		Claims:                  augmentTokenClaimsResponse.IdTokenClaims,
 		DurationLifeTimeSeconds: 3600,
 		NotBeforeUnix:           0,
 	})
@@ -162,22 +170,8 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 		log.Warn().Err(err).Msg("MintToken - idToken")
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	// this one is opaque and is only really good for calling user_info endpoint
-	accessTokenClaims := fluffycore_services_claims.NewClaims()
-	accessTokenClaims.Set("client_id", client.ClientId)
-	accessTokenClaims.Set("aud", client.ClientId)
-	accessTokenClaims.Set("sub", authorizationFinal.Identity.Subject)
-
-	augmentAccessTokenClaimsResponse, err := s.claimsaugmentor.AugmentAccessTokenClaims(ctx,
-		&contracts_tokenservice.AugmentAccessTokenClaimsRequest{
-			Claims: accessTokenClaims,
-		})
-	if err != nil {
-		log.Error().Err(err).Msg("AugmentAccessTokenClaims")
-		return c.String(http.StatusBadRequest, err.Error())
-	}
 	accessToken, err := s.tokenService.MintToken(ctx, &contracts_tokenservice.MintTokenRequest{
-		Claims:                  augmentAccessTokenClaimsResponse.Claims,
+		Claims:                  augmentTokenClaimsResponse.AccessTokenClaims,
 		DurationLifeTimeSeconds: 3600,
 		NotBeforeUnix:           0,
 	})

@@ -24,20 +24,16 @@ type (
 	ITokenService interface {
 		MintToken(ctx context.Context, request *MintTokenRequest) (*MintTokenResponse, error)
 	}
-	AugmentIdentityTokenClaimsRequest struct {
-		Claims fluffycore_contracts_claims.IClaims
+	AugmentTokenClaimsRequest struct {
+		IdTokenClaims     fluffycore_contracts_claims.IClaims
+		AccessTokenClaims fluffycore_contracts_claims.IClaims
 	}
-	AugmentIdentityTokenClaimsResponse struct {
-		Claims fluffycore_contracts_claims.IClaims
+	AugmentTokenClaimsResponse struct {
+		IdTokenClaims     fluffycore_contracts_claims.IClaims
+		AccessTokenClaims fluffycore_contracts_claims.IClaims
 	}
-	AugmentAccessTokenClaimsRequest struct {
-		Claims fluffycore_contracts_claims.IClaims
-	}
-	AugmentAccessTokenClaimsResponse struct {
-		Claims fluffycore_contracts_claims.IClaims
-	}
+
 	IAuthorizationCodeClaimsAugmentor interface {
-		AugmentIdentityTokenClaims(ctx context.Context, request *AugmentIdentityTokenClaimsRequest) (*AugmentIdentityTokenClaimsResponse, error)
-		AugmentAccessTokenClaims(ctx context.Context, request *AugmentAccessTokenClaimsRequest) (*AugmentAccessTokenClaimsResponse, error)
+		AugmentTokenClaims(ctx context.Context, request *AugmentTokenClaimsRequest) (*AugmentTokenClaimsResponse, error)
 	}
 )

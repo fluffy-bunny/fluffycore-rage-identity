@@ -20,13 +20,13 @@ Just configure, build and run this thing;
 
 ### Social and Enterprise IDP
 
-These will not work out of the box.  You need to have your own credentials.
+These will not work out of the box. You need to have your own credentials.
 
-The [idps.docker.json config file](./cmd/server/config/idps.docker.json) is where you can put your own social and enterprises idps.  They will pull their client_secrets from the ```.env.secrets``` file.
+The [idps.docker.json config file](./cmd/server/config/idps.docker.json) is where you can put your own social and enterprises idps. They will pull their client_secrets from the `.env.secrets` file.
 
 #### .env.secrets
 
-copy ```.env.secrets.example``` to ```.env.secrets``` and fill in the blanks.
+copy `.env.secrets.example` to `.env.secrets` and fill in the blanks.
 
 ```txt
 # Secrets
@@ -37,7 +37,7 @@ AZUREAD_3b918868-9bff-431f-bd9c-f9896d628e6b_CLIENT_SECRET=**REDACTED**
 AZUREAD_0f81aa6c-b280-4503-b130-adc0567bfbe4_CLIENT_SECRET=**REDACTED**
 ```
 
-If you do nothing then the only thing that will work will be username/password logins, and passkeys.  
+If you do nothing then the only thing that will work will be username/password logins, and passkeys.
 
 ### Windows
 
@@ -74,65 +74,45 @@ You should see a json response like this.
 
 ```json
 {
-    "OAuth2Token": {
-        "access_token": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImYzZTlmMjRjYTQ3MzRjNGU4YTQ4ZDI3ZjRhMmVmMjUyIiwidHlwIjoiSldUIn0.eyJhdWQiOiJnby1jbGllbnQiLCJjbGllbnRfaWQiOiJnby1jbGllbnQiLCJleHAiOjE3MTUxODIzMTAsImlhdCI6MTcxNTE3ODcxMCwiaXNzIjoiaHR0cHM6Ly9yYWdlLmxvY2FsaG9zdC5kZXYiLCJqdGkiOiJjb3RvcGxoM2NyaHBwa2RzdHE3ZyIsIm5iZiI6MTcxNTE3ODQxMCwic3ViIjoicmFnZV9jb3RvcGpoM2NyaHBwa2RzdHByZyJ9.ivUv29f2_bwtH-h1vM0Tb9VV18-cBBKJMfGAn4oCHxxW10UVwWo2UHzDU5BCUuIuvMav8bbNNy6aWQbDFfTyoQ",
-        "token_type": "bearer",
-        "expiry": "2024-05-08T08:31:50.2769354-07:00"
-    },
-    "IDTokenClaims": {
-        "acr": [
-            "urn:rage:idp:root",
-            "urn:rage:password"
-        ],
-        "amr": [
-            "pwd",
-            "idp",
-            "mfa",
-            "emailcode"
-        ],
-        "aud": "go-client",
-        "client_id": "go-client",
-        "email": "ghstahl@gmail.com",
-        "email_verified": false,
-        "exp": 1715182310,
-        "iat": 1715178710,
-        "idp": [
-            "root"
-        ],
-        "iss": "https://rage.localhost.dev",
-        "jti": "cotoplh3crhppkdstq70",
-        "nbf": 1715178410,
-        "nonce": "NoUCzwQrGM9WXqDwNHrpWw",
-        "sub": "rage_cotopjh3crhppkdstprg"
-    },
-    "IDToken": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImYzZTlmMjRjYTQ3MzRjNGU4YTQ4ZDI3ZjRhMmVmMjUyIiwidHlwIjoiSldUIn0.eyJhY3IiOlsidXJuOnJhZ2U6aWRwOnJvb3QiLCJ1cm46cmFnZTpwYXNzd29yZCJdLCJhbXIiOlsicHdkIiwiaWRwIiwibWZhIiwiZW1haWxjb2RlIl0sImF1ZCI6ImdvLWNsaWVudCIsImNsaWVudF9pZCI6ImdvLWNsaWVudCIsImVtYWlsIjoiZ2hzdGFobEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImV4cCI6MTcxNTE4MjMxMCwiaWF0IjoxNzE1MTc4NzEwLCJpZHAiOlsicm9vdCJdLCJpc3MiOiJodHRwczovL3JhZ2UubG9jYWxob3N0LmRldiIsImp0aSI6ImNvdG9wbGgzY3JocHBrZHN0cTcwIiwibmJmIjoxNzE1MTc4NDEwLCJub25jZSI6Ik5vVUN6d1FyR005V1hxRHdOSHJwV3ciLCJzdWIiOiJyYWdlX2NvdG9wamgzY3JocHBrZHN0cHJnIn0.tWHugvPE8AN-QPicdx3Jdm1OfvpE77CtMz367tKr2_QeY9YC6Obx21AJDj0FT7qZLpjl-ylzf1MTniV2q-Wl5w"
+  "OAuth2Token": {
+    "access_token": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImYzZTlmMjRjYTQ3MzRjNGU4YTQ4ZDI3ZjRhMmVmMjUyIiwidHlwIjoiSldUIn0.eyJhdWQiOiJnby1jbGllbnQiLCJjbGllbnRfaWQiOiJnby1jbGllbnQiLCJleHAiOjE3MTUxODIzMTAsImlhdCI6MTcxNTE3ODcxMCwiaXNzIjoiaHR0cHM6Ly9yYWdlLmxvY2FsaG9zdC5kZXYiLCJqdGkiOiJjb3RvcGxoM2NyaHBwa2RzdHE3ZyIsIm5iZiI6MTcxNTE3ODQxMCwic3ViIjoicmFnZV9jb3RvcGpoM2NyaHBwa2RzdHByZyJ9.ivUv29f2_bwtH-h1vM0Tb9VV18-cBBKJMfGAn4oCHxxW10UVwWo2UHzDU5BCUuIuvMav8bbNNy6aWQbDFfTyoQ",
+    "token_type": "bearer",
+    "expiry": "2024-05-08T08:31:50.2769354-07:00"
+  },
+  "IDTokenClaims": {
+    "acr": ["urn:rage:idp:root", "urn:rage:password"],
+    "amr": ["pwd", "idp", "mfa", "emailcode"],
+    "aud": "go-client",
+    "client_id": "go-client",
+    "email": "ghstahl@gmail.com",
+    "email_verified": false,
+    "exp": 1715182310,
+    "iat": 1715178710,
+    "idp": ["root"],
+    "iss": "https://rage.localhost.dev",
+    "jti": "cotoplh3crhppkdstq70",
+    "nbf": 1715178410,
+    "nonce": "NoUCzwQrGM9WXqDwNHrpWw",
+    "sub": "rage_cotopjh3crhppkdstprg"
+  },
+  "IDToken": "eyJhbGciOiJFUzI1NiIsImtpZCI6ImYzZTlmMjRjYTQ3MzRjNGU4YTQ4ZDI3ZjRhMmVmMjUyIiwidHlwIjoiSldUIn0.eyJhY3IiOlsidXJuOnJhZ2U6aWRwOnJvb3QiLCJ1cm46cmFnZTpwYXNzd29yZCJdLCJhbXIiOlsicHdkIiwiaWRwIiwibWZhIiwiZW1haWxjb2RlIl0sImF1ZCI6ImdvLWNsaWVudCIsImNsaWVudF9pZCI6ImdvLWNsaWVudCIsImVtYWlsIjoiZ2hzdGFobEBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImV4cCI6MTcxNTE4MjMxMCwiaWF0IjoxNzE1MTc4NzEwLCJpZHAiOlsicm9vdCJdLCJpc3MiOiJodHRwczovL3JhZ2UubG9jYWxob3N0LmRldiIsImp0aSI6ImNvdG9wbGgzY3JocHBrZHN0cTcwIiwibmJmIjoxNzE1MTc4NDEwLCJub25jZSI6Ik5vVUN6d1FyR005V1hxRHdOSHJwV3ciLCJzdWIiOiJyYWdlX2NvdG9wamgzY3JocHBrZHN0cHJnIn0.tWHugvPE8AN-QPicdx3Jdm1OfvpE77CtMz367tKr2_QeY9YC6Obx21AJDj0FT7qZLpjl-ylzf1MTniV2q-Wl5w"
 }
 ```
 
-***Note the following claims in the id_token;***
+**_Note the following claims in the id_token;_**
 
 ```json
 {
-        "acr": [
-            "urn:rage:idp:root",
-            "urn:rage:password"
-        ],
-        "amr": [
-            "pwd",
-            "idp",
-            "mfa",
-            "emailcode"
-        ],
-        "idp": [
-            "root"
-        ],
-        "sub": "rage_cotopjh3crhppkdstprg"
-    }
+  "acr": ["urn:rage:idp:root", "urn:rage:password"],
+  "amr": ["pwd", "idp", "mfa", "emailcode"],
+  "idp": ["root"],
+  "sub": "rage_cotopjh3crhppkdstprg"
+}
 ```
 
-Context is important.  The id_token normalizes the user to the sub claim.  No matter how you login, passkey, password, social, enterprise, etc.  The sub claim is always the same.  The id_token will contain the acr and amr claims that tell you how the user was authenticated.  The idp claim tells you where the user was authenticated.  This is important because the user can be linked to multiple external IDPs.  The id_token will tell you which one was used.
+Context is important. The id_token normalizes the user to the sub claim. No matter how you login, passkey, password, social, enterprise, etc. The sub claim is always the same. The id_token will contain the acr and amr claims that tell you how the user was authenticated. The idp claim tells you where the user was authenticated. This is important because the user can be linked to multiple external IDPs. The id_token will tell you which one was used.
 
-In cases like github, a user will get challenged to login with their linked enterprise account, even though they are already logged in using their github username/password.  If it all goes well, the acr, amr, and idp will reflect the enterprise IDP.  
+In cases like github, a user will get challenged to login with their linked enterprise account, even though they are already logged in using their github username/password. If it all goes well, the acr, amr, and idp will reflect the enterprise IDP.
 
 If you fail the challenge, you don't get access to the github enterprise resources.
 
@@ -177,8 +157,9 @@ protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gat
 protoc --go_out=. --go_opt paths=source_relative --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/oidc/flows/oidc_flow.proto
 
 protoc --go_out=. --go_opt paths=source_relative  --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/external/models/user.proto
-
+protoc --go_out=. --go_opt paths=source_relative  --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/external/models/metadata.proto
 protoc --go_out=. --go_opt paths=source_relative  --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/external/user/user.proto
+
 
 protoc --go_out=. --go_opt paths=source_relative  --grpc-gateway_out . --grpc-gateway_opt paths=source_relative --openapiv2_out=allow_merge=true,merge_file_name=proto:./proto --go-grpc_out . --go-grpc_opt paths=source_relative --go-fluffycore-di_out .  --go-fluffycore-di_opt paths=source_relative,grpc_gateway=true  ./proto/types/webauthn/webauthn.proto
 

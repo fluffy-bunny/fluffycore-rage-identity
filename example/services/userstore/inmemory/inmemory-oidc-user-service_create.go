@@ -3,7 +3,9 @@ package inmemory
 import (
 	"context"
 
+	proto_external_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/models"
 	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
+
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
@@ -78,6 +80,10 @@ func (s *service) CreateUser(ctx context.Context, request *proto_external_user.C
 		Enabled:  false,
 		Verified: false, // need to get the code from the auth app and verify it
 	}
+	user.Metadata = append(user.Metadata, &proto_external_models.MetadataRecord{
+		Key:   "integrity_id",
+		Value: "0",
+	})
 	s.userMap[user.Id] = user
 	return &proto_external_user.CreateUserResponse{
 		User: s.makeExampleUserCopy(user),
