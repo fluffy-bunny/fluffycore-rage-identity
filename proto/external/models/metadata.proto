@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option go_package = "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/models;models";
+
+package proto.external.models;
+
+import "google/protobuf/descriptor.proto";
+ 
+message MetadataRecord {
+    string key = 1;
+    string value = 2;
+  }
+  
+  message MetadataValue {
+    repeated MetadataRecord values = 1;
+  }
+  
+  message MetadataUpdate {
+      message Granular{
+          repeated MetadataRecord add = 1;
+          repeated MetadataRecord remove = 2;
+          repeated string         remove_all = 3;
+      }
+      oneof update {
+          Granular        granular = 1;
+          MetadataValue   replace = 2;
+      }
+  }
+   

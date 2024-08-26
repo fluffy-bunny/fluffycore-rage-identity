@@ -145,8 +145,24 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 	idClaims.Set("idp", idpClaims)
 	//--OPTIONAL--
 
+	// this one is opaque and is only really good for calling user_info endpoint
+	accessTokenClaims := fluffycore_services_claims.NewClaims()
+	accessTokenClaims.Set("client_id", client.ClientId)
+	accessTokenClaims.Set("aud", client.ClientId)
+	accessTokenClaims.Set("sub", authorizationFinal.Identity.Subject)
+
+	augmentTokenClaimsResponse, err := s.claimsaugmentor.AugmentTokenClaims(ctx,
+		&contracts_tokenservice.AugmentTokenClaimsRequest{
+			IdTokenClaims:     idClaims,
+			AccessTokenClaims: accessTokenClaims,
+		})
+	if err != nil {
+		log.Error().Err(err).Msg("AugmentIdentityTokenClaims")
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
 	idToken, err := s.tokenService.MintToken(ctx, &contracts_tokenservice.MintTokenRequest{
-		Claims:                  idClaims,
+		Claims:                  augmentTokenClaimsResponse.IdTokenClaims,
 		DurationLifeTimeSeconds: 3600,
 		NotBeforeUnix:           0,
 	})
@@ -154,14 +170,8 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 		log.Warn().Err(err).Msg("MintToken - idToken")
 		return c.String(http.StatusBadRequest, err.Error())
 	}
-	// this one is opaque and is only really good for calling user_info endpoint
-	accessTokenClaims := fluffycore_services_claims.NewClaims()
-	accessTokenClaims.Set("client_id", client.ClientId)
-	accessTokenClaims.Set("aud", client.ClientId)
-	accessTokenClaims.Set("sub", authorizationFinal.Identity.Subject)
-
 	accessToken, err := s.tokenService.MintToken(ctx, &contracts_tokenservice.MintTokenRequest{
-		Claims:                  accessTokenClaims,
+		Claims:                  augmentTokenClaimsResponse.AccessTokenClaims,
 		DurationLifeTimeSeconds: 3600,
 		NotBeforeUnix:           0,
 	})

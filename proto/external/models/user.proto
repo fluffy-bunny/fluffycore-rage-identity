@@ -11,6 +11,7 @@ import "proto/types/phone_number.proto";
 import "proto/oidc/models/user.proto";
 import "google/protobuf/timestamp.proto";
 import "proto/types/filter.proto";
+import "proto/external/models/metadata.proto";
 
  
 message Address {
@@ -41,10 +42,10 @@ message ProfileUpdate{
 }
 
 message ExampleUser {
-    string                          id = 1;
-    proto.oidc.models.RageUser      rage_user = 2;
-    Profile                         profile = 3;
-
+    string                                          id = 1;
+    proto.oidc.models.RageUser                      rage_user = 2;
+    Profile                                         profile = 3;
+    repeated proto.external.models.MetadataRecord   metadata = 4;
     // Timestamp of when this user was created
     google.protobuf.Timestamp created = 50;
 
@@ -57,7 +58,7 @@ message ExampleUserUpdate {
     string                              id = 1;
     proto.oidc.models.RageUserUpdate    rage_user = 2;
     ProfileUpdate                       profile = 3;
- 
+    proto.external.models.MetadataUpdate metadata = 4;
 }
 
 message ExampleUserFilter {
@@ -67,6 +68,11 @@ message ExampleUserFilter {
     proto.types.IDFilterExpression       linked_identity_subject = 4;
     proto.types.IDFilterExpression       linked_identity_idp_slug = 5;
     proto.types.StringFilterExpression   linked_identity_email = 6;    
+
+    proto.types.StringFilterExpression       metadata_key       = 7;
+    proto.types.StringFilterExpression       metadata_value     = 8;
+
+
     // AST
     repeated ExampleUserFilter and = 100;
     repeated ExampleUserFilter or = 101;
