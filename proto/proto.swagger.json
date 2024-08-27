@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "proto/external/models/user.proto",
+    "title": "proto/events/types/oidc-flows.proto",
     "version": "version not set"
   },
   "consumes": [
