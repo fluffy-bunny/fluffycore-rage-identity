@@ -1,0 +1,36 @@
+
+syntax = "proto3";
+
+package proto.types;
+
+option go_package = "github.com/fluffy-bunny/fluffycore-rage-identity/proto/events/types;types";
+option java_multiple_files = true;
+option java_package = "com.fluffybunny.rageoidc.events.types";
+option csharp_namespace = "FluffyBunny.RageOidc.Events.Types";
+
+import "google/protobuf/descriptor.proto";
+ 
+enum IdpType {
+  IDP_TYPE_UNSPECIFIED = 0;
+  IDP_TYPE_ROOT = 1;
+  IDP_TYPE_LINKED = 2;
+}
+enum LoginEventType {
+  LOGIN_EVENT_TYPE_UNSPECIFIED = 0;
+  LOGIN_EVENT_TYPE_SUCCESS = 1;
+  LOGIN_EVENT_TYPE_PASSWORD_FAIL = 2;
+  LOGIN_EVENT_TYPE_LINKED_NOT_FOUND = 3;
+  LOGIN_EVENT_TYPE_PASSKEY_FAIL = 4;
+}
+message LoginEvent {
+  string client_id = 1;
+  string subject = 2;
+  string email = 3;
+  repeated string acr = 4;
+  repeated string amr = 5;
+  repeated string idp = 6;
+
+  LoginEventType login_event_type = 7;
+} 
+
+ 

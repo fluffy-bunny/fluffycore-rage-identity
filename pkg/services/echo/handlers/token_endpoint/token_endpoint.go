@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_events "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/events"
 	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/tokenservice"
 	contracts_util "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/util"
 	clientauthorization "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/middleware/clientauthorization"
@@ -22,6 +23,7 @@ type (
 		authorizationRequestStateStore proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer
 		tokenService                   contracts_tokenservice.ITokenService
 		claimsaugmentor                contracts_tokenservice.IAuthorizationCodeClaimsAugmentor
+		eventSink                      contracts_events.IEventSink
 	}
 )
 
@@ -36,13 +38,16 @@ func (s *service) Ctor(
 	authorizationRequestStateStore proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer,
 	tokenService contracts_tokenservice.ITokenService,
 	claimsaugmentor contracts_tokenservice.IAuthorizationCodeClaimsAugmentor,
-	someUtil contracts_util.ISomeUtil) (*service, error) {
+	eventSink contracts_events.IEventSink,
+	someUtil contracts_util.ISomeUtil,
+) (*service, error) {
 	return &service{
 		someUtil:                       someUtil,
 		scopedMemoryCache:              scopedMemoryCache,
 		authorizationRequestStateStore: authorizationRequestStateStore,
 		tokenService:                   tokenService,
 		claimsaugmentor:                claimsaugmentor,
+		eventSink:                      eventSink,
 	}, nil
 }
 

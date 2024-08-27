@@ -7,6 +7,7 @@ import (
 
 	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/tokenservice"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
+	proto_events_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/events/types"
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	fluffycore_services_claims "github.com/fluffy-bunny/fluffycore/services/claims"
@@ -62,7 +63,20 @@ func extractIdpSlug(template string) (string, error) {
 	}
 	return match[1], nil
 }
+func sanitizeArray(input []string) []string {
+	mm := make(map[string]bool)
+	for _, v := range input {
+		if fluffycore_utils.IsNotEmptyOrNil(v) {
+			mm[v] = true
+		}
+	}
 
+	var output []string
+	for k := range mm {
+		output = append(output, k)
+	}
+	return output
+}
 func (s *service) handleAuthorizationCode(c echo.Context) error {
 	r := c.Request()
 	ctx := r.Context()
@@ -139,6 +153,9 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 		idpClaims = append(idpClaims, idp)
 	}
 	amrClaims := authorizationFinal.Identity.Amr
+	amrClaims = sanitizeArray(amrClaims)
+	acrClaims = sanitizeArray(acrClaims)
+	idpClaims = sanitizeArray(idpClaims)
 
 	idClaims.Set("acr", acrClaims)
 	idClaims.Set("amr", amrClaims)
@@ -197,5 +214,18 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 			log.Error().Err(err).Msg("DeleteAuthorizationRequestState")
 		}
 	}()
+	s.eventSink.OnEvent(ctx, &proto_events_types.Event{
+		Event: &proto_events_types.Event_LoginEvent{
+			LoginEvent: &proto_events_types.LoginEvent{
+				Subject:        authorizationFinal.Identity.Subject,
+				Email:          authorizationFinal.Identity.Email,
+				ClientId:       client.ClientId,
+				Acr:            acrClaims,
+				Amr:            amrClaims,
+				Idp:            idpClaims,
+				LoginEventType: proto_events_types.LoginEventType_LOGIN_EVENT_TYPE_SUCCESS,
+			},
+		},
+	})
 	return c.JSONPretty(http.StatusOK, response, "  ")
 }
