@@ -1,5 +1,5 @@
 import { AccountCircle } from '@mui/icons-material';
-import { Box, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
+import { Box, Button, Menu, MenuItem, Tooltip } from '@mui/material';
 import React, { useContext, useId } from 'react';
 import { useMutation } from 'react-query';
 
@@ -50,7 +50,8 @@ export const ProfileDropdown = () => {
     <>
       <Box sx={{ display: 'flex' }}>
         <Tooltip title={userName || user?.email}>
-          <IconButton
+          <Button
+            endIcon={<AccountCircle />}
             id={buttonId}
             aria-controls={open ? menuId : undefined}
             aria-haspopup="true"
@@ -58,8 +59,8 @@ export const ProfileDropdown = () => {
             color="inherit"
             onClick={handleClick}
           >
-            <AccountCircle />
-          </IconButton>
+            {user?.email}
+          </Button>
         </Tooltip>
       </Box>
       <Menu
