@@ -173,24 +173,6 @@ func (s *service) Do(c echo.Context) error {
 
 	}
 
-	if s.config.EmailVerificationRequired && !user.RootIdentity.EmailVerified {
-		vCode, err := doEmailVerification(contracts_cookies.VerifyCode_EmailVerification)
-		if err != nil {
-			log.Error().Err(err).Msg("doEmailVerification")
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
-		}
-		response := &login_models.LoginPasswordResponse{
-			Email:     model.Email,
-			Directive: login_models.DIRECTIVE_VerifyCode_DisplayVerifyCodePage,
-		}
-		if s.config.SystemConfig.DeveloperMode {
-			response.DirectiveEmailCodeChallenge = &login_models.DirectiveEmailCodeChallenge{
-				Code: vCode,
-			}
-		}
-		return c.JSONPretty(http.StatusOK, response, "  ")
-	}
-
 	err = s.passwordHasher.VerifyPassword(ctx, &contracts_identity.VerifyPasswordRequest{
 		Password:       model.Password,
 		HashedPassword: user.Password.Hash,
@@ -206,7 +188,7 @@ func (s *service) Do(c echo.Context) error {
 			Enabled: false,
 		}
 	}
-	if s.config.MultiFactorRequiredByEmailCode {
+	if (s.config.EmailVerificationRequired && !user.RootIdentity.EmailVerified) || s.config.MultiFactorRequiredByEmailCode {
 		vCode, err := doEmailVerification(contracts_cookies.VerifyCode_Challenge)
 		if err != nil {
 			log.Error().Err(err).Msg("doEmailVerification")
