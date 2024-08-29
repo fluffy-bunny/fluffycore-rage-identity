@@ -172,11 +172,19 @@ func (s *service) Do(c echo.Context) error {
 		return verificationCode, nil
 
 	}
-
-	err = s.passwordHasher.VerifyPassword(ctx, &contracts_identity.VerifyPasswordRequest{
-		Password:       model.Password,
-		HashedPassword: user.Password.Hash,
-	})
+	doPasswordVerification := func() error {
+		if fluffycore_utils.IsNil(user.Password) {
+			return status.Error(codes.NotFound, "Password not found")
+		}
+		if fluffycore_utils.IsEmptyOrNil(user.Password.Hash) {
+			return status.Error(codes.NotFound, "Password hash not found")
+		}
+		return s.passwordHasher.VerifyPassword(ctx, &contracts_identity.VerifyPasswordRequest{
+			Password:       model.Password,
+			HashedPassword: user.Password.Hash,
+		})
+	}
+	err = doPasswordVerification()
 	if err != nil {
 		log.Error().Err(err).Msg("VerifyPassword")
 		return c.JSONPretty(http.StatusUnauthorized, "Unauthorized", "  ")

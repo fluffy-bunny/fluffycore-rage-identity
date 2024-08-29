@@ -11,6 +11,15 @@
       "password": {
         "hash": "$argon2id$v=19$m=65536,t=1,p=20$rPModFh9Is+2XOb7LZi1CQ$Wdn8WthGua5rToCiEpmE5ZGYdYQGEPu4hny9lDbIThw"
       }
+    },
+    {
+      "state": "USER_STATE_ACTIVE",
+      "rootIdentity": {
+        "subject": "USREGWDnMB9wc42YSVMrk2FuXqxBrW2H658XuGtAQEAoDx1v2",
+        "idpSlug": "root",
+        "email": "alicia_2@zealty.xyz",
+        "emailVerified": false
+      }
     }
   ]
 }
