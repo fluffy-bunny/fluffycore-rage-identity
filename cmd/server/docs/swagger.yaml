@@ -106,6 +106,15 @@ definitions:
       slug:
         type: string
     type: object
+  login_models.LoginPasswordErrorResponse:
+    properties:
+      email:
+        type: string
+      reason:
+        type: string
+    required:
+    - email
+    type: object
   login_models.LoginPasswordRequest:
     properties:
       email:
@@ -367,7 +376,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            type: string
+            $ref: '#/definitions/login_models.LoginPasswordErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/login_models.LoginPasswordErrorResponse'
       summary: get the login manifest.
       tags:
       - root

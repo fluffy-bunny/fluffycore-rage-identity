@@ -60,9 +60,13 @@ type (
 	}
 	LoginPasswordResponse struct {
 		Email                       string                       `json:"email" validate:"required"`
-		Directive                   string                       `json:"directive" validate:"required"`
+		Directive                   string                       `json:"directive,omitempty" validate:"required"`
 		DirectiveRedirect           *DirectiveRedirect           `json:"directiveRedirect,omitempty"`
 		DirectiveEmailCodeChallenge *DirectiveEmailCodeChallenge `json:"directiveEmailCodeChallenge,omitempty"`
+	}
+	LoginPasswordErrorResponse struct {
+		Email  string `json:"email" validate:"required"`
+		Reason string `json:"reason,omitempty"`
 	}
 	VerifyCodeRequest struct {
 		Code string `json:"code" validate:"required"`

@@ -72,6 +72,22 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 
 }
 
+const (
+	// make sure only one is shown.  This is an internal error code to point the developer to the code that is failing
+	InternalError_LoginPassword_001 = "rg-loginpassword-001"
+	InternalError_LoginPassword_002 = "rg-loginpassword-002"
+	InternalError_LoginPassword_003 = "rg-loginpassword-003"
+	InternalError_LoginPassword_004 = "rg-loginpassword-004"
+	InternalError_LoginPassword_005 = "rg-loginpassword-005"
+	InternalError_LoginPassword_006 = "rg-loginpassword-006"
+	InternalError_LoginPassword_007 = "rg-loginpassword-007"
+	InternalError_LoginPassword_008 = "rg-loginpassword-008"
+	InternalError_LoginPassword_009 = "rg-loginpassword-009"
+	InternalError_LoginPassword_010 = "rg-loginpassword-010"
+	InternalError_LoginPassword_011 = "rg-loginpassword-011"
+	InternalError_LoginPassword_099 = "rg-loginpassword-099"
+)
+
 func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
@@ -99,7 +115,8 @@ func (s *service) validateLoginPasswordRequest(model *login_models.LoginPassword
 // @Produce json
 // @Param		request body		login_models.LoginPasswordRequest	true	"LoginPasswordRequest"
 // @Success 200 {object} login_models.LoginPasswordResponse
-// @Failure 401 {string} string
+// @Failure 401 {object} login_models.LoginPasswordErrorResponse
+// @Failure 500 {object} login_models.LoginPasswordErrorResponse
 // @Router /api/login-password [post]
 func (s *service) Do(c echo.Context) error {
 	rootPath := echo_utils.GetMyRootPath(c)
@@ -109,22 +126,38 @@ func (s *service) Do(c echo.Context) error {
 	model := &login_models.LoginPasswordRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		response := &login_models.LoginPasswordErrorResponse{
+			Email:  model.Email,
+			Reason: "bind error",
+		}
+		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
 	}
 	if err := s.validateLoginPasswordRequest(model); err != nil {
 		log.Error().Err(err).Msg("validateLoginPasswordRequest")
-		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
+		response := &login_models.LoginPasswordErrorResponse{
+			Email:  model.Email,
+			Reason: "invalid request",
+		}
+		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
 	}
 
 	session, err := s.getSession()
 	if err != nil {
 		log.Error().Err(err).Msg("getSession")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		response := &login_models.LoginPasswordErrorResponse{
+			Email:  model.Email,
+			Reason: InternalError_LoginPassword_001,
+		}
+		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
 	}
 	sessionRequest, err := session.Get("request")
 	if err != nil {
 		log.Error().Err(err).Msg("session.Get")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		response := &login_models.LoginPasswordErrorResponse{
+			Email:  model.Email,
+			Reason: InternalError_LoginPassword_002,
+		}
+		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
 	}
 	authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
 
@@ -138,9 +171,17 @@ func (s *service) Do(c echo.Context) error {
 	if err != nil {
 		st, ok := status.FromError(err)
 		if ok && st.Code() == codes.NotFound {
-			return c.JSONPretty(http.StatusNotFound, "User not found", "  ")
+			response := &login_models.LoginPasswordErrorResponse{
+				Email:  model.Email,
+				Reason: "user not found",
+			}
+			return c.JSONPretty(http.StatusNotFound, response, "  ")
 		}
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		response := &login_models.LoginPasswordErrorResponse{
+			Email:  model.Email,
+			Reason: InternalError_LoginPassword_003,
+		}
+		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
 	}
 
 	user := getRageUserResponse.User
@@ -187,7 +228,11 @@ func (s *service) Do(c echo.Context) error {
 	err = doPasswordVerification()
 	if err != nil {
 		log.Error().Err(err).Msg("VerifyPassword")
-		return c.JSONPretty(http.StatusUnauthorized, "Unauthorized", "  ")
+		response := &login_models.LoginPasswordErrorResponse{
+			Email:  model.Email,
+			Reason: "wrong_password",
+		}
+		return c.JSONPretty(http.StatusUnauthorized, response, "  ")
 	}
 	// check if multi factor is required
 	// ---------------------------------
@@ -200,7 +245,11 @@ func (s *service) Do(c echo.Context) error {
 		vCode, err := doEmailVerification(contracts_cookies.VerifyCode_Challenge)
 		if err != nil {
 			log.Error().Err(err).Msg("doEmailVerification")
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+			response := &login_models.LoginPasswordErrorResponse{
+				Email:  model.Email,
+				Reason: InternalError_LoginPassword_004,
+			}
+			return c.JSONPretty(http.StatusInternalServerError, response, "  ")
 		}
 		response := &login_models.LoginPasswordResponse{
 			Email:     model.Email,
@@ -225,7 +274,11 @@ func (s *service) Do(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("SetAuthCookie")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		response := &login_models.LoginPasswordErrorResponse{
+			Email:  model.Email,
+			Reason: InternalError_LoginPassword_005,
+		}
+		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
 	}
 	getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().
 		GetAuthorizationRequestState(ctx,
@@ -234,7 +287,11 @@ func (s *service) Do(c echo.Context) error {
 			})
 	if err != nil {
 		log.Error().Err(err).Msg("GetAuthorizationRequestState")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		response := &login_models.LoginPasswordErrorResponse{
+			Email:  model.Email,
+			Reason: InternalError_LoginPassword_006,
+		}
+		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
 	}
 	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 	authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
@@ -260,7 +317,11 @@ func (s *service) Do(c echo.Context) error {
 		})
 	if err != nil {
 		log.Warn().Err(err).Msg("StoreAuthorizationRequestState")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		response := &login_models.LoginPasswordErrorResponse{
+			Email:  model.Email,
+			Reason: InternalError_LoginPassword_007,
+		}
+		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
 	}
 	s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
 		State: authorizationRequest.State,
@@ -272,7 +333,11 @@ func (s *service) Do(c echo.Context) error {
 	if err != nil {
 		// redirect to error page
 		log.Error().Err(err).Msg("StoreAuthorizationRequestState")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		response := &login_models.LoginPasswordErrorResponse{
+			Email:  model.Email,
+			Reason: InternalError_LoginPassword_008,
+		}
+		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
 	}
 	// redirect to the client with the code.
 	redirectUri := authorizationFinal.Request.RedirectUri +

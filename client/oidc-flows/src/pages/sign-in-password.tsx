@@ -10,8 +10,11 @@ import {
 import { useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
 
-import { api } from '../api';
-import { LoginModelsLoginPasswordRequest } from '../api/Api';
+import { api, ApiError, isApiError } from '../api';
+import {
+  LoginModelsLoginPasswordErrorResponse,
+  LoginModelsLoginPasswordRequest,
+} from '../api/Api';
 import { AuthLayout } from '../components/auth/AuthLayout/AuthLayout';
 import { AuthSocialButtons } from '../components/auth/AuthSocialButtons/AuthSocialButtons';
 import { RoutePaths } from '../constants/routes';
@@ -19,6 +22,13 @@ import { useManifest } from '../contexts/ManifestContext/ManifestContext';
 import { useNotification } from '../contexts/NotificationContext/NotificationContext';
 import { PageProps } from '../types';
 import { withPreventDefault } from '../utils/links';
+
+type ErrorReason = 'wrong_password' | 'unknown';
+
+const ErrorReasons: Record<ErrorReason, string> = {
+  wrong_password: 'The password you entered is incorrect.',
+  unknown: 'Something went wrong. Please try again.',
+};
 
 export const SignInPasswordPage: React.FC<PageProps<{ email: string }>> = ({
   pageProps,
@@ -39,10 +49,8 @@ export const SignInPasswordPage: React.FC<PageProps<{ email: string }>> = ({
     },
   });
 
-  const { mutateAsync, isLoading } = useMutation(
-    async (values: LoginModelsLoginPasswordRequest) => {
-      const { data } = await api.loginPasswordCreate(values);
-
+  const { mutateAsync, isLoading } = useMutation(api.loginPasswordCreate, {
+    onSuccess: ({ data }) => {
       if (data.directive === 'displayVerifyCodePage') {
         return onNavigate(RoutePaths.VerifyCode, {
           email: data.email,
@@ -50,13 +58,23 @@ export const SignInPasswordPage: React.FC<PageProps<{ email: string }>> = ({
         });
       }
     },
-  );
+  });
 
   async function onSubmit(values: LoginModelsLoginPasswordRequest) {
     try {
       await mutateAsync(values);
     } catch (error) {
-      showNotification('Something went wrong. Please try again.', 'error');
+      if (isApiError(error)) {
+        const apiError =
+          error as ApiError<LoginModelsLoginPasswordErrorResponse>;
+
+        const reason: ErrorReason =
+          (apiError.response?.data.reason as ErrorReason) || 'unknown';
+
+        return showNotification(ErrorReasons[reason], 'error');
+      }
+
+      showNotification(ErrorReasons.unknown, 'error');
     }
   }
 
