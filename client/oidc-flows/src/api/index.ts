@@ -22,3 +22,5 @@ instance.interceptors.request.use((config) => {
 export const isApiError = (error: any): error is AxiosError => {
   return error.isAxiosError;
 };
+
+export type ApiError<T> = AxiosError<T>;

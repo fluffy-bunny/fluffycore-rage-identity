@@ -79,6 +79,11 @@ export interface LoginModelsDirectiveStartExternalLogin {
   slug?: string;
 }
 
+export interface LoginModelsLoginPasswordErrorResponse {
+  email: string;
+  reason?: string;
+}
+
 export interface LoginModelsLoginPasswordRequest {
   email: string;
   password: string;
@@ -421,7 +426,10 @@ export class Api<
       request: LoginModelsLoginPasswordRequest,
       params: RequestParams = {},
     ) =>
-      this.request<LoginModelsLoginPasswordResponse, string>({
+      this.request<
+        LoginModelsLoginPasswordResponse,
+        LoginModelsLoginPasswordErrorResponse
+      >({
         path: `/api/login-password`,
         method: 'POST',
         body: request,

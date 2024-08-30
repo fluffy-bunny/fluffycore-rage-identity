@@ -104,7 +104,13 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/login_models.LoginPasswordErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/login_models.LoginPasswordErrorResponse"
                         }
                     }
                 }
@@ -1289,6 +1295,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "slug": {
+                    "type": "string"
+                }
+            }
+        },
+        "login_models.LoginPasswordErrorResponse": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "reason": {
                     "type": "string"
                 }
             }
