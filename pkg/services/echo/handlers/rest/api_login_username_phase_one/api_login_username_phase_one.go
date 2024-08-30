@@ -7,7 +7,6 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
-	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
@@ -188,42 +187,45 @@ func (s *service) Do(c echo.Context) error {
 		return c.JSONPretty(http.StatusNotFound, "User not found", "  ")
 	}
 	user := getRageUserResponse.User
-	if s.config.EmailVerificationRequired && !user.RootIdentity.EmailVerified {
-		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
-		err = s.wellknownCookies.SetVerificationCodeCookie(c,
-			&contracts_cookies.SetVerificationCodeCookieRequest{
-				VerificationCode: &contracts_cookies.VerificationCode{
-					Email:             model.Email,
-					Code:              verificationCode,
-					Subject:           user.RootIdentity.Subject,
-					VerifyCodePurpose: contracts_cookies.VerifyCode_EmailVerification,
-				},
-			})
-		if err != nil {
-			log.Error().Err(err).Msg("SetVerificationCodeCookie")
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
-		}
-		_, err = s.EmailService().SendSimpleEmail(ctx,
-			&contracts_email.SendSimpleEmailRequest{
-				ToEmail:   model.Email,
-				SubjectId: "email.verification.subject",
-				BodyId:    "email.verification.message",
-				Data: map[string]string{
-					"code": verificationCode,
-				},
-			})
-		if err != nil {
-			log.Error().Err(err).Msg("SendSimpleEmail")
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
-		}
-		if s.config.SystemConfig.DeveloperMode {
-			response.DirectiveEmailCodeChallenge = &login_models.DirectiveEmailCodeChallenge{
-				Code: verificationCode,
+	// if email verification is required we will do it in the password phase.
+	/*
+		if s.config.EmailVerificationRequired && !user.RootIdentity.EmailVerified {
+			verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
+			err = s.wellknownCookies.SetVerificationCodeCookie(c,
+				&contracts_cookies.SetVerificationCodeCookieRequest{
+					VerificationCode: &contracts_cookies.VerificationCode{
+						Email:             model.Email,
+						Code:              verificationCode,
+						Subject:           user.RootIdentity.Subject,
+						VerifyCodePurpose: contracts_cookies.VerifyCode_EmailVerification,
+					},
+				})
+			if err != nil {
+				log.Error().Err(err).Msg("SetVerificationCodeCookie")
+				return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
 			}
+			_, err = s.EmailService().SendSimpleEmail(ctx,
+				&contracts_email.SendSimpleEmailRequest{
+					ToEmail:   model.Email,
+					SubjectId: "email.verification.subject",
+					BodyId:    "email.verification.message",
+					Data: map[string]string{
+						"code": verificationCode,
+					},
+				})
+			if err != nil {
+				log.Error().Err(err).Msg("SendSimpleEmail")
+				return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+			}
+			if s.config.SystemConfig.DeveloperMode {
+				response.DirectiveEmailCodeChallenge = &login_models.DirectiveEmailCodeChallenge{
+					Code: verificationCode,
+				}
+			}
+			response.Directive = login_models.DIRECTIVE_VerifyCode_DisplayVerifyCodePage
+			return c.JSONPretty(http.StatusOK, response, "  ")
 		}
-		response.Directive = login_models.DIRECTIVE_VerifyCode_DisplayVerifyCodePage
-		return c.JSONPretty(http.StatusOK, response, "  ")
-	}
+	*/
 	hasPasskey := false
 	if s.webAuthNConfig.Enabled {
 		// only do this check if we globally allow passkeys
