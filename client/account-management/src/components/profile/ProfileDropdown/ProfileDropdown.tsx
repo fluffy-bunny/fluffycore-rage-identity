@@ -59,7 +59,7 @@ export const ProfileDropdown = () => {
             color="inherit"
             onClick={handleClick}
           >
-            {user?.email}
+            {user?.email ?? 'test@test.com'}
           </Button>
         </Tooltip>
       </Box>
@@ -70,6 +70,10 @@ export const ProfileDropdown = () => {
         onClose={handleClose}
         MenuListProps={{
           'aria-labelledby': buttonId,
+        }}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
         }}
         slotProps={{
           paper: {
