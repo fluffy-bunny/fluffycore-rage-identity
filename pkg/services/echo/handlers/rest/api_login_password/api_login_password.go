@@ -172,29 +172,19 @@ func (s *service) Do(c echo.Context) error {
 		return verificationCode, nil
 
 	}
-
-	if s.config.EmailVerificationRequired && !user.RootIdentity.EmailVerified {
-		vCode, err := doEmailVerification(contracts_cookies.VerifyCode_EmailVerification)
-		if err != nil {
-			log.Error().Err(err).Msg("doEmailVerification")
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+	doPasswordVerification := func() error {
+		if fluffycore_utils.IsNil(user.Password) {
+			return status.Error(codes.NotFound, "Password not found")
 		}
-		response := &login_models.LoginPasswordResponse{
-			Email:     model.Email,
-			Directive: login_models.DIRECTIVE_VerifyCode_DisplayVerifyCodePage,
+		if fluffycore_utils.IsEmptyOrNil(user.Password.Hash) {
+			return status.Error(codes.NotFound, "Password hash not found")
 		}
-		if s.config.SystemConfig.DeveloperMode {
-			response.DirectiveEmailCodeChallenge = &login_models.DirectiveEmailCodeChallenge{
-				Code: vCode,
-			}
-		}
-		return c.JSONPretty(http.StatusOK, response, "  ")
+		return s.passwordHasher.VerifyPassword(ctx, &contracts_identity.VerifyPasswordRequest{
+			Password:       model.Password,
+			HashedPassword: user.Password.Hash,
+		})
 	}
-
-	err = s.passwordHasher.VerifyPassword(ctx, &contracts_identity.VerifyPasswordRequest{
-		Password:       model.Password,
-		HashedPassword: user.Password.Hash,
-	})
+	err = doPasswordVerification()
 	if err != nil {
 		log.Error().Err(err).Msg("VerifyPassword")
 		return c.JSONPretty(http.StatusUnauthorized, "Unauthorized", "  ")
@@ -206,7 +196,7 @@ func (s *service) Do(c echo.Context) error {
 			Enabled: false,
 		}
 	}
-	if s.config.MultiFactorRequiredByEmailCode {
+	if (s.config.EmailVerificationRequired && !user.RootIdentity.EmailVerified) || s.config.MultiFactorRequiredByEmailCode {
 		vCode, err := doEmailVerification(contracts_cookies.VerifyCode_Challenge)
 		if err != nil {
 			log.Error().Err(err).Msg("doEmailVerification")
