@@ -69,5 +69,8 @@
     "eslint-plugin-simple-import-sort": "^12.1.0",
     "prettier": "^3.3.2",
     "react-app-rewired": "^2.2.1"
+  },
+  "resolutions": {
+    "ws": "^8.17.1"
   }
 }
