@@ -104,6 +104,9 @@ func (s *service) validateLoginPhaseOneRequest(model *login_models.LoginPhaseOne
 // @Produce json
 // @Param		request body		login_models.LoginPhaseOneRequest	true	"LoginPhaseOneRequest"
 // @Success 200 {object} login_models.LoginPhaseOneResponse
+// @Failure 400 {string} string
+// @Failure 404 {string} string
+// @Failure 500 {string} string
 // @Router /api/login-phase-one [post]
 func (s *service) Do(c echo.Context) error {
 	localizer := s.Localizer().GetLocalizer()
