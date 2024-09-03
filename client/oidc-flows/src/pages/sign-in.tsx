@@ -3,7 +3,7 @@ import { FormControl, Link, Stack, TextField, Typography } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
 
-import { api } from '../api';
+import { api, isApiError } from '../api';
 import { LoginModelsLoginPhaseOneRequest } from '../api/Api';
 import { AuthLayout } from '../components/auth/AuthLayout/AuthLayout';
 import { AuthSocialButtons } from '../components/auth/AuthSocialButtons/AuthSocialButtons';
@@ -50,6 +50,18 @@ export const SignInPage: React.FC<PageProps> = ({ onNavigate }) => {
     try {
       await mutateAsync(values);
     } catch (error) {
+      if (isApiError(error)) {
+        switch (error.status) {
+          case 404:
+            return showNotification('User not found.', 'error');
+          default:
+            return showNotification(
+              'Something went wrong. Please try again.',
+              'error',
+            );
+        }
+      }
+
       showNotification('Something went wrong. Please try again.', 'error');
     }
   }
