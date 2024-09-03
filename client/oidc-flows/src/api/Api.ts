@@ -450,7 +450,7 @@ export class Api<
       request: LoginModelsLoginPhaseOneRequest,
       params: RequestParams = {},
     ) =>
-      this.request<LoginModelsLoginPhaseOneResponse, any>({
+      this.request<LoginModelsLoginPhaseOneResponse, string>({
         path: `/api/login-phase-one`,
         method: 'POST',
         body: request,
