@@ -23,9 +23,8 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_tokenservice.IAuthorizationCodeClaimsAugmentor = stemService
-}
+var _ contracts_tokenservice.IAuthorizationCodeClaimsAugmentor = stemService
+
 func (s *service) Ctor(fluffyCoreUserServiceServer proto_external_user.IFluffyCoreUserServiceServer) (contracts_tokenservice.IAuthorizationCodeClaimsAugmentor, error) {
 	return &service{
 		fluffyCoreUserServiceServer: fluffyCoreUserServiceServer,

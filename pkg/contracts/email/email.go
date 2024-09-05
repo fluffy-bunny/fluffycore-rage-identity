@@ -25,6 +25,16 @@ type (
 		SendEmail(ctx context.Context, request *SendEmailRequest) (*SendEmailResponse, error)
 		SendSimpleEmail(ctx context.Context, request *SendSimpleEmailRequest) (*SendSimpleEmailResponse, error)
 	}
+	GetEmailTemplateDataRequest struct {
+		// SubjectId is a well-known identifier for the email subject
+		SubjectId string
+	}
+	GetEmailTemplateDataResponse struct {
+		Data map[string]interface{}
+	}
+	IEmailTemplateData interface {
+		GetEmailTemplateData(request *GetEmailTemplateDataRequest) (*GetEmailTemplateDataResponse, error)
+	}
 	RenderEmailRequest struct {
 		HtmlTemplate string
 		TextTemplate string
