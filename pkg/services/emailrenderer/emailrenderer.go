@@ -3,6 +3,7 @@ package emailrenderer
 import (
 	"bytes"
 	"context"
+	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
@@ -61,6 +62,7 @@ func (s *service) RenderEmail(ctx context.Context, request *contracts_email.Rend
 	}
 	html := streamWriter.Bytes()
 
+	htmls := strings.ReplaceAll(string(html), `\"`, `"`)
 	streamWriter = new(bytes.Buffer)
 	err = s.config.TemplateEngine.ExecuteTemplate(streamWriter, request.TextTemplate, request.Data)
 	if err != nil {
@@ -68,7 +70,7 @@ func (s *service) RenderEmail(ctx context.Context, request *contracts_email.Rend
 	}
 	text := streamWriter.Bytes()
 	return &contracts_email.RenderEmailResponse{
-		Html: string(html),
+		Html: string(htmls),
 		Text: string(text),
 	}, nil
 }
