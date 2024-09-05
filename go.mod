@@ -22,7 +22,7 @@ require (
 	github.com/gogo/status v1.1.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0
-	github.com/imroc/req/v3 v3.43.7
+	github.com/imroc/req/v3 v3.44.0
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/lestrrat-go/jwx/v2 v2.1.1
 	github.com/nicksnyder/go-i18n/v2 v2.4.0
@@ -39,8 +39,8 @@ require (
 	github.com/wamuir/svg-qr-code v0.0.0-20210725140500-9525ec975db7
 	github.com/xlzd/gotp v0.1.0
 	golang.org/x/net v0.28.0
-	golang.org/x/oauth2 v0.22.0
-	golang.org/x/text v0.17.0
+	golang.org/x/oauth2 v0.23.0
+	golang.org/x/text v0.18.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240814211410-ddb44dafa142
 	google.golang.org/grpc v1.66.0
 	google.golang.org/protobuf v1.34.2

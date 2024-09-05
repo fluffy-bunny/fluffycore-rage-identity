@@ -18,31 +18,46 @@ import (
 
 type (
 	service struct {
-		config        *contracts_email.EmailConfig
-		localizer     contracts_localizer.ILocalizer
-		emailRenderer contracts_email.IEmailRenderer
+		config            *contracts_email.EmailConfig
+		localizer         contracts_localizer.ILocalizer
+		emailRenderer     contracts_email.IEmailRenderer
+		emailTemplateData contracts_email.IEmailTemplateData
 	}
+	NullEmailTemplateData struct{}
 )
 
 var stemService = (*service)(nil)
+var stemNullEmailTemplateData = (*NullEmailTemplateData)(nil)
 
-func init() {
-	var _ contracts_email.IEmailService = stemService
+var _ contracts_email.IEmailService = stemService
+var _ contracts_email.IEmailTemplateData = stemNullEmailTemplateData
+
+func (s *NullEmailTemplateData) Ctor() (contracts_email.IEmailTemplateData, error) {
+	return &NullEmailTemplateData{}, nil
+}
+
+func (s *NullEmailTemplateData) GetEmailTemplateData(request *contracts_email.GetEmailTemplateDataRequest) (*contracts_email.GetEmailTemplateDataResponse, error) {
+	return &contracts_email.GetEmailTemplateDataResponse{
+		Data: map[string]interface{}{},
+	}, nil
 }
 func (s *service) Ctor(
 	config *contracts_email.EmailConfig,
 	emailRenderer contracts_email.IEmailRenderer,
-	localizer contracts_localizer.ILocalizer) (contracts_email.IEmailService, error) {
+	localizer contracts_localizer.ILocalizer,
+	emailTemplateData contracts_email.IEmailTemplateData) (contracts_email.IEmailService, error) {
 	return &service{
-		config:        config,
-		localizer:     localizer,
-		emailRenderer: emailRenderer,
+		config:            config,
+		localizer:         localizer,
+		emailRenderer:     emailRenderer,
+		emailTemplateData: emailTemplateData,
 	}, nil
 }
 
 // scoped email service due to localization
 func AddScopedIEmailService(cb di.ContainerBuilder) {
 	di.AddScoped[contracts_email.IEmailService](cb, stemService.Ctor)
+	di.AddSingleton[contracts_email.IEmailTemplateData](cb, stemNullEmailTemplateData.Ctor)
 }
 func (s *service) validateSendEmailRequest(request *contracts_email.SendEmailRequest) error {
 	if request == nil {
@@ -84,11 +99,24 @@ func (s *service) SendEmail(ctx context.Context, request *contracts_email.SendEm
 		message, _ := localizer.LocalizeMessage(&i18n.Message{ID: key})
 		return message
 	}
+	finalData := make(map[string]interface{})
+	getEmailTemplateDataResponse, err := s.emailTemplateData.GetEmailTemplateData(&contracts_email.GetEmailTemplateDataRequest{
+		SubjectId: request.SubjectId,
+	})
+	if err == nil {
+		finalData = getEmailTemplateDataResponse.Data
+	} else {
+		log.Error().Err(err).Msg("failed to get email template data")
+	}
+	// the original wins
+	for key, value := range request.Data {
+		finalData[key] = value
+	}
 	renderedEmail, err := s.emailRenderer.RenderEmail(ctx,
 		&contracts_email.RenderEmailRequest{
 			HtmlTemplate: request.HtmlTemplate,
 			TextTemplate: request.TextTemplate,
-			Data:         request.Data,
+			Data:         finalData,
 		})
 	if err != nil {
 		return nil, err
@@ -112,7 +140,7 @@ func (s *service) SendEmail(ctx context.Context, request *contracts_email.SendEm
 	mail.Subject(subject)
 	mail.Plain().Set(string(renderedEmail.Text))
 	mail.HTML().Set(string(renderedEmail.Html))
-
+	//fmt.Println(string(renderedEmail.Html))
 	err = mail.Send()
 	if err != nil {
 		log.Error().Err(err).Msg("failed to send email")
