@@ -46,7 +46,7 @@ type (
 		configOptions *fluffycore_contracts_runtime.ConfigOptions
 		config        *contracts_config.Config
 
-		oidcserverFuture  async.Future[fluffycore_async.AsyncResponse]
+		oidcserverFuture  async.Future[*fluffycore_async.AsyncResponse]
 		oidcserverRuntime *core_echo_runtime.Runtime
 		ext               pkg_types.ConfigureServices
 	}
@@ -231,7 +231,7 @@ func (s *startup) OnPreServerStartup(ctx context.Context) error {
 	s.oidcserverRuntime = core_echo_runtime.New(oidcserver.NewStartup(
 		oidcserver.WithConfigureServices(s.ext),
 	))
-	s.oidcserverFuture = fluffycore_async.ExecuteWithPromiseAsync(func(promise async.Promise[fluffycore_async.AsyncResponse]) {
+	s.oidcserverFuture = fluffycore_async.ExecuteWithPromiseAsync(func(promise async.Promise[*fluffycore_async.AsyncResponse]) {
 		var err error
 		defer func() {
 			promise.Success(&fluffycore_async.AsyncResponse{
