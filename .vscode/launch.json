@@ -12,7 +12,8 @@
             "program": "${workspaceFolder}/cmd/server",
             "env": {
                 "ENABLE_GRPC_SERVER_REFLECTION": "true",
-                "DOMAIN":"localhost1.com:9044",                
+                "DOMAIN":"localhost1.com:9044",    
+                "COOKIE_DOMAIN":"localhost",                            
                 "RAGE_APPLICATION_NAME": "server",
                 "RAGE_APPLICATION_ENVIRONMENT":"Development",
                 "APPLICATION_ENVIRONMENT":"Development",
@@ -46,7 +47,8 @@
             "program": "${workspaceFolder}/cmd/server",
             "env": {
                 "ENABLE_GRPC_SERVER_REFLECTION": "true",
-                "DOMAIN":"localhost:9044",                
+                "DOMAIN":"localhost:9044",
+                "COOKIE_DOMAIN":"localhost",                
                 "RAGE_APPLICATION_NAME": "server",
                 "RAGE_APPLICATION_ENVIRONMENT":"Development",
                 "APPLICATION_ENVIRONMENT":"Development",
@@ -65,10 +67,14 @@
                 "RAGE_echo__disableSecureCookies": "true",
                 "RAGE_echo__port": "9044",
                 "RAGE_emailConfig__justLogIt": "true",
-                "RAGE_cookieConfig__secure": "true",
+                "RAGE_cookieConfig__insecure": "true",
                 "RAGE_systemConfig__developerMode": "true",
+                "RAGE_sessionConfig__insecure": "true",
                 "RAGE_GITHUB_CLIENT_ID": "bdbe2f2235eb3a02065c",
                 "RAGE_webAuthNConfig__enabled": "true",
+                "RAGE_corsConfig__enabled": "true",
+                "RAGE_csrfConfig__skipApi": "true",
+
 
             },
             "args": [ "serve" ]        

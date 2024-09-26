@@ -250,12 +250,17 @@ func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 // Configure
 func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 
+	var sameSite http.SameSite = http.SameSiteStrictMode
+	httpOnly := false
+	if s.config.Echo.DisableSecureCookies {
+		sameSite = 0
+	}
 	e.Use(echo_middleware.CSRFWithConfig(echo_middleware.CSRFConfig{
 		TokenLookup:    "header:X-Csrf-Token,form:csrf",
 		CookiePath:     "/",
 		CookieSecure:   false,
-		CookieHTTPOnly: false,
-		CookieSameSite: http.SameSiteStrictMode,
+		CookieHTTPOnly: httpOnly,
+		CookieSameSite: sameSite,
 		Skipper: func(c echo.Context) bool {
 			if s.config.CSRFConfig.SkipApi {
 				if strings.Contains(c.Request().URL.Path, "/api") {

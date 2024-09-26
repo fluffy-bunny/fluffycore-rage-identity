@@ -88,6 +88,7 @@ func (s *service) newSession() (contracts_sessions.ISession, error) {
 	if err != nil {
 		return nil, err
 	}
+	
 	session.New()
 	return session, nil
 }

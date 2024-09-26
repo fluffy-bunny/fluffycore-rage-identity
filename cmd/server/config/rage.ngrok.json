@@ -1,6 +1,8 @@
 {
   "corsConfig": {
-    "allowedOrigins": ["https://${DOMAIN}"]
+    "allowedOrigins": [
+      "https://${DOMAIN}"
+    ]
   },
   "emailVerificationRequired": true,
   "multiFactorRequired": true,
@@ -16,6 +18,12 @@
     "domain": "${DOMAIN}",
     "developerMode": false
   },
+  "sessionConfig": {
+    "domain": "${COOKIE_DOMAIN}"
+  },
+  "cookieConfig": {
+    "domain": "${COOKIE_DOMAIN}"
+  },
   "totp": {
     "enabled": false,
     "issuerName": "EXAMPLE.RAGE.IDENTITY"
@@ -23,6 +31,8 @@
   "webAuthNConfig": {
     "rpDisplayName": "RAGE",
     "rpID": "${DOMAIN}",
-    "rpOrigins": ["https://${DOMAIN}"]
+    "rpOrigins": [
+      "https://${DOMAIN}"
+    ]
   }
 }

@@ -11,7 +11,9 @@
       "http://localhost1.com:3000",
       "http://localhost1.com:3001",
       "http://localhost:3000",
-      "http://localhost:3001"
+      "http://localhost:3001",
+      "https://localhost:7090",
+      "http://localhost:5108"
     ]
   },
   "selfIDPConfig": {
@@ -24,6 +26,12 @@
   "systemConfig": {
     "domain": "${DOMAIN}",
     "developerMode": false
+  },
+  "sessionConfig": {
+    "domain": "${COOKIE_DOMAIN}"
+  },
+  "cookieConfig": {
+    "domain": "${COOKIE_DOMAIN}"
   },
   "totp": {
     "enabled": false,

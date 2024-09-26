@@ -129,6 +129,7 @@ const configDefaultJSONTemplate = `
 	"REST_PORT": 50052,
 	"GRPC_GATEWAY_ENABLED": true,
 	"cookieConfig": {
+		"domain": "@@CHANGEME@@"
  	},
 	"csrfConfig": {
 		"skipApi": false
@@ -209,7 +210,8 @@ const configDefaultJSONTemplate = `
 		"authenticationKey": "7f6a8b9c0d1e2f3a4b5c6d7e8f9a0b1c",
 		"encryptionKey": "1234567890abcdef1234567890abcdef",
 		"maxAge": 1800,
-		"domain": "@@C"
+		"domain": "@@CHANGEME@@",
+		"insecure": false
 	},
 	"systemConfig": {
 		"domain": "@@CHANGEME@@",

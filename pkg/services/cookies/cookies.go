@@ -1,9 +1,7 @@
 package cookies
 
 import (
-	"encoding/json"
 	"strings"
-	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
@@ -154,12 +152,24 @@ func (s *service) validateSetAccountStateCookieRequest(request *contracts_cookie
 	return nil
 
 }
+func tPtr[T any](t T) *T {
+	return &t
+}
 func (s *service) SetAccountStateCookie(c echo.Context, request *contracts_cookies.SetAccountStateCookieRequest) error {
 	err := s.validateSetAccountStateCookieRequest(request)
 	if err != nil {
 		return err
 	}
-	return SetCookie(c, s.cookieConfig, s.secureCookies, contracts_cookies.CookieNameAccountState, request.AccountStateCookie)
+	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
+		Name: contracts_cookies.CookieNameAccountState,
+	}
+	if s.config.DisableSecureCookies {
+		setCookieRequest.HttpOnly = true
+		setCookieRequest.SameSite = 0
+		setCookieRequest.Secure = tPtr(false)
+	}
+	return SetCookieByRequest(c, s.cookieConfig, s.secureCookies, setCookieRequest, request.AccountStateCookie)
+
 }
 func (s *service) DeleteAccountStateCookie(c echo.Context) {
 	s.secureCookies.DeleteCookie(c,
@@ -199,28 +209,16 @@ func (s *service) SetAuthCookie(c echo.Context, request *contracts_cookies.SetAu
 	if err != nil {
 		return err
 	}
-	b, err := json.Marshal(request.AuthCookie)
-	if err != nil {
-		return err
+	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
+		Name: contracts_cookies.CookieNameAuth,
 	}
-	value := make(map[string]interface{})
-	err = json.Unmarshal(b, &value)
-	if err != nil {
-		return err
+	if s.config.DisableSecureCookies {
+		setCookieRequest.HttpOnly = true
+		setCookieRequest.SameSite = 0
+		setCookieRequest.Secure = tPtr(false)
 	}
-	_, err = s.secureCookies.SetCookie(c,
-		&fluffycore_contracts_cookies.SetCookieRequest{
-			Name:     contracts_cookies.CookieNameAuth,
-			Value:    value,
-			HttpOnly: false,
-			Expires:  time.Now().Add(30 * time.Minute),
-			Path:     "/",
-			Domain:   s.cookieConfig.Domain,
-		})
-	if err != nil {
-		return err
-	}
-	return nil
+	return SetCookieByRequest(c, s.cookieConfig, s.secureCookies, setCookieRequest,
+		request.AuthCookie)
 }
 func (s *service) DeleteAuthCookie(c echo.Context) {
 	s.secureCookies.DeleteCookie(c,
@@ -241,7 +239,18 @@ func (s *service) GetAuthCookie(c echo.Context) (*contracts_cookies.GetAuthCooki
 	}, nil
 }
 func (s *service) SetInsecureCookie(c echo.Context, name string, value interface{}) error {
-	return SetCookie(c, s.cookieConfig, s.insecureCookies, name, value)
+
+	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
+		Name: name,
+	}
+	if s.config.DisableSecureCookies {
+		setCookieRequest.HttpOnly = true
+		setCookieRequest.SameSite = 0
+		setCookieRequest.Secure = tPtr(false)
+	}
+	return SetCookieByRequest(c, s.cookieConfig, s.insecureCookies, setCookieRequest,
+		value)
+
 }
 func (s *service) DeleteInsecureCookie(c echo.Context, name string) {
 	s.insecureCookies.DeleteCookie(c,
@@ -286,29 +295,19 @@ func (s *service) SetExternalOauth2Cookie(c echo.Context, request *contracts_coo
 	if err != nil {
 		return err
 	}
-	b, err := json.Marshal(request.ExternalOAuth2State)
-	if err != nil {
-		return err
-	}
-	value := make(map[string]interface{})
-	err = json.Unmarshal(b, &value)
-	if err != nil {
-		return err
-	}
 	cookieName := s.makeExternalOAuth2CookieName(request.State)
-	_, err = s.secureCookies.SetCookie(c,
-		&fluffycore_contracts_cookies.SetCookieRequest{
-			Name:     cookieName,
-			Value:    value,
-			HttpOnly: false,
-			Expires:  time.Now().Add(30 * time.Minute),
-			Path:     "/",
-			Domain:   s.cookieConfig.Domain,
-		})
-	if err != nil {
-		return err
+
+	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
+		Name: cookieName,
 	}
-	return nil
+	if s.config.DisableSecureCookies {
+		setCookieRequest.HttpOnly = true
+		setCookieRequest.SameSite = 0
+		setCookieRequest.Secure = tPtr(false)
+	}
+	return SetCookieByRequest(c, s.cookieConfig, s.secureCookies, setCookieRequest,
+		request.ExternalOAuth2State)
+
 }
 func (s *service) validateDeleteExternalOauth2CookieRequest(request *contracts_cookies.DeleteExternalOauth2CookieRequest) error {
 	if request == nil {
@@ -379,28 +378,17 @@ func (s *service) SetWebAuthNCookie(c echo.Context, request *contracts_cookies.S
 	if err != nil {
 		return err
 	}
-	b, err := json.Marshal(request.Value)
-	if err != nil {
-		return err
+	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
+		Name: contracts_cookies.CookieNameWebAuthN,
 	}
-	value := make(map[string]interface{})
-	err = json.Unmarshal(b, &value)
-	if err != nil {
-		return err
+	if s.config.DisableSecureCookies {
+		setCookieRequest.HttpOnly = true
+		setCookieRequest.SameSite = 0
+		setCookieRequest.Secure = tPtr(false)
 	}
-	_, err = s.secureCookies.SetCookie(c,
-		&fluffycore_contracts_cookies.SetCookieRequest{
-			Name:     contracts_cookies.CookieNameWebAuthN,
-			Value:    value,
-			HttpOnly: false,
-			Expires:  time.Now().Add(30 * time.Minute),
-			Path:     "/",
-			Domain:   s.cookieConfig.Domain,
-		})
-	if err != nil {
-		return err
-	}
-	return nil
+	return SetCookieByRequest(c, s.cookieConfig, s.secureCookies, setCookieRequest,
+		request.Value)
+
 }
 func (s *service) DeleteWebAuthNCookie(c echo.Context) {
 	s.secureCookies.DeleteCookie(c,
@@ -442,28 +430,16 @@ func (s *service) SetSigninUserNameCookie(c echo.Context, request *contracts_coo
 	if err != nil {
 		return err
 	}
-	b, err := json.Marshal(request.Value)
-	if err != nil {
-		return err
+	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
+		Name: contracts_cookies.CookieNameSigninUserName,
 	}
-	value := make(map[string]interface{})
-	err = json.Unmarshal(b, &value)
-	if err != nil {
-		return err
+	if s.config.DisableSecureCookies {
+		setCookieRequest.HttpOnly = true
+		setCookieRequest.SameSite = 0
+		setCookieRequest.Secure = tPtr(false)
 	}
-	_, err = s.secureCookies.SetCookie(c,
-		&fluffycore_contracts_cookies.SetCookieRequest{
-			Name:     contracts_cookies.CookieNameSigninUserName,
-			Value:    value,
-			HttpOnly: false,
-			Expires:  time.Now().Add(30 * time.Minute),
-			Path:     "/",
-			Domain:   s.cookieConfig.Domain,
-		})
-	if err != nil {
-		return err
-	}
-	return nil
+	return SetCookieByRequest(c, s.cookieConfig, s.secureCookies, setCookieRequest,
+		request.Value)
 }
 func (s *service) DeleteSigninUserNameCookie(c echo.Context) {
 	s.secureCookies.DeleteCookie(c,
@@ -508,28 +484,18 @@ func (s *service) SetErrorCookie(c echo.Context, request *contracts_cookies.SetE
 	if err != nil {
 		return err
 	}
-	b, err := json.Marshal(request.Value)
-	if err != nil {
-		return err
+
+	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
+		Name: contracts_cookies.CookieNameErrorName,
 	}
-	value := make(map[string]interface{})
-	err = json.Unmarshal(b, &value)
-	if err != nil {
-		return err
+	if s.config.DisableSecureCookies {
+		setCookieRequest.HttpOnly = true
+		setCookieRequest.SameSite = 0
+		setCookieRequest.Secure = tPtr(false)
 	}
-	_, err = s.insecureCookies.SetCookie(c,
-		&fluffycore_contracts_cookies.SetCookieRequest{
-			Name:     contracts_cookies.CookieNameErrorName,
-			Value:    value,
-			HttpOnly: false,
-			Expires:  time.Now().Add(30 * time.Minute),
-			Path:     "/",
-			Domain:   s.cookieConfig.Domain,
-		})
-	if err != nil {
-		return err
-	}
-	return nil
+	return SetCookieByRequest(c, s.cookieConfig, s.secureCookies, setCookieRequest,
+		request.Value)
+
 }
 func (s *service) DeleteErrorCookie(c echo.Context) {
 	s.insecureCookies.DeleteCookie(c,

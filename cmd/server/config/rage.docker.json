@@ -18,6 +18,12 @@
     "domain": "${DOMAIN}",
     "developerMode": false
   },
+  "sessionConfig": {
+    "domain": "${COOKIE_DOMAIN}"
+  },
+  "cookieConfig": {
+    "domain": "${COOKIE_DOMAIN}"
+  },
   "totp": {
     "enabled": false,
     "issuerName": "EXAMPLE.RAGE.IDENTITY"
