@@ -1,7 +1,16 @@
 {
   "corsConfig": {
+    "enabled": true,
+    "allowCredentials": true,
+    "unsafeWildcardOriginWithAllowCredentials": true,
     "allowedOrigins": [
-      "https://${DOMAIN}"
+      "http://${DOMAIN}",
+      "http://localhost1.com:3000",
+      "http://localhost1.com:3001",
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:7090",
+      "http://localhost:5108"
     ]
   },
   "emailVerificationRequired": true,
@@ -31,8 +40,6 @@
   "webAuthNConfig": {
     "rpDisplayName": "RAGE",
     "rpID": "${DOMAIN}",
-    "rpOrigins": [
-      "https://${DOMAIN}"
-    ]
+    "rpOrigins": ["https://${DOMAIN}"]
   }
 }

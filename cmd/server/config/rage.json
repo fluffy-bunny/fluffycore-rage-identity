@@ -12,7 +12,7 @@
       "http://localhost1.com:3001",
       "http://localhost:3000",
       "http://localhost:3001",
-      "https://localhost:7090",
+      "http://localhost:7090",
       "http://localhost:5108"
     ]
   },
@@ -41,8 +41,6 @@
     "enabled": true,
     "rpDisplayName": "RAGE",
     "rpID": "${DOMAIN}",
-    "rpOrigins": [
-      "https://${DOMAIN}"
-    ]
+    "rpOrigins": ["https://${DOMAIN}"]
   }
 }

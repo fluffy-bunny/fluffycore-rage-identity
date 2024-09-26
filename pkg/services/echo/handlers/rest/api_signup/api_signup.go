@@ -190,7 +190,9 @@ func (s *service) Do(c echo.Context) error {
 		Password: model.Password,
 	})
 	if err != nil {
-		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
+		response.ErrorReason = models_api_login_models.SignupErrorReason_InvalidPassword
+		response.Message = err.Error()
+		return c.JSONPretty(http.StatusBadRequest, response, "  ")
 	}
 	hashPasswordResponse, err := s.passwordHasher.HashPassword(ctx, &contracts_identity.HashPasswordRequest{
 		Password: model.Password,
