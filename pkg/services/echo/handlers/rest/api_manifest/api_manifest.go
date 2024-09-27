@@ -4,11 +4,14 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
+	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	echo "github.com/labstack/echo/v4"
 )
 
@@ -17,6 +20,7 @@ type (
 		*services_echo_handlers_base.BaseHandler
 
 		webAuthNConfig *contracts_webauthn.WebAuthNConfig
+		oidcSession    contracts_oidc_session.IOIDCSession
 	}
 )
 
@@ -30,11 +34,13 @@ func init() {
 func (s *service) Ctor(
 	container di.Container,
 	webAuthNConfig *contracts_webauthn.WebAuthNConfig,
+	oidcSession contracts_oidc_session.IOIDCSession,
 ) (*service, error) {
 	return &service{
 		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
 
 		webAuthNConfig: webAuthNConfig,
+		oidcSession:    oidcSession,
 	}, nil
 }
 
@@ -80,5 +86,36 @@ func (s *service) Do(c echo.Context) error {
 	if s.webAuthNConfig != nil {
 		response.PasskeyEnabled = s.webAuthNConfig.Enabled
 	}
+	// we may have a session in flight and got redirect back here.
+	// we may have an external OIDC callback that requires a verify code to continue.
+	session, err := s.getSession()
+	if err == nil {
+		sessionRequest, err := session.Get("request")
+		if err == nil {
+			authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
+			// we
+			if authorizationRequest != nil {
+				landingPageI, err := session.Get("landingPage")
+				if err == nil && landingPageI != nil {
+					landingPage, ok := landingPageI.(*manifest.LandingPage)
+					if ok && landingPage != nil && landingPage.Code != "" {
+						response.LandingPage = landingPage
+					}
+					// get rid of it.
+					//session.Set("landingPage", nil)
+					//session.Save()
+				}
+			}
+		}
+
+	}
 	return c.JSONPretty(http.StatusOK, response, "  ")
+}
+func (s *service) getSession() (contracts_sessions.ISession, error) {
+	session, err := s.oidcSession.GetSession()
+
+	if err != nil {
+		return nil, err
+	}
+	return session, nil
 }

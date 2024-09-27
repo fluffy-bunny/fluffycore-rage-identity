@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/gob"
 
+	manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 )
 
@@ -13,7 +14,7 @@ func init() {
 	gob.Register(&proto_oidc_models.AuthorizationRequestState{})
 	gob.Register(&proto_oidc_models.ExternalOauth2State{})
 	gob.Register(&FormParam{})
-
+	gob.Register(&manifest.LandingPage{})
 }
 
 const (

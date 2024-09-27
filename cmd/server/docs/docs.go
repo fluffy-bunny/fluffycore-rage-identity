@@ -1582,9 +1582,23 @@ const docTemplate = `{
                 }
             }
         },
+        "manifest.LandingPage": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "landing_page": {
+                    "$ref": "#/definitions/manifest.Page"
+                }
+            }
+        },
         "manifest.Manifest": {
             "type": "object",
             "properties": {
+                "landing_page": {
+                    "$ref": "#/definitions/manifest.LandingPage"
+                },
                 "passkey_enabled": {
                     "type": "boolean"
                 },
@@ -1595,6 +1609,19 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "manifest.Page": {
+            "type": "string",
+            "enum": [
+                "Login",
+                "VerifyCode",
+                "CreateAccount"
+            ],
+            "x-enum-varnames": [
+                "Login",
+                "VerifyCode",
+                "CreateAccount"
+            ]
         },
         "password.VerifyPasswordStrengthRequest": {
             "type": "object",

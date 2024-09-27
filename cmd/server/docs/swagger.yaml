@@ -282,8 +282,17 @@ definitions:
       slug:
         type: string
     type: object
+  manifest.LandingPage:
+    properties:
+      code:
+        type: string
+      landing_page:
+        $ref: '#/definitions/manifest.Page'
+    type: object
   manifest.Manifest:
     properties:
+      landing_page:
+        $ref: '#/definitions/manifest.LandingPage'
       passkey_enabled:
         type: boolean
       social_idps:
@@ -291,6 +300,16 @@ definitions:
           $ref: '#/definitions/manifest.IDP'
         type: array
     type: object
+  manifest.Page:
+    enum:
+    - Login
+    - VerifyCode
+    - CreateAccount
+    type: string
+    x-enum-varnames:
+    - Login
+    - VerifyCode
+    - CreateAccount
   password.VerifyPasswordStrengthRequest:
     properties:
       password:

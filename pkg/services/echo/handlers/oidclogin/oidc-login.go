@@ -12,6 +12,7 @@ import (
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
+	manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
@@ -108,7 +109,9 @@ type ExternalIDPAuthRequest struct {
 	IDPHint string `param:"idp_hint" query:"idp_hint" form:"idp_hint" json:"idp_hint" xml:"idp_hint"`
 }
 type LoginPostRequest struct {
-	UserName string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
+	UserName         string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
+	Directive        string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
+	VerificationCode string `param:"verificationCode" query:"verificationCode" form:"verificationCode" json:"verificationCode" xml:"verificationCode"`
 }
 
 type row struct {
@@ -184,26 +187,40 @@ func (s *service) DoPost(c echo.Context) error {
 
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
+	var err error
 	model := &LoginPostRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
 		return s.TeleportBackToLogin(c, InternalError_OIDCLogin_099)
 	}
 	log.Debug().Interface("model", model).Msg("model")
-	if fluffycore_utils.IsEmptyOrNil(model.UserName) {
+
+	doVerifyCode := model.Directive == models.MFA_VerifyEmailDirective || model.Directive == models.VerifyEmailDirective
+
+	if !doVerifyCode && fluffycore_utils.IsEmptyOrNil(model.UserName) {
 		return s.DoGet(c)
 	}
 
-	idps, err := s.GetIDPs(ctx)
 	var errors []string
-	if err != nil {
-		errors = append(errors, err.Error())
-	}
+
 	session, err := s.getSession()
 	if err != nil {
-		errors = append(errors, err.Error())
+		return s.DoGet(c)
 	}
 	sessionRequest, err := session.Get("request")
+	if err != nil {
+		return s.DoGet(c)
+	}
+	if doVerifyCode {
+		landingPage := &manifest.LandingPage{
+			Code: model.VerificationCode,
+			Page: manifest.VerifyCode,
+		}
+		session.Set("landingPage", landingPage)
+		session.Save()
+		return s.DoGet(c)
+	}
+	idps, err := s.GetIDPs(ctx)
 	if err != nil {
 		errors = append(errors, err.Error())
 	}

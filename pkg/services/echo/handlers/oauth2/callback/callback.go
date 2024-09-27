@@ -214,12 +214,12 @@ func (s *service) Do(c echo.Context) error {
 
 		if s.config.SystemConfig.DeveloperMode {
 			formParams = append(formParams, models.FormParam{
-				Name:  "code",
+				Name:  "verificationCode",
 				Value: verificationCode,
 			})
 
 		}
-		return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
+		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
 	}
 	getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
 		State: parentState,
