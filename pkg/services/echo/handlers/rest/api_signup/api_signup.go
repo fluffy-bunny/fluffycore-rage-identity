@@ -119,11 +119,11 @@ func (s *service) Do(c echo.Context) error {
 	model := &models_api_login_models.SignupRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	if err := s.validateSignupRequest(model); err != nil {
 		log.Error().Err(err).Msg("validateSignupRequest")
-		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
+		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	response := &models_api_login_models.SignupResponse{
 		Email:       model.Email,
@@ -143,7 +143,7 @@ func (s *service) Do(c echo.Context) error {
 		},
 	})
 	if err != nil {
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	if len(listIDPRequest.Idps) > 0 {
 		// this domain is claimed.
@@ -166,7 +166,7 @@ func (s *service) Do(c echo.Context) error {
 			err = nil
 		} else {
 			log.Error().Err(err).Msg("GetRageUser")
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 	}
 	if getRageUserResponse != nil {
@@ -210,7 +210,7 @@ func (s *service) Do(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("CreateUser")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	if s.config.EmailVerificationRequired {
 		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
@@ -225,7 +225,7 @@ func (s *service) Do(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SetVerificationCodeCookie")
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 		_, err = s.EmailService().SendSimpleEmail(ctx,
 			&contracts_email.SendSimpleEmailRequest{
@@ -238,7 +238,7 @@ func (s *service) Do(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SendSimpleEmail")
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 		if s.config.SystemConfig.DeveloperMode {
 			response.DirectiveEmailCodeChallenge = &models_api_login_models.DirectiveEmailCodeChallenge{

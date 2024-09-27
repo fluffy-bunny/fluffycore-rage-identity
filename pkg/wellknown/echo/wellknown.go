@@ -138,3 +138,7 @@ func GetGithubConfig(c echo.Context, protocol *proto_oidc_models.GithubOAuth2Pro
 	}
 	return &config
 }
+
+type RestErrorResponse struct {
+	Error string `json:"error"`
+}

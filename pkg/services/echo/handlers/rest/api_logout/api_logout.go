@@ -92,11 +92,11 @@ func (s *service) Do(c echo.Context) error {
 	model := &models_api_login_models.LogoutRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	if err := s.validateLogoutRequest(model); err != nil {
 		log.Error().Err(err).Msg("validateLogoutRequest")
-		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
+		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	s.wellknownCookies.DeleteAuthCookie(c)
 

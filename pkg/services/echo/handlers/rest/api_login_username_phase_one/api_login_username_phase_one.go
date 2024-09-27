@@ -117,11 +117,11 @@ func (s *service) Do(c echo.Context) error {
 	model := &login_models.LoginPhaseOneRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	if err := s.validateLoginPhaseOneRequest(model); err != nil {
 		log.Error().Err(err).Msg("validateLoginPhaseOneRequest")
-		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
+		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	response := &login_models.LoginPhaseOneResponse{
 		Email: model.Email,
@@ -129,11 +129,11 @@ func (s *service) Do(c echo.Context) error {
 
 	session, err := s.getSession()
 	if err != nil {
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	sessionRequest, err := session.Get("request")
 	if err != nil {
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 
 	}
 
@@ -144,7 +144,7 @@ func (s *service) Do(c echo.Context) error {
 	email, ok := echo_utils.IsValidEmailAddress(model.Email)
 	if !ok {
 		msg := utils.LocalizeWithInterperlate(localizer, "username.not.valid", map[string]string{"username": model.Email})
-		return c.JSONPretty(http.StatusBadRequest, msg, "  ")
+		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: msg}, "  ")
 	}
 	// get the domain from the email
 	parts := strings.Split(email, "@")
@@ -159,7 +159,7 @@ func (s *service) Do(c echo.Context) error {
 	})
 	if err != nil {
 		log.Warn().Err(err).Msg("ListIDP")
-		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
+		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	if len(listIDPRequest.Idps) > 0 {
 		// an idp has claimed this domain.
@@ -182,12 +182,12 @@ func (s *service) Do(c echo.Context) error {
 	if err != nil {
 		st, ok := status.FromError(err)
 		if ok && st.Code() == codes.NotFound {
-			return c.JSONPretty(http.StatusNotFound, err.Error(), "  ")
+			return c.JSONPretty(http.StatusNotFound, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	if getRageUserResponse == nil {
-		return c.JSONPretty(http.StatusNotFound, "User not found", "  ")
+		return c.JSONPretty(http.StatusNotFound, wellknown_echo.RestErrorResponse{Error: "User not found"}, "  ")
 	}
 	user := getRageUserResponse.User
 	// if email verification is required we will do it in the password phase.
@@ -205,7 +205,7 @@ func (s *service) Do(c echo.Context) error {
 				})
 			if err != nil {
 				log.Error().Err(err).Msg("SetVerificationCodeCookie")
-				return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+				return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 			}
 			_, err = s.EmailService().SendSimpleEmail(ctx,
 				&contracts_email.SendSimpleEmailRequest{
@@ -218,7 +218,7 @@ func (s *service) Do(c echo.Context) error {
 				})
 			if err != nil {
 				log.Error().Err(err).Msg("SendSimpleEmail")
-				return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+				return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 			}
 			if s.config.SystemConfig.DeveloperMode {
 				response.DirectiveEmailCodeChallenge = &login_models.DirectiveEmailCodeChallenge{
@@ -246,7 +246,7 @@ func (s *service) Do(c echo.Context) error {
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("SetSigninUserNameCookie")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	response.Directive = login_models.DIRECTIVE_LoginPhaseOne_DisplayPasswordPage
 	response.DirectiveDisplayPasswordPage = &login_models.DirectiveDisplayPasswordPage{

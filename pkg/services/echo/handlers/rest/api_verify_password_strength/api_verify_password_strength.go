@@ -82,17 +82,17 @@ func (s *service) Do(c echo.Context) error {
 	model := &password.VerifyPasswordStrengthRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	if err := s.validateVerifyPasswordStrengthRequest(model); err != nil {
 		log.Error().Err(err).Msg("validateVerifyUsernameRequest")
-		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
+		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	err := s.passwordHasher.IsAcceptablePassword(&contracts_identity.IsAcceptablePasswordRequest{
 		Password: model.Password,
 	})
 	if err != nil {
-		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
+		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	response := &password.VerifyPasswordStrengthResponse{
 		Valid: true,

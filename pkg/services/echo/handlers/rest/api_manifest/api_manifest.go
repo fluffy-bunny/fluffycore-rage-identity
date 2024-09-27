@@ -66,7 +66,7 @@ func (s *service) Do(c echo.Context) error {
 
 	idps, err := s.GetIDPs(ctx)
 	if err != nil {
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	response := &manifest.Manifest{}
 	for _, idp := range idps {
