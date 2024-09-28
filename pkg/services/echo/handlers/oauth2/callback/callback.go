@@ -174,7 +174,9 @@ func (s *service) Do(c echo.Context) error {
 					Subject:           user.RootIdentity.Subject,
 					Email:             user.RootIdentity.Email,
 					Code:              verificationCode,
-					VerifyCodePurpose: purpose},
+					VerifyCodePurpose: purpose,
+					DevelopmentMode:   s.config.SystemConfig.DeveloperMode,
+				},
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SetVerificationCodeCookie")
@@ -211,14 +213,15 @@ func (s *service) Do(c echo.Context) error {
 				Value: "GET",
 			},
 		}
+		/*
+			if s.config.SystemConfig.DeveloperMode {
+				formParams = append(formParams, models.FormParam{
+					Name:  "verificationCode",
+					Value: verificationCode,
+				})
 
-		if s.config.SystemConfig.DeveloperMode {
-			formParams = append(formParams, models.FormParam{
-				Name:  "verificationCode",
-				Value: verificationCode,
-			})
-
-		}
+			}
+		*/
 		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
 	}
 	getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{

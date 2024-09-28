@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
+	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
@@ -18,9 +20,11 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
+		config *contracts_config.Config
 
-		webAuthNConfig *contracts_webauthn.WebAuthNConfig
-		oidcSession    contracts_oidc_session.IOIDCSession
+		webAuthNConfig   *contracts_webauthn.WebAuthNConfig
+		oidcSession      contracts_oidc_session.IOIDCSession
+		wellknownCookies contracts_cookies.IWellknownCookies
 	}
 )
 
@@ -33,14 +37,18 @@ func init() {
 
 func (s *service) Ctor(
 	container di.Container,
+	config *contracts_config.Config,
 	webAuthNConfig *contracts_webauthn.WebAuthNConfig,
 	oidcSession contracts_oidc_session.IOIDCSession,
+	wellknownCookies contracts_cookies.IWellknownCookies,
 ) (*service, error) {
 	return &service{
 		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
 
-		webAuthNConfig: webAuthNConfig,
-		oidcSession:    oidcSession,
+		config:           config,
+		webAuthNConfig:   webAuthNConfig,
+		oidcSession:      oidcSession,
+		wellknownCookies: wellknownCookies,
 	}, nil
 }
 
@@ -74,7 +82,9 @@ func (s *service) Do(c echo.Context) error {
 	if err != nil {
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
-	response := &manifest.Manifest{}
+	response := &manifest.Manifest{
+		DevelopmentMode: s.config.SystemConfig.DeveloperMode,
+	}
 	for _, idp := range idps {
 		if idp.Enabled && !idp.Hidden {
 			response.SocialIdps = append(response.SocialIdps, manifest.IDP{
@@ -98,7 +108,7 @@ func (s *service) Do(c echo.Context) error {
 				landingPageI, err := session.Get("landingPage")
 				if err == nil && landingPageI != nil {
 					landingPage, ok := landingPageI.(*manifest.LandingPage)
-					if ok && landingPage != nil && landingPage.Code != "" {
+					if ok && landingPage != nil {
 						response.LandingPage = landingPage
 					}
 					// get rid of it.

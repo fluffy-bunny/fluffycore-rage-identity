@@ -284,13 +284,13 @@ definitions:
     type: object
   manifest.LandingPage:
     properties:
-      code:
-        type: string
-      landing_page:
+      page:
         $ref: '#/definitions/manifest.Page'
     type: object
   manifest.Manifest:
     properties:
+      development_mode:
+        type: boolean
       landing_page:
         $ref: '#/definitions/manifest.LandingPage'
       passkey_enabled:
@@ -320,6 +320,17 @@ definitions:
   password.VerifyPasswordStrengthResponse:
     properties:
       valid:
+        type: boolean
+    type: object
+  verify_code.VerifyCodeBeginResponse:
+    properties:
+      code:
+        description: Code is supplied only if in development mode
+        type: string
+      email:
+        type: string
+      valid:
+        description: Valid is true if we truely are doing a code verification
         type: boolean
     type: object
   verify_username.VerifyUsernameResponse:
@@ -787,6 +798,19 @@ paths:
           schema:
             type: string
       summary: verify code.
+      tags:
+      - root
+  /api/verify-code-begin:
+    get:
+      description: Validates if we can do a verification code flow
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/verify_code.VerifyCodeBeginResponse'
+      summary: get the login manifest.
       tags:
       - root
   /api/verify-password-strength:

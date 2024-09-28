@@ -37,6 +37,7 @@ type (
 		Email             string            `json:"email"`
 		Subject           string            `json:"subject"`
 		VerifyCodePurpose VerifyCodePurpose `json:"verifyCodePurpose"`
+		DevelopmentMode   bool              `json:"developmentMode"`
 	}
 	GetVerificationCodeCookieResponse struct {
 		VerificationCode *VerificationCode `json:"verificationCode"`

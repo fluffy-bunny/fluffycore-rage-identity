@@ -700,6 +700,26 @@
                 }
             }
         },
+        "/api/verify-code-begin": {
+            "get": {
+                "description": "Validates if we can do a verification code flow",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the login manifest.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/verify_code.VerifyCodeBeginResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/verify-password-strength": {
             "post": {
                 "description": "This is the configuration of the server..",
@@ -1579,10 +1599,7 @@
         "manifest.LandingPage": {
             "type": "object",
             "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "landing_page": {
+                "page": {
                     "$ref": "#/definitions/manifest.Page"
                 }
             }
@@ -1590,6 +1607,9 @@
         "manifest.Manifest": {
             "type": "object",
             "properties": {
+                "development_mode": {
+                    "type": "boolean"
+                },
                 "landing_page": {
                     "$ref": "#/definitions/manifest.LandingPage"
                 },
@@ -1632,6 +1652,22 @@
             "type": "object",
             "properties": {
                 "valid": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "verify_code.VerifyCodeBeginResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "Code is supplied only if in development mode",
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "valid": {
+                    "description": "Valid is true if we truely are doing a code verification",
                     "type": "boolean"
                 }
             }

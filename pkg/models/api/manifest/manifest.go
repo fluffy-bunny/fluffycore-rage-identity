@@ -6,13 +6,13 @@ type (
 		Slug string `json:"slug"`
 	}
 	Manifest struct {
-		SocialIdps     []IDP        `json:"social_idps"`
-		PasskeyEnabled bool         `json:"passkey_enabled"`
-		LandingPage    *LandingPage `json:"landing_page"`
+		SocialIdps      []IDP        `json:"social_idps"`
+		PasskeyEnabled  bool         `json:"passkey_enabled"`
+		LandingPage     *LandingPage `json:"landing_page"`
+		DevelopmentMode bool         `json:"development_mode"`
 	}
 	LandingPage struct {
-		Code string `json:"code"`
-		Page Page   `json:"page"`
+		Page Page `json:"page"`
 	}
 )
 

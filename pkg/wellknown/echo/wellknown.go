@@ -58,6 +58,7 @@ var (
 	API_LoginPhaseOne          = "/api/login-phase-one"
 	API_LoginPassword          = "/api/login-password"
 	API_VerifyCode             = "/api/verify-code"
+	API_VerifyCodeBegin        = "/api/verify-code-begin"
 	API_Signup                 = "/api/signup"
 	API_PasswordResetStart     = "/api/password-reset-start"
 	API_PasswordResetFinish    = "/api/password-reset-finish"

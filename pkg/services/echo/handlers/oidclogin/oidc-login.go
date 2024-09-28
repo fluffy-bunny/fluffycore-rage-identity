@@ -109,9 +109,8 @@ type ExternalIDPAuthRequest struct {
 	IDPHint string `param:"idp_hint" query:"idp_hint" form:"idp_hint" json:"idp_hint" xml:"idp_hint"`
 }
 type LoginPostRequest struct {
-	UserName         string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
-	Directive        string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
-	VerificationCode string `param:"verificationCode" query:"verificationCode" form:"verificationCode" json:"verificationCode" xml:"verificationCode"`
+	UserName  string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
+	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
 }
 
 type row struct {
@@ -213,7 +212,6 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 	if doVerifyCode {
 		landingPage := &manifest.LandingPage{
-			Code: model.VerificationCode,
 			Page: manifest.VerifyCode,
 		}
 		session.Set("landingPage", landingPage)
