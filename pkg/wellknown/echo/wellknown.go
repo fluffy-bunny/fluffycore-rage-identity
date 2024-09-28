@@ -50,6 +50,7 @@ var (
 	WebAuthN_Login_Finish                            = "/webauthn/login/finish"
 
 	API_Manifest               = "/api/manifest"
+	API_StartOver              = "/api/start-over"
 	API_Start_ExternalLogin    = "/api/start-external-login"
 	API_VerifyUsername         = "/api/verify-username"
 	API_UserIdentityInfo       = "/api/user-identity-info"

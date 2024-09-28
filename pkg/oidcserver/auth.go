@@ -33,6 +33,8 @@ func CSRFSkipperPaths() map[string]bool {
 			wellknown_echo.OAuth2TokenEndpointPath:         true,
 			wellknown_echo.UserInfoPath:                    true,
 			wellknown_echo.API_Manifest:                    true,
+			wellknown_echo.API_StartOver:                   true,
+			wellknown_echo.API_VerifyCodeBegin:             true,
 		}
 	}
 	return csrfSkipperPaths
@@ -63,6 +65,7 @@ func RequiresNoAuth() map[string]bool {
 			wellknown_echo.OIDCLoginPath:                 true,
 
 			wellknown_echo.API_Manifest:               true,
+			wellknown_echo.API_StartOver:              true,
 			wellknown_echo.API_Start_ExternalLogin:    true,
 			wellknown_echo.API_VerifyUsername:         true,
 			wellknown_echo.API_VerifyPasswordStrength: true,

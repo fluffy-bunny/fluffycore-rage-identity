@@ -599,6 +599,19 @@ paths:
       summary: starts an external login ceremony with an external IDP
       tags:
       - root
+  /api/start-over:
+    get:
+      description: This is the configuration of the server..
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/manifest.Manifest'
+      summary: start over and return the original manifest.
+      tags:
+      - root
   /api/user-identity-info:
     get:
       description: get the highlevel UserIdentityInfo post login.

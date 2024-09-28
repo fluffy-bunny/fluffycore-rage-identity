@@ -400,6 +400,26 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/start-over": {
+            "get": {
+                "description": "This is the configuration of the server..",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "start over and return the original manifest.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/manifest.Manifest"
+                        }
+                    }
+                }
+            }
+        },
         "/api/user-identity-info": {
             "get": {
                 "description": "get the highlevel UserIdentityInfo post login.",
