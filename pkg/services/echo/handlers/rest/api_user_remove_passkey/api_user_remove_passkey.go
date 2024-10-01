@@ -7,7 +7,7 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_user_remove_passkey"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	proto_types_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types/webauthn"
@@ -92,9 +92,9 @@ func (s *service) validateRemovePasskeyRequest(model *api_user_remove_passkey.Re
 // @Produce json
 // @Param		request body		api_user_remove_passkey.RemovePasskeyRequest	true	"RemovePasskeyRequest"
 // @Success 200 {object} api_user_remove_passkey.RemovePasskeyResonse
-// @Failure 400 {string} string
+// @Failure 400 {object} wellknown_echo.RestErrorResponse
 // @Failure 401 {string} string
-// @Failure 404 {string} string
+// @Failure 404 {object} wellknown_echo.RestErrorResponse
 // @Failure 500 {object} api_user_remove_passkey.RemovePasskeyResonse
 // @Router /api/user-remove-passkey [post]
 func (s *service) Do(c echo.Context) error {

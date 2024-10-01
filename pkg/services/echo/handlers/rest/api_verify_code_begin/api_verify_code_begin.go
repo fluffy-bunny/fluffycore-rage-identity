@@ -9,7 +9,7 @@ import (
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	verify_code "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/verify_code"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	echo "github.com/labstack/echo/v4"
@@ -70,6 +70,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Tags root
 // @Produce json
 // @Success 200 {object} verify_code.VerifyCodeBeginResponse
+// @Failure 500 {object} wellknown_echo.RestErrorResponse
 // @Router /api/verify-code-begin [get]
 func (s *service) Do(c echo.Context) error {
 	ctx := c.Request().Context()

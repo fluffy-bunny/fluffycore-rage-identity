@@ -10,7 +10,7 @@ import (
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"

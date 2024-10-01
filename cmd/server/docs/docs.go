@@ -150,19 +150,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     }
                 }
@@ -202,13 +202,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     }
                 }
@@ -354,7 +354,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     }
                 }
@@ -446,13 +446,13 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     }
                 }
@@ -484,13 +484,13 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     }
                 }
@@ -531,13 +531,13 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     }
                 }
@@ -569,13 +569,13 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     }
                 }
@@ -613,19 +613,19 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     }
                 }
@@ -662,7 +662,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "401": {
@@ -674,7 +674,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "500": {
@@ -741,6 +741,12 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/verify_code.VerifyCodeBeginResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     }
                 }
@@ -1266,6 +1272,10 @@ const docTemplate = `{
         "api_user_profile.Profile": {
             "type": "object",
             "properties": {
+                "email": {
+                    "description": "not editable",
+                    "type": "string"
+                },
                 "familyName": {
                     "type": "string"
                 },
@@ -1705,6 +1715,14 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "userName": {
+                    "type": "string"
+                }
+            }
+        },
+        "wellknown_echo.RestErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
                     "type": "string"
                 }
             }

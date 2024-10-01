@@ -8,7 +8,7 @@ import (
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_user_identity_info"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
@@ -82,8 +82,8 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Produce json
 // @Success 200 {object} api_user_identity_info.UserIdentityInfo
 // @Failure 401 {string} string
-// @Failure 404 {string} string
-// @Failure 500 {string} string
+// @Failure 404 {object} wellknown_echo.RestErrorResponse
+// @Failure 500 {object} wellknown_echo.RestErrorResponse
 // @Router /api/user-identity-info [get]
 func (s *service) Do(c echo.Context) error {
 	ctx := c.Request().Context()

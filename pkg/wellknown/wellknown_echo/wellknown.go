@@ -1,4 +1,4 @@
-package echo
+package wellknown_echo
 
 import (
 	"fmt"

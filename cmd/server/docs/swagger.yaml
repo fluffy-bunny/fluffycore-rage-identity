@@ -48,6 +48,9 @@ definitions:
     type: object
   api_user_profile.Profile:
     properties:
+      email:
+        description: not editable
+        type: string
       familyName:
         type: string
       givenName:
@@ -340,6 +343,11 @@ definitions:
       userName:
         type: string
     type: object
+  wellknown_echo.RestErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
 host: localhost:9044
 info:
   contact:
@@ -436,15 +444,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "404":
           description: Not Found
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: get the login manifest.
       tags:
       - root
@@ -470,11 +478,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: Logout.
       tags:
       - root
@@ -569,7 +577,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: verify code.
       tags:
       - root
@@ -629,11 +637,11 @@ paths:
         "404":
           description: Not Found
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: get the highlevel UserIdentityInfo post login.
       tags:
       - root
@@ -654,11 +662,11 @@ paths:
         "404":
           description: Not Found
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: get the users linked accounts.
       tags:
       - root
@@ -685,11 +693,11 @@ paths:
         "404":
           description: Not Found
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: delete a users linked identity.
       tags:
       - root
@@ -710,11 +718,11 @@ paths:
         "404":
           description: Not Found
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: set user profile.
       tags:
       - root
@@ -739,15 +747,15 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "404":
           description: Not Found
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: get user profile.
       tags:
       - root
@@ -771,7 +779,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "401":
           description: Unauthorized
           schema:
@@ -779,7 +787,7 @@ paths:
         "404":
           description: Not Found
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -823,6 +831,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/verify_code.VerifyCodeBeginResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: get the login manifest.
       tags:
       - root

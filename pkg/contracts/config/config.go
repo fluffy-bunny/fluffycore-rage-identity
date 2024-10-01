@@ -137,9 +137,9 @@ const configDefaultJSONTemplate = `
 	"corsConfig": {
 		"enabled": true,
 		"allowedOrigins": ["*"],
-		"allowedMethods": [],
-		"allowedHeaders": [],
-		"allowCredentials": false,
+		"allowedMethods": ["GET", "POST", "PUT", "DELETE"],
+		"allowedHeaders": ["Authorization", "Content-Type", "x-csrf-token"],
+		"allowCredentials": true,
 		"unsafeWildcardOriginWithAllowCredentials": false,
 		"exposeHeaders": [],
 		"maxAge": 0

@@ -281,7 +281,6 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 
 	e.Use(EnsureCookieClaimsPrincipal(root))
 	e.Use(EnsureLocalizer(root))
-	e.Use(EnsureAuth(root))
 	if s.config.CORSConfig.Enabled {
 		e.Use(echo_middleware.CORSWithConfig(echo_middleware.CORSConfig{
 			AllowOrigins:                             s.config.CORSConfig.AllowedOrigins,
@@ -293,6 +292,8 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 			MaxAge:                                   s.config.CORSConfig.MaxAge,
 		}))
 	}
+	e.Use(EnsureAuth(root))
+
 	return nil
 }
 func EnsureLocalizer(_ di.Container) echo.MiddlewareFunc {

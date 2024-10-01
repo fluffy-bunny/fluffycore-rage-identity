@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	echo "github.com/labstack/echo/v4"
@@ -35,6 +35,8 @@ func CSRFSkipperPaths() map[string]bool {
 			wellknown_echo.API_Manifest:                    true,
 			wellknown_echo.API_StartOver:                   true,
 			wellknown_echo.API_VerifyCodeBegin:             true,
+			wellknown_echo.API_UserIdentityInfo:            true,
+			wellknown_echo.API_UserProfilePath:             true,
 		}
 	}
 	return csrfSkipperPaths

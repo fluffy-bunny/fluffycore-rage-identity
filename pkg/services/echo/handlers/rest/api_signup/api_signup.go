@@ -15,7 +15,7 @@ import (
 	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
@@ -110,7 +110,7 @@ func (s *service) validateSignupRequest(model *models_api_login_models.SignupReq
 // @Success 200 {object} login_models.SignupResponse
 // @Failure 302 {string} login_models.SignupResponse
 // @Failure 400 {string} login_models.SignupResponse
-// @Failure 500 {string} string
+// @Failure 500 {object} wellknown_echo.RestErrorResponse
 // @Router /api/signup [post]
 func (s *service) Do(c echo.Context) error {
 
