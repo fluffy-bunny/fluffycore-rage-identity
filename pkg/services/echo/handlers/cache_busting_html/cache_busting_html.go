@@ -1,25 +1,20 @@
 package cache_busting_html
 
 import (
-	"fmt"
 	"net/http"
 	"os"
-	"regexp"
 	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v4"
 	xid "github.com/rs/xid"
 )
 
 type (
-	Config struct {
-		FilePath string `json:"filePath"`
-		URIPath  string `json:"uriPath"`
-	}
 	service struct {
-		config          *Config
+		config          *contracts_config.CacheBustingHTMLConfig
 		modifiedContent string
 	}
 )
@@ -29,7 +24,7 @@ var stemService = (*service)(nil)
 var _ contracts_handler.IHandler = stemService
 
 // AddScopedIHandler registers the *service as a singleton.
-func AddScopedIHandler(builder di.ContainerBuilder, config *Config) {
+func AddScopedIHandler(builder di.ContainerBuilder, config *contracts_config.CacheBustingHTMLConfig) {
 
 	// load the index.html file and cache bust it
 
@@ -40,11 +35,12 @@ func AddScopedIHandler(builder di.ContainerBuilder, config *Config) {
 	}
 	// Generate a unique GUID for cache busting
 	guid := xid.New().String()
-	// Replace <script src="..."></script> with cache-busted versions
-	re := regexp.MustCompile(`<script src="([^"]+)"></script>`)
-	modifiedContent := re.ReplaceAllStringFunc(string(indexContent), func(match string) string {
-		return strings.Replace(match, `">`, fmt.Sprintf(`?_cacheBust=%s">`, guid), 1)
-	})
+	// Convert the content to a string
+	contentStr := string(indexContent)
+
+	// Replace all instances of {version} with "guid"
+	modifiedContent := strings.ReplaceAll(contentStr, "{version}", guid)
+
 	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
 		func() (*service, error) {
 			return &service{
@@ -54,6 +50,7 @@ func AddScopedIHandler(builder di.ContainerBuilder, config *Config) {
 		},
 		[]contracts_handler.HTTPVERB{
 			contracts_handler.GET,
+			contracts_handler.POST,
 		},
 		config.URIPath,
 	)
@@ -65,5 +62,13 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 func (s *service) Do(c echo.Context) error {
-	return c.HTML(http.StatusOK, s.modifiedContent)
+	r := c.Request()
+	// is the request get or post?
+	switch r.Method {
+	case http.MethodGet, http.MethodPost:
+		return c.HTML(http.StatusOK, s.modifiedContent)
+	}
+	// return not found
+	return c.NoContent(http.StatusNotFound)
+
 }

@@ -169,7 +169,10 @@ func (s *service) DoGet(c echo.Context) error {
 	if err != nil {
 		errors = append(errors, err.Error())
 	}
-
+	if s.config.OIDCUIConfig.URIEntryPath != wellknown_echo.OIDCLoginPath {
+		// we redirect over to URIEntryPath
+		return c.Redirect(http.StatusFound, s.config.OIDCUIConfig.URIEntryPath)
+	}
 	return s.Render(c, http.StatusOK, "oidc/oidclogin/index",
 		map[string]interface{}{
 			"errors":    errors,
@@ -233,6 +236,10 @@ func (s *service) DoPost(c echo.Context) error {
 		msg := utils.LocalizeWithInterperlate(localizer, "username.not.valid", map[string]string{"username": model.UserName})
 
 		errors = append(errors, msg)
+		if s.config.OIDCUIConfig.URIEntryPath != wellknown_echo.OIDCLoginPath {
+			// we redirect over to URIEntryPath
+			return c.Redirect(http.StatusFound, s.config.OIDCUIConfig.URIEntryPath)
+		}
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"idps":      idps,
@@ -255,6 +262,10 @@ func (s *service) DoPost(c echo.Context) error {
 	if err != nil {
 		log.Warn().Err(err).Msg("ListIDP")
 		errors = append(errors, err.Error())
+		if s.config.OIDCUIConfig.URIEntryPath != wellknown_echo.OIDCLoginPath {
+			// we redirect over to URIEntryPath
+			return c.Redirect(http.StatusFound, s.config.OIDCUIConfig.URIEntryPath)
+		}
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"state":     authorizationRequest.State,
@@ -302,6 +313,10 @@ func (s *service) DoPost(c echo.Context) error {
 		msg := utils.LocalizeWithInterperlate(localizer, "username.not.found", map[string]string{"username": model.UserName})
 
 		errors = append(errors, msg)
+		if s.config.OIDCUIConfig.URIEntryPath != wellknown_echo.OIDCLoginPath {
+			// we redirect over to URIEntryPath
+			return c.Redirect(http.StatusFound, s.config.OIDCUIConfig.URIEntryPath)
+		}
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"state":     authorizationRequest.State,
@@ -314,7 +329,10 @@ func (s *service) DoPost(c echo.Context) error {
 	if err != nil {
 		log.Warn().Err(err).Msg("ListUser")
 		errors = append(errors, err.Error())
-
+		if s.config.OIDCUIConfig.URIEntryPath != wellknown_echo.OIDCLoginPath {
+			// we redirect over to URIEntryPath
+			return c.Redirect(http.StatusFound, s.config.OIDCUIConfig.URIEntryPath)
+		}
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"state":     authorizationRequest.State,

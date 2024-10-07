@@ -9,6 +9,7 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	oidcserver "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/oidcserver"
+	oidcuiserver "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/oidcuiserver"
 	services "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services"
 	services_health "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/health"
 	pkg_types "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/types"
@@ -48,7 +49,11 @@ type (
 
 		oidcserverFuture  async.Future[*fluffycore_async.AsyncResponse]
 		oidcserverRuntime *core_echo_runtime.Runtime
-		ext               pkg_types.ConfigureServices
+
+		oidcuiserverFuture  async.Future[*fluffycore_async.AsyncResponse]
+		oidcuiserverRuntime *core_echo_runtime.Runtime
+
+		ext pkg_types.ConfigureServices
 	}
 )
 type WithOption func(startup *startup)
@@ -246,6 +251,25 @@ func (s *startup) OnPreServerStartup(ctx context.Context) error {
 		}
 	})
 
+	s.oidcuiserverRuntime = core_echo_runtime.New(oidcuiserver.NewStartup(
+		oidcuiserver.WithConfigureServices(func(ctx context.Context, builder di.ContainerBuilder) {
+
+		}),
+	))
+	s.oidcuiserverFuture = fluffycore_async.ExecuteWithPromiseAsync(func(promise async.Promise[*fluffycore_async.AsyncResponse]) {
+		var err error
+		defer func() {
+			promise.Success(&fluffycore_async.AsyncResponse{
+				Message: "End Serve - echoServer",
+				Error:   err,
+			})
+		}()
+		log.Info().Msg("echoServer starting up")
+		err = s.oidcuiserverRuntime.Run()
+		if err != nil {
+			log.Error().Err(err).Msg("failed to start server")
+		}
+	})
 	return nil
 }
 

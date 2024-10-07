@@ -362,6 +362,21 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
+  /:
+    get:
+      consumes:
+      - '*/*'
+      description: get the home page.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: get the home page.
+      tags:
+      - root
   /.well-known/jwks:
     get:
       consumes:
@@ -390,6 +405,19 @@ paths:
           schema:
             type: string
       summary: Show the status of server.
+      tags:
+      - root
+  /api/appsettings:
+    get:
+      description: This is the configuration of the server..
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+      summary: get the app settings
       tags:
       - root
   /api/login-password:
@@ -817,7 +845,7 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: verify code.
       tags:
       - root

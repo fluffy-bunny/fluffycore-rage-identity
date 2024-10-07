@@ -58,6 +58,7 @@ func main() {
 	startup := pkg_runtime.NewStartup(
 		pkg_runtime.WithConfigureServices(MyConfigServices),
 	)
+	fmt.Printf("Version: %s\n", pkg_version.Version())
 	fluffycore_cobracore_cmd.SetVersion(pkg_version.Version())
 	fluffycore_cobracore_cmd.Execute(startup)
 }

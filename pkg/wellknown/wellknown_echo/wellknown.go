@@ -49,6 +49,7 @@ var (
 	WebAuthN_Login_Begin                             = "/webauthn/login/begin"
 	WebAuthN_Login_Finish                            = "/webauthn/login/finish"
 
+	API_AppSettings            = "/api/appsettings"
 	API_Manifest               = "/api/manifest"
 	API_StartOver              = "/api/start-over"
 	API_Start_ExternalLogin    = "/api/start-external-login"

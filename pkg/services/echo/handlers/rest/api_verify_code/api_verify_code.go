@@ -96,7 +96,7 @@ func (s *service) validateVerifyCodeRequest(model *login_models.VerifyCodeReques
 // @Produce json
 // @Param		request body		login_models.VerifyCodeRequest	true	"VerifyCodeRequest"
 // @Success 200 {object} login_models.VerifyCodeResponse
-// @Failure 401 {string} string
+// @Failure 401 {object} wellknown_echo.RestErrorResponse
 // @Router /api/verify-code [post]
 func (s *service) Do(c echo.Context) error {
 
@@ -123,7 +123,8 @@ func (s *service) Do(c echo.Context) error {
 	verificationCode := getVerificationCodeCookieResponse.VerificationCode
 	code := verificationCode.Code
 	if code != model.Code {
-		return c.JSONPretty(http.StatusNotFound, "code does not match", "  ")
+		err := status.Error(codes.NotFound, "code does not match")
+		return c.JSONPretty(http.StatusNotFound, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	userService := s.RageUserService()
 	getRageUserResponse, err := userService.GetRageUser(ctx,
@@ -136,7 +137,8 @@ func (s *service) Do(c echo.Context) error {
 		log.Error().Err(err).Msg("GetRageUser")
 		st, ok := status.FromError(err)
 		if ok && st.Code() == codes.NotFound {
-			return c.JSONPretty(http.StatusNotFound, "User not found", "  ")
+			err := status.Error(codes.NotFound, "User not found")
+			return c.JSONPretty(http.StatusNotFound, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
