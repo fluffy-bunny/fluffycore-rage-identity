@@ -7,6 +7,7 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
+	pkg_version "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/version"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v4"
 	xid "github.com/rs/xid"
@@ -35,6 +36,9 @@ func AddScopedIHandler(builder di.ContainerBuilder, config *contracts_config.Cac
 	}
 	// Generate a unique GUID for cache busting
 	guid := xid.New().String()
+	if pkg_version.Version() != "dev-build" {
+		guid = pkg_version.Version()
+	}
 	// Convert the content to a string
 	contentStr := string(indexContent)
 

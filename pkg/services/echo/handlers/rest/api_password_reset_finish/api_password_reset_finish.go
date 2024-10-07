@@ -2,6 +2,7 @@ package api_password_reset_finish
 
 import (
 	"net/http"
+	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
@@ -114,6 +115,16 @@ func (s *service) Do(c echo.Context) error {
 	}
 	if err := s.validatePasswordResetFinishRequest(model); err != nil {
 		log.Error().Err(err).Msg("validatePasswordResetFinishRequest")
+		errMsg := err.Error()
+		if status.Convert(err).Code() == codes.InvalidArgument {
+			if strings.Contains(errMsg, "do not match") {
+				response := &login_models.PasswordResetFinishResponse{
+					Directive:   login_models.DIRECTIVE_PasswordReset_DisplayPasswordResetPage,
+					ErrorReason: login_models.PasswordResetErrorReason_PasswordsDoNotMatch,
+				}
+				return c.JSONPretty(http.StatusBadRequest, response, "  ")
+			}
+		}
 		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 

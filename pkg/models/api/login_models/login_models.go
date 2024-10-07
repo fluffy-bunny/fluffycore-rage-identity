@@ -23,6 +23,7 @@ type PasswordResetErrorReason int
 const (
 	PasswordResetErrorReason_NoError PasswordResetErrorReason = iota
 	PasswordResetErrorReason_InvalidPassword
+	PasswordResetErrorReason_PasswordsDoNotMatch
 )
 
 type (
