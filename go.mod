@@ -40,7 +40,7 @@ require (
 	github.com/xlzd/gotp v0.1.0
 	golang.org/x/net v0.29.0
 	golang.org/x/oauth2 v0.23.0
-	golang.org/x/text v0.18.0
+	golang.org/x/text v0.19.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240903143218-8af14fe29dc1
 	google.golang.org/grpc v1.66.2
 	google.golang.org/protobuf v1.34.2
