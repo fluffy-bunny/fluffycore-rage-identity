@@ -267,6 +267,7 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 		CookieSecure:   false,
 		CookieHTTPOnly: httpOnly,
 		CookieSameSite: sameSite,
+		CookieDomain:  s.config.CookieConfig.Domain,
 		Skipper: func(c echo.Context) bool {
 			if s.config.CSRFConfig.SkipApi {
 				if strings.Contains(c.Request().URL.Path, "/api") {

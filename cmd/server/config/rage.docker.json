@@ -5,6 +5,8 @@
     "unsafeWildcardOriginWithAllowCredentials": true,
     "allowedOrigins": [
       "http://${DOMAIN}",
+      "https://${DOMAIN_OIDC}",
+      "https://${DOMAIN_ACCOUNT}",
       "http://localhost1.com:3000",
       "http://localhost1.com:3001",
       "http://localhost:3000",
