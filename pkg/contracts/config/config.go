@@ -89,8 +89,10 @@ type (
 		IssuerName string `json:"issuerName"`
 	}
 	CacheBustingHTMLConfig struct {
-		FilePath string `json:"filePath"`
-		URIPath  string `json:"uriPath"`
+		FilePath   string `json:"filePath"`
+		EchoPath   string `json:"echoPath"`
+		StaticPath string `json:"staticPath"`
+		RootPath   string `json:"rootPath"`
 	}
 	OIDCUIConfig struct {
 		AppSettings        *models_api_appsettings.OIDCUIAppSettings `json:"appSettings"`
@@ -155,10 +157,12 @@ const configDefaultJSONTemplate = `
 			"baseApiUrl": ""
 		},
 		"staticFilePath": "./static",
-		"uriEntryPath": "/oidc-login",
+		"uriEntryPath": "/oidc-login-ui/",
 		"cacheBustingConfig": {
 			"filePath": "IN_ENVIRONMENT",
-			"uriPath": "IN_ENVIRONMENT"
+            "staticPath": "IN_ENVIRONMENT",
+            "rootPath": "/oidc-login-ui/",
+			"echoPath": "/oidc-login-ui/*"
 		}
 	},
     "oidcUIAppSettings": {

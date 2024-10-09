@@ -25,6 +25,8 @@ var (
 	OAuth2TokenEndpointPath                          = "/token"
 	OIDCAuthorizationEndpointPath                    = "/oidc/v1/auth"
 	OIDCLoginPath                                    = "/oidc-login"
+	OIDCLoginUIPath                                  = "/oidc-login-ui"
+	OIDCLoginUIStaticPath                            = "/oidc-login-ui/*"
 	OIDCLoginPasskeyPath                             = "/oidc-login-passkey"
 	OIDCLoginPasswordPath                            = "/oidc-login-password"
 	OIDCLoginTOTPPath                                = "/oidc-login-totp"

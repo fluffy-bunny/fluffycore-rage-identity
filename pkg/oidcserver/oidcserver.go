@@ -14,6 +14,7 @@ import (
 	services "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services"
 	services_handlers_api "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/api"
 	services_handlers_authorization_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/authorization_endpoint"
+	services_handlers_cache_busting_static_html "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/cache_busting_static_html"
 	services_handlers_discovery_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/discovery_endpoint"
 	services_handlers_error "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/error"
 	services_handlers_externalidp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/externalidp"
@@ -53,6 +54,7 @@ import (
 	services_handlers_webauthn_registrationfinish "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn/registrationfinish"
 	services_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/oidc_session"
 	pkg_types "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/types"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidcuser "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
@@ -225,6 +227,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_verifycode.AddScopedIHandler(builder)
 	services_handlers_passwordreset.AddScopedIHandler(builder)
 	services_handlers_api.AddScopedIHandler(builder)
+	services_handlers_cache_busting_static_html.AddScopedIHandler(builder, s.config.OIDCUIConfig.CacheBustingConfig)
 
 	if s.config.WebAuthNConfig != nil && s.config.WebAuthNConfig.Enabled {
 		services_handlers_oidcloginpasskey.AddScopedIHandler(builder)
@@ -267,7 +270,7 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 		CookieSecure:   false,
 		CookieHTTPOnly: httpOnly,
 		CookieSameSite: sameSite,
-		CookieDomain:  s.config.CookieConfig.Domain,
+		CookieDomain:   s.config.CookieConfig.Domain,
 		Skipper: func(c echo.Context) bool {
 			if s.config.CSRFConfig.SkipApi {
 				if strings.Contains(c.Request().URL.Path, "/api") {
@@ -296,8 +299,33 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 		}))
 	}
 	e.Use(EnsureAuth(root))
+	e.Use(noCacheMiddleware)
 
 	return nil
+}
+
+var noCachePaths = []string{
+	wellknown_echo.HomePath,
+	wellknown_echo.OIDCLoginUIPath,
+}
+
+func noCacheMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		requestUrlPath := c.Request().URL.Path
+		noCacheIt := strings.HasSuffix(requestUrlPath, "index.html")
+		for _, path := range noCachePaths {
+			if noCacheIt || requestUrlPath == path {
+				noCacheIt = true
+				break
+			}
+		}
+		if noCacheIt {
+			c.Response().Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+			c.Response().Header().Set("Pragma", "no-cache")
+			c.Response().Header().Set("Expires", "0")
+		}
+		return next(c)
+	}
 }
 func EnsureLocalizer(_ di.Container) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {

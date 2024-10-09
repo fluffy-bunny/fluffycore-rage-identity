@@ -56,7 +56,7 @@ func AddScopedIHandler(builder di.ContainerBuilder, config *contracts_config.Cac
 			contracts_handler.GET,
 			contracts_handler.POST,
 		},
-		config.URIPath,
+		config.EchoPath,
 	)
 
 }

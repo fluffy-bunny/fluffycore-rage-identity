@@ -39,7 +39,7 @@ services:
       - .env.secrets
     environment:
       APPLICATION_ENVIRONMENT: "Production"
-      COOKIE_DOMAIN: ".rage.localhost.dev"
+      COOKIE_DOMAIN: "rage.localhost.dev"
       ENABLE_GRPC_SERVER_REFLECTION: "true"
       GRPC_GATEWAY_ENABLED: "true"
       RAGE_GRPC_GATEWAY_ENABLED: "true"
@@ -72,14 +72,15 @@ services:
       RAGE_echoAccount__port: "9046"
       RAGE_systemConfig__developerMode: "true"
       RAGE_oidcUIConfig__appSettings__ApplicationEnvironment: "Production"
-      RAGE_oidcUIConfig__appSettings__BaseApiUrl: "https://rage.localhost.dev"
+      ___RAGE_oidcUIConfig__appSettings__BaseApiUrl: "https://rage.localhost.dev"
       RAGE_oidcUIConfig__staticFilePath: "./static/blazor/oidc-flows/wwwroot"
-      RAGE_oidcUIConfig__uriEntryPath: "https://oidc.rage.localhost.dev"
+      ___RAGE_oidcUIConfig__uriEntryPath: "https://oidc.rage.localhost.dev"
       RAGE_accountAppSettings__BaseApiUrl: "https://rage.localhost.dev"
       RAGE_accountAppSettings__ApplicationEnvironment: "Production"
       RAGE_apiAppSettings__ApplicationEnvironment: "Production"
       RAGE_oidcUIConfig__cacheBustingConfig__filePath: "./static/blazor/oidc-flows/wwwroot/index_template.html"
-      RAGE_oidcUIConfig__cacheBustingConfig__uriPath: "/"
+      RAGE_oidcUIConfig__cacheBustingConfig__staticPath: "./static/blazor/oidc-flows/wwwroot/"
+      ___RAGE_oidcUIConfig__cacheBustingConfig__uriPath: "/"
     labels:
       # Enable this container to be mapped by traefik
       # For more information, see: https://docs.traefik.io/providers/docker/#exposedbydefault
