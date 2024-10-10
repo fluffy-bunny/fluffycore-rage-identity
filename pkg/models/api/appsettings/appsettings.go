@@ -11,5 +11,6 @@ type (
 	}
 	ApiAppSettings struct {
 		ApplicationEnvironment string `json:"ApplicationEnvironment"`
+		BaseApiUrl             string `json:"BaseApiUrl"`
 	}
 )

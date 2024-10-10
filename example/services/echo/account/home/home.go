@@ -53,5 +53,6 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Success 200 {object} string
 // @Router / [get]
 func (s *service) Do(c echo.Context) error {
-	return s.Render(c, http.StatusOK, "account/home/index", map[string]interface{}{})
+	return c.Redirect(http.StatusFound, wellknown_echo.ManagementPath)
+	//return s.Render(c, http.StatusOK, "account/home/index", map[string]interface{}{})
 }

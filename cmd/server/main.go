@@ -13,6 +13,7 @@ import (
 	services_handlers_account_about "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/about"
 	services_handlers_account_api_api_user_profile "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/api/api_user_profile"
 	services_handlers_account_callback "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/callback"
+
 	services_handlers_account_home "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/home"
 	services_handlers_account_login "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/login"
 	services_handlers_account_logout "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/logout"
@@ -23,7 +24,9 @@ import (
 	services_oidcflowstore "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/oidcflowstore"
 	services_user_id_generator "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/user_id_generator"
 	services_oidcuser_inmemory "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/userstore/inmemory"
+	services_handlers_cache_busting_static_html "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/cache_busting_static_html"
 
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	pkg_runtime "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/runtime"
 	pkg_version "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/version"
 	fluffycore_cobracore_cmd "github.com/fluffy-bunny/fluffycore/cobracore/cmd"
@@ -85,5 +88,12 @@ func MyConfigServices(ctx context.Context, builder di.ContainerBuilder) {
 	services_handlers_account_passkey_management.AddScopedIHandler(builder)
 	services_handlers_account_profile.AddScopedIHandler(builder)
 	services_handlers_account_totp_management.AddScopedIHandler(builder)
+	services_handlers_cache_busting_static_html.AddScopedIHandler(builder,
+		&contracts_config.CacheBustingHTMLConfig{
+			FilePath:   "./static/blazor/management/wwwroot/index_template.html",
+			StaticPath: "./static/blazor/management/wwwroot",
+			EchoPath:   "/management/*",
+			RootPath:   "/management/",
+		})
 
 }

@@ -17,6 +17,7 @@ var (
 	ForgotPasswordPath  = "/forgot-password"
 	HealthzPath         = "/healthz"
 	HomePath            = "/"
+	ManagementPath      = "/management/"
 	LoginPath           = "/login"
 	LogoutPath          = "/logout"
 	StaticPath          = "/static*"

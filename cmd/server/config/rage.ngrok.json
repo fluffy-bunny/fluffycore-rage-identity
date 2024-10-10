@@ -14,8 +14,7 @@
       "http://localhost:5080",
       "http://localhost:9045",
       "http://localhost:9046",
-      "http://localhost:7080",
-      "http://localhost:7088"
+      "http://localhost:7080"
     ]
   },
   "emailVerificationRequired": true,

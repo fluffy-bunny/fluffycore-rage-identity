@@ -83,8 +83,8 @@
                 "___RAGE_accountAppSettings__BaseApiUrl": "http://localhost:9044",
                 "RAGE_accountAppSettings__ApplicationEnvironment": "Production",
                 "RAGE_apiAppSettings__ApplicationEnvironment": "Production",
-                "RAGE_oidcUIConfig__cacheBustingConfig__filePath": "./static/blazor/oidc-flows/wwwroot/index_template.html",
-                "RAGE_oidcUIConfig__cacheBustingConfig__staticPath": "./static/blazor/oidc-flows/wwwroot/",
+                "RAGE_oidcUIConfig__cacheBustingConfig__filePath": "./static/blazor/oidc-login-ui/wwwroot/index_template.html",
+                "RAGE_oidcUIConfig__cacheBustingConfig__staticPath": "./static/blazor/oidc-login-ui/wwwroot/",
                 "___RAGE_oidcUIConfig__cacheBustingConfig__uriPath": "/",
 
             },

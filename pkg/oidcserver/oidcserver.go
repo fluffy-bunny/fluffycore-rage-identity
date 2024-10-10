@@ -307,6 +307,7 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 var noCachePaths = []string{
 	wellknown_echo.HomePath,
 	wellknown_echo.OIDCLoginUIPath,
+	wellknown_echo.ManagementPath,
 }
 
 func noCacheMiddleware(next echo.HandlerFunc) echo.HandlerFunc {

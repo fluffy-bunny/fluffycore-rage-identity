@@ -100,7 +100,12 @@ type (
 		CacheBustingConfig *CacheBustingHTMLConfig                   `json:"cacheBustingConfig"`
 		URIEntryPath       string                                    `json:"uriEntryPath"`
 	}
-
+	AccountUIConfig struct {
+		AppSettings        *models_api_appsettings.AccountAppSettings `json:"appSettings"`
+		StaticFilePath     string                                     `json:"staticFilePath"`
+		CacheBustingConfig *CacheBustingHTMLConfig                    `json:"cacheBustingConfig"`
+		URIEntryPath       string                                     `json:"uriEntryPath"`
+	}
 	Config struct {
 		fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
 
@@ -127,6 +132,7 @@ type (
 		CSRFConfig                     *CSRFConfig                                `json:"csrfConfig"`
 		OTELConfig                     *fluffycore_contracts_otel.OTELConfig      `json:"otelConfig"`
 		OIDCUIConfig                   *OIDCUIConfig                              `json:"oidcUIConfig"`
+		AccountUIConfig                *AccountUIConfig                           `json:"accountUIConfig"`
 		AccountAppSettings             *models_api_appsettings.AccountAppSettings `json:"accountAppSettings"`
 		ApiAppSettings                 *models_api_appsettings.ApiAppSettings     `json:"apiAppSettings"`
 	}
@@ -149,8 +155,23 @@ const configDefaultJSONTemplate = `
     "GRPC_GATEWAY_ENABLED": true,
 
 	"apiAppSettings": {
-	  "applicationEnvironment": "IN_ENVIRONMENT"
+	  "ApplicationEnvironment": "IN_ENVIRONMENT",
+      "BaseApiUrl": ""
 	},
+    "accountUIConfig": {
+    	"appSettings": {
+			"applicationEnvironment": "IN_ENVIRONMENT",
+			"baseApiUrl": ""
+		},
+		"staticFilePath": "./static",
+		"uriEntryPath": "/",
+		"cacheBustingConfig": {
+			"filePath": "IN_ENVIRONMENT",
+            "staticPath": "IN_ENVIRONMENT",
+            "rootPath": "/",
+			"echoPath": "/*"
+		}
+    },
 	"oidcUIConfig": {
 		"appSettings": {
 			"applicationEnvironment": "IN_ENVIRONMENT",

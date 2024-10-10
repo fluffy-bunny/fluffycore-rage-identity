@@ -1,0 +1,6 @@
+{
+  "directive": "directiveRedirect",
+  "directiveRedirect": {
+    "redirectUri": "https://www.google.com"
+  }
+}
