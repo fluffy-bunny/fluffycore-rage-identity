@@ -21,7 +21,7 @@ on:
 
 env:
   BINARY: "server"
-  GO_VERSION: "1.22"
+  GO_VERSION: "1.23"
   BUILD_PATH: "./cmd/server"
   IMAGE_NAME: "ghstahl/fluffycore.rage-identity"
   BASE_VERSION: "1.0.0"
@@ -157,6 +157,7 @@ jobs:
         run: |
           ls -l ./cmd/server/static/blazor
       - uses: actions/setup-node@v4
+        if: false
         with:
           node-version: "20.x"
           check-latest: true
