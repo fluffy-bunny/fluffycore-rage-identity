@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "BlazorAccountManagement",
   "resources": {
-    "hash": "sha256-EQkBREC46rtFIAkpcinnig9pM9DD8H5DABAOcsLDVjI=",
+    "hash": "sha256-3dmGa12cnlvGbITpPRD8WfaTgmy0W4AmQUygIM8E0/E=",
     "jsModuleNative": {
       "dotnet.native.8.0.8.7cisfd724m.js": "sha256-CC6791/fuN3JkEw/6qYCD2P3x6+3Eh6Vnu7XWsyxtMA="
     },
@@ -15,7 +15,7 @@
       "icudt.dat": "sha256-tO5O5YzMTVSaKBboxAqezOQL9ewmupzV2JrB5Rkc8a4="
     },
     "assembly": {
-      "BlazorAccountManagement.wasm": "sha256-n5cGSxUXa6X2Yc+N3mQ65+HKBP7xvME1nusXDiuSG4E=",
+      "BlazorAccountManagement.wasm": "sha256-9u8fL+2gxKN0rQGQu5gc5wVyD5otAOVLDTpNIaatc08=",
       "Microsoft.AspNetCore.Components.Forms.wasm": "sha256-w8etJcmRq9U91EskUF0xL00OwY10yC3zb1MUnxQOxGM=",
       "Microsoft.AspNetCore.Components.wasm": "sha256-n0mHxiGUW077M1nDYB70pDHe9JjbH2U7XFolIiVq7co=",
       "Microsoft.AspNetCore.Components.Web.wasm": "sha256-+UAqHf/vaH/2RQSYhwf97ffDKJ04N87W3fLqvAcpYxA=",
