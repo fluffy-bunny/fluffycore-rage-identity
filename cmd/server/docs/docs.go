@@ -24,6 +24,29 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/": {
+            "get": {
+                "description": "get the home page.",
+                "consumes": [
+                    "*/*"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the home page.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/.well-known/jwks": {
             "get": {
                 "description": "get the public keys of the server.",
@@ -65,6 +88,46 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/appsettings": {
+            "get": {
+                "description": "This is the configuration of the server..",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the app settings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/is-authorized": {
+            "get": {
+                "description": "This is the configuration of the server..",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the app settings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
                         }
                     }
                 }
@@ -150,19 +213,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     }
                 }
@@ -202,13 +265,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     }
                 }
@@ -354,7 +417,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     }
                 }
@@ -400,6 +463,26 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/start-over": {
+            "get": {
+                "description": "This is the configuration of the server..",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "start over and return the original manifest.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/manifest.Manifest"
+                        }
+                    }
+                }
+            }
+        },
         "/api/user-identity-info": {
             "get": {
                 "description": "get the highlevel UserIdentityInfo post login.",
@@ -426,13 +509,13 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     }
                 }
@@ -464,13 +547,13 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     }
                 }
@@ -511,13 +594,13 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     }
                 }
@@ -549,13 +632,13 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     }
                 }
@@ -593,19 +676,19 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     }
                 }
@@ -642,7 +725,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "401": {
@@ -654,7 +737,7 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     },
                     "500": {
@@ -700,7 +783,33 @@ const docTemplate = `{
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/verify-code-begin": {
+            "get": {
+                "description": "Validates if we can do a verification code flow",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the login manifest.",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/verify_code.VerifyCodeBeginResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/wellknown_echo.RestErrorResponse"
                         }
                     }
                 }
@@ -1226,6 +1335,10 @@ const docTemplate = `{
         "api_user_profile.Profile": {
             "type": "object",
             "properties": {
+                "email": {
+                    "description": "not editable",
+                    "type": "string"
+                },
                 "familyName": {
                     "type": "string"
                 },
@@ -1426,11 +1539,13 @@ const docTemplate = `{
             "type": "integer",
             "enum": [
                 0,
-                1
+                1,
+                2
             ],
             "x-enum-varnames": [
                 "PasswordResetErrorReason_NoError",
-                "PasswordResetErrorReason_InvalidPassword"
+                "PasswordResetErrorReason_InvalidPassword",
+                "PasswordResetErrorReason_PasswordsDoNotMatch"
             ]
         },
         "login_models.PasswordResetFinishRequest": {
@@ -1582,9 +1697,23 @@ const docTemplate = `{
                 }
             }
         },
+        "manifest.LandingPage": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "$ref": "#/definitions/manifest.Page"
+                }
+            }
+        },
         "manifest.Manifest": {
             "type": "object",
             "properties": {
+                "development_mode": {
+                    "type": "boolean"
+                },
+                "landing_page": {
+                    "$ref": "#/definitions/manifest.LandingPage"
+                },
                 "passkey_enabled": {
                     "type": "boolean"
                 },
@@ -1595,6 +1724,19 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "manifest.Page": {
+            "type": "string",
+            "enum": [
+                "Login",
+                "VerifyCode",
+                "CreateAccount"
+            ],
+            "x-enum-varnames": [
+                "Login",
+                "VerifyCode",
+                "CreateAccount"
+            ]
         },
         "password.VerifyPasswordStrengthRequest": {
             "type": "object",
@@ -1615,6 +1757,22 @@ const docTemplate = `{
                 }
             }
         },
+        "verify_code.VerifyCodeBeginResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "Code is supplied only if in development mode",
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "valid": {
+                    "description": "Valid is true if we truely are doing a code verification",
+                    "type": "boolean"
+                }
+            }
+        },
         "verify_username.VerifyUsernameResponse": {
             "type": "object",
             "properties": {
@@ -1622,6 +1780,14 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "userName": {
+                    "type": "string"
+                }
+            }
+        },
+        "wellknown_echo.RestErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
                     "type": "string"
                 }
             }

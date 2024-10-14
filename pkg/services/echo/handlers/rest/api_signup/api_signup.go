@@ -15,7 +15,7 @@ import (
 	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
@@ -110,7 +110,7 @@ func (s *service) validateSignupRequest(model *models_api_login_models.SignupReq
 // @Success 200 {object} login_models.SignupResponse
 // @Failure 302 {string} login_models.SignupResponse
 // @Failure 400 {string} login_models.SignupResponse
-// @Failure 500 {string} string
+// @Failure 500 {object} wellknown_echo.RestErrorResponse
 // @Router /api/signup [post]
 func (s *service) Do(c echo.Context) error {
 
@@ -119,11 +119,11 @@ func (s *service) Do(c echo.Context) error {
 	model := &models_api_login_models.SignupRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	if err := s.validateSignupRequest(model); err != nil {
 		log.Error().Err(err).Msg("validateSignupRequest")
-		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
+		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	response := &models_api_login_models.SignupResponse{
 		Email:       model.Email,
@@ -143,7 +143,7 @@ func (s *service) Do(c echo.Context) error {
 		},
 	})
 	if err != nil {
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	if len(listIDPRequest.Idps) > 0 {
 		// this domain is claimed.
@@ -166,7 +166,7 @@ func (s *service) Do(c echo.Context) error {
 			err = nil
 		} else {
 			log.Error().Err(err).Msg("GetRageUser")
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 	}
 	if getRageUserResponse != nil {
@@ -190,7 +190,9 @@ func (s *service) Do(c echo.Context) error {
 		Password: model.Password,
 	})
 	if err != nil {
-		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
+		response.ErrorReason = models_api_login_models.SignupErrorReason_InvalidPassword
+		response.Message = err.Error()
+		return c.JSONPretty(http.StatusBadRequest, response, "  ")
 	}
 	hashPasswordResponse, err := s.passwordHasher.HashPassword(ctx, &contracts_identity.HashPasswordRequest{
 		Password: model.Password,
@@ -208,7 +210,7 @@ func (s *service) Do(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("CreateUser")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	if s.config.EmailVerificationRequired {
 		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
@@ -223,7 +225,7 @@ func (s *service) Do(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SetVerificationCodeCookie")
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 		_, err = s.EmailService().SendSimpleEmail(ctx,
 			&contracts_email.SendSimpleEmailRequest{
@@ -236,7 +238,7 @@ func (s *service) Do(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SendSimpleEmail")
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 		if s.config.SystemConfig.DeveloperMode {
 			response.DirectiveEmailCodeChallenge = &models_api_login_models.DirectiveEmailCodeChallenge{

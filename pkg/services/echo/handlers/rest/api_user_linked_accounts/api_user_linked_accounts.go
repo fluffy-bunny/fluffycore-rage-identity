@@ -7,7 +7,7 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	api_user_linked_accounts "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_user_linked_accounts"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -79,8 +79,8 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Produce json
 // @Success 200 {object} api_user_identity_info.UserLinkedAccounts
 // @Failure 401 {string} string
-// @Failure 404 {string} string
-// @Failure 500 {string} string
+// @Failure 404 {object} wellknown_echo.RestErrorResponse
+// @Failure 500 {object} wellknown_echo.RestErrorResponse
 // @Router /api/user-linked-accounts [get]
 func (s *service) DoGet(c echo.Context) error {
 	ctx := c.Request().Context()
@@ -106,10 +106,10 @@ func (s *service) DoGet(c echo.Context) error {
 	if err != nil {
 		st, ok := status.FromError(err)
 		if ok && st.Code() == codes.NotFound {
-			return c.JSONPretty(http.StatusNotFound, err.Error(), "  ")
+			return c.JSONPretty(http.StatusNotFound, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 		log.Error().Err(err).Msg("GetRageUser")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 
 	user := getRageUserResponse.User
@@ -140,8 +140,8 @@ type DoDeleteRequest struct {
 // @Param        identity   path      string  true  "identity name"
 // @Success 200 {string} string
 // @Failure 401 {string} string
-// @Failure 404 {string} string
-// @Failure 500 {string} string
+// @Failure 404 {object} wellknown_echo.RestErrorResponse
+// @Failure 500 {object} wellknown_echo.RestErrorResponse
 // @Router /api/user-linked-accounts/{identity} [delete]
 func (s *service) DoDelete(c echo.Context) error {
 	ctx := c.Request().Context()
@@ -161,7 +161,7 @@ func (s *service) DoDelete(c echo.Context) error {
 	model := &DoDeleteRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("c.Bind")
-		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
+		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	log = log.With().Interface("model", model).Logger()
 
@@ -174,10 +174,10 @@ func (s *service) DoDelete(c echo.Context) error {
 	if err != nil {
 		st, ok := status.FromError(err)
 		if ok && st.Code() == codes.NotFound {
-			return c.JSONPretty(http.StatusNotFound, err.Error(), "  ")
+			return c.JSONPretty(http.StatusNotFound, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 		log.Error().Err(err).Msg("GetRageUser")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 
 	var foundIdentity *models.Identity
@@ -205,7 +205,7 @@ func (s *service) DoDelete(c echo.Context) error {
 			return c.JSONPretty(http.StatusOK, "", "  ")
 		}
 		log.Error().Err(err).Msg("UnlinkRageUser")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	return c.JSONPretty(http.StatusOK, "", "  ")
 }

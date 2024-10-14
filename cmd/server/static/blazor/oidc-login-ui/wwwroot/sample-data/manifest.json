@@ -1,0 +1,17 @@
+{
+  "social_idps": [
+    {
+      "slug": "google-social",
+      "name": "Google"
+    },
+    {
+      "slug": "github-social",
+      "name":  "Github"
+    },
+    {
+      "slug": "microsoft-social",
+      "name": "Microsoft"
+    }
+  ],
+  "passkey_enabled": true
+}

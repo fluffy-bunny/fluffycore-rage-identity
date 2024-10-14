@@ -14,6 +14,7 @@ import (
 	services "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services"
 	services_handlers_api "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/api"
 	services_handlers_authorization_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/authorization_endpoint"
+	services_handlers_cache_busting_static_html "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/cache_busting_static_html"
 	services_handlers_discovery_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/discovery_endpoint"
 	services_handlers_error "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/error"
 	services_handlers_externalidp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/externalidp"
@@ -27,6 +28,8 @@ import (
 	services_handlers_oidcloginpassword "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidcloginpassword"
 	services_handlers_oidclogintotp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidclogintotp"
 	services_handlers_passwordreset "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/passwordreset"
+	services_handlers_rest_api_appsettings "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_appsettings"
+	services_handlers_rest_api_isauthorized "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_isauthorized"
 	services_handlers_rest_api_login_password "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_login_password"
 	services_handlers_rest_api_login_username_phase_one "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_login_username_phase_one"
 	services_handlers_rest_api_logout "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_logout"
@@ -34,10 +37,12 @@ import (
 	services_handlers_rest_api_password_reset_finish "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_password_reset_finish"
 	services_handlers_rest_api_password_reset_start "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_password_reset_start"
 	services_handlers_rest_api_signup "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_signup"
+	services_handlers_rest_api_start_over "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_start_over"
 	services_handlers_rest_api_user_identity_info "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_identity_info"
 	services_handlers_rest_api_user_linked_accounts "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_linked_accounts"
 	services_handlers_rest_api_user_remove_passkey "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_remove_passkey"
 	services_handlers_rest_api_verify_code "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_verify_code"
+	services_handlers_rest_api_verify_code_begin "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_verify_code_begin"
 	services_handlers_rest_api_verify_password_strength "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_verify_password_strength"
 	services_handlers_rest_api_verify_username "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_verify_username"
 	services_handlers_signup "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/signup"
@@ -50,6 +55,7 @@ import (
 	services_handlers_webauthn_registrationfinish "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn/registrationfinish"
 	services_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/oidc_session"
 	pkg_types "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/types"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidcuser "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
@@ -194,8 +200,11 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_error.AddScopedIHandler(builder)
 	services_handlers_oidclogin.AddScopedIHandler(builder)
 	services_handlers_oidcloginpassword.AddScopedIHandler(builder)
+	services_handlers_rest_api_appsettings.AddScopedIHandler(builder, s.config.ApiAppSettings)
 	services_handlers_rest_api_manifest.AddScopedIHandler(builder)
+	services_handlers_rest_api_start_over.AddScopedIHandler(builder)
 	services_handlers_rest_api_verify_code.AddScopedIHandler(builder)
+	services_handlers_rest_api_verify_code_begin.AddScopedIHandler(builder)
 	services_handlers_rest_api_signup.AddScopedIHandler(builder)
 	services_handlers_rest_api_logout.AddScopedIHandler(builder)
 	services_handlers_rest_api_user_identity_info.AddScopedIHandler(builder)
@@ -204,6 +213,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_rest_api_password_reset_start.AddScopedIHandler(builder)
 	services_handlers_rest_api_password_reset_finish.AddScopedIHandler(builder)
 	services_handlers_rest_api_login_password.AddScopedIHandler(builder)
+	services_handlers_rest_api_isauthorized.AddScopedIHandler(builder)
 	services_handlers_rest_api_login_username_phase_one.AddScopedIHandler(builder)
 	services_handlers_rest_api_verify_password_strength.AddScopedIHandler(builder)
 	services_handlers_oidclogintotp.AddScopedIHandler(builder)
@@ -219,6 +229,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_verifycode.AddScopedIHandler(builder)
 	services_handlers_passwordreset.AddScopedIHandler(builder)
 	services_handlers_api.AddScopedIHandler(builder)
+	services_handlers_cache_busting_static_html.AddScopedIHandler(builder, s.config.OIDCUIConfig.CacheBustingConfig)
 
 	if s.config.WebAuthNConfig != nil && s.config.WebAuthNConfig.Enabled {
 		services_handlers_oidcloginpasskey.AddScopedIHandler(builder)
@@ -250,12 +261,18 @@ func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 // Configure
 func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 
+	var sameSite http.SameSite = http.SameSiteStrictMode
+	httpOnly := false
+	if s.config.Echo.DisableSecureCookies {
+		sameSite = 0
+	}
 	e.Use(echo_middleware.CSRFWithConfig(echo_middleware.CSRFConfig{
 		TokenLookup:    "header:X-Csrf-Token,form:csrf",
 		CookiePath:     "/",
 		CookieSecure:   false,
-		CookieHTTPOnly: false,
-		CookieSameSite: http.SameSiteStrictMode,
+		CookieHTTPOnly: httpOnly,
+		CookieSameSite: sameSite,
+		CookieDomain:   s.config.CookieConfig.Domain,
 		Skipper: func(c echo.Context) bool {
 			if s.config.CSRFConfig.SkipApi {
 				if strings.Contains(c.Request().URL.Path, "/api") {
@@ -272,7 +289,6 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 
 	e.Use(EnsureCookieClaimsPrincipal(root))
 	e.Use(EnsureLocalizer(root))
-	e.Use(EnsureAuth(root))
 	if s.config.CORSConfig.Enabled {
 		e.Use(echo_middleware.CORSWithConfig(echo_middleware.CORSConfig{
 			AllowOrigins:                             s.config.CORSConfig.AllowedOrigins,
@@ -284,7 +300,35 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 			MaxAge:                                   s.config.CORSConfig.MaxAge,
 		}))
 	}
+	e.Use(EnsureAuth(root))
+	e.Use(noCacheMiddleware)
+
 	return nil
+}
+
+var noCachePaths = []string{
+	wellknown_echo.HomePath,
+	wellknown_echo.OIDCLoginUIPath,
+	wellknown_echo.ManagementPath,
+}
+
+func noCacheMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		requestUrlPath := c.Request().URL.Path
+		noCacheIt := strings.HasSuffix(requestUrlPath, "index.html")
+		for _, path := range noCachePaths {
+			if noCacheIt || requestUrlPath == path {
+				noCacheIt = true
+				break
+			}
+		}
+		if noCacheIt {
+			c.Response().Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+			c.Response().Header().Set("Pragma", "no-cache")
+			c.Response().Header().Set("Expires", "0")
+		}
+		return next(c)
+	}
 }
 func EnsureLocalizer(_ di.Container) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {

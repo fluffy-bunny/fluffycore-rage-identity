@@ -12,7 +12,7 @@ import (
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
@@ -96,7 +96,7 @@ func (s *service) validateVerifyCodeRequest(model *login_models.VerifyCodeReques
 // @Produce json
 // @Param		request body		login_models.VerifyCodeRequest	true	"VerifyCodeRequest"
 // @Success 200 {object} login_models.VerifyCodeResponse
-// @Failure 401 {string} string
+// @Failure 401 {object} wellknown_echo.RestErrorResponse
 // @Router /api/verify-code [post]
 func (s *service) Do(c echo.Context) error {
 
@@ -105,11 +105,11 @@ func (s *service) Do(c echo.Context) error {
 	model := &login_models.VerifyCodeRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	if err := s.validateVerifyCodeRequest(model); err != nil {
 		log.Error().Err(err).Msg("validateVerifyCodeRequest")
-		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
+		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 
 	getVerificationCodeCookieResponse, err := s.wellknownCookies.GetVerificationCodeCookie(c)
@@ -123,7 +123,8 @@ func (s *service) Do(c echo.Context) error {
 	verificationCode := getVerificationCodeCookieResponse.VerificationCode
 	code := verificationCode.Code
 	if code != model.Code {
-		return c.JSONPretty(http.StatusNotFound, "code does not match", "  ")
+		err := status.Error(codes.NotFound, "code does not match")
+		return c.JSONPretty(http.StatusNotFound, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	userService := s.RageUserService()
 	getRageUserResponse, err := userService.GetRageUser(ctx,
@@ -136,9 +137,10 @@ func (s *service) Do(c echo.Context) error {
 		log.Error().Err(err).Msg("GetRageUser")
 		st, ok := status.FromError(err)
 		if ok && st.Code() == codes.NotFound {
-			return c.JSONPretty(http.StatusNotFound, "User not found", "  ")
+			err := status.Error(codes.NotFound, "User not found")
+			return c.JSONPretty(http.StatusNotFound, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	rageUser := getRageUserResponse.User
 	_, err = userService.UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
@@ -153,7 +155,7 @@ func (s *service) Do(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("UpdateUser")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	// one time only
 	s.wellknownCookies.DeleteVerificationCodeCookie(c)
@@ -173,7 +175,7 @@ func (s *service) Do(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SetPasswordResetCookie")
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 		response := &login_models.VerifyCodeResponse{
 			Directive: login_models.DIRECTIVE_PasswordReset_DisplayPasswordResetPage,
@@ -195,17 +197,17 @@ func (s *service) Do(c echo.Context) error {
 		if err != nil {
 			log.Error().Err(err).Msg("SetAuthCookie")
 			// redirect to error page
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 		session, err := s.getSession()
 		if err != nil {
 			log.Error().Err(err).Msg("getSession")
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 		sessionRequest, err := session.Get("request")
 		if err != nil {
 			log.Error().Err(err).Msg("Get")
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 		authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
 
@@ -215,7 +217,7 @@ func (s *service) Do(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("GetAuthorizationRequestState")
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 		authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 		authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
@@ -244,7 +246,7 @@ func (s *service) Do(c echo.Context) error {
 		if err != nil {
 			log.Error().Err(err).Msg("StoreAuthorizationRequestState")
 			// redirect to error page
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 		s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
 			State: authorizationRequest.State,
@@ -256,7 +258,7 @@ func (s *service) Do(c echo.Context) error {
 		if err != nil {
 			// redirect to error page
 			log.Error().Err(err).Msg("StoreAuthorizationRequestState")
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 		rootPath := echo_utils.GetMyRootPath(c)
 

@@ -1,4 +1,4 @@
-package echo
+package wellknown_echo
 
 import (
 	"fmt"
@@ -17,14 +17,19 @@ var (
 	ForgotPasswordPath  = "/forgot-password"
 	HealthzPath         = "/healthz"
 	HomePath            = "/"
-	LoginPath           = "/login"
-	LogoutPath          = "/logout"
-	StaticPath          = "/static*"
+	ManagementPath      = "/management/"
+	ManagementAllPath   = "/management/*"
+
+	LoginPath  = "/login"
+	LogoutPath = "/logout"
+	StaticPath = "/static*"
 	//OAuth2CallbackPath                               = "/oauth2/callback"
 	OAuth2CallbackPath                               = "@@OAuth2CallbackPath@@"
 	OAuth2TokenEndpointPath                          = "/token"
 	OIDCAuthorizationEndpointPath                    = "/oidc/v1/auth"
 	OIDCLoginPath                                    = "/oidc-login"
+	OIDCLoginUIPath                                  = "/oidc-login-ui"
+	OIDCLoginUIStaticPath                            = "/oidc-login-ui/*"
 	OIDCLoginPasskeyPath                             = "/oidc-login-passkey"
 	OIDCLoginPasswordPath                            = "/oidc-login-password"
 	OIDCLoginTOTPPath                                = "/oidc-login-totp"
@@ -49,7 +54,9 @@ var (
 	WebAuthN_Login_Begin                             = "/webauthn/login/begin"
 	WebAuthN_Login_Finish                            = "/webauthn/login/finish"
 
+	API_AppSettings            = "/api/appsettings"
 	API_Manifest               = "/api/manifest"
+	API_StartOver              = "/api/start-over"
 	API_Start_ExternalLogin    = "/api/start-external-login"
 	API_VerifyUsername         = "/api/verify-username"
 	API_UserIdentityInfo       = "/api/user-identity-info"
@@ -58,12 +65,14 @@ var (
 	API_LoginPhaseOne          = "/api/login-phase-one"
 	API_LoginPassword          = "/api/login-password"
 	API_VerifyCode             = "/api/verify-code"
+	API_VerifyCodeBegin        = "/api/verify-code-begin"
 	API_Signup                 = "/api/signup"
 	API_PasswordResetStart     = "/api/password-reset-start"
 	API_PasswordResetFinish    = "/api/password-reset-finish"
 	API_UserProfilePath        = "/api/user-profile"
 	API_Logout                 = "/api/logout"
 	API_UserLinkedAccounts     = "/api/user-linked-accounts"
+	API_IsAuthorized           = "/api/is-authorized"
 )
 
 type Paths struct {
@@ -137,4 +146,8 @@ func GetGithubConfig(c echo.Context, protocol *proto_oidc_models.GithubOAuth2Pro
 		},
 	}
 	return &config
+}
+
+type RestErrorResponse struct {
+	Error string `json:"error"`
 }

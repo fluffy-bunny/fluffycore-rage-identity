@@ -13,7 +13,7 @@ import (
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
@@ -108,11 +108,11 @@ func (s *service) Do(c echo.Context) error {
 	model := &login_models.PasswordResetStartRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	if err := s.validatePasswordResetStartRequest(model); err != nil {
 		log.Error().Err(err).Msg("validatePasswordResetStartRequest")
-		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
+		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	response := &login_models.PasswordResetStartResponse{
 		Email:     model.Email,
@@ -137,7 +137,7 @@ func (s *service) Do(c echo.Context) error {
 		}
 		if err != nil {
 			log.Error().Err(err).Msg("ListUser")
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 	}
 	subject := "NA"
@@ -155,13 +155,13 @@ func (s *service) Do(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("SetVerificationCodeCookie")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	message, err := localizer.LocalizeMessage(&i18n.Message{
 		ID: "password.reset.message"})
 	if err != nil {
 		log.Error().Err(err).Msg("failed to localize message")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	message = strings.ReplaceAll(message, "{code}", verificationCode)
 	if getRageUserResponse != nil {
@@ -178,7 +178,7 @@ func (s *service) Do(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SendEmail")
-			return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 		if s.config.SystemConfig.DeveloperMode {
 			response.DirectiveEmailCodeChallenge = &login_models.DirectiveEmailCodeChallenge{
