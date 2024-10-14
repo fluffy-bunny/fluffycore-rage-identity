@@ -22,7 +22,7 @@ require (
 	github.com/gogo/status v1.1.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0
-	github.com/imroc/req/v3 v3.46.0
+	github.com/imroc/req/v3 v3.48.0
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/lestrrat-go/jwx/v2 v2.1.1
 	github.com/nicksnyder/go-i18n/v2 v2.4.0
