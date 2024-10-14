@@ -13,7 +13,7 @@ import (
 	services_health "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/health"
 	pkg_types "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/types"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidcuser "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
@@ -48,7 +48,8 @@ type (
 
 		oidcserverFuture  async.Future[*fluffycore_async.AsyncResponse]
 		oidcserverRuntime *core_echo_runtime.Runtime
-		ext               pkg_types.ConfigureServices
+
+		ext pkg_types.ConfigureServices
 	}
 )
 type WithOption func(startup *startup)

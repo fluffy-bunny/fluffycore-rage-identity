@@ -48,6 +48,9 @@ definitions:
     type: object
   api_user_profile.Profile:
     properties:
+      email:
+        description: not editable
+        type: string
       familyName:
         type: string
       givenName:
@@ -179,10 +182,12 @@ definitions:
     enum:
     - 0
     - 1
+    - 2
     type: integer
     x-enum-varnames:
     - PasswordResetErrorReason_NoError
     - PasswordResetErrorReason_InvalidPassword
+    - PasswordResetErrorReason_PasswordsDoNotMatch
   login_models.PasswordResetFinishRequest:
     properties:
       password:
@@ -282,8 +287,17 @@ definitions:
       slug:
         type: string
     type: object
+  manifest.LandingPage:
+    properties:
+      page:
+        $ref: '#/definitions/manifest.Page'
+    type: object
   manifest.Manifest:
     properties:
+      development_mode:
+        type: boolean
+      landing_page:
+        $ref: '#/definitions/manifest.LandingPage'
       passkey_enabled:
         type: boolean
       social_idps:
@@ -291,6 +305,16 @@ definitions:
           $ref: '#/definitions/manifest.IDP'
         type: array
     type: object
+  manifest.Page:
+    enum:
+    - Login
+    - VerifyCode
+    - CreateAccount
+    type: string
+    x-enum-varnames:
+    - Login
+    - VerifyCode
+    - CreateAccount
   password.VerifyPasswordStrengthRequest:
     properties:
       password:
@@ -303,11 +327,27 @@ definitions:
       valid:
         type: boolean
     type: object
+  verify_code.VerifyCodeBeginResponse:
+    properties:
+      code:
+        description: Code is supplied only if in development mode
+        type: string
+      email:
+        type: string
+      valid:
+        description: Valid is true if we truely are doing a code verification
+        type: boolean
+    type: object
   verify_username.VerifyUsernameResponse:
     properties:
       passkeyAvailable:
         type: boolean
       userName:
+        type: string
+    type: object
+  wellknown_echo.RestErrorResponse:
+    properties:
+      error:
         type: string
     type: object
 host: localhost:9044
@@ -324,6 +364,21 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
+  /:
+    get:
+      consumes:
+      - '*/*'
+      description: get the home page.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: get the home page.
+      tags:
+      - root
   /.well-known/jwks:
     get:
       consumes:
@@ -352,6 +407,32 @@ paths:
           schema:
             type: string
       summary: Show the status of server.
+      tags:
+      - root
+  /api/appsettings:
+    get:
+      description: This is the configuration of the server..
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+      summary: get the app settings
+      tags:
+      - root
+  /api/is-authorized:
+    get:
+      description: This is the configuration of the server..
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+      summary: get the app settings
       tags:
       - root
   /api/login-password:
@@ -406,15 +487,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "404":
           description: Not Found
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: get the login manifest.
       tags:
       - root
@@ -440,11 +521,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: Logout.
       tags:
       - root
@@ -539,7 +620,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: verify code.
       tags:
       - root
@@ -569,6 +650,19 @@ paths:
       summary: starts an external login ceremony with an external IDP
       tags:
       - root
+  /api/start-over:
+    get:
+      description: This is the configuration of the server..
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/manifest.Manifest'
+      summary: start over and return the original manifest.
+      tags:
+      - root
   /api/user-identity-info:
     get:
       description: get the highlevel UserIdentityInfo post login.
@@ -586,11 +680,11 @@ paths:
         "404":
           description: Not Found
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: get the highlevel UserIdentityInfo post login.
       tags:
       - root
@@ -611,11 +705,11 @@ paths:
         "404":
           description: Not Found
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: get the users linked accounts.
       tags:
       - root
@@ -642,11 +736,11 @@ paths:
         "404":
           description: Not Found
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: delete a users linked identity.
       tags:
       - root
@@ -667,11 +761,11 @@ paths:
         "404":
           description: Not Found
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: set user profile.
       tags:
       - root
@@ -696,15 +790,15 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "404":
           description: Not Found
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: get user profile.
       tags:
       - root
@@ -728,7 +822,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "401":
           description: Unauthorized
           schema:
@@ -736,7 +830,7 @@ paths:
         "404":
           description: Not Found
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -766,8 +860,25 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            type: string
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
       summary: verify code.
+      tags:
+      - root
+  /api/verify-code-begin:
+    get:
+      description: Validates if we can do a verification code flow
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/verify_code.VerifyCodeBeginResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/wellknown_echo.RestErrorResponse'
+      summary: get the login manifest.
       tags:
       - root
   /api/verify-password-strength:

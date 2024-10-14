@@ -7,7 +7,7 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_util "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/util"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v4"
 )

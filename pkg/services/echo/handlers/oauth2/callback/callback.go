@@ -20,7 +20,7 @@ import (
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/client"
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
@@ -174,7 +174,9 @@ func (s *service) Do(c echo.Context) error {
 					Subject:           user.RootIdentity.Subject,
 					Email:             user.RootIdentity.Email,
 					Code:              verificationCode,
-					VerifyCodePurpose: purpose},
+					VerifyCodePurpose: purpose,
+					DevelopmentMode:   s.config.SystemConfig.DeveloperMode,
+				},
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SetVerificationCodeCookie")
@@ -211,15 +213,16 @@ func (s *service) Do(c echo.Context) error {
 				Value: "GET",
 			},
 		}
+		/*
+			if s.config.SystemConfig.DeveloperMode {
+				formParams = append(formParams, models.FormParam{
+					Name:  "verificationCode",
+					Value: verificationCode,
+				})
 
-		if s.config.SystemConfig.DeveloperMode {
-			formParams = append(formParams, models.FormParam{
-				Name:  "code",
-				Value: verificationCode,
-			})
-
-		}
-		return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
+			}
+		*/
+		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
 	}
 	getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
 		State: parentState,

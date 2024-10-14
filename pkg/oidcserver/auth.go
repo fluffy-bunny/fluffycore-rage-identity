@@ -5,16 +5,11 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	models_api "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	echo "github.com/labstack/echo/v4"
-)
-
-type (
-	AuthPath struct {
-		Path string `json:"path"`
-	}
 )
 
 var csrfSkipperPaths map[string]bool
@@ -32,7 +27,13 @@ func CSRFSkipperPaths() map[string]bool {
 			wellknown_echo.WellKnownOpenIDCOnfiguationPath: true,
 			wellknown_echo.OAuth2TokenEndpointPath:         true,
 			wellknown_echo.UserInfoPath:                    true,
+			wellknown_echo.API_AppSettings:                 true,
 			wellknown_echo.API_Manifest:                    true,
+			wellknown_echo.API_StartOver:                   true,
+			wellknown_echo.API_VerifyCodeBegin:             true,
+			wellknown_echo.API_UserIdentityInfo:            true,
+			wellknown_echo.API_UserProfilePath:             true,
+			wellknown_echo.OIDCLoginUIStaticPath:           true,
 		}
 	}
 	return csrfSkipperPaths
@@ -46,6 +47,8 @@ func RequiresNoAuth() map[string]bool {
 	// needs to be a func as some of these are configured in.
 	if requiresNoAuthPaths == nil {
 		requiresNoAuthPaths = map[string]bool{
+			wellknown_echo.ManagementPath:      true,
+			wellknown_echo.ManagementAllPath:   true,
 			wellknown_echo.StaticPath:          true,
 			wellknown_echo.AboutPath:           true,
 			wellknown_echo.APIPath:             true,
@@ -61,14 +64,19 @@ func RequiresNoAuth() map[string]bool {
 			wellknown_echo.OAuth2TokenEndpointPath:       true,
 			wellknown_echo.OIDCAuthorizationEndpointPath: true,
 			wellknown_echo.OIDCLoginPath:                 true,
+			wellknown_echo.OIDCLoginUIPath:               true,
+			wellknown_echo.OIDCLoginUIStaticPath:         true,
 
+			wellknown_echo.API_AppSettings:            true,
 			wellknown_echo.API_Manifest:               true,
+			wellknown_echo.API_StartOver:              true,
 			wellknown_echo.API_Start_ExternalLogin:    true,
 			wellknown_echo.API_VerifyUsername:         true,
 			wellknown_echo.API_VerifyPasswordStrength: true,
 			wellknown_echo.API_LoginPhaseOne:          true,
 			wellknown_echo.API_LoginPassword:          true,
 			wellknown_echo.API_VerifyCode:             true,
+			wellknown_echo.API_VerifyCodeBegin:        true,
 			wellknown_echo.API_Signup:                 true,
 			wellknown_echo.API_Logout:                 true,
 			wellknown_echo.API_PasswordResetStart:     true,
@@ -123,9 +131,13 @@ func EnsureAuth(_ di.Container) echo.MiddlewareFunc {
 			if isAuthenticated {
 				return next(c)
 			}
-			// redirect to root
-			redirectUrl := fmt.Sprintf("%s?returnUrl=%s", wellknown_echo.LoginPath, path)
-			return c.Redirect(http.StatusFound, redirectUrl)
+			if path == wellknown_echo.HomePath {
+				redirectUrl := fmt.Sprintf("%s?returnUrl=%s", wellknown_echo.LoginPath, path)
+				return c.Redirect(http.StatusFound, redirectUrl)
+			}
+
+			// return StatusUnauthorized
+			return c.JSON(http.StatusUnauthorized, models_api.UnautorizedResponse{Path: path})
 		}
 	}
 }

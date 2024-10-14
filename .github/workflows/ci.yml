@@ -21,10 +21,11 @@ on:
 
 env:
   BINARY: "server"
-  GO_VERSION: "1.22"
+  GO_VERSION: "1.23"
   BUILD_PATH: "./cmd/server"
   IMAGE_NAME: "ghstahl/fluffycore.rage-identity"
   BASE_VERSION: "1.0.0"
+  BLAZOR_RAGE_VERSION: "v0.0.5"
 jobs:
   pre_flight:
     runs-on: ubuntu-latest
@@ -39,6 +40,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
   build_react_apps:
+    if: false
     runs-on: ubuntu-latest
     needs: [pre_flight]
     steps:
@@ -47,11 +49,6 @@ jobs:
           echo new_tag: ${{needs.pre_flight.outputs.new_tag}}
 
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20.x"
-          check-latest: true
 
       - name: build client/account-management
         run: |
@@ -91,7 +88,7 @@ jobs:
           path: "cmd/server/static/"
   build:
     runs-on: ubuntu-latest
-    needs: [pre_flight, build_react_apps]
+    needs: [pre_flight]
     steps:
       - name: Echo Tags
         run: |
@@ -126,7 +123,47 @@ jobs:
         with:
           submodules: true
 
+      # Download and extract asset
+      # https://github.com/fluffy-bunny/fluffycore-rage-identity-blazor/releases/download/v0.0.3/static-files.zip
+      - name: Download and extract asset
+        run: |
+          ASSET_URL="https://github.com/fluffy-bunny/fluffycore-rage-identity-blazor/releases/download/${{ env.BLAZOR_RAGE_VERSION }}/static-files.zip"
+
+
+          DEST_DIR="./blazorassets"
+
+          # Download the asset
+          curl -L $ASSET_URL -o static-files.zip
+
+          # Extract the asset
+          unzip static-files.zip -d $DEST_DIR
+
+          # Clean up
+          rm static-files.zip
+
+          echo "Asset downloaded and extracted to $DEST_DIR"
+
+      # Copy and replace files
+      - name: Copy and replace files
+        run: |
+          rm -rf ./cmd/server/static/blazor/oidc-login-ui
+          rm -rf ./cmd/server/static/blazor/management
+          cp -r ./blazorassets/static-files/oidc-login-ui ./cmd/server/static/blazor/oidc-login-ui
+          cp -r ./blazorassets/static-files/management ./cmd/server/static/blazor/management
+          cp -r ./production/static/blazor ./cmd/server/static/blazor
+
+      # List the files and directories
+      - name: List files and directories
+        run: |
+          ls -l ./cmd/server/static/blazor
+      - uses: actions/setup-node@v4
+        if: false
+        with:
+          node-version: "20.x"
+          check-latest: true
+
       - name: Download Artifact
+        if: false
         uses: actions/download-artifact@v4
         with:
           name: static_build

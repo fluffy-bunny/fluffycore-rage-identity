@@ -10,7 +10,7 @@ import (
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"

@@ -5,7 +5,7 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v4"
 )
@@ -53,5 +53,6 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Success 200 {object} string
 // @Router / [get]
 func (s *service) Do(c echo.Context) error {
-	return s.Render(c, http.StatusOK, "account/home/index", map[string]interface{}{})
+	return c.Redirect(http.StatusFound, wellknown_echo.ManagementPath)
+	//return s.Render(c, http.StatusOK, "account/home/index", map[string]interface{}{})
 }

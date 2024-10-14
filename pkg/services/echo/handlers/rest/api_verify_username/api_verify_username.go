@@ -6,7 +6,7 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/verify_username"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
@@ -94,11 +94,11 @@ func (s *service) Do(c echo.Context) error {
 	model := &verify_username.VerifyUsernameRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	if err := s.validateVerifyUsernameRequest(model); err != nil {
 		log.Error().Err(err).Msg("validateVerifyUsernameRequest")
-		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
+		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	getRageUserResponse, err := s.RageUserService().GetRageUser(ctx,
 		&proto_oidc_user.GetRageUserRequest{
@@ -109,10 +109,10 @@ func (s *service) Do(c echo.Context) error {
 	if err != nil {
 		st, ok := status.FromError(err)
 		if ok && st.Code() == codes.NotFound {
-			return c.JSONPretty(http.StatusNotFound, err.Error(), "  ")
+			return c.JSONPretty(http.StatusNotFound, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 		log.Error().Err(err).Msg("GetRageUser")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	user := getRageUserResponse.User
 	passkeyAvailable := false

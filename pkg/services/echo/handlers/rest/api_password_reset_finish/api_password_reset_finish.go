@@ -2,6 +2,7 @@ package api_password_reset_finish
 
 import (
 	"net/http"
+	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
@@ -11,7 +12,7 @@ import (
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -110,18 +111,28 @@ func (s *service) Do(c echo.Context) error {
 	model := &login_models.PasswordResetFinishRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	if err := s.validatePasswordResetFinishRequest(model); err != nil {
 		log.Error().Err(err).Msg("validatePasswordResetFinishRequest")
-		return c.JSONPretty(http.StatusBadRequest, err.Error(), "  ")
+		errMsg := err.Error()
+		if status.Convert(err).Code() == codes.InvalidArgument {
+			if strings.Contains(errMsg, "do not match") {
+				response := &login_models.PasswordResetFinishResponse{
+					Directive:   login_models.DIRECTIVE_PasswordReset_DisplayPasswordResetPage,
+					ErrorReason: login_models.PasswordResetErrorReason_PasswordsDoNotMatch,
+				}
+				return c.JSONPretty(http.StatusBadRequest, response, "  ")
+			}
+		}
+		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 
 	response := &login_models.PasswordResetFinishResponse{}
 	getPasswordResetCookieResponse, err := s.wellknownCookies.GetPasswordResetCookie(c)
 	if err != nil {
 		log.Error().Err(err).Msg("GetPasswordResetCookie")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	if getPasswordResetCookieResponse == nil {
 		response.Directive = login_models.DIRECTIVE_LoginPhaseOne_DisplayPhaseOnePage
@@ -142,7 +153,7 @@ func (s *service) Do(c echo.Context) error {
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("ListUser")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 
 	// do password acceptablity check
@@ -161,7 +172,7 @@ func (s *service) Do(c echo.Context) error {
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("GeneratePasswordHash")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 
 	_, err = s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
@@ -178,7 +189,7 @@ func (s *service) Do(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("UpdateUser")
-		return c.JSONPretty(http.StatusInternalServerError, err.Error(), "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 
 	// send the email

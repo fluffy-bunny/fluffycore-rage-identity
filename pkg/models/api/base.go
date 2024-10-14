@@ -8,4 +8,10 @@ type (
 	BaseResponse struct {
 		Errors []string `json:"errors,omitempty"`
 	}
+	UnautorizedResponse struct {
+		Path string `json:"path"`
+	}
+	AuthorizedResponse struct {
+		Path string `json:"path"`
+	}
 )

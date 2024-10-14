@@ -34,9 +34,12 @@ func GetCookie[T any](c echo.Context,
 	err = json.Unmarshal(bb, data)
 	return err
 }
-func SetCookie[T any](c echo.Context,
+func SetCookieByRequest[T any](c echo.Context,
 	config *contracts_config.CookieConfig,
-	cookies fluffycore_contracts_cookies.ICookies, name string, data T) error {
+	cookies fluffycore_contracts_cookies.ICookies,
+	request *fluffycore_contracts_cookies.SetCookieRequest,
+	data T) error {
+
 	b, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -46,17 +49,26 @@ func SetCookie[T any](c echo.Context,
 	if err != nil {
 		return err
 	}
-	_, err = cookies.SetCookie(c,
-		&fluffycore_contracts_cookies.SetCookieRequest{
-			Name:     name,
-			Value:    value,
-			HttpOnly: false,
-			Expires:  time.Now().Add(30 * time.Minute),
-			Path:     "/",
-			Domain:   config.Domain,
-		})
+	request.Path = "/"
+	request.Expires = time.Now().Add(30 * time.Minute)
+	request.Domain = config.Domain
+	request.Value = value
+	_, err = cookies.SetCookie(c, request)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func SetCookie[T any](c echo.Context,
+	config *contracts_config.CookieConfig,
+	cookies fluffycore_contracts_cookies.ICookies, name string, data T) error {
+
+	return SetCookieByRequest(c, config, cookies,
+		&fluffycore_contracts_cookies.SetCookieRequest{
+			Name:     name,
+			HttpOnly: false,
+		},
+		data)
+
 }

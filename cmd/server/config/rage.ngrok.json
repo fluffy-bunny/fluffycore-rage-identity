@@ -1,6 +1,21 @@
 {
   "corsConfig": {
-    "allowedOrigins": ["https://${DOMAIN}"]
+    "enabled": true,
+    "allowCredentials": true,
+    "unsafeWildcardOriginWithAllowCredentials": true,
+    "allowedOrigins": [
+      "http://${DOMAIN}",
+      "http://localhost1.com:3000",
+      "http://localhost1.com:3001",
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:7090",
+      "http://localhost:5108",
+      "http://localhost:5080",
+      "http://localhost:9045",
+      "http://localhost:9046",
+      "http://localhost:7080"
+    ]
   },
   "emailVerificationRequired": true,
   "multiFactorRequired": true,
@@ -16,6 +31,12 @@
     "domain": "${DOMAIN}",
     "developerMode": false
   },
+  "sessionConfig": {
+    "domain": "${COOKIE_DOMAIN}"
+  },
+  "cookieConfig": {
+    "domain": "${COOKIE_DOMAIN}"
+  },
   "totp": {
     "enabled": false,
     "issuerName": "EXAMPLE.RAGE.IDENTITY"
@@ -23,6 +44,8 @@
   "webAuthNConfig": {
     "rpDisplayName": "RAGE",
     "rpID": "${DOMAIN}",
-    "rpOrigins": ["https://${DOMAIN}"]
+    "rpOrigins": [
+      "https://${DOMAIN}"
+    ]
   }
 }

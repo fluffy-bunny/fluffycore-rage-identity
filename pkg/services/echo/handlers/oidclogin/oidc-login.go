@@ -12,10 +12,11 @@ import (
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
+	manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/echo"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
@@ -108,7 +109,8 @@ type ExternalIDPAuthRequest struct {
 	IDPHint string `param:"idp_hint" query:"idp_hint" form:"idp_hint" json:"idp_hint" xml:"idp_hint"`
 }
 type LoginPostRequest struct {
-	UserName string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
+	UserName  string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
+	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
 }
 
 type row struct {
@@ -167,7 +169,10 @@ func (s *service) DoGet(c echo.Context) error {
 	if err != nil {
 		errors = append(errors, err.Error())
 	}
-
+	if s.config.OIDCUIConfig.URIEntryPath != wellknown_echo.OIDCLoginPath {
+		// we redirect over to URIEntryPath
+		return c.Redirect(http.StatusFound, s.config.OIDCUIConfig.URIEntryPath)
+	}
 	return s.Render(c, http.StatusOK, "oidc/oidclogin/index",
 		map[string]interface{}{
 			"errors":    errors,
@@ -184,26 +189,39 @@ func (s *service) DoPost(c echo.Context) error {
 
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
+	var err error
 	model := &LoginPostRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
 		return s.TeleportBackToLogin(c, InternalError_OIDCLogin_099)
 	}
 	log.Debug().Interface("model", model).Msg("model")
-	if fluffycore_utils.IsEmptyOrNil(model.UserName) {
+
+	doVerifyCode := model.Directive == models.MFA_VerifyEmailDirective || model.Directive == models.VerifyEmailDirective
+
+	if !doVerifyCode && fluffycore_utils.IsEmptyOrNil(model.UserName) {
 		return s.DoGet(c)
 	}
 
-	idps, err := s.GetIDPs(ctx)
 	var errors []string
-	if err != nil {
-		errors = append(errors, err.Error())
-	}
+
 	session, err := s.getSession()
 	if err != nil {
-		errors = append(errors, err.Error())
+		return s.DoGet(c)
 	}
 	sessionRequest, err := session.Get("request")
+	if err != nil {
+		return s.DoGet(c)
+	}
+	if doVerifyCode {
+		landingPage := &manifest.LandingPage{
+			Page: manifest.VerifyCode,
+		}
+		session.Set("landingPage", landingPage)
+		session.Save()
+		return s.DoGet(c)
+	}
+	idps, err := s.GetIDPs(ctx)
 	if err != nil {
 		errors = append(errors, err.Error())
 	}
@@ -218,6 +236,10 @@ func (s *service) DoPost(c echo.Context) error {
 		msg := utils.LocalizeWithInterperlate(localizer, "username.not.valid", map[string]string{"username": model.UserName})
 
 		errors = append(errors, msg)
+		if s.config.OIDCUIConfig.URIEntryPath != wellknown_echo.OIDCLoginPath {
+			// we redirect over to URIEntryPath
+			return c.Redirect(http.StatusFound, s.config.OIDCUIConfig.URIEntryPath)
+		}
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"idps":      idps,
@@ -240,6 +262,10 @@ func (s *service) DoPost(c echo.Context) error {
 	if err != nil {
 		log.Warn().Err(err).Msg("ListIDP")
 		errors = append(errors, err.Error())
+		if s.config.OIDCUIConfig.URIEntryPath != wellknown_echo.OIDCLoginPath {
+			// we redirect over to URIEntryPath
+			return c.Redirect(http.StatusFound, s.config.OIDCUIConfig.URIEntryPath)
+		}
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"state":     authorizationRequest.State,
@@ -287,6 +313,10 @@ func (s *service) DoPost(c echo.Context) error {
 		msg := utils.LocalizeWithInterperlate(localizer, "username.not.found", map[string]string{"username": model.UserName})
 
 		errors = append(errors, msg)
+		if s.config.OIDCUIConfig.URIEntryPath != wellknown_echo.OIDCLoginPath {
+			// we redirect over to URIEntryPath
+			return c.Redirect(http.StatusFound, s.config.OIDCUIConfig.URIEntryPath)
+		}
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"state":     authorizationRequest.State,
@@ -299,7 +329,10 @@ func (s *service) DoPost(c echo.Context) error {
 	if err != nil {
 		log.Warn().Err(err).Msg("ListUser")
 		errors = append(errors, err.Error())
-
+		if s.config.OIDCUIConfig.URIEntryPath != wellknown_echo.OIDCLoginPath {
+			// we redirect over to URIEntryPath
+			return c.Redirect(http.StatusFound, s.config.OIDCUIConfig.URIEntryPath)
+		}
 		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
 			map[string]interface{}{
 				"state":     authorizationRequest.State,

@@ -96,12 +96,16 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	if config.CookieConfig == nil {
 		config.CookieConfig = &contracts_config.CookieConfig{}
 	}
-	config.CookieConfig.Domain = config.SystemConfig.Domain
+	if fluffycore_utils.IsEmptyOrNil(config.CookieConfig.Domain) {
+		config.CookieConfig.Domain = config.SystemConfig.Domain
+	}
 	di.AddInstance[*contracts_config.CookieConfig](builder, config.CookieConfig)
 	if config.SessionConfig == nil {
 		config.SessionConfig = &contracts_sessions.SessionConfig{}
 	}
-	config.SessionConfig.Domain = config.SystemConfig.Domain
+	if fluffycore_utils.IsEmptyOrNil(config.SessionConfig.Domain) {
+		config.SessionConfig.Domain = config.SystemConfig.Domain
+	}
 
 	di.AddInstance[*contracts_sessions.SessionConfig](builder, config.SessionConfig)
 	di.AddInstance[*contracts_webauthn.WebAuthNConfig](builder, config.WebAuthNConfig)
