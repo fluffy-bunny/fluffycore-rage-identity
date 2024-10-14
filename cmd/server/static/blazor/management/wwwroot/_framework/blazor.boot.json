@@ -1,9 +1,9 @@
 {
   "mainAssemblyName": "BlazorAccountManagement",
   "resources": {
-    "hash": "sha256-3dmGa12cnlvGbITpPRD8WfaTgmy0W4AmQUygIM8E0/E=",
+    "hash": "sha256-rmGhSFQ1waDYz/cgMB/PGVOluy9i+H2LsX0hZr6h4ys=",
     "jsModuleNative": {
-      "dotnet.native.8.0.8.7cisfd724m.js": "sha256-CC6791/fuN3JkEw/6qYCD2P3x6+3Eh6Vnu7XWsyxtMA="
+      "dotnet.native.8.0.8.e2htq328cs.js": "sha256-CC6791/fuN3JkEw/6qYCD2P3x6+3Eh6Vnu7XWsyxtMA="
     },
     "jsModuleRuntime": {
       "dotnet.runtime.8.0.8.80cvijctdx.js": "sha256-0Dpj/NkVD5WqSC16ZvJLmlc38iv9+Je+umYBVOycPVU="
@@ -15,9 +15,9 @@
       "icudt.dat": "sha256-tO5O5YzMTVSaKBboxAqezOQL9ewmupzV2JrB5Rkc8a4="
     },
     "assembly": {
-      "BlazorAccountManagement.wasm": "sha256-9u8fL+2gxKN0rQGQu5gc5wVyD5otAOVLDTpNIaatc08=",
+      "BlazorAccountManagement.wasm": "sha256-rF9nIAQszEZ66e7ef8wCOw5A9gkS9kWVLBd0pL6gZjo=",
       "Microsoft.AspNetCore.Components.Forms.wasm": "sha256-w8etJcmRq9U91EskUF0xL00OwY10yC3zb1MUnxQOxGM=",
-      "Microsoft.AspNetCore.Components.wasm": "sha256-n0mHxiGUW077M1nDYB70pDHe9JjbH2U7XFolIiVq7co=",
+      "Microsoft.AspNetCore.Components.wasm": "sha256-qUrE2QRcsSgK3mflZo9S2/WU2LvTSbfNfrwJWwCgmWc=",
       "Microsoft.AspNetCore.Components.Web.wasm": "sha256-+UAqHf/vaH/2RQSYhwf97ffDKJ04N87W3fLqvAcpYxA=",
       "Microsoft.AspNetCore.Components.WebAssembly.wasm": "sha256-+opz8z1gZzlMqYj/DoZQh2lLLm30sl5l6yKcdUNioNE=",
       "Microsoft.AspNetCore.Http.Abstractions.wasm": "sha256-aPjR8YQYZRQOCbPYFnx/tOBYEqSXaAF/F/Cd883tTH4=",
@@ -63,7 +63,7 @@
       "System.Private.CoreLib.wasm": "sha256-4qWBphMnkeeVYaZgwQRfI5zK1CtWRHqyOY2ZOwJiRvA=",
       "System.Private.Uri.wasm": "sha256-90kSYygSnu1sgP4vP4xETjTmtC8lsbf9chLcluQ1hyE=",
       "System.Runtime.InteropServices.JavaScript.wasm": "sha256-lxdsSKM2nYdr8hFsiNXUaaW/Q9Xf1oTdADKDJWz8MlA=",
-      "System.Runtime.wasm": "sha256-EZhtqh6hOde+W3AMNQkGMyzjhIl/9g27nxQyNZ6cSlg=",
+      "System.Runtime.wasm": "sha256-ZxpVhyQjTzpE12JxRQ74gvm9lQ/L0kqPeEx4YTKEj+A=",
       "System.Security.Claims.wasm": "sha256-bjO7t0AXaZS86H1ADq0Em7bKx5hFOGN1vdCWurYAGv0=",
       "System.Security.Cryptography.wasm": "sha256-F3CmbyC6rEJYyE9aDroY9rqr+6dwcXg3bgICn1J9tws=",
       "System.Text.Encodings.Web.wasm": "sha256-rGK4IWhn72EFe83OG6gy88Y68+5Hpd/KuFkRYmP8pAs=",
@@ -76,9 +76,6 @@
   "cacheBootResources": true,
   "debugLevel": 0,
   "linkerEnabled": true,
-  "appsettings": [
-    "../appsettings.json"
-  ],
   "globalizationMode": "all",
   "extensions": {
     "blazor": {}

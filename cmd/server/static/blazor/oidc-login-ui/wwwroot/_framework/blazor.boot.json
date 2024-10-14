@@ -1,9 +1,9 @@
 {
   "mainAssemblyName": "BlazorOIDCFlow",
   "resources": {
-    "hash": "sha256-5wF6AqXHF7KR1epSHq7KB9HnL4ensNUclGgzkUINfeU=",
+    "hash": "sha256-HSDkqNfbAVOlNTpsW6NAKpv7q39/U9NumDY7dWiOqNo=",
     "jsModuleNative": {
-      "dotnet.native.8.0.8.k1yjcudr8m.js": "sha256-CC6791/fuN3JkEw/6qYCD2P3x6+3Eh6Vnu7XWsyxtMA="
+      "dotnet.native.8.0.8.yzi5282zz1.js": "sha256-CC6791/fuN3JkEw/6qYCD2P3x6+3Eh6Vnu7XWsyxtMA="
     },
     "jsModuleRuntime": {
       "dotnet.runtime.8.0.8.80cvijctdx.js": "sha256-0Dpj/NkVD5WqSC16ZvJLmlc38iv9+Je+umYBVOycPVU="
@@ -15,7 +15,7 @@
       "icudt.dat": "sha256-tO5O5YzMTVSaKBboxAqezOQL9ewmupzV2JrB5Rkc8a4="
     },
     "assembly": {
-      "BlazorOIDCFlow.wasm": "sha256-qE7KUnjWLpZghk2hp/IfFIAHpFQ3/D3YjdOQ5LpVqlA=",
+      "BlazorOIDCFlow.wasm": "sha256-1hbAhjlEbVIZ0qM65YN7PymbtQpfR2zHJflZwbefaes=",
       "Microsoft.AspNetCore.Components.Forms.wasm": "sha256-w8etJcmRq9U91EskUF0xL00OwY10yC3zb1MUnxQOxGM=",
       "Microsoft.AspNetCore.Components.wasm": "sha256-GqChvNONnVeZNJ7a/ApLjaHnYoO67dUOzkcfVyrwtSo=",
       "Microsoft.AspNetCore.Components.Web.wasm": "sha256-9LvhN+g5xYapGLqbwGR2wqqeM3JM8iZcvXLRLkoD3UM=",
@@ -32,7 +32,7 @@
       "Microsoft.Extensions.DependencyInjection.wasm": "sha256-T/+qPF0RWC8dfbLNFgoTfla+JM2H3eY5L17aqODwzFc=",
       "Microsoft.Extensions.FileProviders.Abstractions.wasm": "sha256-1IzLOllzctld+sXZkF4aYGirrhODx2hBlw69bn/06mU=",
       "Microsoft.Extensions.Localization.Abstractions.wasm": "sha256-2/cncpZbiFk6FmVmjx6jXalwiwVPatWeDKJKN+kIRfA=",
-      "Microsoft.Extensions.Localization.wasm": "sha256-hcJFVGS1x8m5ZeBhvyIEBqYSQKIzBLnbw77jq3TNVmA=",
+      "Microsoft.Extensions.Localization.wasm": "sha256-o0ehyAVwxXRi2FTP6kVwIvvfrhO+xsC1ASVAVdo+egg=",
       "Microsoft.Extensions.Logging.Abstractions.wasm": "sha256-ddT9mI5m1C2DQjYq5r78SqBoxwlBOTo4+jEr1urVSYc=",
       "Microsoft.Extensions.Logging.wasm": "sha256-gRNqDIITN9/LJz459bgijHJ1O+l5fzsybyrFhw0Iqa4=",
       "Microsoft.Extensions.Options.wasm": "sha256-gE1BXyLWVUnQwUrxnkNGo22RSc/PIEaAypz1VWboWP4=",
@@ -75,9 +75,6 @@
   "cacheBootResources": true,
   "debugLevel": 0,
   "linkerEnabled": true,
-  "appsettings": [
-    "../appsettings.json"
-  ],
   "globalizationMode": "all",
   "extensions": {
     "blazor": {}

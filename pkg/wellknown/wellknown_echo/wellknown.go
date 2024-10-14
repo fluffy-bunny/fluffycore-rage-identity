@@ -18,9 +18,11 @@ var (
 	HealthzPath         = "/healthz"
 	HomePath            = "/"
 	ManagementPath      = "/management/"
-	LoginPath           = "/login"
-	LogoutPath          = "/logout"
-	StaticPath          = "/static*"
+	ManagementAllPath   = "/management/*"
+
+	LoginPath  = "/login"
+	LogoutPath = "/logout"
+	StaticPath = "/static*"
 	//OAuth2CallbackPath                               = "/oauth2/callback"
 	OAuth2CallbackPath                               = "@@OAuth2CallbackPath@@"
 	OAuth2TokenEndpointPath                          = "/token"
@@ -70,6 +72,7 @@ var (
 	API_UserProfilePath        = "/api/user-profile"
 	API_Logout                 = "/api/logout"
 	API_UserLinkedAccounts     = "/api/user-linked-accounts"
+	API_IsAuthorized           = "/api/is-authorized"
 )
 
 type Paths struct {

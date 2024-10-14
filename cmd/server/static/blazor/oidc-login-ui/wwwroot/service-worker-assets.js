@@ -17,19 +17,19 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-alxMTkv1h0vkvDi4l7fHp9Zpru8NTPmnJfvr3WM0y3E=",
+      "hash": "sha256-TlPH\/BZP3LCsX8vr7rQQE0gdKLEUzeZlJWHLel5hdJ4=",
       "url": "_framework\/blazor.boot.json"
     },
     {
       "hash": "sha256-CC6791\/fuN3JkEw\/6qYCD2P3x6+3Eh6Vnu7XWsyxtMA=",
-      "url": "_framework\/dotnet.native.8.0.8.k1yjcudr8m.js"
+      "url": "_framework\/dotnet.native.8.0.8.yzi5282zz1.js"
     },
     {
       "hash": "sha256-rgJylskD\/vbWlLsouhDxc2X+ndh6NbhRkNecagKMW9w=",
       "url": "_framework\/dotnet.native.wasm"
     },
     {
-      "hash": "sha256-qE7KUnjWLpZghk2hp\/IfFIAHpFQ3\/D3YjdOQ5LpVqlA=",
+      "hash": "sha256-1hbAhjlEbVIZ0qM65YN7PymbtQpfR2zHJflZwbefaes=",
       "url": "_framework\/BlazorOIDCFlow.wasm"
     },
     {
@@ -97,7 +97,7 @@
       "url": "_framework\/Microsoft.Extensions.Localization.Abstractions.wasm"
     },
     {
-      "hash": "sha256-hcJFVGS1x8m5ZeBhvyIEBqYSQKIzBLnbw77jq3TNVmA=",
+      "hash": "sha256-o0ehyAVwxXRi2FTP6kVwIvvfrhO+xsC1ASVAVdo+egg=",
       "url": "_framework\/Microsoft.Extensions.Localization.wasm"
     },
     {
@@ -249,10 +249,6 @@
       "url": "_framework\/System.wasm"
     },
     {
-      "hash": "sha256-lOgF4f6+2N\/GWutmXO1WEJLryeSQhsYE\/Lx66MRTgr4=",
-      "url": "appsettings.json"
-    },
-    {
       "hash": "sha256-mFz76X09YIqJS8FanzJxk8rPNvuXHKbehrhtLZGvktU=",
       "url": "BlazorOIDCFlow.styles.css"
     },
@@ -281,10 +277,6 @@
       "url": "icon-512.png"
     },
     {
-      "hash": "sha256-9GQW6Hdt3SOb6WHCP48ABBW5fD7\/+SAObTRAOueHkR4=",
-      "url": "index.html"
-    },
-    {
       "hash": "sha256-oHTicXAEO\/HR8b7PkiGJDpjHKmyuSJQ4no3EzFgs0sY=",
       "url": "js\/common.js"
     },
@@ -295,43 +287,7 @@
     {
       "hash": "sha256-JZtQjWPs07L1qxQe6foaQSby7Mv8ye2EbQy40q\/hwp0=",
       "url": "microsoft-social-logo.png"
-    },
-    {
-      "hash": "sha256-+NrR9uExjNGmK5y23UGaSMJ3+eSDmaJ178KhGkVtWaQ=",
-      "url": "sample-data\/login-password-response.json"
-    },
-    {
-      "hash": "sha256-5710D4V7Mzi7NertLx+JbO9jLirHwTtNRbEysdX6EBM=",
-      "url": "sample-data\/login-phase-one-mapped-response.json"
-    },
-    {
-      "hash": "sha256-5710D4V7Mzi7NertLx+JbO9jLirHwTtNRbEysdX6EBM=",
-      "url": "sample-data\/login-phase-one-response.json"
-    },
-    {
-      "hash": "sha256-EqxcCdSZMDhWSIPm9GpJf9H27dZ2A+AVS1M\/m8T9eQ0=",
-      "url": "sample-data\/manifest.json"
-    },
-    {
-      "hash": "sha256-c4aMie7PlK9QeeQYRyROxh5N055VZNIv7L3CDGOtyh0=",
-      "url": "sample-data\/start-external-login-response.json"
-    },
-    {
-      "hash": "sha256-hUBNafbveUd7BEwLfaUK7orQ88AwU6H3zJSLPhjMFb0=",
-      "url": "sample-data\/verify-code-response.json"
-    },
-    {
-      "hash": "sha256-1sUYHrbykDdESlNu9SHdc0BNWjazbR6ZtJxGjwiK4RQ=",
-      "url": "sample-data\/verify-password-strength-response.json"
-    },
-    {
-      "hash": "sha256-0xBNgavH0TlEJW+JImGz\/4q3m9bx0Af7tESogtN\/qfI=",
-      "url": "sample-data\/verify-username-response.json"
-    },
-    {
-      "hash": "sha256-enKgCMkYmCpfEcmg6Annbmc40VZ\/A6aYYSQjZfVn2cU=",
-      "url": "sample-data\/weather.json"
     }
   ],
-  "version": "MAIA3Pla"
+  "version": "qbmO1waK"
 };

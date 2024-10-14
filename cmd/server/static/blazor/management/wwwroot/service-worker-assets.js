@@ -17,19 +17,19 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-7r\/RhFAaaVqcyaM3meoXggbQWVjl+Lg385zEAyEQiNQ=",
+      "hash": "sha256-sOvK3Sbpa8oZT0aI2pCjg9OdEvn+mzVfjLqnHKiL0f0=",
       "url": "_framework\/blazor.boot.json"
     },
     {
       "hash": "sha256-CC6791\/fuN3JkEw\/6qYCD2P3x6+3Eh6Vnu7XWsyxtMA=",
-      "url": "_framework\/dotnet.native.8.0.8.7cisfd724m.js"
+      "url": "_framework\/dotnet.native.8.0.8.e2htq328cs.js"
     },
     {
       "hash": "sha256-w+0nJsdleF7oDpETtd\/b6Hcm7aFAM\/yWJxde6X9U004=",
       "url": "_framework\/dotnet.native.wasm"
     },
     {
-      "hash": "sha256-9u8fL+2gxKN0rQGQu5gc5wVyD5otAOVLDTpNIaatc08=",
+      "hash": "sha256-rF9nIAQszEZ66e7ef8wCOw5A9gkS9kWVLBd0pL6gZjo=",
       "url": "_framework\/BlazorAccountManagement.wasm"
     },
     {
@@ -37,7 +37,7 @@
       "url": "_framework\/Microsoft.AspNetCore.Components.Forms.wasm"
     },
     {
-      "hash": "sha256-n0mHxiGUW077M1nDYB70pDHe9JjbH2U7XFolIiVq7co=",
+      "hash": "sha256-qUrE2QRcsSgK3mflZo9S2\/WU2LvTSbfNfrwJWwCgmWc=",
       "url": "_framework\/Microsoft.AspNetCore.Components.wasm"
     },
     {
@@ -221,7 +221,7 @@
       "url": "_framework\/System.Runtime.InteropServices.JavaScript.wasm"
     },
     {
-      "hash": "sha256-EZhtqh6hOde+W3AMNQkGMyzjhIl\/9g27nxQyNZ6cSlg=",
+      "hash": "sha256-ZxpVhyQjTzpE12JxRQ74gvm9lQ\/L0kqPeEx4YTKEj+A=",
       "url": "_framework\/System.Runtime.wasm"
     },
     {
@@ -251,10 +251,6 @@
     {
       "hash": "sha256-ka1SPMSVGn53xDzeBa40FQCsprKEF+n+wpvvd1HyMNE=",
       "url": "_framework\/System.wasm"
-    },
-    {
-      "hash": "sha256-lOgF4f6+2N\/GWutmXO1WEJLryeSQhsYE\/Lx66MRTgr4=",
-      "url": "appsettings.json"
     },
     {
       "hash": "sha256-Kb+PrSCGgwIAJYTADmCIsvEbqDC8bhC3OU\/Cgt\/3Dpg=",
@@ -287,11 +283,7 @@
     {
       "hash": "sha256-01N\/s0HuXVGLdJMIou4gRt2mRpANcxGm5fs59MD56Zw=",
       "url": "manifest.webmanifest"
-    },
-    {
-      "hash": "sha256-enKgCMkYmCpfEcmg6Annbmc40VZ\/A6aYYSQjZfVn2cU=",
-      "url": "sample-data\/weather.json"
     }
   ],
-  "version": "qb731WmF"
+  "version": "AgonT2Vg"
 };

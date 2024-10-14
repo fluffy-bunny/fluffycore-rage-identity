@@ -113,6 +113,26 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/is-authorized": {
+            "get": {
+                "description": "This is the configuration of the server..",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "root"
+                ],
+                "summary": "get the app settings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "/api/login-password": {
             "post": {
                 "description": "This is the configuration of the server..",
@@ -1519,11 +1539,13 @@ const docTemplate = `{
             "type": "integer",
             "enum": [
                 0,
-                1
+                1,
+                2
             ],
             "x-enum-varnames": [
                 "PasswordResetErrorReason_NoError",
-                "PasswordResetErrorReason_InvalidPassword"
+                "PasswordResetErrorReason_InvalidPassword",
+                "PasswordResetErrorReason_PasswordsDoNotMatch"
             ]
         },
         "login_models.PasswordResetFinishRequest": {

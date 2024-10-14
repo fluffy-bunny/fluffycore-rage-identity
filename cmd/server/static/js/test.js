@@ -300,8 +300,27 @@ fetch("/api/user-identity-info", {
 
 //   /api/user-profile
 //-----------------------------------------------------
+fetch("/api/is-authorized", {
+  method: "GET",
+  credentials: "include",
+  headers: {
+    Accept: "application/json",
+    "Content-Type": "application/json",
+    "X-Csrf-Token": getCSRF(),
+  },
+})
+  .then((response) => {
+    return response.json();
+  })
+  .then((data) => {
+    console.log("finishResponse:", data);
+  });
+
+//   /api/user-profile
+//-----------------------------------------------------
 fetch("/api/user-profile", {
   method: "GET",
+  credentials: "include",
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",

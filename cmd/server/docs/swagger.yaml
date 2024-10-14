@@ -182,10 +182,12 @@ definitions:
     enum:
     - 0
     - 1
+    - 2
     type: integer
     x-enum-varnames:
     - PasswordResetErrorReason_NoError
     - PasswordResetErrorReason_InvalidPassword
+    - PasswordResetErrorReason_PasswordsDoNotMatch
   login_models.PasswordResetFinishRequest:
     properties:
       password:
@@ -408,6 +410,19 @@ paths:
       tags:
       - root
   /api/appsettings:
+    get:
+      description: This is the configuration of the server..
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+      summary: get the app settings
+      tags:
+      - root
+  /api/is-authorized:
     get:
       description: This is the configuration of the server..
       produces:
