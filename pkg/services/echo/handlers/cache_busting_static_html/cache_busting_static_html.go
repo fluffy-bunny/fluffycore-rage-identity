@@ -7,11 +7,10 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
-	pkg_version "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/version"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
+	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
 	middleware "github.com/labstack/echo/v4/middleware"
-	xid "github.com/rs/xid"
 )
 
 type (
@@ -43,17 +42,27 @@ func AddScopedIHandler(builder di.ContainerBuilder,
 		panic(err)
 
 	}
-	// Generate a unique GUID for cache busting
-	guid := xid.New().String()
-	if pkg_version.Version() != "dev-build" {
-		guid = pkg_version.Version()
+	modifiedContent := string(indexContent)
+	for _, kv := range config.ReplaceParams {
+		if kv == nil ||
+			fluffycore_utils.IsEmptyOrNil(kv.Key) ||
+			fluffycore_utils.IsEmptyOrNil(kv.Value) {
+			continue
+		}
+		modifiedContent = strings.ReplaceAll(modifiedContent, kv.Key, kv.Value)
 	}
-	// Convert the content to a string
-	contentStr := string(indexContent)
+	/*
+		// Generate a unique GUID for cache busting
+		guid := xid.New().String()
+		if pkg_version.Version() != "dev-build" {
+			guid = pkg_version.Version()
+		}
+		// Convert the content to a string
+		contentStr := string(indexContent)
 
-	// Replace all instances of {version} with "guid"
-	modifiedContent := strings.ReplaceAll(contentStr, "{version}", guid)
-
+		// Replace all instances of {version} with "guid"
+		modifiedContent := strings.ReplaceAll(contentStr, "{version}", guid)
+	*/
 	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
 		func() (*service, error) {
 			return &service{
