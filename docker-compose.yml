@@ -40,10 +40,12 @@ services:
     environment:
       APPLICATION_ENVIRONMENT: "Production"
       COOKIE_DOMAIN: "rage.localhost.dev"
+      RAGE_cookieConfig__domain: "rage.localhost.dev"
+      RAGE_sessionConfig__domain: "rage.localhost.dev"
       ENABLE_GRPC_SERVER_REFLECTION: "true"
       GRPC_GATEWAY_ENABLED: "true"
       RAGE_GRPC_GATEWAY_ENABLED: "true"
-      RAGE_APPLICATION_NAME: "RAGE"
+      RAGE_APPLICATION_NAME: "RAGE Account"
       RAGE_APPLICATION_ENVIRONMENT: "Production"
       RAGE_LOG_LEVEL: "debug"
       RAGE_PRETTY_LOG: "true"

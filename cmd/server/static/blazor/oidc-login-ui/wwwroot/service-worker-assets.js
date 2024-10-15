@@ -17,7 +17,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-SEjk6oZrhARGVklBxecM1A6x1oDdalhEC8XgCELDnVo=",
+      "hash": "sha256-KWfGuUoyUkoERr2oi2aBqZKjTnwrXRjg1xn860WaQ3M=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -29,7 +29,7 @@
       "url": "_framework\/dotnet.native.wasm"
     },
     {
-      "hash": "sha256-XyoYSkmyDC+uVasxmUxb+NjjXX1CZee2LaUHvDl1Ht8=",
+      "hash": "sha256-MxZCAIsEEPcK3HGMzNYZOFfSsYXxbAVVr8stKNn\/ZeY=",
       "url": "_framework\/BlazorOIDCFlow.wasm"
     },
     {
@@ -253,11 +253,59 @@
       "url": "BlazorOIDCFlow.styles.css"
     },
     {
+      "hash": "sha256-kaqm7IxEHyYf7PRNaDXD7NHVvvcsUd9UXS3DSZt+FY8=",
+      "url": "apple-touch-icon-114x114.png"
+    },
+    {
+      "hash": "sha256-L3CjTHVx9YsaMbwzhiQ2EOh9y\/Ar2aJzm3x9PnfbXs0=",
+      "url": "apple-touch-icon-120x120.png"
+    },
+    {
+      "hash": "sha256-YpFdqZejhZm4A+2FUL747L3nSFghTE+M8L9rdVFaHvo=",
+      "url": "apple-touch-icon-144x144.png"
+    },
+    {
+      "hash": "sha256-Zqag7+BU2OlNHh1UrA2fBaZe\/cggT01wHPvRK6p1\/bw=",
+      "url": "apple-touch-icon-152x152.png"
+    },
+    {
+      "hash": "sha256-Dv05upwZzl\/NMvTEXIMYjuTnOA1btAKhhXgHrUssb3g=",
+      "url": "apple-touch-icon-180x180.png"
+    },
+    {
+      "hash": "sha256-6I3DC+VTd9+TRPtNKr+9Kaf4+qvgEU2cdz+xCinT7aI=",
+      "url": "apple-touch-icon-192x192.png"
+    },
+    {
+      "hash": "sha256-+Mci2Rs6EiiRtL4hT1ciZi+b2+pYWYXQSRZpo72j8eI=",
+      "url": "apple-touch-icon-512x512.png"
+    },
+    {
+      "hash": "sha256-HWbxloJneZTQPh5kB9yI8UYWJFv\/urjTVqhOTduIqus=",
+      "url": "apple-touch-icon-57x57.png"
+    },
+    {
+      "hash": "sha256-NiCRmTpF2dbHOol+iyWIAxphFBfQ7OoXXtKo+YUtR44=",
+      "url": "apple-touch-icon-72x72.png"
+    },
+    {
+      "hash": "sha256-M3csIKdQE3OXp+irspAkSpHExXLNn5Q+hRlKxu7LQMI=",
+      "url": "apple-touch-icon-76x76.png"
+    },
+    {
+      "hash": "sha256-HWbxloJneZTQPh5kB9yI8UYWJFv\/urjTVqhOTduIqus=",
+      "url": "apple-touch-icon.png"
+    },
+    {
       "hash": "sha256-zzMj5StY2LKVX290+84d6Fd7qwecD\/swlRuCh3JYrSU=",
       "url": "css\/app.css"
     },
     {
-      "hash": "sha256-4mWsDy3aHl36ZbGt8zByK7Pvd4kRUoNgTYzRnwmPHwg=",
+      "hash": "sha256-4NAL4iVQSf4Vl4omj9lgVgjRiDf\/AiZUh\/hKzkfdRlo=",
+      "url": "favicon.ico"
+    },
+    {
+      "hash": "sha256-xoQZUtJ6iJoMvyjg8BhkL36d8h2M7iEd0Y4Wo1bRWiY=",
       "url": "favicon.png"
     },
     {
@@ -277,6 +325,10 @@
       "url": "icon-512.png"
     },
     {
+      "hash": "sha256-jdeCcnuUgi7cReu1Gjcz9jDNW5Fq8dB6+Kojq99Yzmg=",
+      "url": "iconifier-readme.txt"
+    },
+    {
       "hash": "sha256-oHTicXAEO\/HR8b7PkiGJDpjHKmyuSJQ4no3EzFgs0sY=",
       "url": "js\/common.js"
     },
@@ -289,5 +341,5 @@
       "url": "microsoft-social-logo.png"
     }
   ],
-  "version": "obl2nGT2"
+  "version": "EB2HSaOW"
 };
