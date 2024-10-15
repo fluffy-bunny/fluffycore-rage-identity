@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "BlazorOIDCFlow",
   "resources": {
-    "hash": "sha256-HSDkqNfbAVOlNTpsW6NAKpv7q39/U9NumDY7dWiOqNo=",
+    "hash": "sha256-uyNFyysJWrjonFK1D8K/P1LYj2Kix0Y9wbTVLS3nQvU=",
     "jsModuleNative": {
       "dotnet.native.8.0.8.yzi5282zz1.js": "sha256-CC6791/fuN3JkEw/6qYCD2P3x6+3Eh6Vnu7XWsyxtMA="
     },
@@ -15,7 +15,7 @@
       "icudt.dat": "sha256-tO5O5YzMTVSaKBboxAqezOQL9ewmupzV2JrB5Rkc8a4="
     },
     "assembly": {
-      "BlazorOIDCFlow.wasm": "sha256-1hbAhjlEbVIZ0qM65YN7PymbtQpfR2zHJflZwbefaes=",
+      "BlazorOIDCFlow.wasm": "sha256-XyoYSkmyDC+uVasxmUxb+NjjXX1CZee2LaUHvDl1Ht8=",
       "Microsoft.AspNetCore.Components.Forms.wasm": "sha256-w8etJcmRq9U91EskUF0xL00OwY10yC3zb1MUnxQOxGM=",
       "Microsoft.AspNetCore.Components.wasm": "sha256-GqChvNONnVeZNJ7a/ApLjaHnYoO67dUOzkcfVyrwtSo=",
       "Microsoft.AspNetCore.Components.Web.wasm": "sha256-9LvhN+g5xYapGLqbwGR2wqqeM3JM8iZcvXLRLkoD3UM=",
