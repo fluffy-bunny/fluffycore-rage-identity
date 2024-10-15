@@ -55,6 +55,7 @@ import (
 	services_handlers_webauthn_registrationfinish "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn/registrationfinish"
 	services_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/oidc_session"
 	pkg_types "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/types"
+	pkg_version "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/version"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidcuser "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
@@ -72,6 +73,7 @@ import (
 	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	echo_middleware "github.com/labstack/echo/v4/middleware"
+	"github.com/rs/xid"
 	zerolog "github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
 	codes "google.golang.org/grpc/codes"
@@ -134,7 +136,7 @@ func (s *startup) ConfigureServices(builder di.ContainerBuilder) error {
 	s.addAppHandlers(builder)
 	services.ConfigureServices(context.TODO(), s.config, builder)
 	if s.ext != nil {
-		s.ext(context.TODO(), builder)
+		s.ext(context.TODO(), s.config, builder)
 	}
 	return nil
 }
@@ -229,6 +231,21 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_verifycode.AddScopedIHandler(builder)
 	services_handlers_passwordreset.AddScopedIHandler(builder)
 	services_handlers_api.AddScopedIHandler(builder)
+
+	guid := xid.New().String()
+	if pkg_version.Version() != "dev-build" {
+		guid = pkg_version.Version()
+	}
+	s.config.OIDCUIConfig.CacheBustingConfig.ReplaceParams = []*contracts_config.KeyValuePair{
+		{
+			Key:   "{title}",
+			Value: s.config.ApplicationName,
+		},
+		{
+			Key:   "{version}",
+			Value: guid,
+		},
+	}
 	services_handlers_cache_busting_static_html.AddScopedIHandler(builder, s.config.OIDCUIConfig.CacheBustingConfig)
 
 	if s.config.WebAuthNConfig != nil && s.config.WebAuthNConfig.Enabled {

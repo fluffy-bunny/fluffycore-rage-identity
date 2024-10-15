@@ -88,11 +88,16 @@ type (
 		Enabled    bool   `json:"enabled"`
 		IssuerName string `json:"issuerName"`
 	}
+	KeyValuePair struct {
+		Key   string `json:"key"`
+		Value string `json:"value"`
+	}
 	CacheBustingHTMLConfig struct {
-		FilePath   string `json:"filePath"`
-		EchoPath   string `json:"echoPath"`
-		StaticPath string `json:"staticPath"`
-		RootPath   string `json:"rootPath"`
+		FilePath      string          `json:"filePath"`
+		EchoPath      string          `json:"echoPath"`
+		StaticPath    string          `json:"staticPath"`
+		RootPath      string          `json:"rootPath"`
+		ReplaceParams []*KeyValuePair `json:"replaceParams"`
 	}
 	OIDCUIConfig struct {
 		AppSettings        *models_api_appsettings.OIDCUIAppSettings `json:"appSettings"`
