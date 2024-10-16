@@ -227,7 +227,6 @@ func (s *service) Do(c echo.Context) error {
 	}
 	err = doPasswordVerification()
 	if err != nil {
-		log.Error().Err(err).Msg("VerifyPassword")
 		response := &login_models.LoginPasswordErrorResponse{
 			Email:  model.Email,
 			Reason: "wrong_password",
