@@ -9,27 +9,27 @@
       "url": "_framework\/dotnet.js"
     },
     {
-      "hash": "sha256-juC5sA7gHTLXFEhAKgdM2\/RavswpwCtDfjYGsAz2FXg=",
-      "url": "_framework\/dotnet.native.8.0.8.yk8s6ahn8l.js"
-    },
-    {
-      "hash": "sha256-OcUTcd7qQceenWEF93409WZcaXp2qQbEyhdchog4RUE=",
-      "url": "_framework\/dotnet.native.wasm"
-    },
-    {
       "hash": "sha256-0Dpj\/NkVD5WqSC16ZvJLmlc38iv9+Je+umYBVOycPVU=",
-      "url": "_framework\/dotnet.runtime.8.0.8.13jnydyu68.js"
+      "url": "_framework\/dotnet.runtime.8.0.8.80cvijctdx.js"
     },
     {
       "hash": "sha256-tO5O5YzMTVSaKBboxAqezOQL9ewmupzV2JrB5Rkc8a4=",
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-d691hgJDATovgRS9bVR\/KUElKBUiAKFwNbgmiHrbqPc=",
+      "hash": "sha256-Gt7qKBib7\/Nn7hnxSfU1A7a\/uHvBjjunRdKGSYPpORY=",
       "url": "_framework\/blazor.boot.json"
     },
     {
-      "hash": "sha256-NFzNrH0QVaDSrYW8eBy+eKetY\/mX9wDTCC\/dyCPQV8E=",
+      "hash": "sha256-CC6791\/fuN3JkEw\/6qYCD2P3x6+3Eh6Vnu7XWsyxtMA=",
+      "url": "_framework\/dotnet.native.8.0.8.e2htq328cs.js"
+    },
+    {
+      "hash": "sha256-w+0nJsdleF7oDpETtd\/b6Hcm7aFAM\/yWJxde6X9U004=",
+      "url": "_framework\/dotnet.native.wasm"
+    },
+    {
+      "hash": "sha256-S4I56FRbxgdj1AmgHS+F\/kIzBYZTVhP0lTfoZVMgnaw=",
       "url": "_framework\/BlazorAccountManagement.wasm"
     },
     {
@@ -257,7 +257,7 @@
       "url": "BlazorAccountManagement.styles.css"
     },
     {
-      "hash": "sha256-4VEXUHjoVut9P0fja2Po4G+iKH8SbjodbdJto5r7ups=",
+      "hash": "sha256-O8PGmO8rYH3865+82mLlpE3yTfcXFe2+\/Xk9Nqyjxs8=",
       "url": "css\/app.css"
     },
     {
@@ -265,13 +265,13 @@
       "url": "iconifier-readme.txt"
     },
     {
-      "hash": "sha256-WvjoQ9hThd8NUCYoluDaMJS9uio0VAQWeQUKok7Wk4w=",
+      "hash": "sha256-oHTicXAEO\/HR8b7PkiGJDpjHKmyuSJQ4no3EzFgs0sY=",
       "url": "js\/common.js"
     },
     {
-      "hash": "sha256-o5765i2W5qLij\/qP8RmcJhvkuHq7vLDd4RgZbEgctCY=",
+      "hash": "sha256-Gha\/0HM739I5LCn9dabyLPn\/FTqK+cF9Um6HZ8OzPc0=",
       "url": "manifest.webmanifest"
     }
   ],
-  "version": "cKnmmu6Q"
+  "version": "0KkMAsys"
 };

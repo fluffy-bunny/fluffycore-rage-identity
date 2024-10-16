@@ -9,27 +9,27 @@
       "url": "_framework\/dotnet.js"
     },
     {
-      "hash": "sha256-juC5sA7gHTLXFEhAKgdM2\/RavswpwCtDfjYGsAz2FXg=",
-      "url": "_framework\/dotnet.native.8.0.8.yk8s6ahn8l.js"
-    },
-    {
-      "hash": "sha256-OcUTcd7qQceenWEF93409WZcaXp2qQbEyhdchog4RUE=",
-      "url": "_framework\/dotnet.native.wasm"
-    },
-    {
       "hash": "sha256-0Dpj\/NkVD5WqSC16ZvJLmlc38iv9+Je+umYBVOycPVU=",
-      "url": "_framework\/dotnet.runtime.8.0.8.13jnydyu68.js"
+      "url": "_framework\/dotnet.runtime.8.0.8.80cvijctdx.js"
     },
     {
       "hash": "sha256-tO5O5YzMTVSaKBboxAqezOQL9ewmupzV2JrB5Rkc8a4=",
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-6eryvxOcfAGC0Z2FY2uzcFmlHS\/EMztjbNZkIWVoYjc=",
+      "hash": "sha256-\/1jsl4bparh5fa32GknLLaeMW36\/pjTPFKC3dS1+obI=",
       "url": "_framework\/blazor.boot.json"
     },
     {
-      "hash": "sha256-OjU5\/A+sgNMSE30xR+cbwgqy17zueEwfY3DtLW4j8Qw=",
+      "hash": "sha256-CC6791\/fuN3JkEw\/6qYCD2P3x6+3Eh6Vnu7XWsyxtMA=",
+      "url": "_framework\/dotnet.native.8.0.8.yzi5282zz1.js"
+    },
+    {
+      "hash": "sha256-rgJylskD\/vbWlLsouhDxc2X+ndh6NbhRkNecagKMW9w=",
+      "url": "_framework\/dotnet.native.wasm"
+    },
+    {
+      "hash": "sha256-TLOl5q1KQOWmVSKu0O7izYPYOWNuXtLVQusuZiFkAnI=",
       "url": "_framework\/BlazorOIDCFlow.wasm"
     },
     {
@@ -253,7 +253,7 @@
       "url": "BlazorOIDCFlow.styles.css"
     },
     {
-      "hash": "sha256-eWcDIXZfmUEyb79Xs0vaipWicinIkTRX8M\/Wv7kce8I=",
+      "hash": "sha256-aNQ57\/Uxjo7kH6sPKIXSz0H\/XmOyFw03rdaGMr7Y8P0=",
       "url": "css\/app.css"
     },
     {
@@ -269,11 +269,11 @@
       "url": "iconifier-readme.txt"
     },
     {
-      "hash": "sha256-WvjoQ9hThd8NUCYoluDaMJS9uio0VAQWeQUKok7Wk4w=",
+      "hash": "sha256-oHTicXAEO\/HR8b7PkiGJDpjHKmyuSJQ4no3EzFgs0sY=",
       "url": "js\/common.js"
     },
     {
-      "hash": "sha256-vi+tUzNCoWR83TCKQ8OEGAdz8rbKti9XeOjf7++DCrc=",
+      "hash": "sha256-pFUCnce4a3Q8p5vSYSAbLbhqBqQu1+KkmpI+K8uckbk=",
       "url": "manifest.webmanifest"
     },
     {
@@ -281,5 +281,5 @@
       "url": "microsoft-social-logo.png"
     }
   ],
-  "version": "MWK4lvfV"
+  "version": "Nhv\/dmLl"
 };
