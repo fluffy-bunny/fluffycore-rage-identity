@@ -9,27 +9,27 @@
       "url": "_framework\/dotnet.js"
     },
     {
+      "hash": "sha256-juC5sA7gHTLXFEhAKgdM2\/RavswpwCtDfjYGsAz2FXg=",
+      "url": "_framework\/dotnet.native.8.0.8.yk8s6ahn8l.js"
+    },
+    {
+      "hash": "sha256-OcUTcd7qQceenWEF93409WZcaXp2qQbEyhdchog4RUE=",
+      "url": "_framework\/dotnet.native.wasm"
+    },
+    {
       "hash": "sha256-0Dpj\/NkVD5WqSC16ZvJLmlc38iv9+Je+umYBVOycPVU=",
-      "url": "_framework\/dotnet.runtime.8.0.8.80cvijctdx.js"
+      "url": "_framework\/dotnet.runtime.8.0.8.13jnydyu68.js"
     },
     {
       "hash": "sha256-tO5O5YzMTVSaKBboxAqezOQL9ewmupzV2JrB5Rkc8a4=",
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-KWfGuUoyUkoERr2oi2aBqZKjTnwrXRjg1xn860WaQ3M=",
+      "hash": "sha256-6eryvxOcfAGC0Z2FY2uzcFmlHS\/EMztjbNZkIWVoYjc=",
       "url": "_framework\/blazor.boot.json"
     },
     {
-      "hash": "sha256-CC6791\/fuN3JkEw\/6qYCD2P3x6+3Eh6Vnu7XWsyxtMA=",
-      "url": "_framework\/dotnet.native.8.0.8.yzi5282zz1.js"
-    },
-    {
-      "hash": "sha256-rgJylskD\/vbWlLsouhDxc2X+ndh6NbhRkNecagKMW9w=",
-      "url": "_framework\/dotnet.native.wasm"
-    },
-    {
-      "hash": "sha256-MxZCAIsEEPcK3HGMzNYZOFfSsYXxbAVVr8stKNn\/ZeY=",
+      "hash": "sha256-OjU5\/A+sgNMSE30xR+cbwgqy17zueEwfY3DtLW4j8Qw=",
       "url": "_framework\/BlazorOIDCFlow.wasm"
     },
     {
@@ -253,60 +253,8 @@
       "url": "BlazorOIDCFlow.styles.css"
     },
     {
-      "hash": "sha256-kaqm7IxEHyYf7PRNaDXD7NHVvvcsUd9UXS3DSZt+FY8=",
-      "url": "apple-touch-icon-114x114.png"
-    },
-    {
-      "hash": "sha256-L3CjTHVx9YsaMbwzhiQ2EOh9y\/Ar2aJzm3x9PnfbXs0=",
-      "url": "apple-touch-icon-120x120.png"
-    },
-    {
-      "hash": "sha256-YpFdqZejhZm4A+2FUL747L3nSFghTE+M8L9rdVFaHvo=",
-      "url": "apple-touch-icon-144x144.png"
-    },
-    {
-      "hash": "sha256-Zqag7+BU2OlNHh1UrA2fBaZe\/cggT01wHPvRK6p1\/bw=",
-      "url": "apple-touch-icon-152x152.png"
-    },
-    {
-      "hash": "sha256-Dv05upwZzl\/NMvTEXIMYjuTnOA1btAKhhXgHrUssb3g=",
-      "url": "apple-touch-icon-180x180.png"
-    },
-    {
-      "hash": "sha256-6I3DC+VTd9+TRPtNKr+9Kaf4+qvgEU2cdz+xCinT7aI=",
-      "url": "apple-touch-icon-192x192.png"
-    },
-    {
-      "hash": "sha256-+Mci2Rs6EiiRtL4hT1ciZi+b2+pYWYXQSRZpo72j8eI=",
-      "url": "apple-touch-icon-512x512.png"
-    },
-    {
-      "hash": "sha256-HWbxloJneZTQPh5kB9yI8UYWJFv\/urjTVqhOTduIqus=",
-      "url": "apple-touch-icon-57x57.png"
-    },
-    {
-      "hash": "sha256-NiCRmTpF2dbHOol+iyWIAxphFBfQ7OoXXtKo+YUtR44=",
-      "url": "apple-touch-icon-72x72.png"
-    },
-    {
-      "hash": "sha256-M3csIKdQE3OXp+irspAkSpHExXLNn5Q+hRlKxu7LQMI=",
-      "url": "apple-touch-icon-76x76.png"
-    },
-    {
-      "hash": "sha256-HWbxloJneZTQPh5kB9yI8UYWJFv\/urjTVqhOTduIqus=",
-      "url": "apple-touch-icon.png"
-    },
-    {
-      "hash": "sha256-zzMj5StY2LKVX290+84d6Fd7qwecD\/swlRuCh3JYrSU=",
+      "hash": "sha256-eWcDIXZfmUEyb79Xs0vaipWicinIkTRX8M\/Wv7kce8I=",
       "url": "css\/app.css"
-    },
-    {
-      "hash": "sha256-4NAL4iVQSf4Vl4omj9lgVgjRiDf\/AiZUh\/hKzkfdRlo=",
-      "url": "favicon.ico"
-    },
-    {
-      "hash": "sha256-xoQZUtJ6iJoMvyjg8BhkL36d8h2M7iEd0Y4Wo1bRWiY=",
-      "url": "favicon.png"
     },
     {
       "hash": "sha256-EDCwv67KK1BKZNxWrEN5z1jPHoO2DXmQVlhi\/F8oqao=",
@@ -317,23 +265,15 @@
       "url": "google-social-logo.png"
     },
     {
-      "hash": "sha256-DbpQaq68ZSb5IoPosBErM1QWBfsbTxpJqhU0REi6wP4=",
-      "url": "icon-192.png"
-    },
-    {
-      "hash": "sha256-oEo6d+KqX5fjxTiZk\/w9NB3Mi0+ycS5yLwCKwr4IkbA=",
-      "url": "icon-512.png"
-    },
-    {
       "hash": "sha256-jdeCcnuUgi7cReu1Gjcz9jDNW5Fq8dB6+Kojq99Yzmg=",
       "url": "iconifier-readme.txt"
     },
     {
-      "hash": "sha256-oHTicXAEO\/HR8b7PkiGJDpjHKmyuSJQ4no3EzFgs0sY=",
+      "hash": "sha256-WvjoQ9hThd8NUCYoluDaMJS9uio0VAQWeQUKok7Wk4w=",
       "url": "js\/common.js"
     },
     {
-      "hash": "sha256-wg0Z2x2TeJ4tkuKvWLMiqgrA1zbWy683Dxz0zoVbDI8=",
+      "hash": "sha256-vi+tUzNCoWR83TCKQ8OEGAdz8rbKti9XeOjf7++DCrc=",
       "url": "manifest.webmanifest"
     },
     {
@@ -341,5 +281,5 @@
       "url": "microsoft-social-logo.png"
     }
   ],
-  "version": "EB2HSaOW"
+  "version": "MWK4lvfV"
 };

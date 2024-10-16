@@ -9,27 +9,27 @@
       "url": "_framework\/dotnet.js"
     },
     {
+      "hash": "sha256-juC5sA7gHTLXFEhAKgdM2\/RavswpwCtDfjYGsAz2FXg=",
+      "url": "_framework\/dotnet.native.8.0.8.yk8s6ahn8l.js"
+    },
+    {
+      "hash": "sha256-OcUTcd7qQceenWEF93409WZcaXp2qQbEyhdchog4RUE=",
+      "url": "_framework\/dotnet.native.wasm"
+    },
+    {
       "hash": "sha256-0Dpj\/NkVD5WqSC16ZvJLmlc38iv9+Je+umYBVOycPVU=",
-      "url": "_framework\/dotnet.runtime.8.0.8.80cvijctdx.js"
+      "url": "_framework\/dotnet.runtime.8.0.8.13jnydyu68.js"
     },
     {
       "hash": "sha256-tO5O5YzMTVSaKBboxAqezOQL9ewmupzV2JrB5Rkc8a4=",
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-lbuNolna6+VBW0oeeFmkUNeNjgpJG\/M7PRg61s\/WAIk=",
+      "hash": "sha256-d691hgJDATovgRS9bVR\/KUElKBUiAKFwNbgmiHrbqPc=",
       "url": "_framework\/blazor.boot.json"
     },
     {
-      "hash": "sha256-CC6791\/fuN3JkEw\/6qYCD2P3x6+3Eh6Vnu7XWsyxtMA=",
-      "url": "_framework\/dotnet.native.8.0.8.e2htq328cs.js"
-    },
-    {
-      "hash": "sha256-w+0nJsdleF7oDpETtd\/b6Hcm7aFAM\/yWJxde6X9U004=",
-      "url": "_framework\/dotnet.native.wasm"
-    },
-    {
-      "hash": "sha256-HQu3VLThK4hnAPzCATZ\/CigsJCyg+idlgjF55JcVAjg=",
+      "hash": "sha256-NFzNrH0QVaDSrYW8eBy+eKetY\/mX9wDTCC\/dyCPQV8E=",
       "url": "_framework\/BlazorAccountManagement.wasm"
     },
     {
@@ -253,85 +253,25 @@
       "url": "_framework\/System.wasm"
     },
     {
-      "hash": "sha256-Kb+PrSCGgwIAJYTADmCIsvEbqDC8bhC3OU\/Cgt\/3Dpg=",
+      "hash": "sha256-47mMLFbJrei1Rr5pHG1YCugK0+OwLVg7DJ6tl2D\/mn4=",
       "url": "BlazorAccountManagement.styles.css"
     },
     {
-      "hash": "sha256-vTm36ITtO0Ee885QxbHrG3\/Yx7ihiWn2AkDGgK4L+9U=",
-      "url": "apple-touch-icon-114x114.png"
-    },
-    {
-      "hash": "sha256-XvsqbwMizBXAGJix4DGHi0W8pnE8cbrAVFj5Dm3OFBI=",
-      "url": "apple-touch-icon-120x120.png"
-    },
-    {
-      "hash": "sha256-K+joRSu78nwEhiMxFB\/v1vgyG4qdT8v9ieKfD5zDyTk=",
-      "url": "apple-touch-icon-144x144.png"
-    },
-    {
-      "hash": "sha256-slZE5UXBBQ0vcnYiRV6TQ\/cj2gBqS7qzc\/GR1L7pgSU=",
-      "url": "apple-touch-icon-152x152.png"
-    },
-    {
-      "hash": "sha256-fJMWEaUaie2Y6NueZ63UFhOTb0l7qB6Bdv5lR2LnI1s=",
-      "url": "apple-touch-icon-180x180.png"
-    },
-    {
-      "hash": "sha256-2+kT3jNm\/h5AtT1fQPCmZsDXxs+tCldziGIytkSeaBg=",
-      "url": "apple-touch-icon-192x192.png"
-    },
-    {
-      "hash": "sha256-l8nCD3DjnxfBP3izAZDzW41kXQDg3Vr6DyuL6zwfzRc=",
-      "url": "apple-touch-icon-512x512.png"
-    },
-    {
-      "hash": "sha256-AZ3t0hvDa+L0YVUune1ZkEZw7mjY2XzA2RPQzIsgsV8=",
-      "url": "apple-touch-icon-57x57.png"
-    },
-    {
-      "hash": "sha256-vDUZaEky4RfN7Hs0dHnbDvIr9Kgmo2846zWdmfPARog=",
-      "url": "apple-touch-icon-72x72.png"
-    },
-    {
-      "hash": "sha256-Hpwdxmg52GPdiZQnq0NQXvvBTRgSQJhFN7SUJiuFh+4=",
-      "url": "apple-touch-icon-76x76.png"
-    },
-    {
-      "hash": "sha256-AZ3t0hvDa+L0YVUune1ZkEZw7mjY2XzA2RPQzIsgsV8=",
-      "url": "apple-touch-icon.png"
-    },
-    {
-      "hash": "sha256-O8PGmO8rYH3865+82mLlpE3yTfcXFe2+\/Xk9Nqyjxs8=",
+      "hash": "sha256-4VEXUHjoVut9P0fja2Po4G+iKH8SbjodbdJto5r7ups=",
       "url": "css\/app.css"
-    },
-    {
-      "hash": "sha256-TsGpCbbZ+c5NC3Mrr83TCV0J671nQR4+zfXXu5NX95w=",
-      "url": "favicon.ico"
-    },
-    {
-      "hash": "sha256-DbpQaq68ZSb5IoPosBErM1QWBfsbTxpJqhU0REi6wP4=",
-      "url": "icon-192.png"
-    },
-    {
-      "hash": "sha256-oEo6d+KqX5fjxTiZk\/w9NB3Mi0+ycS5yLwCKwr4IkbA=",
-      "url": "icon-512.png"
     },
     {
       "hash": "sha256-jdeCcnuUgi7cReu1Gjcz9jDNW5Fq8dB6+Kojq99Yzmg=",
       "url": "iconifier-readme.txt"
     },
     {
-      "hash": "sha256-nMaVBHzJBw8SBwyNU0D7u3xnFWv82e2mv4arRFciWMM=",
-      "url": "index.html"
-    },
-    {
-      "hash": "sha256-oHTicXAEO\/HR8b7PkiGJDpjHKmyuSJQ4no3EzFgs0sY=",
+      "hash": "sha256-WvjoQ9hThd8NUCYoluDaMJS9uio0VAQWeQUKok7Wk4w=",
       "url": "js\/common.js"
     },
     {
-      "hash": "sha256-01N\/s0HuXVGLdJMIou4gRt2mRpANcxGm5fs59MD56Zw=",
+      "hash": "sha256-o5765i2W5qLij\/qP8RmcJhvkuHq7vLDd4RgZbEgctCY=",
       "url": "manifest.webmanifest"
     }
   ],
-  "version": "6nGHXToB"
+  "version": "cKnmmu6Q"
 };
