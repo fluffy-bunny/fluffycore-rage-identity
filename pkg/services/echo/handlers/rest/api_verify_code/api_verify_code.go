@@ -160,6 +160,23 @@ func (s *service) Do(c echo.Context) error {
 	// one time only
 	s.wellknownCookies.DeleteVerificationCodeCookie(c)
 
+	oidcIdentity := &proto_oidc_models.OIDCIdentity{
+		Subject: rageUser.RootIdentity.Subject,
+		Email:   rageUser.RootIdentity.Email,
+		Acr: []string{
+			models.ACRPassword,
+			models.ACRIdpRoot,
+		},
+		Amr: []string{
+			models.AMRPassword,
+			// always true, as we are the root idp
+			models.AMRIdp,
+			// this is a multifactor
+			models.AMRMFA,
+			models.AMREmailCode,
+		},
+	}
+
 	switch verificationCode.VerifyCodePurpose {
 	case contracts_cookies.VerifyCode_EmailVerification:
 		response := &login_models.VerifyCodeResponse{
@@ -192,6 +209,8 @@ func (s *service) Do(c echo.Context) error {
 					Email:         rageUser.RootIdentity.Email,
 					EmailVerified: rageUser.RootIdentity.EmailVerified,
 				},
+				Acr: oidcIdentity.Acr,
+				Amr: oidcIdentity.Amr,
 			},
 		})
 		if err != nil {
@@ -220,22 +239,7 @@ func (s *service) Do(c echo.Context) error {
 			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
 		authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
-		authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
-			Subject: rageUser.RootIdentity.Subject,
-			Email:   rageUser.RootIdentity.Email,
-			Acr: []string{
-				models.ACRPassword,
-				models.ACRIdpRoot,
-			},
-			Amr: []string{
-				models.AMRPassword,
-				// always true, as we are the root idp
-				models.AMRIdp,
-				// this is a multifactor
-				models.AMRMFA,
-				models.AMREmailCode,
-			},
-		}
+		authorizationFinal.Identity = oidcIdentity
 		// "urn:rage:idp:google", "urn:rage:idp:spacex", "urn:rage:idp:github-enterprise", etc.
 		// "urn:rage:password", "urn:rage:2fa", "urn:rage:email", etc.
 		// we are done with the state now.  Lets map it to the code so it can be looked up by the client.

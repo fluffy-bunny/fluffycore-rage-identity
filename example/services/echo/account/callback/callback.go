@@ -12,6 +12,7 @@ import (
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v4"
+	jwxt "github.com/lestrrat-go/jwx/v2/jwt"
 	zerolog "github.com/rs/zerolog"
 )
 
@@ -149,6 +150,44 @@ func (s *service) Do(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 
+	token, _ := jwxt.ParseInsecure([]byte(rawIDToken))
+	amrI, _ := token.Get("amr")
+	acrI, _ := token.Get("acr")
+
+	amrSlice := make([]string, 0)
+
+	if amrI != nil {
+		switch v := amrI.(type) {
+		case []interface{}:
+			for _, item := range v {
+				if str, ok := item.(string); ok {
+					amrSlice = append(amrSlice, str)
+				}
+			}
+		case []string:
+			amrSlice = v
+		case string:
+			amrSlice = append(amrSlice, v)
+		}
+	}
+	acrSlice := make([]string, 0)
+	if acrI != nil {
+		switch v := acrI.(type) {
+		case []interface{}:
+			for _, item := range v {
+				if str, ok := item.(string); ok {
+					acrSlice = append(acrSlice, str)
+				}
+			}
+		case []string:
+			acrSlice = v
+		case string:
+			acrSlice = append(acrSlice, v)
+		}
+	}
+
+	log.Debug().Interface("amrI", amrI).Interface("acrI", acrI).Msg("amrI, acrI")
+
 	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
 		AuthCookie: &contracts_cookies.AuthCookie{
 			Identity: &proto_oidc_models.Identity{
@@ -156,6 +195,8 @@ func (s *service) Do(c echo.Context) error {
 				Email:         claims.Email,
 				EmailVerified: claims.EmailVerified,
 			},
+			Acr: acrSlice,
+			Amr: amrSlice,
 		},
 	})
 	if err != nil {

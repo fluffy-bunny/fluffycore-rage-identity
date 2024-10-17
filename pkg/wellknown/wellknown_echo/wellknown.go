@@ -64,6 +64,7 @@ var (
 	API_VerifyPasswordStrength = "/api/verify-password-strength"
 	API_LoginPhaseOne          = "/api/login-phase-one"
 	API_LoginPassword          = "/api/login-password"
+	API_LoginCurrentUser       = "/api/login-current-user"
 	API_VerifyCode             = "/api/verify-code"
 	API_VerifyCodeBegin        = "/api/verify-code-begin"
 	API_Signup                 = "/api/signup"

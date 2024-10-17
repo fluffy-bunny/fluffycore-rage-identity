@@ -203,7 +203,8 @@ func (s *service) validateSetAuthCookieRequest(request *contracts_cookies.SetAut
 	}
 	return nil
 }
-func (s *service) SetAuthCookie(c echo.Context, request *contracts_cookies.SetAuthCookieRequest) error {
+func (s *service) SetAuthCookie(c echo.Context,
+	request *contracts_cookies.SetAuthCookieRequest) error {
 	// TODO: Configurable expiration
 	err := s.validateSetAuthCookieRequest(request)
 	if err != nil {

@@ -63,6 +63,8 @@ type (
 	}
 	AuthCookie struct {
 		Identity *proto_oidc_models.Identity `json:"identity"`
+		Acr      []string                    `json:"acr"`
+		Amr      []string                    `json:"amr"`
 	}
 	SetAuthCookieRequest struct {
 		AuthCookie *AuthCookie `json:"authCookie"`

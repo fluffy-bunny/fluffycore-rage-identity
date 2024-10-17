@@ -261,6 +261,20 @@ func (s *service) Do(c echo.Context) error {
 		}
 		return c.JSONPretty(http.StatusOK, response, "  ")
 	}
+	oidcIdentity := &proto_oidc_models.OIDCIdentity{
+		Subject: user.RootIdentity.Subject,
+		Email:   user.RootIdentity.Email,
+		Acr: []string{
+			models.ACRPassword,
+			models.ACRIdpRoot,
+		},
+		Amr: []string{
+			models.AMRPassword,
+			// always true, as we are the root idp
+			models.AMRIdp,
+		},
+	}
+
 	// we can process the final state now
 	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
 		AuthCookie: &contracts_cookies.AuthCookie{
@@ -269,6 +283,8 @@ func (s *service) Do(c echo.Context) error {
 				Email:         user.RootIdentity.Email,
 				EmailVerified: user.RootIdentity.EmailVerified,
 			},
+			Acr: oidcIdentity.Acr,
+			Amr: oidcIdentity.Amr,
 		},
 	})
 	if err != nil {
@@ -293,19 +309,7 @@ func (s *service) Do(c echo.Context) error {
 		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
 	}
 	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
-	authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
-		Subject: user.RootIdentity.Subject,
-		Email:   user.RootIdentity.Email,
-		Acr: []string{
-			models.ACRPassword,
-			models.ACRIdpRoot,
-		},
-		Amr: []string{
-			models.AMRPassword,
-			// always true, as we are the root idp
-			models.AMRIdp,
-		},
-	}
+	authorizationFinal.Identity = oidcIdentity
 	// "urn:rage:idp:google", "urn:rage:idp:spacex", "urn:rage:idp:github-enterprise", etc.
 	// "urn:rage:password", "urn:rage:2fa", "urn:rage:email", etc.
 	// we are done with the state now.  Lets map it to the code so it can be looked up by the client.

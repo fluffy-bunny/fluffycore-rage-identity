@@ -2,6 +2,7 @@ package oidcserver
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"os"
 	"strconv"
@@ -30,6 +31,7 @@ import (
 	services_handlers_passwordreset "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/passwordreset"
 	services_handlers_rest_api_appsettings "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_appsettings"
 	services_handlers_rest_api_isauthorized "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_isauthorized"
+	services_handlers_rest_api_login_current_user "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_login_current_user"
 	services_handlers_rest_api_login_password "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_login_password"
 	services_handlers_rest_api_login_username_phase_one "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_login_username_phase_one"
 	services_handlers_rest_api_logout "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_logout"
@@ -210,6 +212,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_rest_api_signup.AddScopedIHandler(builder)
 	services_handlers_rest_api_logout.AddScopedIHandler(builder)
 	services_handlers_rest_api_user_identity_info.AddScopedIHandler(builder)
+	services_handlers_rest_api_login_current_user.AddScopedIHandler(builder)
 	services_handlers_rest_api_user_linked_accounts.AddScopedIHandler(builder)
 	services_handlers_rest_api_verify_username.AddScopedIHandler(builder)
 	services_handlers_rest_api_password_reset_start.AddScopedIHandler(builder)
@@ -388,6 +391,9 @@ func EnsureCookieClaimsPrincipal(_ di.Container) echo.MiddlewareFunc {
 			}
 			rootIdentity := getAuthCookieResponse.AuthCookie.Identity
 			scopedMemoryCache.Set("rootIdentity", rootIdentity)
+			acrJson, _ := json.Marshal(getAuthCookieResponse.AuthCookie.Acr)
+			amrJson, _ := json.Marshal(getAuthCookieResponse.AuthCookie.Amr)
+
 			claimsPrincipal.AddClaim(
 				fluffycore_contracts_common.Claim{
 					Type:  fluffycore_echo_wellknown.ClaimTypeAuthenticated,
@@ -402,6 +408,12 @@ func EnsureCookieClaimsPrincipal(_ di.Container) echo.MiddlewareFunc {
 				}, fluffycore_contracts_common.Claim{
 					Type:  "email_verified",
 					Value: strconv.FormatBool(rootIdentity.EmailVerified),
+				}, fluffycore_contracts_common.Claim{
+					Type:  "acr",
+					Value: string(acrJson),
+				}, fluffycore_contracts_common.Claim{
+					Type:  "amr",
+					Value: string(amrJson),
 				})
 
 			return next(c)
