@@ -48,8 +48,8 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 type IsAuthorizedResponse struct{}
 
 // API Manifest godoc
-// @Summary get the app settings
-// @Description This is the configuration of the server..
+// @Summary is authorized
+// @Description is authorized
 // @Tags root
 // @Produce json
 // @Success 200 {object} api.AuthorizedResponse

@@ -74,6 +74,7 @@ var (
 	API_Logout                 = "/api/logout"
 	API_UserLinkedAccounts     = "/api/user-linked-accounts"
 	API_IsAuthorized           = "/api/is-authorized"
+	API_IsValidOIDCSession     = "/api/is-valid-oidc-session"
 )
 
 type Paths struct {

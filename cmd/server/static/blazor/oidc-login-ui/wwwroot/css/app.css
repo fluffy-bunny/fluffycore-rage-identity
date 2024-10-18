@@ -209,3 +209,27 @@ code {
         padding: 0.375rem 0.75rem;
     }
 }
+
+.list-group-item-action {
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+    .list-group-item-action:hover, .list-group-item-action:focus {
+        background-color: #f8f9fa;
+        border-color: #dfe3e8;
+        box-shadow: 0 .125rem .25rem rgba(0,0,0,.075);
+    }
+
+.account-avatar {
+    width: 48px;
+    height: 48px;
+    background-color: #007bff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: bold;
+    border-radius: 50%;
+}

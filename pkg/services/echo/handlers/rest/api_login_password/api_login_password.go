@@ -329,10 +329,11 @@ func (s *service) Do(c echo.Context) error {
 	s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
 		State: authorizationRequest.State,
 	})
-	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-		State:                     authorizationRequest.State,
-		AuthorizationRequestState: authorizationFinal,
-	})
+	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx,
+		&proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+			State:                     authorizationRequest.State,
+			AuthorizationRequestState: authorizationFinal,
+		})
 	if err != nil {
 		// redirect to error page
 		log.Error().Err(err).Msg("StoreAuthorizationRequestState")

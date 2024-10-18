@@ -30,6 +30,7 @@ import (
 	services_handlers_oidclogintotp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidclogintotp"
 	services_handlers_passwordreset "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/passwordreset"
 	services_handlers_rest_api_appsettings "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_appsettings"
+	services_handlers_rest_api_is_valid_oidc_sessions "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_is_valid_oidc_sessions"
 	services_handlers_rest_api_isauthorized "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_isauthorized"
 	services_handlers_rest_api_login_current_user "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_login_current_user"
 	services_handlers_rest_api_login_password "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_login_password"
@@ -75,7 +76,7 @@ import (
 	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	echo_middleware "github.com/labstack/echo/v4/middleware"
-	"github.com/rs/xid"
+	xid "github.com/rs/xid"
 	zerolog "github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
 	codes "google.golang.org/grpc/codes"
@@ -219,6 +220,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_rest_api_password_reset_finish.AddScopedIHandler(builder)
 	services_handlers_rest_api_login_password.AddScopedIHandler(builder)
 	services_handlers_rest_api_isauthorized.AddScopedIHandler(builder)
+	services_handlers_rest_api_is_valid_oidc_sessions.AddScopedIHandler(builder)
 	services_handlers_rest_api_login_username_phase_one.AddScopedIHandler(builder)
 	services_handlers_rest_api_verify_password_strength.AddScopedIHandler(builder)
 	services_handlers_oidclogintotp.AddScopedIHandler(builder)
