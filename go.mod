@@ -39,7 +39,7 @@ require (
 	github.com/wamuir/svg-qr-code v0.0.0-20210725140500-9525ec975db7
 	github.com/xlzd/gotp v0.1.0
 	golang.org/x/net v0.30.0
-	golang.org/x/oauth2 v0.23.0
+	golang.org/x/oauth2 v0.24.0
 	golang.org/x/text v0.19.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20241007155032-5fefd90f89a9
 	google.golang.org/grpc v1.67.1
