@@ -338,6 +338,17 @@ func (s *service) Do(c echo.Context) error {
 		}
 		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
 	}
+	err = s.wellknownCookies.AddSuccessfullAccountLoginCookie(c,
+		&contracts_cookies.AddSuccessfullAccountLoginCookieRequest{
+			AccountLoginType: &contracts_cookies.AccountLoginType{
+				Email:     model.Email,
+				LoginType: contracts_cookies.Local,
+			},
+		})
+	if err != nil {
+		// don't care about this cookie so much.
+		log.Error().Err(err).Msg("AddSuccessfullAccountLoginCookie")
+	}
 	// redirect to the client with the code.
 	redirectUri := authorizationFinal.Request.RedirectUri +
 		"?code=" + authorizationFinal.Request.Code +

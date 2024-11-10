@@ -369,6 +369,19 @@ func (s *service) Do(c echo.Context) error {
 				log.Error().Err(err).Msg("StoreAuthorizationRequestState")
 				return s.TeleportBackToLogin(c, InternalError_Callback_002)
 			}
+			err = s.wellknownCookies.AddSuccessfullAccountLoginCookie(c,
+				&contracts_cookies.AddSuccessfullAccountLoginCookieRequest{
+					AccountLoginType: &contracts_cookies.AccountLoginType{
+						Email:     user.RootIdentity.Email,
+						LoginType: contracts_cookies.Local,
+					},
+				})
+			if err != nil {
+				// don't care about this error so much
+				log.Error().Err(err).Msg("AddSuccessfullAccountLoginCookie")
+				err = nil
+			}
+
 			// redirect back
 			return doLoginBounceBack()
 		}

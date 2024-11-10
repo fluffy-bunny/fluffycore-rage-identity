@@ -262,6 +262,18 @@ func (s *service) Do(c echo.Context) error {
 		}
 		rootPath := echo_utils.GetMyRootPath(c)
 
+		err = s.wellknownCookies.AddSuccessfullAccountLoginCookie(c,
+			&contracts_cookies.AddSuccessfullAccountLoginCookieRequest{
+				AccountLoginType: &contracts_cookies.AccountLoginType{
+					Email:     rageUser.RootIdentity.Email,
+					LoginType: contracts_cookies.Local,
+				},
+			})
+		if err != nil {
+			// don't care about this cookie so much.
+			log.Error().Err(err).Msg("AddSuccessfullAccountLoginCookie")
+		}
+
 		// redirect to the client with the code.
 		redirectUri := authorizationFinal.Request.RedirectUri +
 			"?code=" + authorizationFinal.Request.Code +
@@ -270,6 +282,7 @@ func (s *service) Do(c echo.Context) error {
 		response.DirectiveRedirect = &login_models.DirectiveRedirect{
 			RedirectURI: redirectUri,
 		}
+
 		return c.JSONPretty(http.StatusOK, response, "  ")
 
 	}

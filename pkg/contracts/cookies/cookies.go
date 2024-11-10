@@ -14,6 +14,13 @@ const (
 	VerifyCode_Challenge
 )
 
+type LoginType string
+
+const (
+	Local            LoginType = "local"
+	ExternalIdentity LoginType = "externalIdentity"
+)
+
 type (
 	SetExternalOauth2CookieRequest struct {
 		State               string                                 `json:"state"`
@@ -100,6 +107,21 @@ type (
 	GetErrorCookieResponse struct {
 		Value *ErrorCookie `json:"errorCookie"`
 	}
+
+	AccountLoginType struct {
+		Email     string    `json:"email"`
+		LoginType LoginType `json:"loginType"`
+		TimeUnix  int64     `json:"timeUnix"`
+	}
+	AddSuccessfullAccountLoginCookieRequest struct {
+		AccountLoginType *AccountLoginType `json:"accountLoginType"`
+	}
+	GetSuccessfullAccountLoginCookieResponse struct {
+		SuccessfullLoginCookie *SuccessfullLoginCookie `json:"successfullLogins"`
+	}
+	SuccessfullLoginCookie struct {
+		SuccessfullLogins []*AccountLoginType `json:"successfullLogins"`
+	}
 	IWellknownCookies interface {
 		// External OAuth2 Cookie
 		//---------------------------------------------------------------------
@@ -148,10 +170,16 @@ type (
 		SetErrorCookie(c echo.Context, request *SetErrorCookieRequest) error
 		DeleteErrorCookie(c echo.Context)
 		GetErrorCookie(c echo.Context) (*GetErrorCookieResponse, error)
+
+		// AddSuccessfullAccountLoginCookie Cookie
+		//---------------------------------------------------------------------
+		AddSuccessfullAccountLoginCookie(c echo.Context, request *AddSuccessfullAccountLoginCookieRequest) error
+		GetSuccessfullAccountLoginCookie(c echo.Context) (*GetSuccessfullAccountLoginCookieResponse, error)
 	}
 )
 
 const (
+	CookieSuccessfullAccountLogin         = "_successfullAccountLogin"
 	CookieNameVerificationCode            = "_verificationCode"
 	CookieNamePasswordReset               = "_passwordReset"
 	CookieNameAccountState                = "_accountState"

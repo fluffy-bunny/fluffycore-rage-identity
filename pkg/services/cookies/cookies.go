@@ -2,7 +2,9 @@ package cookies
 
 import (
 	"strings"
+	"time"
 
+	golinq "github.com/ahmetb/go-linq/v3"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
@@ -54,6 +56,66 @@ func (s *service) Ctor(
 func AddSingletonIWellknownCookies(cb di.ContainerBuilder) {
 	di.AddSingleton[contracts_cookies.IWellknownCookies](cb, stemService.Ctor)
 }
+
+func (s *service) validateAddSuccessfullAccountLoginCookieRequest(request *contracts_cookies.AddSuccessfullAccountLoginCookieRequest) error {
+	if request == nil {
+		return status.Error(codes.InvalidArgument, "request is nil")
+	}
+	if request.AccountLoginType == nil {
+		return status.Error(codes.InvalidArgument, "request.AccountLoginType is nil")
+	}
+	if fluffycore_utils.IsEmptyOrNil(request.AccountLoginType.Email) {
+		return status.Error(codes.InvalidArgument, "request.AccountLoginType.Email is empty")
+	}
+	if fluffycore_utils.IsEmptyOrNil(request.AccountLoginType.LoginType) {
+		return status.Error(codes.InvalidArgument, "request.AccountLoginType.LoginType is empty")
+	}
+	request.AccountLoginType.TimeUnix = time.Now().Unix()
+	return nil
+}
+func (s *service) AddSuccessfullAccountLoginCookie(c echo.Context, request *contracts_cookies.AddSuccessfullAccountLoginCookieRequest) error {
+	err := s.validateAddSuccessfullAccountLoginCookieRequest(request)
+	if err != nil {
+		return err
+	}
+
+	var value *contracts_cookies.SuccessfullLoginCookie = &contracts_cookies.SuccessfullLoginCookie{}
+	resp, err := s.GetSuccessfullAccountLoginCookie(c)
+	if err == nil {
+		value = resp.SuccessfullLoginCookie
+	}
+	mm := make(map[string]*contracts_cookies.AccountLoginType)
+	for _, v := range value.SuccessfullLogins {
+		mm[v.Email] = v
+	}
+	mm[request.AccountLoginType.Email] = request.AccountLoginType
+
+	// make an array and sort by timeUnix with latest first
+	accountLoginTypes := make([]*contracts_cookies.AccountLoginType, 0)
+	for _, v := range mm {
+		accountLoginTypes = append(accountLoginTypes, v)
+	}
+	golinq.From(accountLoginTypes).OrderByDescendingT(func(i interface{}) interface{} {
+		return i.(*contracts_cookies.AccountLoginType).TimeUnix
+	}).ToSlice(&accountLoginTypes)
+	// limit the slice to 10
+	if len(accountLoginTypes) > 10 {
+		accountLoginTypes = accountLoginTypes[:10]
+	}
+	value.SuccessfullLogins = accountLoginTypes
+	return SetCookie(c, s.cookieConfig, s.insecureCookies, contracts_cookies.CookieSuccessfullAccountLogin, value)
+}
+func (s *service) GetSuccessfullAccountLoginCookie(c echo.Context) (*contracts_cookies.GetSuccessfullAccountLoginCookieResponse, error) {
+	var value *contracts_cookies.SuccessfullLoginCookie
+	err := GetCookie(c, s.insecureCookies, contracts_cookies.CookieSuccessfullAccountLogin, &value)
+	if err != nil {
+		return nil, err
+	}
+	return &contracts_cookies.GetSuccessfullAccountLoginCookieResponse{
+		SuccessfullLoginCookie: value,
+	}, nil
+}
+
 func (s *service) validateSetVerificationCodeCookieRequest(request *contracts_cookies.SetVerificationCodeCookieRequest) error {
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is nil")
