@@ -87,6 +87,7 @@ func (s *service) Do(c echo.Context) error {
 		},
 		IDTokenSigningAlgValuesSupported: []string{
 			"ES256",
+			"EdDSA",
 		},
 	}
 	return c.JSONPretty(http.StatusOK, discovery, "  ")

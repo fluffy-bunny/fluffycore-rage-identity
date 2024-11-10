@@ -17,7 +17,7 @@
       "url": "_framework\/icudt.dat"
     },
     {
-      "hash": "sha256-+v3bR7SYoiqCKgldEAt7eudN8zrrGrS7NudRl5PdV3E=",
+      "hash": "sha256-aCfci0PVuzqqVzxhWm7lpYVXomMCkfuTUJeNe3uxge0=",
       "url": "_framework\/blazor.boot.json"
     },
     {
@@ -29,7 +29,7 @@
       "url": "_framework\/dotnet.native.wasm"
     },
     {
-      "hash": "sha256-2stGfLovUIOimL4k68OrDsWKx3QgM7KZ3h9M3E0UJTM=",
+      "hash": "sha256-vYWYzod8nI6rzv\/FLjsv9mYOrr24HU5NFWumg0lKbRA=",
       "url": "_framework\/BlazorOIDCFlow.wasm"
     },
     {
@@ -221,7 +221,7 @@
       "url": "_framework\/System.Runtime.InteropServices.JavaScript.wasm"
     },
     {
-      "hash": "sha256-sldydgBzxr3+lgQxyhbXj3eRr4aQRD4F2S4UJ6C4aP4=",
+      "hash": "sha256-qngX2cS2qE1oyBjGyv1IQo4qWmSYUWxL410labJGJkU=",
       "url": "_framework\/System.Runtime.wasm"
     },
     {
@@ -253,7 +253,7 @@
       "url": "BlazorOIDCFlow.styles.css"
     },
     {
-      "hash": "sha256-aNQ57\/Uxjo7kH6sPKIXSz0H\/XmOyFw03rdaGMr7Y8P0=",
+      "hash": "sha256-PnpOoo4yMQia\/UerBFfbMp7T48LfjrzHegFJSzxpxSU=",
       "url": "css\/app.css"
     },
     {
@@ -281,5 +281,5 @@
       "url": "microsoft-social-logo.png"
     }
   ],
-  "version": "7DWL+ES2"
+  "version": "GPsh71q2"
 };
