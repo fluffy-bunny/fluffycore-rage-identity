@@ -32,9 +32,9 @@ copy `.env.secrets.example` to `.env.secrets` and fill in the blanks.
 # Secrets
 #--------------------------------------------------
 GITHUB_68863c06bc5c9bd0c2f9_CLIENT_SECRET=**REDACTED**
-GOOGLE_1096301616546-edbl612881t7rkpljp3qa3juminskulo.apps.googleusercontent.com_CLIENT_SECRET=**REDACTED**
-AZUREAD_3b918868-9bff-431f-bd9c-f9896d628e6b_CLIENT_SECRET=**REDACTED**
-AZUREAD_0f81aa6c-b280-4503-b130-adc0567bfbe4_CLIENT_SECRET=**REDACTED**
+GOOGLE_1096301616546_edbl612881t7rkpljp3qa3juminskulo.apps.googleusercontent.com_CLIENT_SECRET=**REDACTED**
+AZUREAD_3b918868_9bff_431f_bd9c_f9896d628e6b_CLIENT_SECRET=**REDACTED**
+AZUREAD_0f81aa6c_b280_4503_b130_adc0567bfbe4_CLIENT_SECRET=**REDACTED**
 ```
 
 If you do nothing then the only thing that will work will be username/password logins, and passkeys.
@@ -126,6 +126,7 @@ go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest
 go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 go install github.com/fluffy-bunny/fluffycore/protoc-gen-go-fluffycore-di/cmd/protoc-gen-go-fluffycore-di@latest
+go install github.com/fluffy-bunny/fluffycore/protoc-gen-go-fluffycore-di/cmd/protoc-gen-go-fluffycore-nats@latest
 
 ```
 
