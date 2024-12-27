@@ -85,6 +85,9 @@
                 "___RAGE_accountAppSettings__BaseApiUrl": "http://localhost:9044",
                 "RAGE_accountAppSettings__ApplicationEnvironment": "Production",
                 "RAGE_apiAppSettings__ApplicationEnvironment": "Production",
+                "RAGE_apiAppSettings__PrivacyPolicyUrl": "https://github.com/fluffy-bunny/fluffycore-rage-identity",
+                "RAGE_apiAppSettings__CookiePolicyUrl": "https://github.com/fluffy-bunny/fluffycore-rage-identity/blob/main/LICENSE",
+
                 "RAGE_oidcUIConfig__cacheBustingConfig__filePath": "./static/blazor/oidc-login-ui/wwwroot/index_template.html",
                 "RAGE_oidcUIConfig__cacheBustingConfig__staticPath": "./static/blazor/oidc-login-ui/wwwroot/",
                 "___RAGE_oidcUIConfig__cacheBustingConfig__uriPath": "/",
