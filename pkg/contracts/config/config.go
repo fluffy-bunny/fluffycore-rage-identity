@@ -161,7 +161,9 @@ const configDefaultJSONTemplate = `
 
 	"apiAppSettings": {
 	  "ApplicationEnvironment": "IN_ENVIRONMENT",
-      "BaseApiUrl": ""
+      "BaseApiUrl": "",
+	  "PrivacyPolicyUrl": "",
+	  "CookiePolicyUrl": ""
 	},
     "accountUIConfig": {
     	"appSettings": {
