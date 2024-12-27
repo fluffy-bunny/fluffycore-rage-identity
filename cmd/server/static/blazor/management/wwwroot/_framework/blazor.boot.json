@@ -1,11 +1,11 @@
 {
   "mainAssemblyName": "BlazorAccountManagement",
   "resources": {
-    "hash": "sha256-tfG9YY5PrNL9iqY643A1E3PGS7nHBiaO1J6jd9XvWPs=",
+    "hash": "sha256-PoxBO3iAgYlSeLxNDqrX/OpLASf9xfcaX2hQo2iHQYk=",
     "fingerprinting": {
-      "BlazorAccountManagement.m75ubu0m8i.wasm": "BlazorAccountManagement.wasm",
+      "BlazorAccountManagement.uzibyiozdp.wasm": "BlazorAccountManagement.wasm",
       "BytexDigital.Blazor.Components.CC.pk5nbl94ro.wasm": "BytexDigital.Blazor.Components.CC.wasm",
-      "common.88lhhos2cw.wasm": "common.wasm",
+      "common.agl29m0jsw.wasm": "common.wasm",
       "Microsoft.AspNetCore.Components.Forms.wbhstiwexz.wasm": "Microsoft.AspNetCore.Components.Forms.wasm",
       "Microsoft.AspNetCore.Components.1bwb9shl3z.wasm": "Microsoft.AspNetCore.Components.wasm",
       "Microsoft.AspNetCore.Components.Web.bv1l3etw17.wasm": "Microsoft.AspNetCore.Components.Web.wasm",
@@ -86,9 +86,9 @@
       "System.Runtime.InteropServices.JavaScript.3uvku0ibnu.wasm": "sha256-K5wa4QwWB8A0OrHM4yWK86Nl6ItEv9c3ctAASLMYLKo="
     },
     "assembly": {
-      "BlazorAccountManagement.m75ubu0m8i.wasm": "sha256-4hjoHtLNoQUJNQlBndPZC65xEfvFXnceNQmLWDJDRnk=",
+      "BlazorAccountManagement.uzibyiozdp.wasm": "sha256-FqGz/LRCI7jsGxJX+J+dz2I3VzBRZwKoCVkaxrIqmoE=",
       "BytexDigital.Blazor.Components.CC.pk5nbl94ro.wasm": "sha256-+WplMGq+zfklD5SAxGEO0w0w4X7h6dIx/V6uUGPyNEk=",
-      "common.88lhhos2cw.wasm": "sha256-SCmiy9nVlFaofO0RrJcQHq132EyAOnVR1VlxEOENcrg=",
+      "common.agl29m0jsw.wasm": "sha256-5qWSkcdeqUTmlEzrHKW1SUlP7uKbhkndmqSnhmGSfOE=",
       "Microsoft.AspNetCore.Components.Forms.wbhstiwexz.wasm": "sha256-vIthDuRvl7EuOoVVuuyWtLnJViO5zSiXeKNhLDE0Cn8=",
       "Microsoft.AspNetCore.Components.1bwb9shl3z.wasm": "sha256-TWGjBwmLJxgulXpsimlfqAm60rsMAOGL5lT84z7VZTE=",
       "Microsoft.AspNetCore.Components.Web.bv1l3etw17.wasm": "sha256-t6dakVOl88gHN/Wwz6jT74OwGcwpVl5FRYTEPxCiVQk=",
