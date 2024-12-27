@@ -26,10 +26,10 @@ You can also do ENV replacements in the idps config.
 In the case of the IDPs.
 
 ```json
-"client_secret": "${GOOGLE_1096301616546-edbl612881t7rkpljp3qa3juminskulo.apps.googleusercontent.com_CLIENT_SECRET}",
+"client_secret": "${GOOGLE_1096301616546_edbl612881t7rkpljp3qa3juminskulo_apps_googleusercontent_com_CLIENT_SECRET}",
 "client_secret": "${GITHUB_68863c06bc5c9bd0c2f9_CLIENT_SECRET}"
-"client_secret": "${AZUREAD_0f81aa6c-b280-4503-b130-adc0567bfbe4_CLIENT_SECRET}",
-"client_secret": "${AZUREAD_3b918868-9bff-431f-bd9c-f9896d628e6b_CLIENT_SECRET}",
+"client_secret": "${AZUREAD_0f81aa6c_b280_4503_b130_adc0567bfbe4_CLIENT_SECRET}",
+"client_secret": "${AZUREAD_3b918868_9bff_431f_bd9c_f9896d628e6b_CLIENT_SECRET}",
 ```
 
 | Key                       |                                                                            Description                                                                            |                                               .etc |
