@@ -100,13 +100,13 @@ func (s *service) getUser(c echo.Context) (*proto_external_models.ExampleUser, e
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 	memCache := s.ScopedMemoryCache()
-	cachedItem, err := memCache.Get("rootIdentity")
-	if err != nil {
-		log.Error().Err(err).Msg("memCache.Get")
-		return nil, err
+	cachedItem, ok := memCache.Get("rootIdentity")
+	if !ok {
+		log.Error().Msg("rootIdentity not found")
+		return nil, status.Error(codes.NotFound, "rootIdentity not found")
 	}
-	rootIdentity := cachedItem.(*proto_oidc_models.Identity)
-	if rootIdentity == nil {
+	rootIdentity, ok := cachedItem.(*proto_oidc_models.Identity)
+	if !ok || rootIdentity == nil {
 		log.Error().Msg("rootIdentity is nil")
 		return nil, status.Error(codes.NotFound, "rootIdentity is nil")
 	}

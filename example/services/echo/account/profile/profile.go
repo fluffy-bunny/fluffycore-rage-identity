@@ -69,13 +69,13 @@ func (s *service) DoGet(c echo.Context) error {
 	log := zerolog.Ctx(ctx).With().Logger()
 
 	memCache := s.ScopedMemoryCache()
-	cachedItem, err := memCache.Get("rootIdentity")
-	if err != nil {
-		log.Error().Err(err).Msg("memCache.Get")
+	cachedItem, ok := memCache.Get("rootIdentity")
+	if !ok {
+		log.Error().Msg("rootIdentity not found in cache")
 		return c.Redirect(http.StatusFound, "/error")
 	}
-	rootIdentity := cachedItem.(*proto_oidc_models.Identity)
-	if rootIdentity == nil {
+	rootIdentity, ok := cachedItem.(*proto_oidc_models.Identity)
+	if !ok || rootIdentity == nil {
 		log.Error().Msg("rootIdentity is nil")
 		return c.Redirect(http.StatusFound, "/error")
 	}

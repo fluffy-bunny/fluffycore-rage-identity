@@ -83,10 +83,10 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 	log := zerolog.Ctx(ctx).With().
 		Str("grant_type", string(oauth2.AuthorizationCode)).Logger()
 
-	clientI, err := s.scopedMemoryCache.Get("client")
-	if err != nil {
-		log.Error().Err(err).Msg("s.scopedMemoryCache.Get client")
-		return c.String(http.StatusBadRequest, err.Error())
+	clientI, ok := s.scopedMemoryCache.Get("client")
+	if !ok {
+		log.Error().Msg("s.scopedMemoryCache.Get client")
+		return c.String(http.StatusBadRequest, "s.scopedMemoryCache.Get client")
 	}
 	client, ok := clientI.(*proto_oidc_models.Client)
 	if !ok {
@@ -112,7 +112,7 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 		log.Error().Err(err).Msg("Bind")
 		return err
 	}
-	err = s.validateTokenEndpointAuthorizationCodeRequest(req)
+	err := s.validateTokenEndpointAuthorizationCodeRequest(req)
 	if err != nil {
 		log.Error().Err(err).Msg("validateTokenEndpointAuthorizationCodeRequest")
 		return c.String(http.StatusBadRequest, err.Error())

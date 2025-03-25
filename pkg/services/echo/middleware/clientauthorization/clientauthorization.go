@@ -2,8 +2,8 @@ package clientauthorization
 
 import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_cache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cache"
 	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/client"
-	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	oauth2_server "github.com/go-oauth2/oauth2/v4/server"
 	echo "github.com/labstack/echo/v4"
@@ -15,7 +15,7 @@ func AuthenticateOAuth2Client() echo.MiddlewareFunc {
 			ctx := c.Request().Context()
 			r := c.Request()
 			scopedContainer := c.Get(echo_wellknown.SCOPED_CONTAINER_KEY).(di.Container)
-			scopedMemoryCache := di.Get[fluffycore_contracts_common.IScopedMemoryCache](scopedContainer)
+			scopedMemoryCache := di.Get[contracts_cache.IScopedMemoryCache](scopedContainer)
 
 			clientService := di.Get[proto_oidc_client.IFluffyCoreClientServiceServer](scopedContainer)
 			clientID, clientSecret, err := oauth2_server.ClientBasicHandler(r)

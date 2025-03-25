@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_cache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cache"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
@@ -18,7 +19,6 @@ import (
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
-	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
@@ -31,7 +31,7 @@ type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
 
-		scopedMemoryCache                    fluffycore_contracts_common.IScopedMemoryCache
+		scopedMemoryCache                    contracts_cache.IScopedMemoryCache
 		authorizationRequestStateStoreServer proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer
 		clientServiceServer                  proto_oidc_client.IFluffyCoreClientServiceServer
 		idpServiceServer                     proto_oidc_idp.IFluffyCoreIDPServiceServer
@@ -50,7 +50,7 @@ func (s *service) Ctor(
 	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
 	userService proto_oidc_user.IFluffyCoreRageUserServiceServer,
 
-	scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
+	scopedMemoryCache contracts_cache.IScopedMemoryCache,
 	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
 	authorizationRequestStateStoreServer proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer,
 ) (*service, error) {
