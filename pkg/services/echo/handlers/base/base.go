@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_cache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cache"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/localizer"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
@@ -33,7 +34,7 @@ type (
 		IdpServiceServer               func() proto_oidc_idp.IFluffyCoreIDPServiceServer
 		RageUserService                func() proto_oidc_user.IFluffyCoreRageUserServiceServer
 		AuthorizationRequestStateStore func() proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer
-		ScopedMemoryCache              func() fluffycore_contracts_common.IScopedMemoryCache
+		ScopedMemoryCache              func() contracts_cache.IScopedMemoryCache
 		EmailService                   func() contracts_email.IEmailService
 		SessionFactory                 func() contracts_sessions.ISessionFactory
 		OIDCSession                    func() contracts_oidc_session.IOIDCSession
@@ -44,7 +45,7 @@ type (
 		idpServiceServer               proto_oidc_idp.IFluffyCoreIDPServiceServer
 		rageUserService                proto_oidc_user.IFluffyCoreRageUserServiceServer
 		authorizationRequestStateStore proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer
-		scopedMemoryCache              fluffycore_contracts_common.IScopedMemoryCache
+		scopedMemoryCache              contracts_cache.IScopedMemoryCache
 		emailService                   contracts_email.IEmailService
 		sessionFactory                 contracts_sessions.ISessionFactory
 		oidcSession                    contracts_oidc_session.IOIDCSession
@@ -85,9 +86,9 @@ func (b *BaseHandler) getEmailService() contracts_email.IEmailService {
 	}
 	return b.emailService
 }
-func (b *BaseHandler) getScopedMemoryCache() fluffycore_contracts_common.IScopedMemoryCache {
+func (b *BaseHandler) getScopedMemoryCache() contracts_cache.IScopedMemoryCache {
 	if b.scopedMemoryCache == nil {
-		b.scopedMemoryCache = di.Get[fluffycore_contracts_common.IScopedMemoryCache](b.Container)
+		b.scopedMemoryCache = di.Get[contracts_cache.IScopedMemoryCache](b.Container)
 	}
 	return b.scopedMemoryCache
 }
