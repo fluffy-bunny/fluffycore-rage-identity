@@ -8,10 +8,12 @@ import (
 	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_cache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cache"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/localizer"
 	services "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services"
+	services_ScopedMemoryCache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/ScopedMemoryCache"
 	services_handlers_api "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/api"
 	services_handlers_authorization_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/authorization_endpoint"
 	services_handlers_cache_busting_static_html "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/cache_busting_static_html"
@@ -73,7 +75,7 @@ import (
 	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	echo_middleware "github.com/labstack/echo/v4/middleware"
-	"github.com/rs/xid"
+	xid "github.com/rs/xid"
 	zerolog "github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
 	codes "google.golang.org/grpc/codes"
@@ -268,6 +270,8 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	fluffycore_echo_services_sessions_session_factory.AddScopedSessionFactory(builder)
 	services_oidc_session.AddScopedIOIDCSession(builder)
 
+	services_ScopedMemoryCache.AddScopedIScopedMemoryCache(builder)
+
 }
 func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 	// i.e. e.Static("/css", "./css")
@@ -378,7 +382,7 @@ func EnsureCookieClaimsPrincipal(_ di.Container) echo.MiddlewareFunc {
 			}
 			wellknownCookies := di.Get[contracts_cookies.IWellknownCookies](subContainer)
 			claimsPrincipal := di.Get[fluffycore_contracts_common.IClaimsPrincipal](subContainer)
-			scopedMemoryCache := di.Get[fluffycore_contracts_common.IScopedMemoryCache](subContainer)
+			scopedMemoryCache := di.Get[contracts_cache.IScopedMemoryCache](subContainer)
 			getAuthCookieResponse, err := wellknownCookies.GetAuthCookie(c)
 			if err != nil ||
 				getAuthCookieResponse == nil ||

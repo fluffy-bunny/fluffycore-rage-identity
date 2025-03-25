@@ -4,13 +4,13 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_cache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cache"
 	contracts_events "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/events"
 	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/tokenservice"
 	contracts_util "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/util"
 	clientauthorization "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/middleware/clientauthorization"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
-	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	oauth2 "github.com/go-oauth2/oauth2/v4"
 	echo "github.com/labstack/echo/v4"
@@ -19,7 +19,7 @@ import (
 type (
 	service struct {
 		someUtil                       contracts_util.ISomeUtil
-		scopedMemoryCache              fluffycore_contracts_common.IScopedMemoryCache
+		scopedMemoryCache              contracts_cache.IScopedMemoryCache
 		authorizationRequestStateStore proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer
 		tokenService                   contracts_tokenservice.ITokenService
 		claimsaugmentor                contracts_tokenservice.IAuthorizationCodeClaimsAugmentor
@@ -34,7 +34,7 @@ func init() {
 }
 
 func (s *service) Ctor(
-	scopedMemoryCache fluffycore_contracts_common.IScopedMemoryCache,
+	scopedMemoryCache contracts_cache.IScopedMemoryCache,
 	authorizationRequestStateStore proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer,
 	tokenService contracts_tokenservice.ITokenService,
 	claimsaugmentor contracts_tokenservice.IAuthorizationCodeClaimsAugmentor,
