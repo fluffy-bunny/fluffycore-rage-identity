@@ -26,7 +26,7 @@ require (
 	github.com/nicksnyder/go-i18n/v2 v2.5.1
 	github.com/reugn/async v0.9.0
 	github.com/rs/xid v1.6.0
-	github.com/rs/zerolog v1.33.0
+	github.com/rs/zerolog v1.34.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
