@@ -45,6 +45,8 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/cmd/server",
+            "envFile": "${workspaceFolder}/.env.secrets",
+
             "env": {
                 "ENABLE_GRPC_SERVER_REFLECTION": "true",
                 "DOMAIN":"localhost:9044",
