@@ -23,7 +23,7 @@ require (
 	github.com/imroc/req/v3 v3.48.0
 	github.com/labstack/echo/v4 v4.13.3
 	github.com/lestrrat-go/jwx/v2 v2.1.4
-	github.com/nicksnyder/go-i18n/v2 v2.5.1
+	github.com/nicksnyder/go-i18n/v2 v2.6.0
 	github.com/reugn/async v0.9.0
 	github.com/rs/xid v1.6.0
 	github.com/rs/zerolog v1.34.0
