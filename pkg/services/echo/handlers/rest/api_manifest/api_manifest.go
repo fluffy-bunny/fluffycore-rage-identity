@@ -85,6 +85,8 @@ func (s *service) Do(c echo.Context) error {
 	response := &manifest.Manifest{
 		DevelopmentMode: s.config.SystemConfig.DeveloperMode,
 	}
+	response.DisableLocalAccountCreation = s.config.DisableLocalAccountCreation
+	response.SocialIdps = make([]manifest.IDP, 0)
 	for _, idp := range idps {
 		if idp.Enabled && !idp.Hidden {
 			response.SocialIdps = append(response.SocialIdps, manifest.IDP{

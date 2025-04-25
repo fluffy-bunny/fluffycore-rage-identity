@@ -1,0 +1,27 @@
+{
+  "idps": [
+    {
+      "id": "mapped-enterprise",
+      "enabled": true,
+      "slug": "mapped-enterprise",
+      "name": "Mapped.com",
+      "description": "Mapped.com",
+      "protocol": {
+        "oidc": {
+          "authority": "https://login.microsoftonline.com/5905aed6-175d-4ef4-914d-3ee92a398d55/v2.0",
+          "client_id": "3b918868-9bff-431f-bd9c-f9896d628e6b",
+          "client_secret": "${AZUREAD_3b918868_9bff_431f_bd9c_f9896d628e6b_CLIENT_SECRET}",
+          "scope": "openid email profile"
+        }
+      },
+      "hidden": true,
+      "emailVerificationRequired": false,
+      "multiFactorRequired": false,
+      "autoCreate": true,
+      "metadata": {},
+      "claimedDomains": [
+        "mapped.com"
+      ]
+    }
+  ]
+}
