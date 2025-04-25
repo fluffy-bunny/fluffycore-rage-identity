@@ -129,12 +129,13 @@ func (s *service) Do(c echo.Context) error {
 
 	session, err := s.getSession()
 	if err != nil {
+		log.Error().Err(err).Msg("Get session")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	sessionRequest, err := session.Get("request")
 	if err != nil {
+		log.Error().Err(err).Msg("Get request from session")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
-
 	}
 
 	log.Debug().Interface("sessionRequest", sessionRequest).Msg("sessionRequest")
@@ -145,6 +146,7 @@ func (s *service) Do(c echo.Context) error {
 	if !ok {
 		msg := utils.LocalizeWithInterperlate(localizer, "username.not.valid", map[string]string{"username": model.Email})
 		err := status.Error(codes.InvalidArgument, msg)
+		log.Debug().Err(err).Msg("validateLoginPhaseOneRequest")
 		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	// get the domain from the email
