@@ -32,7 +32,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/sumup/aaguids-go v0.0.0-20240628162135-8d4ff0ce96a0
 	github.com/swaggo/echo-swagger v1.4.1
-	github.com/swaggo/swag v1.16.4
+	github.com/swaggo/swag v1.16.5
 	github.com/wagslane/go-password-validator v0.3.0
 	github.com/wamuir/svg-qr-code v0.0.0-20210725140500-9525ec975db7
 	github.com/xlzd/gotp v0.1.0
