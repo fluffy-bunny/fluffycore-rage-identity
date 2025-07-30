@@ -9,7 +9,7 @@ go 1.24
 require (
 	github.com/ahmetb/go-linq/v3 v3.2.0
 	github.com/alexedwards/argon2id v1.0.0
-	github.com/coreos/go-oidc/v3 v3.14.1
+	github.com/coreos/go-oidc/v3 v3.15.0
 	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/eko/gocache/lib/v4 v4.2.0
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.4
