@@ -14,7 +14,7 @@ require (
 	github.com/eko/gocache/lib/v4 v4.2.0
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.4
 	github.com/fluffy-bunny/fluffycore v1.0.193
-	github.com/go-oauth2/oauth2/v4 v4.5.3
+	github.com/go-oauth2/oauth2/v4 v4.5.4
 	github.com/go-webauthn/webauthn v0.12.3
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/gogo/status v1.1.1
@@ -97,7 +97,7 @@ require (
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/gogo/googleapis v1.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
+	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/golang-migrate/migrate/v4 v4.18.2 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
