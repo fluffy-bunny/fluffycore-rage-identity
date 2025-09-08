@@ -1,6 +1,6 @@
 module github.com/fluffy-bunny/fluffycore-rage-identity
 
-go 1.24
+go 1.24.0
 
 //replace github.com/fluffy-bunny/fluffycore => ../fluffycore
 
@@ -37,7 +37,7 @@ require (
 	github.com/wamuir/svg-qr-code v0.0.0-20210725140500-9525ec975db7
 	github.com/xlzd/gotp v0.1.0
 	golang.org/x/net v0.39.0
-	golang.org/x/oauth2 v0.29.0
+	golang.org/x/oauth2 v0.31.0
 	golang.org/x/text v0.24.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20250414145226-207652e42e2e
 	google.golang.org/grpc v1.72.0
