@@ -1,4 +1,4 @@
-FROM golang:1.24 AS build
+FROM golang:1.25 AS build
 
 
 #!!!DO NOT REMOVE THE BELOW 3 LINES!!! Needed for github action to work
