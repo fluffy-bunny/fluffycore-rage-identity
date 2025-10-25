@@ -1,6 +1,6 @@
 module github.com/fluffy-bunny/fluffycore-rage-identity
 
-go 1.24
+go 1.25
 
 //replace github.com/fluffy-bunny/fluffycore => ../fluffycore
 
@@ -11,7 +11,7 @@ require (
 	github.com/alexedwards/argon2id v1.0.0
 	github.com/coreos/go-oidc/v3 v3.14.1
 	github.com/domodwyer/mailyak/v3 v3.6.2
-	github.com/eko/gocache/lib/v4 v4.2.0
+	github.com/eko/gocache/lib/v4 v4.2.2
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.4
 	github.com/fluffy-bunny/fluffycore v1.0.197
 	github.com/go-oauth2/oauth2/v4 v4.5.3
