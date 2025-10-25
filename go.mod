@@ -1,6 +1,6 @@
 module github.com/fluffy-bunny/fluffycore-rage-identity
 
-go 1.24
+go 1.24.0
 
 //replace github.com/fluffy-bunny/fluffycore => ../fluffycore
 
@@ -36,11 +36,11 @@ require (
 	github.com/wagslane/go-password-validator v0.3.0
 	github.com/wamuir/svg-qr-code v0.0.0-20210725140500-9525ec975db7
 	github.com/xlzd/gotp v0.1.0
-	golang.org/x/net v0.41.0
+	golang.org/x/net v0.42.0
 	golang.org/x/oauth2 v0.30.0
 	golang.org/x/text v0.27.0
-	google.golang.org/genproto/googleapis/api v0.0.0-20250603155806-513f23925822
-	google.golang.org/grpc v1.74.2
+	google.golang.org/genproto/googleapis/api v0.0.0-20250804133106-a7a43d27e69b
+	google.golang.org/grpc v1.76.0
 	google.golang.org/protobuf v1.36.6
 )
 
@@ -89,7 +89,7 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.8.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
-	github.com/go-jose/go-jose/v4 v4.0.5 // indirect
+	github.com/go-jose/go-jose/v4 v4.1.2 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
@@ -212,15 +212,15 @@ require (
 	go.uber.org/mock v0.5.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.39.0 // indirect
+	golang.org/x/crypto v0.40.0 // indirect
 	golang.org/x/exp v0.0.0-20250210185358-939b2ce775ac // indirect
 	golang.org/x/mod v0.25.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
-	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
 	golang.org/x/tools v0.34.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250603155806-513f23925822 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250804133106-a7a43d27e69b // indirect
 	gopkg.in/DataDog/dd-trace-go.v1 v1.74.3 // indirect
 	gopkg.in/go-jose/go-jose.v2 v2.6.3 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
