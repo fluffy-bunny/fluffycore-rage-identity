@@ -126,6 +126,7 @@ type (
 		MultiFactorRequired            bool                                       `json:"multiFactorRequired"`
 		MultiFactorRequiredByEmailCode bool                                       `json:"multiFactorRequiredByEmailCode"`
 		DisableLocalAccountCreation    bool                                       `json:"disableLocalAccountCreation"`
+		DisableSocialAccounts          bool                                       `json:"disableSocialAccounts"`
 		TOTP                           *TOTPConfig                                `json:"totp"`
 		EmailConfig                    *contracts_email.EmailConfig               `json:"emailConfig"`
 		SelfIDPConfig                  *SelfIDPConfig                             `json:"selfIDPConfig"`

@@ -29,6 +29,7 @@
   "emailVerificationRequired": true,
   "multiFactorRequired": true,
   "disableLocalAccountCreation": true,
+  "disableSocialAccounts": true,
   "multiFactorRequiredByEmailCode": true,
   "systemConfig": {
     "domain": "${DOMAIN}",
