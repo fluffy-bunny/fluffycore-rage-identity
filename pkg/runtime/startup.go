@@ -165,6 +165,12 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 func (s *startup) ConfigureOld(ctx context.Context, rootContainer di.Container, unaryServerInterceptorBuilder fluffycore_contracts_middleware.IUnaryServerInterceptorBuilder, streamServerInterceptorBuilder fluffycore_contracts_middleware.IStreamServerInterceptorBuilder) {
 	log := zerolog.Ctx(ctx).With().Str("method", "Configure").Logger()
 
+	// dicontext is responsible of create a scoped context for each request.
+	log.Info().Msg("adding unaryServerInterceptorBuilder: fluffycore_middleware_dicontext.UnaryServerInterceptor")
+	unaryServerInterceptorBuilder.Use(fluffycore_middleware_dicontext.ScopedContextUnaryServerInterceptor(rootContainer))
+	log.Info().Msg("adding streamServerInterceptorBuilder: fluffycore_middleware_dicontext.StreamServerInterceptor")
+	streamServerInterceptorBuilder.Use(fluffycore_middleware_dicontext.ScopedContextStreamServerInterceptor(rootContainer))
+
 	// puts a zerlog logger into the request context
 	log.Info().Msg("adding unaryServerInterceptorBuilder: fluffycore_middleware_logging.EnsureContextLoggingUnaryServerInterceptor")
 	unaryServerInterceptorBuilder.Use(fluffycore_middleware_logging.EnsureContextLoggingUnaryServerInterceptor())
@@ -173,11 +179,6 @@ func (s *startup) ConfigureOld(ctx context.Context, rootContainer di.Container, 
 
 	// log correlation and spans
 	unaryServerInterceptorBuilder.Use(fluffycore_middleware_correlation.EnsureCorrelationIDUnaryServerInterceptor())
-	// dicontext is responsible of create a scoped context for each request.
-	log.Info().Msg("adding unaryServerInterceptorBuilder: fluffycore_middleware_dicontext.UnaryServerInterceptor")
-	unaryServerInterceptorBuilder.Use(fluffycore_middleware_dicontext.UnaryServerInterceptor(rootContainer))
-	log.Info().Msg("adding streamServerInterceptorBuilder: fluffycore_middleware_dicontext.StreamServerInterceptor")
-	streamServerInterceptorBuilder.Use(fluffycore_middleware_dicontext.StreamServerInterceptor(rootContainer))
 
 	// last is the recovery middleware
 	customFunc := func(p interface{}) (err error) {
