@@ -82,7 +82,7 @@ jobs:
           copy-item -Path ".\oidc-flows\*" -Destination $destination -Recurse -Force
         shell: pwsh
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: static_build
           path: "cmd/server/static/"
