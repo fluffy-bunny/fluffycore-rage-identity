@@ -19,6 +19,7 @@ import (
 	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
 	fluffycore_contracts_GRPCClientFactory "github.com/fluffy-bunny/fluffycore/contracts/GRPCClientFactory"
 	contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
+	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
 	fluffycore_contracts_middleware "github.com/fluffy-bunny/fluffycore/contracts/middleware"
 	fluffycore_contracts_otel "github.com/fluffy-bunny/fluffycore/contracts/otel"
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
@@ -147,12 +148,15 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 	}
 	config.OTELConfig.ServiceName = config.ApplicationName
 	s.FluffyCoreOTELStartup.SetConfig(config.OTELConfig)
-	// add grpcclient factory that is config aware.  Will make sure that you get one that has otel tracing if enabled.
-	fluffycore_contracts_GRPCClientFactory.AddGRPCClientConfig(builder,
+
+	fluffycore_services_GRPCClientFactory.AddSingletonIGRPCClientFactory(builder,
 		&fluffycore_contracts_GRPCClientFactory.GRPCClientConfig{
-			OTELTracingEnabled: config.OTELConfig.TracingConfig.Enabled,
+			OTELTracingEnabled:    config.OTELConfig.TracingConfig.Enabled,
+			DataDogTracingEnabled: config.DDConfig.TracingEnabled,
 		})
-	fluffycore_services_GRPCClientFactory.AddSingletonIGRPCClientFactory(builder)
+	if config.DDConfig == nil {
+		config.DDConfig = &fluffycore_contracts_ddprofiler.Config{}
+	}
 
 	wellknown_echo.OAuth2CallbackPath = config.OIDCConfig.OAuth2CallbackPath
 

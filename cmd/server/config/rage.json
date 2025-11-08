@@ -28,7 +28,7 @@
   },
   "emailVerificationRequired": true,
   "multiFactorRequired": true,
-  "disableLocalAccountCreation": true,
+  "disableLocalAccountCreation": false,
   "disableSocialAccounts": false,
   "multiFactorRequiredByEmailCode": true,
   "systemConfig": {
