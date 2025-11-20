@@ -150,7 +150,7 @@ func (s *service) DoGet(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 	phoneNumber := ""
-	if !fluffycore_utils.IsEmptyOrNil(user.Profile.PhoneNumbers) {
+	if fluffycore_utils.IsNotEmptyOrNil(user.Profile.PhoneNumbers) {
 		phoneNumber = user.Profile.PhoneNumbers[0].Number
 	}
 
@@ -202,7 +202,7 @@ func (s *service) DoPost(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 	phoneNumber := ""
-	if !fluffycore_utils.IsEmptyOrNil(user.Profile.PhoneNumbers) {
+	if fluffycore_utils.IsNotEmptyOrNil(user.Profile.PhoneNumbers) {
 		phoneNumber = user.Profile.PhoneNumbers[0].Number
 	}
 

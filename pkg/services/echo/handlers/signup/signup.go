@@ -38,9 +38,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-}
+var _ contracts_handler.IHandler = stemService
 
 const (
 	// make sure only one is shown.  This is an internal error code to point the developer to the code that is failing
@@ -114,7 +112,7 @@ func (s *service) DoGet(c echo.Context) error {
 	log := zerolog.Ctx(ctx).With().Logger()
 	model := &SignupGetRequest{}
 	if err := c.Bind(model); err != nil {
-		return s.TeleportBackToLogin(c, InternalError_Signup_099)
+		return s.TeleportBackToLoginWithError(c, InternalError_Signup_099, InternalError_Signup_099)
 	}
 	log.Debug().Interface("model", model).Msg("model")
 
@@ -125,7 +123,7 @@ func (s *service) DoGet(c echo.Context) error {
 	idps, err := s.GetIDPs(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("getIDPs")
-		return s.TeleportBackToLogin(c, InternalError_Signup_001)
+		return s.TeleportBackToLoginWithError(c, InternalError_Signup_001, InternalError_Signup_001)
 	}
 
 	var rows []row
@@ -173,7 +171,7 @@ func (s *service) DoPost(c echo.Context) error {
 	idps, err := s.GetIDPs(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("getIDPs")
-		return s.TeleportBackToLogin(c, InternalError_Signup_002)
+		return s.TeleportBackToLoginWithError(c, InternalError_Signup_002, InternalError_Signup_002)
 	}
 	doError := func(errors []string) error {
 		return s.Render(c, http.StatusBadRequest, "oidc/signup/index",
@@ -189,7 +187,7 @@ func (s *service) DoPost(c echo.Context) error {
 	model := &SignupPostRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
-		return s.TeleportBackToLogin(c, InternalError_Signup_099)
+		return s.TeleportBackToLoginWithError(c, InternalError_Signup_099, InternalError_Signup_099)
 	}
 	log.Debug().Interface("model", model).Msg("model")
 	if model.Type == "GET" {
@@ -251,7 +249,7 @@ func (s *service) DoPost(c echo.Context) error {
 			err = nil
 		} else {
 			log.Error().Err(err).Msg("GetRageUser")
-			return s.TeleportBackToLogin(c, InternalError_Signup_003)
+			return s.TeleportBackToLoginWithError(c, InternalError_Signup_003, InternalError_Signup_003)
 		}
 
 	}
@@ -286,7 +284,7 @@ func (s *service) DoPost(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("GeneratePasswordHash")
-		return s.TeleportBackToLogin(c, InternalError_Signup_004)
+		return s.TeleportBackToLoginWithError(c, InternalError_Signup_004, InternalError_Signup_004)
 	}
 	user.Password = &proto_oidc_models.Password{
 		Hash: hashPasswordResponse.HashedPassword,
@@ -297,7 +295,7 @@ func (s *service) DoPost(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("CreateUser")
-		return s.TeleportBackToLogin(c, InternalError_Signup_005)
+		return s.TeleportBackToLoginWithError(c, InternalError_Signup_005, InternalError_Signup_005)
 	}
 	if s.config.EmailVerificationRequired {
 		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
@@ -312,7 +310,7 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SetVerificationCodeCookie")
-			return s.TeleportBackToLogin(c, InternalError_Signup_006)
+			return s.TeleportBackToLoginWithError(c, InternalError_Signup_006, InternalError_Signup_006)
 		}
 		_, err = s.EmailService().SendSimpleEmail(ctx,
 			&contracts_email.SendSimpleEmailRequest{
@@ -325,7 +323,7 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SendSimpleEmail")
-			return s.TeleportBackToLogin(c, InternalError_Signup_007)
+			return s.TeleportBackToLoginWithError(c, InternalError_Signup_007, InternalError_Signup_007)
 		}
 		formParams := []models.FormParam{
 

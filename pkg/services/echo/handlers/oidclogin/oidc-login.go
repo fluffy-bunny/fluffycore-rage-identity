@@ -44,9 +44,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-}
+var _ contracts_handler.IHandler = stemService
 
 const (
 	// make sure only one is shown.  This is an internal error code to point the developer to the code that is failing
@@ -103,6 +101,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 type LoginGetRequest struct {
 	Email     string `param:"email" query:"email" form:"email" json:"email" xml:"email"`
 	Error     string `param:"error" query:"error" form:"error" json:"error" xml:"error"`
+	ErrorCode string `param:"error_code" query:"error_code" form:"error_code" json:"error_code" xml:"error_code"`
 	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
 }
 type ExternalIDPAuthRequest struct {
@@ -111,11 +110,6 @@ type ExternalIDPAuthRequest struct {
 type LoginPostRequest struct {
 	UserName  string `param:"username" query:"username" form:"username" json:"username" xml:"username"`
 	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
-}
-
-type row struct {
-	Key   string
-	Value string
 }
 
 func (s *service) getSession() (contracts_sessions.ISession, error) {
@@ -134,15 +128,19 @@ func (s *service) DoGet(c echo.Context) error {
 	model := &LoginGetRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
-		return s.TeleportBackToLogin(c, InternalError_OIDCLogin_099)
+		return s.TeleportBackToLoginWithError(c, InternalError_OIDCLogin_099, InternalError_OIDCLogin_099)
 	}
 	log.Debug().Interface("model", model).Msg("model")
 
 	var errors []string
-	if !fluffycore_utils.IsEmptyOrNil(model.Error) {
+	if fluffycore_utils.IsNotEmptyOrNil(model.Error) {
+		code := InternalError_OIDCLogin_099
+		if fluffycore_utils.IsNotEmptyOrNil(model.ErrorCode) {
+			code = model.ErrorCode
+		}
 		s.wellknownCookies.SetErrorCookie(c, &contracts_cookies.SetErrorCookieRequest{
 			Value: &contracts_cookies.ErrorCookie{
-				Code:  InternalError_OIDCLogin_099,
+				Code:  code,
 				Error: model.Error,
 			},
 		})
@@ -170,6 +168,7 @@ func (s *service) DoGet(c echo.Context) error {
 		errors = append(errors, err.Error())
 	}
 	if s.config.OIDCUIConfig.URIEntryPath != wellknown_echo.OIDCLoginPath {
+
 		// we redirect over to URIEntryPath
 		return c.Redirect(http.StatusFound, s.config.OIDCUIConfig.URIEntryPath)
 	}
@@ -193,7 +192,7 @@ func (s *service) DoPost(c echo.Context) error {
 	model := &LoginPostRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
-		return s.TeleportBackToLogin(c, InternalError_OIDCLogin_099)
+		return s.TeleportBackToLoginWithError(c, InternalError_OIDCLogin_099, InternalError_OIDCLogin_099)
 	}
 	log.Debug().Interface("model", model).Msg("model")
 
@@ -215,7 +214,7 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 	if doVerifyCode {
 		landingPage := &models_api_manifest.LandingPage{
-			Page: models_api_manifest.VerifyCode,
+			Page: models_api_manifest.PageVerifyCode,
 		}
 		session.Set("landingPage", landingPage)
 		session.Save()
@@ -343,19 +342,24 @@ func (s *service) DoPost(c echo.Context) error {
 	}
 	user := getRageUserResponse.User
 	if s.config.EmailVerificationRequired && !user.RootIdentity.EmailVerified {
-		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
+		codeResult, err := echo_utils.GenerateHashedVerificationCode(ctx, s.passwordHasher, 6)
+		if err != nil {
+			log.Error().Err(err).Msg("GenerateHashedVerificationCode")
+			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+		}
 		err = s.wellknownCookies.SetVerificationCodeCookie(c,
 			&contracts_cookies.SetVerificationCodeCookieRequest{
 				VerificationCode: &contracts_cookies.VerificationCode{
 					Email:             model.UserName,
-					CodeHash:          verificationCode,
+					PlainCode:         codeResult.PlainCode,
+					CodeHash:          codeResult.HashedCode,
 					Subject:           user.RootIdentity.Subject,
 					VerifyCodePurpose: contracts_cookies.VerifyCode_EmailVerification,
 				},
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SetVerificationCodeCookie")
-			return s.TeleportBackToLogin(c, InternalError_OIDCLogin_001)
+			return s.TeleportBackToLoginWithError(c, InternalError_OIDCLogin_001, InternalError_OIDCLogin_001)
 		}
 		s.EmailService().SendSimpleEmail(ctx,
 			&contracts_email.SendSimpleEmailRequest{
@@ -363,7 +367,7 @@ func (s *service) DoPost(c echo.Context) error {
 				SubjectId: "email.verification.subject",
 				BodyId:    "email.verification.message",
 				Data: map[string]string{
-					"code": verificationCode,
+					"code": codeResult.PlainCode,
 				},
 			})
 		formParams := []models.FormParam{
@@ -388,7 +392,7 @@ func (s *service) DoPost(c echo.Context) error {
 		if s.config.SystemConfig.DeveloperMode {
 			formParams = append(formParams, models.FormParam{
 				Name:  "code",
-				Value: verificationCode,
+				Value: codeResult.PlainCode,
 			})
 		}
 		return s.RenderAutoPost(c, wellknown_echo.VerifyCodePath, formParams)
@@ -405,7 +409,7 @@ func (s *service) DoPost(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("SetSigninUserNameCookie")
-		return s.TeleportBackToLogin(c, InternalError_OIDCLogin_004)
+		return s.TeleportBackToLoginWithError(c, InternalError_OIDCLogin_004, InternalError_OIDCLogin_004)
 	}
 	return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPasswordPath,
 		[]models.FormParam{
@@ -478,7 +482,7 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 	if err != nil {
 		log.Error().Err(err).Msg("SetAuthCookie")
 		// redirect to error page
-		return s.TeleportBackToLogin(c, InternalError_OIDCLogin_002)
+		return s.TeleportBackToLoginWithError(c, InternalError_OIDCLogin_002, InternalError_OIDCLogin_002)
 	}
 	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
 		State:                     authorizationFinal.Request.Code,
@@ -487,7 +491,7 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 	if err != nil {
 		log.Warn().Err(err).Msg("StoreAuthorizationRequestState")
 		// redirect to error page
-		return s.TeleportBackToLogin(c, InternalError_OIDCLogin_003)
+		return s.TeleportBackToLoginWithError(c, InternalError_OIDCLogin_003, InternalError_OIDCLogin_003)
 	}
 	s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
 		State: state,

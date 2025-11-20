@@ -95,7 +95,7 @@ func (s *service) DoGet(c echo.Context) error {
 		user.Profile = &proto_external_models.Profile{}
 	}
 	phoneNumber := ""
-	if !fluffycore_utils.IsEmptyOrNil(user.Profile.PhoneNumbers) {
+	if fluffycore_utils.IsNotEmptyOrNil(user.Profile.PhoneNumbers) {
 		phoneNumber = user.Profile.PhoneNumbers[0].Number
 	}
 	return s.Render(c, http.StatusOK,

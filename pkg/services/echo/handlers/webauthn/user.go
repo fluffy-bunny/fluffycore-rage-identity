@@ -12,9 +12,7 @@ type (
 	}
 )
 
-func init() {
-	var _ go_webauthn.User = (*WebAuthNUser)(nil)
-}
+var _ go_webauthn.User = (*WebAuthNUser)(nil)
 
 func NewWebAuthNUser(rageUser *proto_oidc_models.RageUser) *WebAuthNUser {
 	return &WebAuthNUser{

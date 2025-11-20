@@ -116,7 +116,7 @@ func (s *service) validateListIDPRequest(request *proto_oidc_idp.ListIDPRequest)
 	if request.Filter != nil {
 		if request.Filter.Slug != nil {
 			request.Filter.Slug.Eq = strings.ToLower(request.Filter.Slug.Eq)
-			if !fluffycore_utils.IsEmptyOrNil(request.Filter.Slug.In) {
+			if fluffycore_utils.IsNotEmptyOrNil(request.Filter.Slug.In) {
 				for i, v := range request.Filter.Slug.In {
 					request.Filter.Slug.In[i] = strings.ToLower(v)
 				}
@@ -124,7 +124,7 @@ func (s *service) validateListIDPRequest(request *proto_oidc_idp.ListIDPRequest)
 		}
 		if request.Filter.ClaimedDomain != nil {
 			request.Filter.ClaimedDomain.Eq = strings.ToLower(request.Filter.ClaimedDomain.Eq)
-			if !fluffycore_utils.IsEmptyOrNil(request.Filter.ClaimedDomain.In) {
+			if fluffycore_utils.IsNotEmptyOrNil(request.Filter.ClaimedDomain.In) {
 				for i, v := range request.Filter.ClaimedDomain.In {
 					request.Filter.ClaimedDomain.In[i] = strings.ToLower(v)
 				}
@@ -154,7 +154,7 @@ func (s *service) ListIDP(ctx context.Context, request *proto_oidc_idp.ListIDPRe
 				if request.Filter.Slug.Eq != c.Slug {
 					return false
 				}
-				if !fluffycore_utils.IsEmptyOrNil(request.Filter.Slug.In) {
+				if fluffycore_utils.IsNotEmptyOrNil(request.Filter.Slug.In) {
 					gotHit := false
 					for _, v := range request.Filter.Slug.In {
 						if v == c.Slug {
@@ -196,13 +196,13 @@ func (s *service) ListIDP(ctx context.Context, request *proto_oidc_idp.ListIDPRe
 				for _, v := range c.ClaimedDomains {
 					claimedDomainsMap[v] = true
 				}
-				if !fluffycore_utils.IsEmptyOrNil(request.Filter.ClaimedDomain.Eq) {
+				if fluffycore_utils.IsNotEmptyOrNil(request.Filter.ClaimedDomain.Eq) {
 					_, ok := claimedDomainsMap[request.Filter.ClaimedDomain.Eq]
 					if !ok {
 						return false
 					}
 				}
-				if !fluffycore_utils.IsEmptyOrNil(request.Filter.ClaimedDomain.In) {
+				if fluffycore_utils.IsNotEmptyOrNil(request.Filter.ClaimedDomain.In) {
 					gotHit := false
 					for _, v := range request.Filter.ClaimedDomain.In {
 						_, ok := claimedDomainsMap[v]

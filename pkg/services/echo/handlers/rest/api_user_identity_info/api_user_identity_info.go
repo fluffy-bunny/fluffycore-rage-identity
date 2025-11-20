@@ -30,9 +30,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-}
+var _ contracts_handler.IHandler = stemService
 
 const (
 	// make sure only one is shown.  This is an internal error code to point the developer to the code that is failing

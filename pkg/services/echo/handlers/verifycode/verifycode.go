@@ -36,9 +36,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-}
+var _ contracts_handler.IHandler = stemService
 
 const (
 	// make sure only one is shown.  This is an internal error code to point the developer to the code that is failing
@@ -121,13 +119,13 @@ func (s *service) DoGet(c echo.Context) error {
 	model := &VerifyCodeGetRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("c.Bind")
-		return s.TeleportBackToLogin(c, InternalError_VerifyCode_099)
+		return s.TeleportBackToLoginWithError(c, InternalError_VerifyCode_099, InternalError_VerifyCode_099)
 	}
 	log.Debug().Interface("model", model).Msg("model")
 	err := s.validateVerifyCodeGetRequest(model)
 	if err != nil {
 		log.Error().Err(err).Msg("validateVerifyCodeGetRequest")
-		return s.TeleportBackToLogin(c, InternalError_VerifyCode_001)
+		return s.TeleportBackToLoginWithError(c, InternalError_VerifyCode_001, InternalError_VerifyCode_001)
 	}
 
 	err = s.Render(c, http.StatusOK, "oidc/verifycode/index",
@@ -174,7 +172,7 @@ func (s *service) DoPost(c echo.Context) error {
 	log := zerolog.Ctx(ctx).With().Logger()
 	model := &VerifyCodePostRequest{}
 	if err := c.Bind(model); err != nil {
-		return s.TeleportBackToLogin(c, InternalError_VerifyCode_099)
+		return s.TeleportBackToLoginWithError(c, InternalError_VerifyCode_099, InternalError_VerifyCode_099)
 	}
 	log.Debug().Interface("model", model).Msg("model")
 
@@ -233,7 +231,7 @@ func (s *service) DoPost(c echo.Context) error {
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("GetRageUser")
-		return s.TeleportBackToLogin(c, InternalError_VerifyCode_002)
+		return s.TeleportBackToLoginWithError(c, InternalError_VerifyCode_002, InternalError_VerifyCode_002)
 	}
 	rageUser := getRageUserResponse.User
 
@@ -249,7 +247,7 @@ func (s *service) DoPost(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("UpdateUser")
-		return s.TeleportBackToLogin(c, InternalError_VerifyCode_004)
+		return s.TeleportBackToLoginWithError(c, InternalError_VerifyCode_004, InternalError_VerifyCode_004)
 	}
 	// one time only
 	s.wellknownCookies.DeleteVerificationCodeCookie(c)
@@ -265,7 +263,7 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SetPasswordResetCookie")
-			return s.TeleportBackToLogin(c, InternalError_VerifyCode_003)
+			return s.TeleportBackToLoginWithError(c, InternalError_VerifyCode_003, InternalError_VerifyCode_003)
 		}
 		return s.RenderAutoPost(c, wellknown_echo.PasswordResetPath,
 			[]models.FormParam{})
@@ -290,17 +288,17 @@ func (s *service) DoPost(c echo.Context) error {
 		if err != nil {
 			log.Error().Err(err).Msg("SetAuthCookie")
 			// redirect to error page
-			return s.TeleportBackToLogin(c, InternalError_VerifyCode_005)
+			return s.TeleportBackToLoginWithError(c, InternalError_VerifyCode_005, InternalError_VerifyCode_005)
 		}
 		session, err := s.getSession()
 		if err != nil {
 			log.Error().Err(err).Msg("getSession")
-			return s.TeleportBackToLogin(c, InternalError_VerifyCode_006)
+			return s.TeleportBackToLoginWithError(c, InternalError_VerifyCode_006, InternalError_VerifyCode_006)
 		}
 		sessionRequest, err := session.Get("request")
 		if err != nil {
 			log.Error().Err(err).Msg("Get")
-			return s.TeleportBackToLogin(c, InternalError_VerifyCode_007)
+			return s.TeleportBackToLoginWithError(c, InternalError_VerifyCode_007, InternalError_VerifyCode_007)
 		}
 		authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
 
@@ -310,7 +308,7 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("GetAuthorizationRequestState")
-			return s.TeleportBackToLogin(c, InternalError_VerifyCode_008)
+			return s.TeleportBackToLoginWithError(c, InternalError_VerifyCode_008, InternalError_VerifyCode_008)
 		}
 		authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 		authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
@@ -339,7 +337,7 @@ func (s *service) DoPost(c echo.Context) error {
 		if err != nil {
 			log.Error().Err(err).Msg("StoreAuthorizationRequestState")
 			// redirect to error page
-			return s.TeleportBackToLogin(c, InternalError_VerifyCode_009)
+			return s.TeleportBackToLoginWithError(c, InternalError_VerifyCode_009, InternalError_VerifyCode_009)
 		}
 		s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
 			State: authorizationRequest.State,
@@ -351,7 +349,7 @@ func (s *service) DoPost(c echo.Context) error {
 		if err != nil {
 			// redirect to error page
 			log.Error().Err(err).Msg("StoreAuthorizationRequestState")
-			return s.TeleportBackToLogin(c, InternalError_VerifyCode_010)
+			return s.TeleportBackToLoginWithError(c, InternalError_VerifyCode_010, InternalError_VerifyCode_010)
 		}
 		rootPath := echo_utils.GetMyRootPath(c)
 

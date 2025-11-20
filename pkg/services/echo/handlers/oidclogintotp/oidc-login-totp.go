@@ -46,9 +46,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-}
+var _ contracts_handler.IHandler = stemService
 
 const (
 	// make sure only one is shown.  This is an internal error code to point the developer to the code that is failing
@@ -142,7 +140,7 @@ func (s *service) DoGet(c echo.Context) error {
 	model := &LoginGetRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
-		return s.TeleportBackToLogin(c, InternalError_OIDCLoginTOTP_099)
+		return s.TeleportBackToLoginWithError(c, InternalError_OIDCLoginTOTP_099, InternalError_OIDCLoginTOTP_099)
 	}
 	log.Debug().Interface("model", model).Msg("model")
 	var rows []row
@@ -217,7 +215,7 @@ func (s *service) DoPost(c echo.Context) error {
 	model := &LoginTOTPPostRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
-		return s.TeleportBackToLogin(c, InternalError_OIDCLoginTOTP_099)
+		return s.TeleportBackToLoginWithError(c, InternalError_OIDCLoginTOTP_099, InternalError_OIDCLoginTOTP_099)
 	}
 	log.Debug().Interface("model", model).Msg("model")
 	if fluffycore_utils.IsEmptyOrNil(model.Code) {
@@ -382,7 +380,7 @@ func (s *service) Do(c echo.Context) error {
 	signinResponse, err := s.wellknownCookies.GetSigninUserNameCookie(c)
 	if err != nil {
 		log.Error().Err(err).Msg("GetSigninUserNameCookie")
-		return s.TeleportBackToLogin(c, InternalError_OIDCLoginTOTP_004)
+		return s.TeleportBackToLoginWithError(c, InternalError_OIDCLoginTOTP_004, InternalError_OIDCLoginTOTP_004)
 	}
 	s.signinResponse = signinResponse
 
@@ -430,7 +428,7 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 	if err != nil {
 		log.Error().Err(err).Msg("SetAuthCookie")
 		// redirect to error page
-		return s.TeleportBackToLogin(c, InternalError_OIDCLoginTOTP_002)
+		return s.TeleportBackToLoginWithError(c, InternalError_OIDCLoginTOTP_002, InternalError_OIDCLoginTOTP_002)
 	}
 	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
 		State:                     authorizationFinal.Request.Code,
@@ -439,7 +437,7 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 	if err != nil {
 		log.Warn().Err(err).Msg("StoreAuthorizationRequestState")
 		// redirect to error page
-		return s.TeleportBackToLogin(c, InternalError_OIDCLoginTOTP_003)
+		return s.TeleportBackToLoginWithError(c, InternalError_OIDCLoginTOTP_003, InternalError_OIDCLoginTOTP_003)
 	}
 	s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
 		State: state,

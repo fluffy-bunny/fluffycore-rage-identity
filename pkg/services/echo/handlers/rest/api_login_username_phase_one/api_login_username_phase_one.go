@@ -43,10 +43,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-
-}
+var _ contracts_handler.IHandler = stemService
 
 func (s *service) Ctor(
 	container di.Container,
@@ -260,7 +257,7 @@ func (s *service) Do(c echo.Context) error {
 		HasPasskey: hasPasskey,
 	}
 	session.Set("landing_page", &models_api_manifest.LandingPage{
-		Page: models_api_manifest.PasswordEntry,
+		Page: models_api_manifest.PagePasswordEntry,
 	})
 	session.Save()
 	manifest, err := s.GetManifest(c)

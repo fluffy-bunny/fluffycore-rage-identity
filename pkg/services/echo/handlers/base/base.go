@@ -266,8 +266,12 @@ func (b *BaseHandler) GetIDPs(ctx context.Context) ([]*proto_oidc_models.IDP, er
 	}
 	return listIDPResponse.Idps, nil
 }
-func (b *BaseHandler) TeleportBackToLogin(c echo.Context, msg string) error {
+func (b *BaseHandler) TeleportBackToLoginWithError(c echo.Context, code, msg string) error {
 	formParams := []models.FormParam{
+		{
+			Name:  "error_code",
+			Value: code,
+		},
 		{
 			Name:  "error",
 			Value: msg,

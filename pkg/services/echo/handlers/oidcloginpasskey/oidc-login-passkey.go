@@ -27,9 +27,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-}
+var _ contracts_handler.IHandler = stemService
 
 const (
 	// make sure only one is shown.  This is an internal error code to point the developer to the code that is failing
@@ -103,7 +101,7 @@ func (s *service) Do(c echo.Context) error {
 	signinResponse, err := s.wellknownCookies.GetSigninUserNameCookie(c)
 	if err != nil {
 		log.Error().Err(err).Msg("GetSigninUserNameCookie")
-		return s.TeleportBackToLogin(c, InternalError_OIDCLoginPasskey_004)
+		return s.TeleportBackToLoginWithError(c, InternalError_OIDCLoginPasskey_004, InternalError_OIDCLoginPasskey_004)
 	}
 	s.signinResponse = signinResponse
 

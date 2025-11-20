@@ -34,9 +34,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-}
+var _ contracts_handler.IHandler = stemService
 
 const (
 	// make sure only one is shown.  This is an internal error code to point the developer to the code that is failing
@@ -110,13 +108,13 @@ func (s *service) DoGet(c echo.Context) error {
 	model := &PasswordResetGetRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("c.Bind")
-		return s.TeleportBackToLogin(c, InternalError_PasswordReset_099)
+		return s.TeleportBackToLoginWithError(c, InternalError_PasswordReset_099, InternalError_PasswordReset_099)
 	}
 	log.Debug().Interface("model", model).Msg("model")
 	err := s.validatePasswordResetGetRequest(model)
 	if err != nil {
 		log.Error().Err(err).Msg("validatePasswordResetGetRequest")
-		return s.TeleportBackToLogin(c, InternalError_PasswordReset_002)
+		return s.TeleportBackToLoginWithError(c, InternalError_PasswordReset_002, InternalError_PasswordReset_002)
 	}
 
 	err = s.Render(c, http.StatusOK, "oidc/passwordreset/index",
@@ -158,7 +156,7 @@ func (s *service) DoPost(c echo.Context) error {
 	model := &PasswordResetPostRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("c.Bind")
-		return s.TeleportBackToLogin(c, InternalError_PasswordReset_099)
+		return s.TeleportBackToLoginWithError(c, InternalError_PasswordReset_099, InternalError_PasswordReset_099)
 	}
 	log.Debug().Interface("model", model).Msg("model")
 
@@ -184,17 +182,17 @@ func (s *service) DoPost(c echo.Context) error {
 	getPasswordResetCookieResponse, err := s.wellknownCookies.GetPasswordResetCookie(c)
 	if err != nil {
 		log.Error().Err(err).Msg("GetPasswordResetCookie")
-		return s.TeleportBackToLogin(c, InternalError_PasswordReset_003)
+		return s.TeleportBackToLoginWithError(c, InternalError_PasswordReset_003, InternalError_PasswordReset_003)
 	}
 	if getPasswordResetCookieResponse == nil {
-		return s.TeleportBackToLogin(c, InternalError_PasswordReset_004)
+		return s.TeleportBackToLoginWithError(c, InternalError_PasswordReset_004, InternalError_PasswordReset_004)
 	}
 	if getPasswordResetCookieResponse.PasswordReset == nil {
-		return s.TeleportBackToLogin(c, InternalError_PasswordReset_005)
+		return s.TeleportBackToLoginWithError(c, InternalError_PasswordReset_005, InternalError_PasswordReset_005)
 	}
 	if fluffycore_utils.IsEmptyOrNil(getPasswordResetCookieResponse.PasswordReset.Subject) {
 		s.wellknownCookies.DeletePasswordResetCookie(c)
-		return s.TeleportBackToLogin(c, InternalError_PasswordReset_006)
+		return s.TeleportBackToLoginWithError(c, InternalError_PasswordReset_006, InternalError_PasswordReset_006)
 	}
 	getUserResponse, err := s.RageUserService().GetRageUser(ctx,
 		&proto_oidc_user.GetRageUserRequest{
@@ -204,7 +202,7 @@ func (s *service) DoPost(c echo.Context) error {
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("ListUser")
-		return s.TeleportBackToLogin(c, InternalError_PasswordReset_008)
+		return s.TeleportBackToLoginWithError(c, InternalError_PasswordReset_008, InternalError_PasswordReset_008)
 	}
 
 	// do password acceptablity check
@@ -224,7 +222,7 @@ func (s *service) DoPost(c echo.Context) error {
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("GeneratePasswordHash")
-		return s.TeleportBackToLogin(c, InternalError_PasswordReset_007)
+		return s.TeleportBackToLoginWithError(c, InternalError_PasswordReset_007, InternalError_PasswordReset_007)
 	}
 
 	_, err = s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
@@ -241,7 +239,7 @@ func (s *service) DoPost(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("UpdateUser")
-		return s.TeleportBackToLogin(c, InternalError_PasswordReset_009)
+		return s.TeleportBackToLoginWithError(c, InternalError_PasswordReset_009, InternalError_PasswordReset_009)
 	}
 
 	// send the email
@@ -253,9 +251,9 @@ func (s *service) DoPost(c echo.Context) error {
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("SendEmail")
-		return s.TeleportBackToLogin(c, InternalError_PasswordReset_010)
+		return s.TeleportBackToLoginWithError(c, InternalError_PasswordReset_010, InternalError_PasswordReset_010)
 	}
-	if !fluffycore_utils.IsEmptyOrNil(model.ReturnUrl) {
+	if fluffycore_utils.IsNotEmptyOrNil(model.ReturnUrl) {
 		return c.Redirect(http.StatusFound, model.ReturnUrl)
 	}
 	return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath,

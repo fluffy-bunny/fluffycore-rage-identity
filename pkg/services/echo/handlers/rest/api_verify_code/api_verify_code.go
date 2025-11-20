@@ -38,10 +38,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-
-}
+var _ contracts_handler.IHandler = stemService
 
 func (s *service) Ctor(
 	config *contracts_config.Config,

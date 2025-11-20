@@ -489,7 +489,7 @@ func (s *service) SetErrorCookie(c echo.Context, request *contracts_cookies.SetE
 		Name: contracts_cookies.CookieNameErrorName,
 	}
 	if s.config.DisableSecureCookies {
-		setCookieRequest.HttpOnly = true
+		setCookieRequest.HttpOnly = false
 		setCookieRequest.SameSite = 0
 		setCookieRequest.Secure = tPtr(false)
 	}

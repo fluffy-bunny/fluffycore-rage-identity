@@ -24,10 +24,7 @@ type (
 
 var stemService = (*service[any])(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-
-}
+var _ contracts_handler.IHandler = stemService
 
 // AddScopedIHandler registers the *service as a scope.
 func AddScopedIHandler[T any](builder di.ContainerBuilder, ptr *T) {
