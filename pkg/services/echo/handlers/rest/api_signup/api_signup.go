@@ -41,10 +41,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-
-}
+var _ contracts_handler.IHandler = stemService
 
 func (s *service) Ctor(
 	config *contracts_config.Config,
@@ -55,7 +52,7 @@ func (s *service) Ctor(
 	userIdGenerator contracts_identity.IUserIdGenerator,
 ) (*service, error) {
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
 		config:           config,
 		passwordHasher:   passwordHasher,
 		wellknownCookies: wellknownCookies,
@@ -213,12 +210,24 @@ func (s *service) Do(c echo.Context) error {
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	if s.config.EmailVerificationRequired {
-		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
+		codeResult, err := echo_utils.GenerateHashedVerificationCode(ctx, s.passwordHasher, 6)
+		if err != nil {
+			log.Error().Err(err).Msg("GenerateHashedVerificationCode")
+			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+		}
+		plainCode := ""
+		if s.config.SystemConfig.DeveloperMode {
+			response.DirectiveEmailCodeChallenge = &models_api_login_models.DirectiveEmailCodeChallenge{
+				Code: codeResult.PlainCode,
+			}
+			plainCode = codeResult.PlainCode
+		}
 		err = s.wellknownCookies.SetVerificationCodeCookie(c,
 			&contracts_cookies.SetVerificationCodeCookieRequest{
 				VerificationCode: &contracts_cookies.VerificationCode{
 					Email:             model.Email,
-					Code:              verificationCode,
+					CodeHash:          codeResult.HashedCode,
+					PlainCode:         plainCode,
 					Subject:           user.RootIdentity.Subject,
 					VerifyCodePurpose: contracts_cookies.VerifyCode_EmailVerification,
 				},
@@ -233,18 +242,14 @@ func (s *service) Do(c echo.Context) error {
 				SubjectId: "email.verification.subject",
 				BodyId:    "email.verification.message",
 				Data: map[string]string{
-					"code": verificationCode,
+					"code": codeResult.PlainCode,
 				},
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SendSimpleEmail")
 			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
-		if s.config.SystemConfig.DeveloperMode {
-			response.DirectiveEmailCodeChallenge = &models_api_login_models.DirectiveEmailCodeChallenge{
-				Code: verificationCode,
-			}
-		}
+
 		response.Directive = models_api_login_models.DIRECTIVE_VerifyCode_DisplayVerifyCodePage
 		return c.JSONPretty(http.StatusOK, response, "  ")
 	}

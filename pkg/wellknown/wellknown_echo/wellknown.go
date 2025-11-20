@@ -56,6 +56,7 @@ var (
 
 	API_AppSettings            = "/api/appsettings"
 	API_Manifest               = "/api/manifest"
+	API_OIDCFlowAppConfig      = "/api/oidc-flow-app-config"
 	API_StartOver              = "/api/start-over"
 	API_Start_ExternalLogin    = "/api/start-external-login"
 	API_VerifyUsername         = "/api/verify-username"

@@ -33,9 +33,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-}
+var _ contracts_handler.IHandler = stemService
 
 const (
 	// make sure only one is shown.  This is an internal error code to point the developer to the code that is failing
@@ -59,7 +57,7 @@ func (s *service) Ctor(
 	wellknownCookies contracts_cookies.IWellknownCookies,
 ) (*service, error) {
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
 		wellknownCookies: wellknownCookies,
 		config:           config,
 	}, nil
@@ -106,13 +104,13 @@ func (s *service) DoGet(c echo.Context) error {
 	model := &ForgotPasswordGetRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("c.Bind")
-		return s.TeleportBackToLogin(c, InternalError_ForgotPassword_099)
+		return s.TeleportBackToLoginWithError(c, InternalError_ForgotPassword_099, InternalError_ForgotPassword_099)
 	}
 	log.Debug().Interface("model", model).Msg("model")
 	err := s.validateForgotPasswordGetRequest(model)
 	if err != nil {
 		log.Error().Err(err).Msg("validateForgotPasswordGetRequest")
-		return s.TeleportBackToLogin(c, InternalError_ForgotPassword_002)
+		return s.TeleportBackToLoginWithError(c, InternalError_ForgotPassword_002, InternalError_ForgotPassword_002)
 	}
 
 	err = s.Render(c, http.StatusOK, "oidc/forgotpassword/index",
@@ -149,7 +147,7 @@ func (s *service) DoPost(c echo.Context) error {
 	model := &ForgotPasswordPostRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("Bind")
-		return s.TeleportBackToLogin(c, InternalError_ForgotPassword_099)
+		return s.TeleportBackToLoginWithError(c, InternalError_ForgotPassword_099, InternalError_ForgotPassword_099)
 	}
 	log.Debug().Interface("model", model).Msg("model")
 
@@ -184,7 +182,7 @@ func (s *service) DoPost(c echo.Context) error {
 		}
 		if err != nil {
 			log.Error().Err(err).Msg("ListUser")
-			return s.TeleportBackToLogin(c, InternalError_ForgotPassword_003)
+			return s.TeleportBackToLoginWithError(c, InternalError_ForgotPassword_003, InternalError_ForgotPassword_003)
 		}
 	}
 	subject := "NA"
@@ -196,20 +194,20 @@ func (s *service) DoPost(c echo.Context) error {
 	err = s.wellknownCookies.SetVerificationCodeCookie(c, &contracts_cookies.SetVerificationCodeCookieRequest{
 		VerificationCode: &contracts_cookies.VerificationCode{
 			Email:             model.Email,
-			Code:              verificationCode,
+			CodeHash:          verificationCode,
 			Subject:           subject,
 			VerifyCodePurpose: contracts_cookies.VerifyCode_PasswordReset,
 		},
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("SetVerificationCodeCookie")
-		return s.TeleportBackToLogin(c, InternalError_ForgotPassword_004)
+		return s.TeleportBackToLoginWithError(c, InternalError_ForgotPassword_004, InternalError_ForgotPassword_004)
 	}
 	localizer := s.Localizer().GetLocalizer()
 	message, err := localizer.LocalizeMessage(&i18n.Message{ID: "password.reset.message"})
 	if err != nil {
 		log.Error().Err(err).Msg("failed to localize message")
-		return s.TeleportBackToLogin(c, InternalError_ForgotPassword_005)
+		return s.TeleportBackToLoginWithError(c, InternalError_ForgotPassword_005, InternalError_ForgotPassword_005)
 	}
 	message = strings.ReplaceAll(message, "{code}", verificationCode)
 	if getRageUserResponse != nil {
@@ -226,7 +224,7 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SendEmail")
-			return s.TeleportBackToLogin(c, InternalError_ForgotPassword_006)
+			return s.TeleportBackToLoginWithError(c, InternalError_ForgotPassword_006, InternalError_ForgotPassword_006)
 		}
 	} else {
 		// no user found, is a probe.

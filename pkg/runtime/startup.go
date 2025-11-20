@@ -148,11 +148,11 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 	config.OTELConfig.ServiceName = config.ApplicationName
 	s.FluffyCoreOTELStartup.SetConfig(config.OTELConfig)
 	// add grpcclient factory that is config aware.  Will make sure that you get one that has otel tracing if enabled.
-	fluffycore_contracts_GRPCClientFactory.AddGRPCClientConfig(builder,
+
+	fluffycore_services_GRPCClientFactory.AddSingletonIGRPCClientFactory(builder,
 		&fluffycore_contracts_GRPCClientFactory.GRPCClientConfig{
 			OTELTracingEnabled: config.OTELConfig.TracingConfig.Enabled,
 		})
-	fluffycore_services_GRPCClientFactory.AddSingletonIGRPCClientFactory(builder)
 
 	wellknown_echo.OAuth2CallbackPath = config.OIDCConfig.OAuth2CallbackPath
 

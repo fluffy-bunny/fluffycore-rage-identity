@@ -29,10 +29,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-
-}
+var _ contracts_handler.IHandler = stemService
 
 func (s *service) Ctor(
 	config *contracts_config.Config,
@@ -41,7 +38,7 @@ func (s *service) Ctor(
 	oidcSession contracts_oidc_session.IOIDCSession,
 ) (*service, error) {
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
 		config:           config,
 		wellknownCookies: wellknownCookies,
 		oidcSession:      oidcSession,

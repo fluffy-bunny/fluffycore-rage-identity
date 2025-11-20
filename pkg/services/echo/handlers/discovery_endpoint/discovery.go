@@ -21,9 +21,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-}
+var _ contracts_handler.IHandler = stemService
 
 func (s *service) Ctor(config *contracts_config.Config, someUtil contracts_util.ISomeUtil) (*service, error) {
 	return &service{
@@ -87,6 +85,7 @@ func (s *service) Do(c echo.Context) error {
 		},
 		IDTokenSigningAlgValuesSupported: []string{
 			"ES256",
+			"RS256",
 		},
 	}
 	return c.JSONPretty(http.StatusOK, discovery, "  ")

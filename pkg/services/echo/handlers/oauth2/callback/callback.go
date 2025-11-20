@@ -17,6 +17,7 @@ import (
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
+	models_errors "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/errors"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
@@ -41,6 +42,7 @@ type (
 
 		clientServiceServer     proto_oidc_client.IFluffyCoreClientServiceServer
 		githubCodeExchange      contracts_codeexchange.IGithubCodeExchange
+		passwordHasher          contracts_identity.IPasswordHasher
 		genericOIDCCodeExchange contracts_codeexchange.IGenericOIDCCodeExchange
 		config                  *contracts_config.Config
 		userIdGenerator         contracts_identity.IUserIdGenerator
@@ -50,9 +52,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-}
+var _ contracts_handler.IHandler = stemService
 
 const (
 	// make sure only one is shown.  This is an internal error code to point the developer to the code that is failing
@@ -74,18 +74,20 @@ func (s *service) Ctor(
 	container di.Container,
 	config *contracts_config.Config,
 	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
+	passwordHasher contracts_identity.IPasswordHasher,
 	githubCodeExchange contracts_codeexchange.IGithubCodeExchange,
 	userIdGenerator contracts_identity.IUserIdGenerator,
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	genericOIDCCodeExchange contracts_codeexchange.IGenericOIDCCodeExchange) (*service, error) {
 	return &service{
-		BaseHandler:             services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:             services_echo_handlers_base.NewBaseHandler(container, config),
 		clientServiceServer:     clientServiceServer,
 		githubCodeExchange:      githubCodeExchange,
 		genericOIDCCodeExchange: genericOIDCCodeExchange,
 		config:                  config,
 		userIdGenerator:         userIdGenerator,
 		wellknownCookies:        wellknownCookies,
+		passwordHasher:          passwordHasher,
 	}, nil
 }
 
@@ -131,7 +133,7 @@ func (s *service) Do(c echo.Context) error {
 	model := &CallbackRequest{}
 	if err := c.Bind(model); err != nil {
 		log.Error().Err(err).Msg("c.Bind")
-		return s.TeleportBackToLogin(c, InternalError_Callback_099)
+		return s.TeleportBackToLoginWithError(c, InternalError_Callback_099, InternalError_Callback_099)
 	}
 	log = log.With().Interface("model", model).Logger()
 	var idp *proto_oidc_models.IDP
@@ -167,20 +169,27 @@ func (s *service) Do(c echo.Context) error {
 
 	}
 	doEmailVerification := func(user *proto_oidc_models.RageUser, directive string, purpose contracts_cookies.VerifyCodePurpose) error {
+
+		codeResult, err := echo_utils.GenerateHashedVerificationCode(ctx, s.passwordHasher, 6)
+		if err != nil {
+			log.Error().Err(err).Msg("GenerateHashedVerificationCode")
+			return s.TeleportBackToLoginWithError(c, InternalError_Callback_099, InternalError_Callback_099)
+		}
 		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
 		err = s.wellknownCookies.SetVerificationCodeCookie(c,
 			&contracts_cookies.SetVerificationCodeCookieRequest{
 				VerificationCode: &contracts_cookies.VerificationCode{
 					Subject:           user.RootIdentity.Subject,
 					Email:             user.RootIdentity.Email,
-					Code:              verificationCode,
+					CodeHash:          codeResult.HashedCode,
+					PlainCode:         codeResult.PlainCode,
 					VerifyCodePurpose: purpose,
 					DevelopmentMode:   s.config.SystemConfig.DeveloperMode,
 				},
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SetVerificationCodeCookie")
-			return s.TeleportBackToLogin(c, InternalError_Callback_007)
+			return s.TeleportBackToLoginWithError(c, InternalError_Callback_007, InternalError_Callback_007)
 		}
 		_, err = s.EmailService().SendSimpleEmail(ctx,
 			&contracts_email.SendSimpleEmailRequest{
@@ -193,7 +202,7 @@ func (s *service) Do(c echo.Context) error {
 			})
 		if err != nil {
 			log.Error().Err(err).Msg("SendSimpleEmail")
-			return s.TeleportBackToLogin(c, InternalError_Callback_009)
+			return s.TeleportBackToLoginWithError(c, InternalError_Callback_009, InternalError_Callback_009)
 		}
 		formParams := []models.FormParam{
 			{
@@ -229,7 +238,7 @@ func (s *service) Do(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("GetAuthorizationRequestState")
-		return s.TeleportBackToLogin(c, InternalError_Callback_001)
+		return s.TeleportBackToLoginWithError(c, InternalError_Callback_001, InternalError_Callback_001)
 	}
 	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 
@@ -239,7 +248,7 @@ func (s *service) Do(c echo.Context) error {
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("GetIDPBySlug")
-		return s.TeleportBackToLogin(c, InternalError_Callback_008)
+		return s.TeleportBackToLoginWithError(c, InternalError_Callback_008, InternalError_Callback_008)
 	}
 	var exchangeCodeResponse *contracts_codeexchange.ExchangeCodeResponse
 	idp = getIDPBySlugResponse.Idp
@@ -288,7 +297,7 @@ func (s *service) Do(c echo.Context) error {
 			}
 		}
 	}
-	if exchangeCodeResponse != nil && !fluffycore_utils.IsEmptyOrNil(exchangeCodeResponse.IdToken) {
+	if exchangeCodeResponse != nil && fluffycore_utils.IsNotEmptyOrNil(exchangeCodeResponse.IdToken) {
 		// now we do the link dance
 		parseOptions := []jwxt.ParseOption{
 			jwxt.WithVerify(false),
@@ -367,7 +376,7 @@ func (s *service) Do(c echo.Context) error {
 			})
 			if err != nil {
 				log.Error().Err(err).Msg("StoreAuthorizationRequestState")
-				return s.TeleportBackToLogin(c, InternalError_Callback_002)
+				return s.TeleportBackToLoginWithError(c, InternalError_Callback_002, InternalError_Callback_002)
 			}
 			// redirect back
 			return doLoginBounceBack()
@@ -390,7 +399,7 @@ func (s *service) Do(c echo.Context) error {
 				err = nil
 			} else {
 				log.Error().Err(err).Msg("GetUser")
-				return s.TeleportBackToLogin(c, InternalError_Callback_003)
+				return s.TeleportBackToLoginWithError(c, InternalError_Callback_003, InternalError_Callback_003)
 			}
 		}
 
@@ -434,7 +443,7 @@ func (s *service) Do(c echo.Context) error {
 			user, err := linkUser(candidateUserID, externalIdentity)
 			if err != nil {
 				log.Error().Err(err).Msg("LinkUsers")
-				return s.TeleportBackToLogin(c, InternalError_Callback_004)
+				return s.TeleportBackToLoginWithError(c, InternalError_Callback_004, InternalError_Callback_004)
 			}
 			return loginLinkedUser(user, models.MFA_VerifyEmailDirective)
 		}
@@ -504,19 +513,30 @@ func (s *service) Do(c echo.Context) error {
 				user, err := doAutoCreateUser()
 				if err != nil {
 					log.Error().Err(err).Msg("doAutoCreateUser")
-					return s.TeleportBackToLogin(c, InternalError_Callback_005)
+					return s.TeleportBackToLoginWithError(c, InternalError_Callback_005, InternalError_Callback_005)
 				}
 				return loginLinkedUser(user, models.MFA_VerifyEmailDirective)
 
 			}
+			// write a current error cookie
+			err = s.wellknownCookies.SetErrorCookie(c, &contracts_cookies.SetErrorCookieRequest{
+				Value: &contracts_cookies.ErrorCookie{
+					Code:  string(models_errors.FlowError_AutoAccountCreationNotAllowed),
+					Error: "auto account creation is not allowed for this identity provider",
+				},
+			})
+			if err != nil {
+				log.Error().Err(err).Msg("SetErrorCookie")
+				err = nil
+			}
 			// we bounce the user back to go through a sigunup flow
 			msg := utils.LocalizeWithInterperlate(localizer, "username.not.found", map[string]string{"username": externalIdentity.Email})
-			return s.TeleportBackToLogin(c, msg)
+			return s.TeleportBackToLoginWithError(c, string(models_errors.FlowError_AutoAccountCreationNotAllowed), msg)
 		case models.SignupDirective:
 			user, err := doAutoCreateUser()
 			if err != nil {
 				log.Error().Err(err).Msg("doAutoCreateUser")
-				return s.TeleportBackToLogin(c, InternalError_Callback_006)
+				return s.TeleportBackToLoginWithError(c, InternalError_Callback_006, InternalError_Callback_006)
 			}
 			emailVerificationRequired := idp.EmailVerificationRequired
 			if !emailVerificationRequired {
@@ -525,7 +545,7 @@ func (s *service) Do(c echo.Context) error {
 			return doEmailVerification(user, models.VerifyEmailDirective, contracts_cookies.VerifyCode_EmailVerification)
 		}
 	}
-	return s.TeleportBackToLogin(c, InternalError_Callback_011)
+	return s.TeleportBackToLoginWithError(c, InternalError_Callback_011, InternalError_Callback_011)
 }
 
 // IsMetadataBoolSet checks if the key is set in the metadata and if the value is a boolean

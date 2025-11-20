@@ -36,7 +36,7 @@ func GeneratePassword() (string, error) {
 func GeneratePasswordHashSet(secret *string) (*PasswordHashSet, error) {
 	var pass string
 	var err error
-	if !fluffycore_utils.IsEmptyOrNil(secret) && !fluffycore_utils.IsEmptyOrNil(*secret) {
+	if fluffycore_utils.IsNotEmptyOrNil(secret) && fluffycore_utils.IsNotEmptyOrNil(*secret) {
 		pass = *secret
 	} else {
 		pass, err = GeneratePassword()

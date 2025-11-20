@@ -59,7 +59,7 @@ func (s *service) Ctor(
 	fluffyCoreUserServiceServer proto_external_user.IFluffyCoreUserServiceServer,
 ) (*service, error) {
 	return &service{
-		BaseHandler:                 services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:                 services_echo_handlers_base.NewBaseHandler(container, config),
 		config:                      config,
 		wellknownCookies:            wellknownCookies,
 		passwordHasher:              passwordHasher,

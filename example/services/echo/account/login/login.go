@@ -5,6 +5,7 @@ import (
 
 	oidc "github.com/coreos/go-oidc/v3/oidc"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_selfoauth2provider "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/selfoauth2provider"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
@@ -34,9 +35,10 @@ func (s *service) Ctor(
 	container di.Container,
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	selfOAuth2Provider contracts_selfoauth2provider.ISelfOAuth2Provider,
+	config *contracts_config.Config,
 ) (*service, error) {
 	return &service{
-		BaseHandler:        services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:        services_echo_handlers_base.NewBaseHandler(container, config),
 		wellknownCookies:   wellknownCookies,
 		selfOAuth2Provider: selfOAuth2Provider,
 	}, nil

@@ -6,10 +6,12 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_cache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cache"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/localizer"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
+	models_api_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
@@ -49,12 +51,14 @@ type (
 		emailService                   contracts_email.IEmailService
 		sessionFactory                 contracts_sessions.ISessionFactory
 		oidcSession                    contracts_oidc_session.IOIDCSession
+
+		config *contracts_config.Config
 	}
 )
 
-func NewBaseHandler(container di.Container) *BaseHandler {
+func NewBaseHandler(container di.Container, config *contracts_config.Config) *BaseHandler {
 
-	obj := &BaseHandler{Container: container}
+	obj := &BaseHandler{Container: container, config: config}
 	obj.Localizer = obj.getLocalizer
 	obj.ClaimsPrincipal = obj.getClaimsPrincipal
 	obj.EchoContextAccessor = obj.getEchoContextAccessor
@@ -67,6 +71,71 @@ func NewBaseHandler(container di.Container) *BaseHandler {
 	obj.OIDCSession = obj.getOIDCSession
 	return obj
 
+}
+
+func (b *BaseHandler) GetManifest(c echo.Context) (*models_api_manifest.Manifest, error) {
+	ctx := c.Request().Context()
+
+	idps, err := b.GetIDPs(ctx)
+	if err != nil {
+		return nil, err
+	}
+	manifest := &models_api_manifest.Manifest{
+		DevelopmentMode: b.config.SystemConfig.DeveloperMode,
+	}
+	manifest.DisableLocalAccountCreation = b.config.DisableLocalAccountCreation
+	manifest.DisableSocialAccounts = b.config.DisableSocialAccounts
+	manifest.SocialIdps = make([]models_api_manifest.IDP, 0)
+	for _, idp := range idps {
+		if idp.Enabled && !idp.Hidden {
+			manifest.SocialIdps = append(manifest.SocialIdps, models_api_manifest.IDP{
+				Slug: idp.Slug,
+			})
+		}
+	}
+	manifest.PasskeyEnabled = false
+	if b.config.WebAuthNConfig != nil {
+		manifest.PasskeyEnabled = b.config.WebAuthNConfig.Enabled
+	}
+	// we may have a session in flight and got redirect back here.
+	// we may have an external OIDC callback that requires a verify code to continue.
+	session, err := b.getSession()
+	if err == nil {
+		sessionIdI, err := session.Get("session_id")
+		if err == nil && sessionIdI != nil {
+			sessionId, ok := sessionIdI.(string)
+			if ok {
+				manifest.SessionId = sessionId
+			}
+		}
+		sessionRequest, err := session.Get("request")
+		if err == nil {
+			authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
+
+			if authorizationRequest != nil {
+				landingPageI, err := session.Get("landingPage")
+				if err == nil && landingPageI != nil {
+					landingPage, ok := landingPageI.(*models_api_manifest.LandingPage)
+					if ok && landingPage != nil {
+						manifest.LandingPage = landingPage
+					}
+					// get rid of it.
+					//session.Set("landingPage", nil)
+					//session.Save()
+				}
+			}
+		}
+
+	}
+	return manifest, nil
+}
+
+func (b *BaseHandler) getSession() (contracts_sessions.ISession, error) {
+	session, err := b.getOIDCSession().GetSession()
+	if err != nil {
+		return nil, err
+	}
+	return session, nil
 }
 func (b *BaseHandler) getOIDCSession() contracts_oidc_session.IOIDCSession {
 	if b.oidcSession == nil {
@@ -197,8 +266,12 @@ func (b *BaseHandler) GetIDPs(ctx context.Context) ([]*proto_oidc_models.IDP, er
 	}
 	return listIDPResponse.Idps, nil
 }
-func (b *BaseHandler) TeleportBackToLogin(c echo.Context, msg string) error {
+func (b *BaseHandler) TeleportBackToLoginWithError(c echo.Context, code, msg string) error {
 	formParams := []models.FormParam{
+		{
+			Name:  "error_code",
+			Value: code,
+		},
 		{
 			Name:  "error",
 			Value: msg,

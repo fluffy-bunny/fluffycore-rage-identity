@@ -28,7 +28,7 @@
   },
   "emailVerificationRequired": true,
   "multiFactorRequired": true,
-  "disableLocalAccountCreation": true,
+  "disableLocalAccountCreation": false,
   "disableSocialAccounts": false,
   "multiFactorRequiredByEmailCode": true,
   "systemConfig": {
@@ -49,8 +49,6 @@
     "enabled": true,
     "rpDisplayName": "RAGE",
     "rpID": "${DOMAIN}",
-    "rpOrigins": [
-      "https://${DOMAIN}"
-    ]
+    "rpOrigins": ["https://${DOMAIN}"]
   }
 }

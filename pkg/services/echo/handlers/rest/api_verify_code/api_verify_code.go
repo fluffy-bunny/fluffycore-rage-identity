@@ -38,10 +38,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-
-}
+var _ contracts_handler.IHandler = stemService
 
 func (s *service) Ctor(
 	config *contracts_config.Config,
@@ -51,7 +48,7 @@ func (s *service) Ctor(
 	oidcSession contracts_oidc_session.IOIDCSession,
 ) (*service, error) {
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
 		config:           config,
 		passwordHasher:   passwordHasher,
 		wellknownCookies: wellknownCookies,
@@ -121,8 +118,10 @@ func (s *service) Do(c echo.Context) error {
 		return c.JSONPretty(http.StatusOK, response, "  ")
 	}
 	verificationCode := getVerificationCodeCookieResponse.VerificationCode
-	code := verificationCode.Code
-	if code != model.Code {
+	verificationCodeHashed := verificationCode.CodeHash
+
+	err = echo_utils.VerifyVerificationCode(ctx, s.passwordHasher, model.Code, verificationCodeHashed)
+	if err != nil {
 		err := status.Error(codes.NotFound, "code does not match")
 		return c.JSONPretty(http.StatusNotFound, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
@@ -239,10 +238,11 @@ func (s *service) Do(c echo.Context) error {
 		// "urn:rage:idp:google", "urn:rage:idp:spacex", "urn:rage:idp:github-enterprise", etc.
 		// "urn:rage:password", "urn:rage:2fa", "urn:rage:email", etc.
 		// we are done with the state now.  Lets map it to the code so it can be looked up by the client.
-		_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-			State:                     authorizationFinal.Request.Code,
-			AuthorizationRequestState: authorizationFinal,
-		})
+		_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx,
+			&proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+				State:                     authorizationFinal.Request.Code,
+				AuthorizationRequestState: authorizationFinal,
+			})
 		if err != nil {
 			log.Error().Err(err).Msg("StoreAuthorizationRequestState")
 			// redirect to error page
