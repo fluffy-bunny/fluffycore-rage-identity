@@ -71,7 +71,7 @@ func (s *service) Ctor(
 	oidcSession contracts_oidc_session.IOIDCSession,
 ) (*service, error) {
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
 		config:           config,
 		passwordHasher:   passwordHasher,
 		wellknownCookies: wellknownCookies,
@@ -233,7 +233,7 @@ func (s *service) DoPost(c echo.Context) error {
 			&contracts_cookies.SetVerificationCodeCookieRequest{
 				VerificationCode: &contracts_cookies.VerificationCode{
 					Email:             model.UserName,
-					Code:              verificationCode,
+					CodeHash:          verificationCode,
 					Subject:           user.RootIdentity.Subject,
 					VerifyCodePurpose: purpose,
 				},

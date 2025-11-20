@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
@@ -45,9 +46,10 @@ func (s *service) Ctor(
 	webAuthN contracts_webauthn.IWebAuthN,
 	cookies contracts_cookies.IWellknownCookies,
 	oidcSession contracts_oidc_session.IOIDCSession,
+	config *contracts_config.Config,
 ) (*service, error) {
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
 		webAuthN:         webAuthN,
 		wellknownCookies: cookies,
 		oidcSession:      oidcSession,

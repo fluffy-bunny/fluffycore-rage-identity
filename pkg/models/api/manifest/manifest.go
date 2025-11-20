@@ -6,6 +6,7 @@ type (
 		Slug string `json:"slug"`
 	}
 	Manifest struct {
+		SessionId                   string       `json:"session_id"`
 		SocialIdps                  []IDP        `json:"social_idps"`
 		PasskeyEnabled              bool         `json:"passkey_enabled"`
 		LandingPage                 *LandingPage `json:"landing_page"`
@@ -22,4 +23,6 @@ const (
 	Login         Page = "Login"
 	VerifyCode    Page = "VerifyCode"
 	CreateAccount Page = "CreateAccount"
+	PasswordEntry Page = "PasswordEntry"
+	UsernameEntry Page = "UsernameEntry"
 )

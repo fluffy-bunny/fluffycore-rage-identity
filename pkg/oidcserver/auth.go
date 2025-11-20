@@ -67,6 +67,7 @@ func RequiresNoAuth() map[string]bool {
 			wellknown_echo.OIDCLoginUIPath:               true,
 			wellknown_echo.OIDCLoginUIStaticPath:         true,
 
+			wellknown_echo.API_OIDCFlowAppConfig:      true,
 			wellknown_echo.API_AppSettings:            true,
 			wellknown_echo.API_Manifest:               true,
 			wellknown_echo.API_StartOver:              true,

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -22,9 +23,9 @@ func init() {
 	var _ contracts_handler.IHandler = stemService
 }
 
-func (s *service) Ctor(container di.Container) (*service, error) {
+func (s *service) Ctor(container di.Container, config *contracts_config.Config) (*service, error) {
 	return &service{
-		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler: services_echo_handlers_base.NewBaseHandler(container, config),
 	}, nil
 }
 

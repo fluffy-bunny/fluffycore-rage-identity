@@ -79,7 +79,7 @@ func (s *service) Ctor(
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	genericOIDCCodeExchange contracts_codeexchange.IGenericOIDCCodeExchange) (*service, error) {
 	return &service{
-		BaseHandler:             services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:             services_echo_handlers_base.NewBaseHandler(container, config),
 		clientServiceServer:     clientServiceServer,
 		githubCodeExchange:      githubCodeExchange,
 		genericOIDCCodeExchange: genericOIDCCodeExchange,
@@ -173,7 +173,7 @@ func (s *service) Do(c echo.Context) error {
 				VerificationCode: &contracts_cookies.VerificationCode{
 					Subject:           user.RootIdentity.Subject,
 					Email:             user.RootIdentity.Email,
-					Code:              verificationCode,
+					CodeHash:          verificationCode,
 					VerifyCodePurpose: purpose,
 					DevelopmentMode:   s.config.SystemConfig.DeveloperMode,
 				},

@@ -41,7 +41,7 @@ func (s *service) Ctor(
 ) (*service, error) {
 
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
 		config:           config,
 		oidcSession:      oidcSession,
 		wellknownCookies: wellknownCookies,

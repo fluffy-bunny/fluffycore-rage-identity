@@ -11,7 +11,9 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_cache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cache"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
+	models_api_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/client"
@@ -53,9 +55,10 @@ func (s *service) Ctor(
 	scopedMemoryCache contracts_cache.IScopedMemoryCache,
 	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
 	authorizationRequestStateStoreServer proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer,
+	config *contracts_config.Config,
 ) (*service, error) {
 	return &service{
-		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler: services_echo_handlers_base.NewBaseHandler(container, config),
 
 		scopedMemoryCache:                    scopedMemoryCache,
 		authorizationRequestStateStoreServer: authorizationRequestStateStoreServer,
@@ -218,6 +221,14 @@ func (s *service) Do(c echo.Context) error {
 	// set the code and state in the session
 	// --~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
 	session.Set("request", model)
+	sessionId := model.Nonce
+	if fluffycore_utils.IsEmptyOrNil(sessionId) {
+		sessionId = xid.New().String()
+	}
+	session.Set("session_id", sessionId)
+	session.Set("landing_page", &models_api_manifest.LandingPage{
+		Page: models_api_manifest.UsernameEntry,
+	})
 	session.Save()
 
 	mm, err := s.authorizationRequestStateStoreServer.GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{

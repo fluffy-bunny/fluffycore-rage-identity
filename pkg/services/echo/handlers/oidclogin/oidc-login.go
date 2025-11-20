@@ -12,7 +12,7 @@ import (
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
-	manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
+	models_api_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
@@ -74,7 +74,7 @@ func (s *service) Ctor(
 
 ) (*service, error) {
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
 		config:           config,
 		passwordHasher:   passwordHasher,
 		wellknownCookies: wellknownCookies,
@@ -214,8 +214,8 @@ func (s *service) DoPost(c echo.Context) error {
 		return s.DoGet(c)
 	}
 	if doVerifyCode {
-		landingPage := &manifest.LandingPage{
-			Page: manifest.VerifyCode,
+		landingPage := &models_api_manifest.LandingPage{
+			Page: models_api_manifest.VerifyCode,
 		}
 		session.Set("landingPage", landingPage)
 		session.Save()
@@ -348,7 +348,7 @@ func (s *service) DoPost(c echo.Context) error {
 			&contracts_cookies.SetVerificationCodeCookieRequest{
 				VerificationCode: &contracts_cookies.VerificationCode{
 					Email:             model.UserName,
-					Code:              verificationCode,
+					CodeHash:          verificationCode,
 					Subject:           user.RootIdentity.Subject,
 					VerifyCodePurpose: contracts_cookies.VerifyCode_EmailVerification,
 				},

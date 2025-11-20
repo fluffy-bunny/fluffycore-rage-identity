@@ -71,7 +71,7 @@ func (s *service) Ctor(
 ) (*service, error) {
 
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
 		oauth2Factory:    oauth2Factory,
 		config:           config,
 		oidcSession:      oidcSession,

@@ -34,7 +34,7 @@ func AddScopedIHandler[T any](builder di.ContainerBuilder, ptr *T) {
 	contracts_handler.AddScopedIHandleWithMetadata[*service[T]](builder,
 		func(container di.Container, config *contracts_config.Config) (*service[T], error) {
 			return &service[T]{
-				BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
+				BaseHandler: services_echo_handlers_base.NewBaseHandler(container, config),
 				AppSettings: ptr,
 				config:      config,
 			}, nil

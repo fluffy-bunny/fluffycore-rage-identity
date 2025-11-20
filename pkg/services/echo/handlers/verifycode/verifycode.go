@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
@@ -60,10 +61,10 @@ func (s *service) Ctor(
 	container di.Container,
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	oidcSession contracts_oidc_session.IOIDCSession,
-
+	config *contracts_config.Config,
 ) (*service, error) {
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
 		wellknownCookies: wellknownCookies,
 		oidcSession:      oidcSession,
 	}, nil
@@ -210,7 +211,7 @@ func (s *service) DoPost(c echo.Context) error {
 			})
 	}
 	verificationCode := getVerificationCodeCookieResponse.VerificationCode
-	code := verificationCode.Code
+	code := verificationCode.CodeHash
 
 	if code != model.Code {
 		return s.Render(c, http.StatusBadRequest, "oidc/verifycode/index",

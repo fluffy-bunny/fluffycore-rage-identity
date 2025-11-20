@@ -59,7 +59,7 @@ func (s *service) Ctor(
 	wellknownCookies contracts_cookies.IWellknownCookies,
 ) (*service, error) {
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
 		wellknownCookies: wellknownCookies,
 		config:           config,
 	}, nil
@@ -196,7 +196,7 @@ func (s *service) DoPost(c echo.Context) error {
 	err = s.wellknownCookies.SetVerificationCodeCookie(c, &contracts_cookies.SetVerificationCodeCookieRequest{
 		VerificationCode: &contracts_cookies.VerificationCode{
 			Email:             model.Email,
-			Code:              verificationCode,
+			CodeHash:          verificationCode,
 			Subject:           subject,
 			VerifyCodePurpose: contracts_cookies.VerifyCode_PasswordReset,
 		},

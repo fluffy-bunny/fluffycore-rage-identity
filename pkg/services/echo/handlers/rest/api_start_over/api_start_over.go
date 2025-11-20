@@ -43,7 +43,7 @@ func (s *service) Ctor(
 	wellknownCookies contracts_cookies.IWellknownCookies,
 ) (*service, error) {
 	return &service{
-		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler: services_echo_handlers_base.NewBaseHandler(container, config),
 
 		config:           config,
 		webAuthNConfig:   webAuthNConfig,

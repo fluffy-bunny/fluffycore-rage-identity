@@ -33,7 +33,8 @@ type (
 		VerificationCode *VerificationCode `json:"verificationCode"`
 	}
 	VerificationCode struct {
-		Code              string            `json:"code"`
+		CodeHash          string            `json:"codeHash"`
+		PlainCode         string            `json:"plainCode,omitempty"`
 		Email             string            `json:"email"`
 		Subject           string            `json:"subject"`
 		VerifyCodePurpose VerifyCodePurpose `json:"verifyCodePurpose"`

@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
@@ -48,9 +49,10 @@ func (s *service) Ctor(
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	passwordHasher contracts_identity.IPasswordHasher,
 	fluffyCoreUserServiceServer proto_external_user.IFluffyCoreUserServiceServer,
+	config *contracts_config.Config,
 ) (*service, error) {
 	return &service{
-		BaseHandler:                 services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:                 services_echo_handlers_base.NewBaseHandler(container, config),
 		wellknownCookies:            wellknownCookies,
 		passwordHasher:              passwordHasher,
 		fluffyCoreUserServiceServer: fluffyCoreUserServiceServer,

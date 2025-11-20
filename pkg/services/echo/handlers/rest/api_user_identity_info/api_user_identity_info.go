@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_user_identity_info"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
@@ -52,9 +53,10 @@ const (
 func (s *service) Ctor(
 	container di.Container,
 	webAuthNConfig *contracts_webauthn.WebAuthNConfig,
+	config *contracts_config.Config,
 ) (*service, error) {
 	return &service{
-		BaseHandler:    services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:    services_echo_handlers_base.NewBaseHandler(container, config),
 		webAuthNConfig: webAuthNConfig,
 	}, nil
 }
