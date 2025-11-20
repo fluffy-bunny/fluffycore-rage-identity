@@ -13,7 +13,7 @@ require (
 	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/eko/gocache/lib/v4 v4.2.2
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.4
-	github.com/fluffy-bunny/fluffycore v1.0.220
+	github.com/fluffy-bunny/fluffycore v1.0.221
 	github.com/go-oauth2/oauth2/v4 v4.5.4
 	github.com/go-webauthn/webauthn v0.14.0
 	github.com/gofrs/uuid v4.4.0+incompatible
