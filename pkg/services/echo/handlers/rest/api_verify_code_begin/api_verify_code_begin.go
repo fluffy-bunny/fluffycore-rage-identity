@@ -28,10 +28,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-
-}
+var _ contracts_handler.IHandler = stemService
 
 func (s *service) Ctor(
 	container di.Container,
@@ -40,7 +37,7 @@ func (s *service) Ctor(
 	wellknownCookies contracts_cookies.IWellknownCookies,
 ) (*service, error) {
 	return &service{
-		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler: services_echo_handlers_base.NewBaseHandler(container, config),
 
 		config:           config,
 		oidcSession:      oidcSession,
@@ -100,7 +97,7 @@ func (s *service) Do(c echo.Context) error {
 	}
 	response.Email = getVerificationCodeCookieResponse.VerificationCode.Email
 	if s.config.SystemConfig.DeveloperMode {
-		response.Code = getVerificationCodeCookieResponse.VerificationCode.Code
+		response.Code = getVerificationCodeCookieResponse.VerificationCode.PlainCode
 	}
 	response.Valid = true
 	clearLandingPage()

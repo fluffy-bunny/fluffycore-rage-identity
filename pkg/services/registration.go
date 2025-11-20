@@ -8,6 +8,7 @@ import (
 	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_OIDCFlowAppConfig "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/OIDCFlowAppConfig"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/eko_gocache"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
@@ -166,6 +167,13 @@ func OnConfigureServicesLoadIDPs(ctx context.Context, config *contracts_config.C
 	di.AddSingleton[*proto_oidc_models.IDPs](builder, func() *proto_oidc_models.IDPs {
 		return idps
 	})
+	for _, idp := range idps.Idps {
+		if idp.Enabled && !idp.Hidden {
+			config.OIDCFlowAppConfig.SocialIdps = append(config.OIDCFlowAppConfig.SocialIdps, contracts_OIDCFlowAppConfig.IDP{
+				Slug: idp.Slug,
+			})
+		}
+	}
 	return nil
 
 }

@@ -11,6 +11,7 @@ import (
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
+	models_api_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
@@ -42,10 +43,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-
-}
+var _ contracts_handler.IHandler = stemService
 
 func (s *service) Ctor(
 	container di.Container,
@@ -56,7 +54,7 @@ func (s *service) Ctor(
 	webAuthNConfig *contracts_webauthn.WebAuthNConfig,
 ) (*service, error) {
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
 		config:           config,
 		wellknownCookies: wellknownCookies,
 		passwordHasher:   passwordHasher,
@@ -258,6 +256,16 @@ func (s *service) Do(c echo.Context) error {
 		Email:      model.Email,
 		HasPasskey: hasPasskey,
 	}
+	session.Set("landing_page", &models_api_manifest.LandingPage{
+		Page: models_api_manifest.PagePasswordEntry,
+	})
+	session.Save()
+	manifest, err := s.GetManifest(c)
+	if err != nil {
+		log.Error().Err(err).Msg("GetManifest")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+	}
+	response.Manifest = manifest
 	return c.JSONPretty(http.StatusOK, response, "  ")
 }
 func (s *service) getSession() (contracts_sessions.ISession, error) {

@@ -61,7 +61,7 @@ func (s *service) validateSetVerificationCodeCookieRequest(request *contracts_co
 	if request.VerificationCode == nil {
 		return status.Error(codes.InvalidArgument, "request.VerificationCode is nil")
 	}
-	if fluffycore_utils.IsEmptyOrNil(request.VerificationCode.Code) {
+	if fluffycore_utils.IsEmptyOrNil(request.VerificationCode.CodeHash) {
 		return status.Error(codes.InvalidArgument, "Code is empty")
 	}
 	if fluffycore_utils.IsEmptyOrNil(request.VerificationCode.Email) {
@@ -489,7 +489,7 @@ func (s *service) SetErrorCookie(c echo.Context, request *contracts_cookies.SetE
 		Name: contracts_cookies.CookieNameErrorName,
 	}
 	if s.config.DisableSecureCookies {
-		setCookieRequest.HttpOnly = true
+		setCookieRequest.HttpOnly = false
 		setCookieRequest.SameSite = 0
 		setCookieRequest.Secure = tPtr(false)
 	}

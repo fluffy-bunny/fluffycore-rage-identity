@@ -14,9 +14,7 @@ type (
 	}
 )
 
-func init() {
-	var _ contracts_handler.IHandler = (*service)(nil)
-}
+var _ contracts_handler.IHandler = (*service)(nil)
 
 // AddScopedIHandler registers the *service as a singleton.
 func AddScopedIHandler(builder di.ContainerBuilder) {

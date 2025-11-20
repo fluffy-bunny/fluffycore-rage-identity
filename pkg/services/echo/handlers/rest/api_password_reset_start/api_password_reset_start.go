@@ -37,10 +37,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-
-}
+var _ contracts_handler.IHandler = stemService
 
 func (s *service) Ctor(
 	container di.Container,
@@ -50,7 +47,7 @@ func (s *service) Ctor(
 	oidcSession contracts_oidc_session.IOIDCSession,
 ) (*service, error) {
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
 		config:           config,
 		wellknownCookies: wellknownCookies,
 		passwordHasher:   passwordHasher,
@@ -144,15 +141,25 @@ func (s *service) Do(c echo.Context) error {
 	if getRageUserResponse != nil {
 		subject = getRageUserResponse.User.RootIdentity.Subject
 	}
-	verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
-	err = s.wellknownCookies.SetVerificationCodeCookie(c, &contracts_cookies.SetVerificationCodeCookieRequest{
-		VerificationCode: &contracts_cookies.VerificationCode{
-			Email:             model.Email,
-			Code:              verificationCode,
-			Subject:           subject,
-			VerifyCodePurpose: contracts_cookies.VerifyCode_PasswordReset,
-		},
-	})
+	codeResult, err := echo_utils.GenerateHashedVerificationCode(ctx, s.passwordHasher, 6)
+	if err != nil {
+		log.Error().Err(err).Msg("GenerateHashedVerificationCode")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+	}
+	plainCode := ""
+	if s.config.SystemConfig.DeveloperMode {
+		plainCode = codeResult.PlainCode
+	}
+	err = s.wellknownCookies.SetVerificationCodeCookie(c,
+		&contracts_cookies.SetVerificationCodeCookieRequest{
+			VerificationCode: &contracts_cookies.VerificationCode{
+				Email:             model.Email,
+				CodeHash:          codeResult.HashedCode,
+				PlainCode:         plainCode,
+				Subject:           subject,
+				VerifyCodePurpose: contracts_cookies.VerifyCode_PasswordReset,
+			},
+		})
 	if err != nil {
 		log.Error().Err(err).Msg("SetVerificationCodeCookie")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
@@ -163,7 +170,7 @@ func (s *service) Do(c echo.Context) error {
 		log.Error().Err(err).Msg("failed to localize message")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
-	message = strings.ReplaceAll(message, "{code}", verificationCode)
+	message = strings.ReplaceAll(message, "{code}", codeResult.PlainCode)
 	if getRageUserResponse != nil {
 		// send the email
 		_, err = s.EmailService().SendEmail(ctx,
@@ -182,12 +189,9 @@ func (s *service) Do(c echo.Context) error {
 		}
 		if s.config.SystemConfig.DeveloperMode {
 			response.DirectiveEmailCodeChallenge = &login_models.DirectiveEmailCodeChallenge{
-				Code: verificationCode,
+				Code: codeResult.PlainCode,
 			}
 		}
-	} else {
-		// no user found, is a probe.
-		verificationCode = "NA"
 	}
 
 	return c.JSONPretty(http.StatusOK, response, "  ")

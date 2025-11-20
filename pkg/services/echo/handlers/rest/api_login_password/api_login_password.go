@@ -39,10 +39,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-
-}
+var _ contracts_handler.IHandler = stemService
 
 func (s *service) Ctor(
 	config *contracts_config.Config,
@@ -52,7 +49,7 @@ func (s *service) Ctor(
 	oidcSession contracts_oidc_session.IOIDCSession,
 ) (*service, error) {
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
 		config:           config,
 		passwordHasher:   passwordHasher,
 		wellknownCookies: wellknownCookies,
@@ -186,12 +183,20 @@ func (s *service) Do(c echo.Context) error {
 
 	user := getRageUserResponse.User
 	doEmailVerification := func(purpose contracts_cookies.VerifyCodePurpose) (string, error) {
-		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
+		codeResult, err := echo_utils.GenerateHashedVerificationCode(ctx, s.passwordHasher, 6)
+		if err != nil {
+			return "", err
+		}
+		plainCode := ""
+		if s.config.SystemConfig.DeveloperMode {
+			plainCode = codeResult.PlainCode
+		}
 		err = s.wellknownCookies.SetVerificationCodeCookie(c,
 			&contracts_cookies.SetVerificationCodeCookieRequest{
 				VerificationCode: &contracts_cookies.VerificationCode{
 					Email:             model.Email,
-					Code:              verificationCode,
+					CodeHash:          codeResult.HashedCode,
+					PlainCode:         plainCode,
 					Subject:           user.RootIdentity.Subject,
 					VerifyCodePurpose: purpose,
 				},
@@ -206,11 +211,11 @@ func (s *service) Do(c echo.Context) error {
 				SubjectId: "email.verification.subject",
 				BodyId:    "email.verification.message",
 				Data: map[string]string{
-					"code": verificationCode,
+					"code": codeResult.PlainCode,
 				},
 			})
 
-		return verificationCode, nil
+		return codeResult.PlainCode, nil
 
 	}
 	doPasswordVerification := func() error {

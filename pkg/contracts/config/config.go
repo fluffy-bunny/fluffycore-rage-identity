@@ -3,6 +3,7 @@ package config
 import (
 	"strings"
 
+	contracts_OIDCFlowAppConfig "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/OIDCFlowAppConfig"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	models_api_appsettings "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/appsettings"
@@ -114,34 +115,35 @@ type (
 	Config struct {
 		fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
 
-		ConfigFiles                    ConfigFiles                                `json:"configFiles"`
-		Echo                           *EchoConfig                                `json:"echo"`
-		EchoOIDCUI                     *EchoConfig                                `json:"echoOIDCUI"`
-		EchoAccount                    *EchoConfig                                `json:"echoAccount"`
-		InMemoryClients                InMemoryClients                            `json:"inMemoryClients"`
-		OIDCConfig                     *OIDCConfig                                `json:"oidcConfig"`
-		BackingCache                   *BackingCacheConfig                        `json:"backingCache"`
-		AutolinkOnEmailMatch           bool                                       `json:"autolinkOnEmailMatch"`
-		EmailVerificationRequired      bool                                       `json:"emailVerificationRequired"`
-		MultiFactorRequired            bool                                       `json:"multiFactorRequired"`
-		MultiFactorRequiredByEmailCode bool                                       `json:"multiFactorRequiredByEmailCode"`
-		DisableLocalAccountCreation    bool                                       `json:"disableLocalAccountCreation"`
-		DisableSocialAccounts          bool                                       `json:"disableSocialAccounts"`
-		TOTP                           *TOTPConfig                                `json:"totp"`
-		EmailConfig                    *contracts_email.EmailConfig               `json:"emailConfig"`
-		SelfIDPConfig                  *SelfIDPConfig                             `json:"selfIDPConfig"`
-		CookieConfig                   *CookieConfig                              `json:"cookieConfig"`
-		SystemConfig                   *SystemConfig                              `json:"systemConfig"`
-		SessionConfig                  *contracts_sessions.SessionConfig          `json:"sessionConfig"`
-		WebAuthNConfig                 *contracts_webauthn.WebAuthNConfig         `json:"webAuthNConfig"`
-		PasswordConfig                 *PasswordConfig                            `json:"passwordConfig"`
-		CORSConfig                     *CORSConfig                                `json:"corsConfig"`
-		CSRFConfig                     *CSRFConfig                                `json:"csrfConfig"`
-		OTELConfig                     *fluffycore_contracts_otel.OTELConfig      `json:"otelConfig"`
-		OIDCUIConfig                   *OIDCUIConfig                              `json:"oidcUIConfig"`
-		AccountUIConfig                *AccountUIConfig                           `json:"accountUIConfig"`
-		AccountAppSettings             *models_api_appsettings.AccountAppSettings `json:"accountAppSettings"`
-		ApiAppSettings                 *models_api_appsettings.ApiAppSettings     `json:"apiAppSettings"`
+		ConfigFiles                    ConfigFiles                                    `json:"configFiles"`
+		Echo                           *EchoConfig                                    `json:"echo"`
+		EchoOIDCUI                     *EchoConfig                                    `json:"echoOIDCUI"`
+		EchoAccount                    *EchoConfig                                    `json:"echoAccount"`
+		InMemoryClients                InMemoryClients                                `json:"inMemoryClients"`
+		OIDCConfig                     *OIDCConfig                                    `json:"oidcConfig"`
+		BackingCache                   *BackingCacheConfig                            `json:"backingCache"`
+		AutolinkOnEmailMatch           bool                                           `json:"autolinkOnEmailMatch"`
+		EmailVerificationRequired      bool                                           `json:"emailVerificationRequired"`
+		MultiFactorRequired            bool                                           `json:"multiFactorRequired"`
+		MultiFactorRequiredByEmailCode bool                                           `json:"multiFactorRequiredByEmailCode"`
+		DisableLocalAccountCreation    bool                                           `json:"disableLocalAccountCreation"`
+		DisableSocialAccounts          bool                                           `json:"disableSocialAccounts"`
+		TOTP                           *TOTPConfig                                    `json:"totp"`
+		EmailConfig                    *contracts_email.EmailConfig                   `json:"emailConfig"`
+		SelfIDPConfig                  *SelfIDPConfig                                 `json:"selfIDPConfig"`
+		CookieConfig                   *CookieConfig                                  `json:"cookieConfig"`
+		SystemConfig                   *SystemConfig                                  `json:"systemConfig"`
+		SessionConfig                  *contracts_sessions.SessionConfig              `json:"sessionConfig"`
+		WebAuthNConfig                 *contracts_webauthn.WebAuthNConfig             `json:"webAuthNConfig"`
+		PasswordConfig                 *PasswordConfig                                `json:"passwordConfig"`
+		CORSConfig                     *CORSConfig                                    `json:"corsConfig"`
+		CSRFConfig                     *CSRFConfig                                    `json:"csrfConfig"`
+		OTELConfig                     *fluffycore_contracts_otel.OTELConfig          `json:"otelConfig"`
+		OIDCUIConfig                   *OIDCUIConfig                                  `json:"oidcUIConfig"`
+		AccountUIConfig                *AccountUIConfig                               `json:"accountUIConfig"`
+		AccountAppSettings             *models_api_appsettings.AccountAppSettings     `json:"accountAppSettings"`
+		ApiAppSettings                 *models_api_appsettings.ApiAppSettings         `json:"apiAppSettings"`
+		OIDCFlowAppConfig              *contracts_OIDCFlowAppConfig.OIDCFlowAppConfig `json:"oidcFlowAppConfig"`
 	}
 )
 
@@ -351,7 +353,14 @@ const configDefaultJSONTemplate = `
             "runtimeEnabled": false,
             "hostEnabled": false
         }
-    }
+    },
+	"oidcFlowAppConfig": {
+		"social_idps": [],
+		"passkey_enabled": false,
+		"development_mode": false,
+		"disable_local_account_creation": false,
+		"disable_social_accounts": false
+	}
 }
 `
 

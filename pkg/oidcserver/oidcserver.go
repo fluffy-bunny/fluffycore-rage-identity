@@ -30,6 +30,7 @@ import (
 	services_handlers_oidcloginpassword "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidcloginpassword"
 	services_handlers_oidclogintotp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidclogintotp"
 	services_handlers_passwordreset "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/passwordreset"
+	services_handlers_rest_api_OIDCFlowAppConfig "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_OIDCFlowAppConfig"
 	services_handlers_rest_api_appsettings "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_appsettings"
 	services_handlers_rest_api_isauthorized "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_isauthorized"
 	services_handlers_rest_api_login_password "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_login_password"
@@ -206,6 +207,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_oidcloginpassword.AddScopedIHandler(builder)
 	services_handlers_rest_api_appsettings.AddScopedIHandler(builder, s.config.ApiAppSettings)
 	services_handlers_rest_api_manifest.AddScopedIHandler(builder)
+	services_handlers_rest_api_OIDCFlowAppConfig.AddScopedIHandler(builder)
 	services_handlers_rest_api_start_over.AddScopedIHandler(builder)
 	services_handlers_rest_api_verify_code.AddScopedIHandler(builder)
 	services_handlers_rest_api_verify_code_begin.AddScopedIHandler(builder)

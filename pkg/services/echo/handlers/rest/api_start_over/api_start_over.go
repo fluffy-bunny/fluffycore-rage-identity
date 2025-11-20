@@ -30,10 +30,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-
-}
+var _ contracts_handler.IHandler = stemService
 
 func (s *service) Ctor(
 	container di.Container,
@@ -43,7 +40,7 @@ func (s *service) Ctor(
 	wellknownCookies contracts_cookies.IWellknownCookies,
 ) (*service, error) {
 	return &service{
-		BaseHandler: services_echo_handlers_base.NewBaseHandler(container),
+		BaseHandler: services_echo_handlers_base.NewBaseHandler(container, config),
 
 		config:           config,
 		webAuthNConfig:   webAuthNConfig,

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"net/mail"
 	"time"
 
+	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	echo "github.com/labstack/echo/v4"
 	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
 )
@@ -66,4 +68,35 @@ func GenerateRandomAlphaNumericString(length int) string {
 		b[i] = charset[seededRand.Intn(len(charset))]
 	}
 	return string(b)
+}
+
+type VerificationCodeResult struct {
+	PlainCode  string
+	HashedCode string
+}
+
+// GenerateHashedVerificationCode generates a random alphanumeric verification code
+// and returns both the plain text code (for sending in email) and its hashed version (for storing in cookie)
+func GenerateHashedVerificationCode(ctx context.Context, passwordHasher contracts_identity.IPasswordHasher, length int) (*VerificationCodeResult, error) {
+	plainCode := GenerateRandomAlphaNumericString(length)
+
+	hashResponse, err := passwordHasher.HashPassword(ctx, &contracts_identity.HashPasswordRequest{
+		Password: plainCode,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &VerificationCodeResult{
+		PlainCode:  plainCode,
+		HashedCode: hashResponse.HashedPassword,
+	}, nil
+}
+
+// VerifyVerificationCode verifies that the provided plain text code matches the hashed code
+func VerifyVerificationCode(ctx context.Context, passwordHasher contracts_identity.IPasswordHasher, plainCode string, hashedCode string) error {
+	return passwordHasher.VerifyPassword(ctx, &contracts_identity.VerifyPasswordRequest{
+		Password:       plainCode,
+		HashedPassword: hashedCode,
+	})
 }

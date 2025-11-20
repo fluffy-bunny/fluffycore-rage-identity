@@ -1,5 +1,9 @@
 package login_models
 
+import (
+	models_api_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
+)
+
 const (
 	DIRECTIVE_Redirect                               = "redirect"
 	DIRECTIVE_StartExternalLogin                     = "startExternalLogin"
@@ -47,6 +51,7 @@ type (
 	}
 
 	LoginPhaseOneResponse struct {
+		Manifest                     *models_api_manifest.Manifest `json:"manifest"`
 		Email                        string                        `json:"email" validate:"required"`
 		Directive                    string                        `json:"directive" validate:"required"`
 		DirectiveRedirect            *DirectiveRedirect            `json:"directiveRedirect,omitempty"`

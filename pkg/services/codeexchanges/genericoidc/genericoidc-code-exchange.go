@@ -102,7 +102,7 @@ func (s *service) ExchangeCode(ctx context.Context, request *contracts_codeexcha
 	}
 	config := getConfigResponse.Config
 	authCodeOptions := []oauth2.AuthCodeOption{}
-	if !fluffycore_utils.IsEmptyOrNil(request.CodeVerifier) {
+	if fluffycore_utils.IsNotEmptyOrNil(request.CodeVerifier) {
 		authCodeOptions = append(authCodeOptions, oauth2.SetAuthURLParam("code_verifier", request.CodeVerifier))
 	}
 	oauth2Token, err := config.Exchange(context.Background(),
