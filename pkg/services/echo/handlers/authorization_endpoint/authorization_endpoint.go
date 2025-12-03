@@ -65,6 +65,7 @@ func (s *service) Ctor(
 		clientServiceServer:                  clientServiceServer,
 		idpServiceServer:                     idpServiceServer,
 		userService:                          userService,
+		wellknownCookies:                     wellknownCookies,
 	}, nil
 }
 
@@ -210,10 +211,23 @@ func (s *service) Do(c echo.Context) error {
 		}
 
 	}
-	_, err = s.authorizationRequestStateStoreServer.StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-		AuthorizationRequestState: authorizationFinal,
-		State:                     model.State,
-	})
+	type authorizationStateContainer struct {
+		State string `json:"state"`
+	}
+	// we let the client know the state so that it can use it to store semi static data against it.
+	err = s.wellknownCookies.SetInsecureCookie(c, "_authorization_state",
+		&authorizationStateContainer{
+			State: model.State,
+		})
+	if err != nil {
+		return err
+	}
+
+	_, err = s.authorizationRequestStateStoreServer.StoreAuthorizationRequestState(ctx,
+		&proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+			AuthorizationRequestState: authorizationFinal,
+			State:                     model.State,
+		})
 	if err != nil {
 		// redirect to error page
 		return c.Redirect(http.StatusFound, "/error")
