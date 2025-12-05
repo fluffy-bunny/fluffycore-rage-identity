@@ -92,9 +92,7 @@ type (
 	}
 )
 
-func init() {
-	var _ contracts_startup.IStartup = (*startup)(nil)
-}
+var _ contracts_startup.IStartup = (*startup)(nil)
 
 type WithOption func(startup *startup)
 

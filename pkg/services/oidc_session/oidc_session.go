@@ -15,9 +15,8 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_oidc_session.IOIDCSession = stemService
-}
+var _ contracts_oidc_session.IOIDCSession = stemService
+
 func (s *service) Ctor(
 	factory contracts_sessions.ISessionFactory,
 ) (contracts_oidc_session.IOIDCSession, error) {

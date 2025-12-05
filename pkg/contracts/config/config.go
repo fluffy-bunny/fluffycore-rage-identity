@@ -189,12 +189,12 @@ const configDefaultJSONTemplate = `
 			"baseApiUrl": ""
 		},
 		"staticFilePath": "./static",
-		"uriEntryPath": "/oidc-login-ui/",
+		"uriEntryPath": "/oidc-login/",
 		"cacheBustingConfig": {
 			"filePath": "IN_ENVIRONMENT",
             "staticPath": "IN_ENVIRONMENT",
-            "rootPath": "/oidc-login-ui/",
-			"echoPath": "/oidc-login-ui/*"
+            "rootPath": "/oidc-login/",
+			"echoPath": "/oidc-login/*"
 		}
 	},
     "oidcUIAppSettings": {

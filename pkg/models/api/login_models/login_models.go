@@ -100,6 +100,11 @@ type (
 		Directive   string `json:"directive" validate:"required"`
 		RedirectURL string `json:"redirectURL,omitempty"`
 	}
+
+	LoginResponse struct {
+		RedirectURL string `json:"redirectUrl" validate:"required"`
+	}
+
 	PasswordResetStartRequest struct {
 		Email string `json:"email" validate:"required"`
 	}
