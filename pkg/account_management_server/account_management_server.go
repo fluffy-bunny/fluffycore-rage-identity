@@ -254,21 +254,39 @@ func EnsureCookieClaimsPrincipal(_ di.Container) echo.MiddlewareFunc {
 			}
 			rootIdentity := getAuthCookieResponse.AuthCookie.Identity
 			scopedMemoryCache.Set("rootIdentity", rootIdentity)
-			claimsPrincipal.AddClaim(
-				fluffycore_contracts_common.Claim{
+			claims := []fluffycore_contracts_common.Claim{
+				{
 					Type:  fluffycore_echo_wellknown.ClaimTypeAuthenticated,
 					Value: "true",
 				},
-				fluffycore_contracts_common.Claim{
+				{
 					Type:  fluffycore_echo_wellknown.ClaimTypeSubject,
 					Value: rootIdentity.Subject,
-				}, fluffycore_contracts_common.Claim{
+				},
+				{
 					Type:  "email",
 					Value: rootIdentity.Email,
-				}, fluffycore_contracts_common.Claim{
+				},
+				{
 					Type:  "email_verified",
 					Value: strconv.FormatBool(rootIdentity.EmailVerified),
+				},
+			}
+			// Add ACR claims
+			for _, acr := range getAuthCookieResponse.AuthCookie.Acr {
+				claims = append(claims, fluffycore_contracts_common.Claim{
+					Type:  "acr",
+					Value: acr,
 				})
+			}
+			// Add AMR claims
+			for _, amr := range getAuthCookieResponse.AuthCookie.Amr {
+				claims = append(claims, fluffycore_contracts_common.Claim{
+					Type:  "amr",
+					Value: amr,
+				})
+			}
+			claimsPrincipal.AddClaim(claims...)
 
 			return next(c)
 		}

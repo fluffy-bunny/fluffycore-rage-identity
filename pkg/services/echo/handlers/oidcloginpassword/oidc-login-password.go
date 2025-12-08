@@ -354,6 +354,7 @@ func (s *service) DoPost(c echo.Context) error {
 	authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
 		Subject: user.RootIdentity.Subject,
 		Email:   user.RootIdentity.Email,
+		IdpSlug: models.RootIdp,
 		Acr: []string{
 			models.ACRPassword,
 			models.ACRIdpRoot,

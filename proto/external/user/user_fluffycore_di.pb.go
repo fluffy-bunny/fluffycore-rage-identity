@@ -6,11 +6,94 @@ package user
 import (
 	context "context"
 	fluffy_dozm_di "github.com/fluffy-bunny/fluffy-dozm-di"
+	GRPCClientFactory "github.com/fluffy-bunny/fluffycore/contracts/GRPCClientFactory"
 	endpoint "github.com/fluffy-bunny/fluffycore/contracts/endpoint"
+	tokensource "github.com/fluffy-bunny/fluffycore/contracts/tokensource"
+	grpcclient "github.com/fluffy-bunny/fluffycore/grpcclient"
 	dicontext "github.com/fluffy-bunny/fluffycore/middleware/dicontext"
 	runtime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	grpc "google.golang.org/grpc"
+	sync "sync"
 )
+
+// IAppUserServiceClientAccessor defines the grpc client
+type IAppUserServiceClientAccessor interface {
+	GetClient() (UserServiceClient, error)
+}
+
+// AppUserServiceClientAccessorConfig defines the grpc client struct
+type AppUserServiceClientAccessorConfig struct {
+	Url string
+}
+
+// AppUserServiceClientAccessor defines the grpc client struct
+type AppUserServiceClientAccessor struct {
+	rwLock            sync.RWMutex
+	config            *AppUserServiceClientAccessorConfig
+	appTokenSource    tokensource.IAppTokenSource
+	grpcClientFactory GRPCClientFactory.IGRPCClientFactory
+	client            UserServiceClient
+}
+
+var stemAppUserServiceClientAccessor = (*AppUserServiceClientAccessor)(nil)
+var _ IAppUserServiceClientAccessor = stemAppUserServiceClientAccessor
+
+func (s *AppUserServiceClientAccessor) Ctor(
+	config *AppUserServiceClientAccessorConfig,
+	appTokenSource tokensource.IAppTokenSource,
+	grpcClientFactory GRPCClientFactory.IGRPCClientFactory,
+) (IAppUserServiceClientAccessor, error) {
+	return &AppUserServiceClientAccessor{
+		config:            config,
+		appTokenSource:    appTokenSource,
+		grpcClientFactory: grpcClientFactory,
+	}, nil
+}
+
+// AddSingletonIAppUserServiceClientAccessor ...
+func AddSingletonIAppUserServiceClientAccessor(
+	cb fluffy_dozm_di.ContainerBuilder,
+	config *AppUserServiceClientAccessorConfig,
+) {
+	fluffy_dozm_di.AddInstance[*AppUserServiceClientAccessorConfig](cb, config)
+	fluffy_dozm_di.AddSingleton[IAppUserServiceClientAccessor](cb, stemAppUserServiceClientAccessor.Ctor)
+}
+
+func (s *AppUserServiceClientAccessor) GetClient() (UserServiceClient, error) {
+	doGetClient := func() UserServiceClient {
+		s.rwLock.RLock()
+		defer s.rwLock.RUnlock()
+		if s.client != nil {
+			return s.client
+		}
+		return nil
+	}
+
+	client := doGetClient()
+	if client != nil {
+		return client, nil
+	}
+
+	tokenSource, err := s.appTokenSource.GetTokenSource()
+	if err != nil {
+		return nil, err
+	}
+	//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
+	s.rwLock.Lock()
+	defer s.rwLock.Unlock()
+	//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
+
+	grpcClient, err := s.grpcClientFactory.NewGrpcClient(
+		grpcclient.WithTarget(s.config.Url),
+		grpcclient.WithTokenSource(tokenSource),
+		grpcclient.WithInsecure(true), // TODO: remove this in production
+	)
+	if err != nil {
+		return nil, err
+	}
+	s.client = NewUserServiceClient(grpcClient.GetConnection())
+	return s.client, nil
+}
 
 // IFluffyCoreUserServiceServer defines the grpc server
 type IFluffyCoreUserServiceServer interface {

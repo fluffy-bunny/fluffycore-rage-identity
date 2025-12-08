@@ -13,11 +13,12 @@ const (
 )
 
 const (
-	ACRPassword = "urn:rage:password"
-	ACRIdpRoot  = "urn:rage:idp:root"
-	ACR2FA      = "urn:rage:loa:2fa"
-	ACRIdp      = "urn:rage:loa:idp:{idp}"
-	ACRPasskey  = "urn:rage:loa:passkey"
+	ACRPassword      = "urn:rage:password"
+	ACRIdpRoot       = "urn:rage:idp:root"
+	ACR2FA           = "urn:rage:loa:2fa"
+	ACRIdp           = "urn:rage:loa:idp:{idp}"
+	ACRPasskey       = "urn:rage:loa:passkey"
+	ACRClaimedDomain = "urn:rage:claimed-domain"
 )
 const (
 	AMRPassword  = "pwd"

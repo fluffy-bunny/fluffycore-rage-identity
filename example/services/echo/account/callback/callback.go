@@ -16,6 +16,7 @@ import (
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type (
@@ -152,21 +153,36 @@ func (s *service) Do(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 	var claims struct {
-		Email         string `json:"email"`
-		EmailVerified bool   `json:"email_verified"`
+		Email         string   `json:"email"`
+		EmailVerified bool     `json:"email_verified"`
+		Acr           []string `json:"acr"`
+		Amr           []string `json:"amr"`
+		Idp           []string `json:"idp"`
 	}
 	if err := idToken.Claims(&claims); err != nil {
 		log.Error().Err(err).Msg("Claims")
 		return c.Redirect(http.StatusFound, "/error")
 	}
 
+	// Determine IdpSlug from idp claim (take first one if available)
+	idpSlug := models.RootIdp
+	if len(claims.Idp) > 0 {
+		idpSlug = claims.Idp[0]
+	}
+
+	now := timestamppb.Now()
 	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
 		AuthCookie: &contracts_cookies.AuthCookie{
 			Identity: &proto_oidc_models.Identity{
 				Subject:       idToken.Subject,
 				Email:         claims.Email,
 				EmailVerified: claims.EmailVerified,
+				IdpSlug:       idpSlug,
+				CreatedOn:     now,
+				UpdatedOn:     now,
 			},
+			Acr: claims.Acr,
+			Amr: claims.Amr,
 		},
 	})
 	if err != nil {

@@ -10,6 +10,7 @@ import (
 	status "github.com/gogo/status"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (s *service) validateLinkUserRequest(request *proto_oidc_user.LinkRageUserRequest) error {
@@ -80,6 +81,11 @@ func (s *service) LinkRageUser(ctx context.Context, request *proto_oidc_user.Lin
 		}
 	} else {
 		// add the link
+		now := timestamppb.Now()
+		if request.ExternalIdentity.CreatedOn == nil {
+			request.ExternalIdentity.CreatedOn = now
+		}
+		request.ExternalIdentity.UpdatedOn = now
 		if user.RageUser.LinkedIdentities == nil {
 			user.RageUser.LinkedIdentities = &proto_oidc_models.LinkedIdentities{}
 		}

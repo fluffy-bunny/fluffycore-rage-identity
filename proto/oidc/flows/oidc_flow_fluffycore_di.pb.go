@@ -6,11 +6,94 @@ package flows
 import (
 	context "context"
 	fluffy_dozm_di "github.com/fluffy-bunny/fluffy-dozm-di"
+	GRPCClientFactory "github.com/fluffy-bunny/fluffycore/contracts/GRPCClientFactory"
 	endpoint "github.com/fluffy-bunny/fluffycore/contracts/endpoint"
+	tokensource "github.com/fluffy-bunny/fluffycore/contracts/tokensource"
+	grpcclient "github.com/fluffy-bunny/fluffycore/grpcclient"
 	dicontext "github.com/fluffy-bunny/fluffycore/middleware/dicontext"
 	runtime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	grpc "google.golang.org/grpc"
+	sync "sync"
 )
+
+// IAppAuthorizationRequestStateStoreClientAccessor defines the grpc client
+type IAppAuthorizationRequestStateStoreClientAccessor interface {
+	GetClient() (AuthorizationRequestStateStoreClient, error)
+}
+
+// AppAuthorizationRequestStateStoreClientAccessorConfig defines the grpc client struct
+type AppAuthorizationRequestStateStoreClientAccessorConfig struct {
+	Url string
+}
+
+// AppAuthorizationRequestStateStoreClientAccessor defines the grpc client struct
+type AppAuthorizationRequestStateStoreClientAccessor struct {
+	rwLock            sync.RWMutex
+	config            *AppAuthorizationRequestStateStoreClientAccessorConfig
+	appTokenSource    tokensource.IAppTokenSource
+	grpcClientFactory GRPCClientFactory.IGRPCClientFactory
+	client            AuthorizationRequestStateStoreClient
+}
+
+var stemAppAuthorizationRequestStateStoreClientAccessor = (*AppAuthorizationRequestStateStoreClientAccessor)(nil)
+var _ IAppAuthorizationRequestStateStoreClientAccessor = stemAppAuthorizationRequestStateStoreClientAccessor
+
+func (s *AppAuthorizationRequestStateStoreClientAccessor) Ctor(
+	config *AppAuthorizationRequestStateStoreClientAccessorConfig,
+	appTokenSource tokensource.IAppTokenSource,
+	grpcClientFactory GRPCClientFactory.IGRPCClientFactory,
+) (IAppAuthorizationRequestStateStoreClientAccessor, error) {
+	return &AppAuthorizationRequestStateStoreClientAccessor{
+		config:            config,
+		appTokenSource:    appTokenSource,
+		grpcClientFactory: grpcClientFactory,
+	}, nil
+}
+
+// AddSingletonIAppAuthorizationRequestStateStoreClientAccessor ...
+func AddSingletonIAppAuthorizationRequestStateStoreClientAccessor(
+	cb fluffy_dozm_di.ContainerBuilder,
+	config *AppAuthorizationRequestStateStoreClientAccessorConfig,
+) {
+	fluffy_dozm_di.AddInstance[*AppAuthorizationRequestStateStoreClientAccessorConfig](cb, config)
+	fluffy_dozm_di.AddSingleton[IAppAuthorizationRequestStateStoreClientAccessor](cb, stemAppAuthorizationRequestStateStoreClientAccessor.Ctor)
+}
+
+func (s *AppAuthorizationRequestStateStoreClientAccessor) GetClient() (AuthorizationRequestStateStoreClient, error) {
+	doGetClient := func() AuthorizationRequestStateStoreClient {
+		s.rwLock.RLock()
+		defer s.rwLock.RUnlock()
+		if s.client != nil {
+			return s.client
+		}
+		return nil
+	}
+
+	client := doGetClient()
+	if client != nil {
+		return client, nil
+	}
+
+	tokenSource, err := s.appTokenSource.GetTokenSource()
+	if err != nil {
+		return nil, err
+	}
+	//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
+	s.rwLock.Lock()
+	defer s.rwLock.Unlock()
+	//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
+
+	grpcClient, err := s.grpcClientFactory.NewGrpcClient(
+		grpcclient.WithTarget(s.config.Url),
+		grpcclient.WithTokenSource(tokenSource),
+		grpcclient.WithInsecure(true), // TODO: remove this in production
+	)
+	if err != nil {
+		return nil, err
+	}
+	s.client = NewAuthorizationRequestStateStoreClient(grpcClient.GetConnection())
+	return s.client, nil
+}
 
 // IFluffyCoreAuthorizationRequestStateStoreServer defines the grpc server
 type IFluffyCoreAuthorizationRequestStateStoreServer interface {

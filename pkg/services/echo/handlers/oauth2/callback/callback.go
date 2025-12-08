@@ -363,6 +363,7 @@ func (s *service) Do(c echo.Context) error {
 			authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
 				Subject: user.RootIdentity.Subject,
 				Email:   user.RootIdentity.Email,
+				IdpSlug: externalOauth2State.Request.IdpHint,
 				Acr: []string{
 					fmt.Sprintf("urn:rage:idp:%s", externalOauth2State.Request.IdpHint),
 				},

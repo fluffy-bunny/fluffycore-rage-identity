@@ -34,6 +34,10 @@ message Identity {
     string idp_slug = 2;
     string email = 3;
     bool email_verified = 4;
+
+    google.protobuf.Timestamp created_on = 50;
+    google.protobuf.Timestamp updated_on = 51;
+
 }
 message IdentityFilter {
     proto.types.IDFilterExpression           subject = 1;
