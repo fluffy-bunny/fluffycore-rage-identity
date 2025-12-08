@@ -59,7 +59,6 @@ import (
 	services_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/oidc_session"
 	pkg_types "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/types"
 	pkg_version "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/version"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidcuser "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
@@ -279,28 +278,47 @@ func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 	return nil
 }
 
-var noCachePaths = []string{
-	wellknown_echo.HomePath,
-	wellknown_echo.OIDCLoginUIPath,
-	wellknown_echo.ManagementPath,
-}
+func noCacheMiddleware(config *contracts_config.NoCacheConfig) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			requestUrlPath := c.Request().URL.Path
+			noCacheIt := false
 
-func noCacheMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		requestUrlPath := c.Request().URL.Path
-		noCacheIt := strings.HasSuffix(requestUrlPath, "index.html")
-		for _, path := range noCachePaths {
-			if noCacheIt || requestUrlPath == path {
-				noCacheIt = true
-				break
+			// Check exact path matches
+			for _, path := range config.Paths {
+				if requestUrlPath == path {
+					noCacheIt = true
+					break
+				}
 			}
+
+			// Check path prefixes (e.g., /oidc-login/, /management/)
+			if !noCacheIt {
+				for _, prefix := range config.PathPrefixes {
+					if strings.HasPrefix(requestUrlPath, prefix) {
+						noCacheIt = true
+						break
+					}
+				}
+			}
+
+			// Check file extensions (e.g., index.html)
+			if !noCacheIt {
+				for _, ext := range config.FileExtensions {
+					if strings.HasSuffix(requestUrlPath, ext) {
+						noCacheIt = true
+						break
+					}
+				}
+			}
+
+			if noCacheIt {
+				c.Response().Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+				c.Response().Header().Set("Pragma", "no-cache")
+				c.Response().Header().Set("Expires", "0")
+			}
+			return next(c)
 		}
-		if noCacheIt {
-			c.Response().Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-			c.Response().Header().Set("Pragma", "no-cache")
-			c.Response().Header().Set("Expires", "0")
-		}
-		return next(c)
 	}
 }
 
@@ -371,7 +389,9 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 		e.Use(urlRewriteMiddleware(s.config.URLRewritesConfig))
 	}
 	e.Use(EnsureAuth(root))
-	e.Use(noCacheMiddleware)
+	if s.config.NoCacheConfig != nil && s.config.NoCacheConfig.Enabled {
+		e.Use(noCacheMiddleware(s.config.NoCacheConfig))
+	}
 
 	return nil
 }

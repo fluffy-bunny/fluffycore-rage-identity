@@ -37,6 +37,12 @@ type (
 		Enabled bool              `json:"enabled"`
 		Rules   []*URLRewriteRule `json:"rules"`
 	}
+	NoCacheConfig struct {
+		Enabled        bool     `json:"enabled"`
+		Paths          []string `json:"paths"`
+		FileExtensions []string `json:"fileExtensions"`
+		PathPrefixes   []string `json:"pathPrefixes"`
+	}
 	CSRFConfig struct {
 		SkipApi bool `json:"skipApi"`
 	}
@@ -146,6 +152,7 @@ type (
 		PasswordConfig                 *PasswordConfig                                `json:"passwordConfig"`
 		CORSConfig                     *CORSConfig                                    `json:"corsConfig"`
 		CSRFConfig                     *CSRFConfig                                    `json:"csrfConfig"`
+		NoCacheConfig                  *NoCacheConfig                                 `json:"noCacheConfig"`
 		URLRewritesConfig              *URLRewritesConfig                             `json:"urlRewritesConfig"`
 		OTELConfig                     *fluffycore_contracts_otel.OTELConfig          `json:"otelConfig"`
 		OIDCUIConfig                   *OIDCUIConfig                                  `json:"oidcUIConfig"`
@@ -219,6 +226,12 @@ const configDefaultJSONTemplate = `
     },
     "csrfConfig": {
         "skipApi": false
+    },
+    "noCacheConfig": {
+        "enabled": true,
+        "paths": ["/"],
+        "fileExtensions": ["index.html"],
+        "pathPrefixes": ["/oidc-login/", "/management/"]
     },
     "urlRewritesConfig": {
         "enabled": false,
