@@ -2,7 +2,7 @@ module github.com/fluffy-bunny/fluffycore-rage-identity
 
 go 1.25
 
-replace github.com/fluffy-bunny/fluffycore => ../fluffycore
+//replace github.com/fluffy-bunny/fluffycore => ../fluffycore
 
 //replace github.com/fluffy-bunny/viperEx => ../ViperEx
 
@@ -13,7 +13,7 @@ require (
 	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/eko/gocache/lib/v4 v4.2.2
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.4
-	github.com/fluffy-bunny/fluffycore v1.0.222
+	github.com/fluffy-bunny/fluffycore v1.0.225
 	github.com/go-oauth2/oauth2/v4 v4.5.4
 	github.com/go-webauthn/webauthn v0.14.0
 	github.com/gofrs/uuid v4.4.0+incompatible
@@ -28,7 +28,7 @@ require (
 	github.com/rs/xid v1.6.0
 	github.com/rs/zerolog v1.34.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
 	github.com/sumup/aaguids-go v0.0.0-20240628162135-8d4ff0ce96a0
 	github.com/swaggo/echo-swagger v1.4.1

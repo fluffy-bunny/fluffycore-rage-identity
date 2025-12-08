@@ -7,9 +7,7 @@ import (
 	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	account_management_server "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/account_management_server"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
-	oidc_login_ui_server "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/oidc_login_ui_server"
 	oidcserver "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/oidcserver"
 	services "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services"
 	services_health "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/health"
@@ -257,47 +255,47 @@ func (s *startup) OnPreServerStartup(ctx context.Context) error {
 				log.Error().Err(err).Msg("failed to start server")
 			}
 		})
+	/*
+		s.oidcLoginUIServerRuntime = core_echo_runtime.New(
+			oidc_login_ui_server.NewStartup(
+				oidc_login_ui_server.WithConfigureServices(s.ext),
+			))
+		s.oidcLoginUIServerFuture = fluffycore_async.ExecuteWithPromiseAsync(
+			func(promise async.Promise[*fluffycore_async.AsyncResponse]) {
+				var err error
+				defer func() {
+					promise.Success(&fluffycore_async.AsyncResponse{
+						Message: "End Serve - echoServer",
+						Error:   err,
+					})
+				}()
+				log.Info().Msg("echoServer starting up")
+				err = s.oidcLoginUIServerRuntime.Run()
+				if err != nil {
+					log.Error().Err(err).Msg("failed to start server")
+				}
+			})
 
-	s.oidcLoginUIServerRuntime = core_echo_runtime.New(
-		oidc_login_ui_server.NewStartup(
-			oidc_login_ui_server.WithConfigureServices(s.ext),
-		))
-	s.oidcLoginUIServerFuture = fluffycore_async.ExecuteWithPromiseAsync(
-		func(promise async.Promise[*fluffycore_async.AsyncResponse]) {
-			var err error
-			defer func() {
-				promise.Success(&fluffycore_async.AsyncResponse{
-					Message: "End Serve - echoServer",
-					Error:   err,
-				})
-			}()
-			log.Info().Msg("echoServer starting up")
-			err = s.oidcLoginUIServerRuntime.Run()
-			if err != nil {
-				log.Error().Err(err).Msg("failed to start server")
-			}
-		})
-
-	s.accountManagementServerRuntime = core_echo_runtime.New(
-		account_management_server.NewStartup(
-			account_management_server.WithConfigureServices(s.ext),
-		))
-	s.accountManagementServerFuture = fluffycore_async.ExecuteWithPromiseAsync(
-		func(promise async.Promise[*fluffycore_async.AsyncResponse]) {
-			var err error
-			defer func() {
-				promise.Success(&fluffycore_async.AsyncResponse{
-					Message: "End Serve - echoServer",
-					Error:   err,
-				})
-			}()
-			log.Info().Msg("echoServer starting up")
-			err = s.accountManagementServerRuntime.Run()
-			if err != nil {
-				log.Error().Err(err).Msg("failed to start server")
-			}
-		})
-
+		s.accountManagementServerRuntime = core_echo_runtime.New(
+			account_management_server.NewStartup(
+			//		account_management_server.WithConfigureServices(s.ext),
+			))
+		s.accountManagementServerFuture = fluffycore_async.ExecuteWithPromiseAsync(
+			func(promise async.Promise[*fluffycore_async.AsyncResponse]) {
+				var err error
+				defer func() {
+					promise.Success(&fluffycore_async.AsyncResponse{
+						Message: "End Serve - echoServer",
+						Error:   err,
+					})
+				}()
+				log.Info().Msg("echoServer starting up")
+				err = s.accountManagementServerRuntime.Run()
+				if err != nil {
+					log.Error().Err(err).Msg("failed to start server")
+				}
+			})
+	*/
 	return nil
 }
 

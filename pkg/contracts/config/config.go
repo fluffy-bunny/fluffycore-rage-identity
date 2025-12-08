@@ -29,6 +29,14 @@ type (
 		ExposeHeaders                            []string `json:"exposeHeaders"`
 		MaxAge                                   int      `json:"maxAge"`
 	}
+	URLRewriteRule struct {
+		From string `json:"from"`
+		To   string `json:"to"`
+	}
+	URLRewritesConfig struct {
+		Enabled bool              `json:"enabled"`
+		Rules   []*URLRewriteRule `json:"rules"`
+	}
 	CSRFConfig struct {
 		SkipApi bool `json:"skipApi"`
 	}
@@ -138,6 +146,7 @@ type (
 		PasswordConfig                 *PasswordConfig                                `json:"passwordConfig"`
 		CORSConfig                     *CORSConfig                                    `json:"corsConfig"`
 		CSRFConfig                     *CSRFConfig                                    `json:"csrfConfig"`
+		URLRewritesConfig              *URLRewritesConfig                             `json:"urlRewritesConfig"`
 		OTELConfig                     *fluffycore_contracts_otel.OTELConfig          `json:"otelConfig"`
 		OIDCUIConfig                   *OIDCUIConfig                                  `json:"oidcUIConfig"`
 		AccountUIConfig                *AccountUIConfig                               `json:"accountUIConfig"`
@@ -210,6 +219,10 @@ const configDefaultJSONTemplate = `
     },
     "csrfConfig": {
         "skipApi": false
+    },
+    "urlRewritesConfig": {
+        "enabled": false,
+        "rules": []
     },
     "corsConfig": {
         "enabled": true,

@@ -2,6 +2,7 @@ package callback
 
 import (
 	"net/http"
+	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
@@ -12,6 +13,7 @@ import (
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
+	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
 )
@@ -91,8 +93,17 @@ func (s *service) Do(c echo.Context) error {
 	}
 
 	isValidPath := func(path string) bool {
-		_, ok := validReturnUrlPaths[path]
-		return ok
+		if fluffycore_utils.IsEmptyOrNil(path) {
+			return false
+		}
+		// Must be a relative path starting with / or a full http/https URL
+		if strings.HasPrefix(path, "/") {
+			return true
+		}
+		if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") {
+			return true
+		}
+		return false
 	}
 	if !isValidPath(loginRequest.ReturnUrl) {
 		loginRequest.ReturnUrl = wellknown_echo.HomePath

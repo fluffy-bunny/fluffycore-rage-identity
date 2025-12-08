@@ -33,7 +33,7 @@ func AddScopedIHandler(builder di.ContainerBuilder,
 
 	staticMiddleware := middleware.StaticWithConfig(middleware.StaticConfig{
 		Root:   config.StaticPath,
-		HTML5:  true,
+		HTML5:  false, // Disable HTML5 mode so we can handle SPA fallback ourselves with cache-busted content
 		Browse: false,
 	})
 
@@ -88,16 +88,37 @@ func (s *service) Do(c echo.Context) error {
 
 	path := c.Request().URL.Path
 
+	// Serve index.html for root path requests
 	if path == s.config.RootPath {
 		return c.HTML(http.StatusOK, s.modifiedContent)
 	}
 
-	// This is likely a file request, try to serve it statically
-	err := s.staticMiddleware(func(c echo.Context) error {
-		return nil
-	})(c)
-	if err == nil {
-		return nil // File was found and served
+	// Strip the RootPath prefix for static file serving
+	// e.g., /management/web/app.wasm -> /web/app.wasm
+	if strings.HasPrefix(path, s.config.RootPath) {
+		strippedPath := strings.TrimPrefix(path, strings.TrimSuffix(s.config.RootPath, "/"))
+		c.Request().URL.Path = strippedPath
 	}
+
+	// Try to serve as a static file first
+	err := s.staticMiddleware(func(c echo.Context) error {
+		// return an echo.HTTPError status not found to indicate file not found
+		return echo.NewHTTPError(http.StatusNotFound)
+	})(c)
+
+	if err == nil {
+		// File was successfully served
+		return nil
+	}
+
+	// Check if this is a 404 error from static middleware
+	httpErr, ok := err.(*echo.HTTPError)
+	if ok && httpErr.Code == http.StatusNotFound {
+		// SPA fallback: serve index.html for 404s to support client-side routing
+		// This allows routes like /management/profile to load the WASM app
+		return c.HTML(http.StatusOK, s.modifiedContent)
+	}
+
+	// Other errors, return as-is
 	return err
 }

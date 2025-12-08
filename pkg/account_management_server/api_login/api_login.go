@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"time"
 
 	oidc "github.com/coreos/go-oidc/v3/oidc"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
@@ -15,6 +14,7 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_session_with_options "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/session_with_options"
+	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
@@ -58,7 +58,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
 		stemService.Ctor,
 		[]contracts_handler.HTTPVERB{
-			contracts_handler.GET,
+			contracts_handler.POST,
 		},
 		wellknown_echo.API_Login,
 	)
@@ -73,22 +73,41 @@ var (
 	callbackPath = wellknown_echo.AccountCallbackPath
 )
 
+type LoginRequest struct {
+	ReturnUrl string `param:"returnUrl" query:"returnUrl" form:"returnUrl" json:"returnUrl" xml:"returnUrl"`
+}
+
 // API Login godoc
 // @Summary Initiate OAuth2 login flow.
 // @Description Initiates an OAuth2/OIDC authentication flow by generating state and nonce, and returning the authorization URL.
 // @Tags authentication
 // @Accept json
 // @Produce json
+// @Param request body LoginRequest true "LoginRequest"
 // @Success 200 {object} login_models.LoginResponse
+// @Failure 400 {object} wellknown_echo.RestErrorResponse
 // @Failure 500 {object} wellknown_echo.RestErrorResponse
-// @Router /api/login [get]
+// @Router /api/login [post]
 func (s *service) Do(c echo.Context) error {
 
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
-	w := c.Response().Writer
 	r := c.Request()
+
+	// Bind the LoginRequest
+	loginRequest := &LoginRequest{}
+	if err := c.Bind(loginRequest); err != nil {
+		log.Error().Err(err).Msg("Bind")
+		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+	}
+
+	// Validate LoginRequest
+	if loginRequest.ReturnUrl == "" {
+		log.Error().Msg("ReturnUrl is empty")
+		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: "returnUrl is required"}, "  ")
+	}
+
 	s.wellknownCookies.DeleteAuthCookie(c)
 
 	ss, err := s.session.GetSession()
@@ -112,8 +131,27 @@ func (s *service) Do(c echo.Context) error {
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 
-	setCallbackCookie(w, r, "state", state)
-	setCallbackCookie(w, r, "nonce", nonce)
+	// Store the LoginRequest in a cookie for the callback
+	err = s.wellknownCookies.SetInsecureCookie(c, contracts_cookies.LoginRequest, &models.LoginGetRequest{
+		ReturnUrl: loginRequest.ReturnUrl,
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("SetInsecureCookie LoginRequest")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+	}
+
+	// Store state and nonce in AccountStateCookie
+	err = s.wellknownCookies.SetAccountStateCookie(c, &contracts_cookies.SetAccountStateCookieRequest{
+		AccountStateCookie: &contracts_cookies.AccountStateCookie{
+			State: state,
+			Nonce: nonce,
+		},
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("SetAccountStateCookie")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+	}
+
 	authCodeOptions := []oauth2.AuthCodeOption{
 		oidc.Nonce(nonce),
 	}
@@ -155,16 +193,7 @@ func randString(nByte int) (string, error) {
 	}
 	return base64.RawURLEncoding.EncodeToString(b), nil
 }
-func setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value string) {
-	c := &http.Cookie{
-		Name:     name,
-		Value:    value,
-		MaxAge:   int(time.Hour.Seconds()),
-		Secure:   r.TLS != nil,
-		HttpOnly: false,
-	}
-	http.SetCookie(w, c)
-}
+
 func AcrValues(acr ...string) oauth2.AuthCodeOption {
 	acrValues := strings.Join(acr, " ")
 	return oauth2.SetAuthURLParam("acr_values", acrValues)

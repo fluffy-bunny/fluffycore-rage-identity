@@ -13,6 +13,7 @@ import (
 	models_api_verify_username "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/verify_username"
 	contracts_go_app_RageApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/oidc_login_ui_server/contracts/go-app/RageApiClient"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
+	fluffycore_go_app_cookies "github.com/fluffy-bunny/fluffycore/go-app/cookies"
 	fluffycore_go_app_fetch "github.com/fluffy-bunny/fluffycore/go-app/fetch"
 )
 
@@ -40,6 +41,26 @@ func AddScopedIRageApiClient(cb di.ContainerBuilder) {
 	di.AddScoped[contracts_go_app_RageApiClient.IRageApiClient](cb, stemService.Ctor)
 }
 
+// getCSRFToken retrieves the CSRF token from the _csrf cookie
+func getCSRFToken() string {
+	csrfToken, err := fluffycore_go_app_cookies.GetCookie[string]("_csrf")
+	if err != nil {
+		return ""
+	}
+	return csrfToken
+}
+
+// buildCustomHeaders creates custom headers map with CSRF token if it exists
+func buildCustomHeaders() map[string]string {
+	csrfToken := getCSRFToken()
+	if csrfToken != "" {
+		return map[string]string{
+			"X-Csrf-Token": csrfToken,
+		}
+	}
+	return nil
+}
+
 func (s *service) fixUpRageApi(ctx context.Context, relativePath string) string {
 	rageClientConfig := s.rageClientConfigAccessor.GetRageClientConfig(ctx)
 	if rageClientConfig == nil {
@@ -54,8 +75,9 @@ func (s *service) GetOIDCFlowAppConfig(ctx context.Context) (*fluffycore_go_app_
 	var err error
 	s.cachedRageConfigResponse, err = fluffycore_go_app_fetch.FetchWrappedResponseT[contracts_OIDCFlowAppConfig.OIDCFlowAppConfig](ctx,
 		&fluffycore_go_app_fetch.CallInput{
-			Method: "GET",
-			Url:    s.fixUpRageApi(ctx, wellknown_echo.API_OIDCFlowAppConfig),
+			Method:        "GET",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_OIDCFlowAppConfig),
+			CustomHeaders: buildCustomHeaders(),
 		})
 
 	return s.cachedRageConfigResponse, err
@@ -71,18 +93,20 @@ func (s *service) SetCachedManifest(ctx context.Context, manifest *models_api_ma
 func (s *service) LoginPhaseOne(ctx context.Context, request *models_api_login_models.LoginPhaseOneRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_login_models.LoginPhaseOneResponse], error) {
 	return fluffycore_go_app_fetch.FetchWrappedResponseT[models_api_login_models.LoginPhaseOneResponse](ctx,
 		&fluffycore_go_app_fetch.CallInput{
-			Method: "POST",
-			Url:    s.fixUpRageApi(ctx, wellknown_echo.API_LoginPhaseOne),
-			Data:   request,
+			Method:        "POST",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_LoginPhaseOne),
+			Data:          request,
+			CustomHeaders: buildCustomHeaders(),
 		})
 }
 
 func (s *service) VerifyPasswordStrength(ctx context.Context, request *models_api_password.VerifyPasswordStrengthRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_password.VerifyPasswordStrengthResponse], error) {
 	return fluffycore_go_app_fetch.FetchWrappedResponseT[models_api_password.VerifyPasswordStrengthResponse](ctx,
 		&fluffycore_go_app_fetch.CallInput{
-			Method: "POST",
-			Url:    s.fixUpRageApi(ctx, wellknown_echo.API_VerifyPasswordStrength),
-			Data:   request,
+			Method:        "POST",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_VerifyPasswordStrength),
+			Data:          request,
+			CustomHeaders: buildCustomHeaders(),
 		})
 }
 
@@ -90,8 +114,9 @@ func (s *service) GetManifest(ctx context.Context) (*fluffycore_go_app_fetch.Wra
 
 	return fluffycore_go_app_fetch.FetchWrappedResponseT[models_api_manifest.Manifest](ctx,
 		&fluffycore_go_app_fetch.CallInput{
-			Method: "GET",
-			Url:    s.fixUpRageApi(ctx, wellknown_echo.API_Manifest),
+			Method:        "GET",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_Manifest),
+			CustomHeaders: buildCustomHeaders(),
 		})
 }
 
@@ -99,67 +124,75 @@ func (s *service) Signup(ctx context.Context, request *models_api_login_models.S
 
 	return fluffycore_go_app_fetch.FetchWrappedResponseT[models_api_login_models.SignupResponse](ctx,
 		&fluffycore_go_app_fetch.CallInput{
-			Method: "POST",
-			Url:    s.fixUpRageApi(ctx, wellknown_echo.API_Signup),
-			Data:   request,
+			Method:        "POST",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_Signup),
+			Data:          request,
+			CustomHeaders: buildCustomHeaders(),
 		})
 }
 
 func (s *service) LoginPassword(ctx context.Context, request *models_api_login_models.LoginPasswordRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_login_models.LoginPasswordResponse], error) {
 	return fluffycore_go_app_fetch.FetchWrappedResponseT[models_api_login_models.LoginPasswordResponse](ctx,
 		&fluffycore_go_app_fetch.CallInput{
-			Method: "POST",
-			Url:    s.fixUpRageApi(ctx, wellknown_echo.API_LoginPassword),
-			Data:   request,
+			Method:        "POST",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_LoginPassword),
+			Data:          request,
+			CustomHeaders: buildCustomHeaders(),
 		})
 }
 func (s *service) PasswordResetStart(ctx context.Context, request *models_api_login_models.PasswordResetStartRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_login_models.PasswordResetStartResponse], error) {
 	return fluffycore_go_app_fetch.FetchWrappedResponseT[models_api_login_models.PasswordResetStartResponse](ctx,
 		&fluffycore_go_app_fetch.CallInput{
-			Method: "POST",
-			Url:    s.fixUpRageApi(ctx, wellknown_echo.API_PasswordResetStart),
-			Data:   request,
+			Method:        "POST",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_PasswordResetStart),
+			Data:          request,
+			CustomHeaders: buildCustomHeaders(),
 		})
 }
 func (s *service) PasswordResetFinish(ctx context.Context, request *models_api_login_models.PasswordResetFinishRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_login_models.PasswordResetFinishResponse], error) {
 	return fluffycore_go_app_fetch.FetchWrappedResponseT[models_api_login_models.PasswordResetFinishResponse](ctx,
 		&fluffycore_go_app_fetch.CallInput{
-			Method: "POST",
-			Url:    s.fixUpRageApi(ctx, wellknown_echo.API_PasswordResetFinish),
-			Data:   request,
+			Method:        "POST",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_PasswordResetFinish),
+			Data:          request,
+			CustomHeaders: buildCustomHeaders(),
 		})
 }
 func (s *service) VerifyUserName(ctx context.Context, request *models_api_verify_username.VerifyUsernameRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_verify_username.VerifyUsernameResponse], error) {
 	return fluffycore_go_app_fetch.FetchWrappedResponseT[models_api_verify_username.VerifyUsernameResponse](ctx,
 		&fluffycore_go_app_fetch.CallInput{
-			Method: "POST",
-			Url:    s.fixUpRageApi(ctx, wellknown_echo.API_VerifyUsername),
-			Data:   request,
+			Method:        "POST",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_VerifyUsername),
+			Data:          request,
+			CustomHeaders: buildCustomHeaders(),
 		})
 }
 
 func (s *service) VerifyCodeBegin(ctx context.Context) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_verify_code.VerifyCodeBeginResponse], error) {
 	return fluffycore_go_app_fetch.FetchWrappedResponseT[models_api_verify_code.VerifyCodeBeginResponse](ctx,
 		&fluffycore_go_app_fetch.CallInput{
-			Method: "GET",
-			Url:    s.fixUpRageApi(ctx, wellknown_echo.API_VerifyCodeBegin),
+			Method:        "GET",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_VerifyCodeBegin),
+			CustomHeaders: buildCustomHeaders(),
 		})
 }
 
 func (s *service) VerifyCode(ctx context.Context, request *models_api_login_models.VerifyCodeRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_login_models.VerifyCodeResponse], error) {
 	return fluffycore_go_app_fetch.FetchWrappedResponseT[models_api_login_models.VerifyCodeResponse](ctx,
 		&fluffycore_go_app_fetch.CallInput{
-			Method: "POST",
-			Url:    s.fixUpRageApi(ctx, wellknown_echo.API_VerifyCode),
-			Data:   request,
+			Method:        "POST",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_VerifyCode),
+			Data:          request,
+			CustomHeaders: buildCustomHeaders(),
 		})
 }
 
 func (s *service) StartExternalLogin(ctx context.Context, request *models_api_external_idp.StartExternalIDPLoginRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_external_idp.StartExternalIDPLoginResponse], error) {
 	return fluffycore_go_app_fetch.FetchWrappedResponseT[models_api_external_idp.StartExternalIDPLoginResponse](ctx,
 		&fluffycore_go_app_fetch.CallInput{
-			Method: "POST",
-			Url:    s.fixUpRageApi(ctx, wellknown_echo.API_Start_ExternalLogin),
-			Data:   request,
+			Method:        "POST",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_Start_ExternalLogin),
+			Data:          request,
+			CustomHeaders: buildCustomHeaders(),
 		})
 }

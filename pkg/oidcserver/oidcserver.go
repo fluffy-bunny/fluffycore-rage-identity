@@ -279,6 +279,52 @@ func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 	return nil
 }
 
+var noCachePaths = []string{
+	wellknown_echo.HomePath,
+	wellknown_echo.OIDCLoginUIPath,
+	wellknown_echo.ManagementPath,
+}
+
+func noCacheMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		requestUrlPath := c.Request().URL.Path
+		noCacheIt := strings.HasSuffix(requestUrlPath, "index.html")
+		for _, path := range noCachePaths {
+			if noCacheIt || requestUrlPath == path {
+				noCacheIt = true
+				break
+			}
+		}
+		if noCacheIt {
+			c.Response().Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+			c.Response().Header().Set("Pragma", "no-cache")
+			c.Response().Header().Set("Expires", "0")
+		}
+		return next(c)
+	}
+}
+
+func urlRewriteMiddleware(config *contracts_config.URLRewritesConfig) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			requestPath := c.Request().URL.Path
+
+			// Apply rewrite rules in order
+			for _, rule := range config.Rules {
+				if rule.From == requestPath {
+					// Rewrite the path
+					c.Request().URL.Path = rule.To
+					// Update the path in the context
+					c.SetPath(rule.To)
+					break
+				}
+			}
+
+			return next(c)
+		}
+	}
+}
+
 // Configure
 func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 
@@ -321,36 +367,15 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 			MaxAge:                                   s.config.CORSConfig.MaxAge,
 		}))
 	}
+	if s.config.URLRewritesConfig != nil && s.config.URLRewritesConfig.Enabled {
+		e.Use(urlRewriteMiddleware(s.config.URLRewritesConfig))
+	}
 	e.Use(EnsureAuth(root))
 	e.Use(noCacheMiddleware)
 
 	return nil
 }
 
-var noCachePaths = []string{
-	wellknown_echo.HomePath,
-	wellknown_echo.OIDCLoginUIPath,
-	wellknown_echo.ManagementPath,
-}
-
-func noCacheMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		requestUrlPath := c.Request().URL.Path
-		noCacheIt := strings.HasSuffix(requestUrlPath, "index.html")
-		for _, path := range noCachePaths {
-			if noCacheIt || requestUrlPath == path {
-				noCacheIt = true
-				break
-			}
-		}
-		if noCacheIt {
-			c.Response().Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-			c.Response().Header().Set("Pragma", "no-cache")
-			c.Response().Header().Set("Expires", "0")
-		}
-		return next(c)
-	}
-}
 func EnsureLocalizer(_ di.Container) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {

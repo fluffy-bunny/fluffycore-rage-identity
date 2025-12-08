@@ -10,6 +10,8 @@ import (
 	account_management_server_api_app_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/account_management_server/api_app_config"
 	account_management_server_api_login "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/account_management_server/api_login"
 	account_management_server_api_logout "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/account_management_server/api_logout"
+	account_management_server_api_user_info "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/account_management_server/api_user_info"
+
 	contracts_cache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cache"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
@@ -137,10 +139,12 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	}
 	account_management_server_api_login.AddScopedIHandler(builder)
 	account_management_server_api_logout.AddScopedIHandler(builder)
+	account_management_server_api_user_info.AddScopedIHandler(builder)
 	account_management_server_api_app_config.AddScopedIHandler(builder)
 
 	services_handlers_cache_busting_static_html.AddScopedIHandler(builder, s.config.AccountUIConfig.CacheBustingConfig)
 	services_handlers_account_callback.AddScopedIHandler(builder)
+	//services_handlers_rest_api_user_linked_accounts.AddScopedIHandler(builder)
 
 	// sessions
 	//----------------
