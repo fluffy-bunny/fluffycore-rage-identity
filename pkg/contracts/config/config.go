@@ -12,6 +12,7 @@ import (
 	fluffycore_contracts_otel "github.com/fluffy-bunny/fluffycore/contracts/otel"
 	fluffycore_echo_contracts_cookies "github.com/fluffy-bunny/fluffycore/echo/contracts/cookies"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
+	echo "github.com/labstack/echo/v4"
 )
 
 type (
@@ -107,12 +108,26 @@ type (
 		Key   string `json:"key"`
 		Value string `json:"value"`
 	}
+	// RouteHandler is a function that handles a specific route pattern
+	// Returns (handled bool, error). If handled=true, the request was processed
+	RouteHandler func(c echo.Context, filePath string) (bool, error)
+
+	// RoutePattern defines a pattern matcher and handler for a route
+	RoutePattern struct {
+		// Pattern is the route pattern to match (e.g., "web/app.json")
+		Pattern string
+		// Handler is the function to call when the pattern matches
+		Handler RouteHandler
+	}
+
 	CacheBustingHTMLConfig struct {
 		FilePath      string          `json:"filePath"`
 		EchoPath      string          `json:"echoPath"`
 		StaticPath    string          `json:"staticPath"`
 		RootPath      string          `json:"rootPath"`
 		ReplaceParams []*KeyValuePair `json:"replaceParams"`
+		// RoutePatterns defines custom handlers for specific routes
+		RoutePatterns []*RoutePattern `json:"routePatterns"`
 	}
 	OIDCUIConfig struct {
 		AppSettings        *models_api_appsettings.OIDCUIAppSettings `json:"appSettings"`

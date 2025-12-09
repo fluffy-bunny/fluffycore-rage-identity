@@ -26,6 +26,38 @@ var stemService = (*service)(nil)
 var _ contracts_handler.IHandler = stemService
 
 // AddScopedIHandler registers the *service as a singleton.
+/*
+cacheBustingHTMLConfig := &contracts_config.CacheBustingHTMLConfig{
+    FilePath:   "./static/index.html",
+    EchoPath:   "/management/*",
+    StaticPath: "./static/management",
+    RootPath:   "/management/",
+    ReplaceParams: []*contracts_config.KeyValuePair{
+        {Key: "{version}", Value: "1.0.0"},
+    },
+    RoutePatterns: []*contracts_config.RoutePattern{
+        {
+            Pattern: "web/app.json",
+            Handler: func(c echo.Context, filePath string) (bool, error) {
+                // Read the file
+                content, err := os.ReadFile(filePath)
+                if err != nil {
+                    return false, err
+                }
+
+                // Get version from query param
+                version := c.QueryParam("v")
+
+                // Replace {version} placeholder
+                modifiedContent := strings.ReplaceAll(string(content), "{version}", version)
+
+                // Serve with appropriate content type
+                return true, c.JSONBlob(http.StatusOK, []byte(modifiedContent))
+            },
+        },
+    },
+}
+*/
 func AddScopedIHandler(builder di.ContainerBuilder,
 	config *contracts_config.CacheBustingHTMLConfig) {
 
@@ -93,12 +125,37 @@ func (s *service) Do(c echo.Context) error {
 		return c.HTML(http.StatusOK, s.modifiedContent)
 	}
 
-	// Strip the RootPath prefix for static file serving
-	// e.g., /management/web/app.wasm -> /web/app.wasm
+	// Strip the RootPath prefix upfront for all processing
+	// e.g., /management/web/app.json -> /web/app.json
+	strippedPath := path
 	if strings.HasPrefix(path, s.config.RootPath) {
-		strippedPath := strings.TrimPrefix(path, strings.TrimSuffix(s.config.RootPath, "/"))
-		c.Request().URL.Path = strippedPath
+		strippedPath = strings.TrimPrefix(path, strings.TrimSuffix(s.config.RootPath, "/"))
 	}
+
+	// Check if any custom route patterns match
+	for _, routePattern := range s.config.RoutePatterns {
+		if routePattern == nil || routePattern.Handler == nil {
+			continue
+		}
+
+		// Match against the stripped path
+		// Pattern "web/app.json" should match "/web/app.json"
+		patternWithSlash := "/" + strings.TrimPrefix(routePattern.Pattern, "/")
+		if strings.HasPrefix(strippedPath, patternWithSlash) || strippedPath == patternWithSlash {
+			// Build the full file path
+			filePath := s.config.StaticPath + strippedPath
+
+			// Call the custom handler
+			handled, err := routePattern.Handler(c, filePath)
+			if handled {
+				return err
+			}
+			// If not handled, continue to static file serving
+		}
+	}
+
+	// Update the request path for static middleware
+	c.Request().URL.Path = strippedPath
 
 	// Try to serve as a static file first
 	err := s.staticMiddleware(func(c echo.Context) error {
