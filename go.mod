@@ -11,7 +11,7 @@ require (
 	github.com/alexedwards/argon2id v1.0.0
 	github.com/coreos/go-oidc/v3 v3.14.1
 	github.com/domodwyer/mailyak/v3 v3.6.2
-	github.com/eko/gocache/lib/v4 v4.2.2
+	github.com/eko/gocache/lib/v4 v4.2.3
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.4
 	github.com/fluffy-bunny/fluffycore v1.0.221
 	github.com/go-oauth2/oauth2/v4 v4.5.4
@@ -36,9 +36,9 @@ require (
 	github.com/wagslane/go-password-validator v0.3.0
 	github.com/wamuir/svg-qr-code v0.0.0-20210725140500-9525ec975db7
 	github.com/xlzd/gotp v0.1.0
-	golang.org/x/net v0.47.0
+	golang.org/x/net v0.48.0
 	golang.org/x/oauth2 v0.33.0
-	golang.org/x/text v0.31.0
+	golang.org/x/text v0.32.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20250929231259-57b25ae835d4
 	google.golang.org/grpc v1.76.0
 	google.golang.org/protobuf v1.36.10
@@ -150,10 +150,10 @@ require (
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
-	github.com/prometheus/client_golang v1.22.0 // indirect
-	github.com/prometheus/client_model v0.6.1 // indirect
-	github.com/prometheus/common v0.62.0 // indirect
-	github.com/prometheus/procfs v0.16.1 // indirect
+	github.com/prometheus/client_golang v1.23.2 // indirect
+	github.com/prometheus/client_model v0.6.2 // indirect
+	github.com/prometheus/common v0.67.4 // indirect
+	github.com/prometheus/procfs v0.19.2 // indirect
 	github.com/puzpuzpuz/xsync/v3 v3.5.1 // indirect
 	github.com/quasoft/memstore v0.0.0-20191010062613-2bce066d2b0b // indirect
 	github.com/quic-go/qpack v0.5.1 // indirect
@@ -213,14 +213,15 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
+	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/crypto v0.45.0 // indirect
-	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b // indirect
-	golang.org/x/mod v0.29.0 // indirect
-	golang.org/x/sync v0.18.0 // indirect
-	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/crypto v0.46.0 // indirect
+	golang.org/x/exp v0.0.0-20251209150349-8475f28825e9 // indirect
+	golang.org/x/mod v0.31.0 // indirect
+	golang.org/x/sync v0.19.0 // indirect
+	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
-	golang.org/x/tools v0.38.0 // indirect
+	golang.org/x/tools v0.40.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250929231259-57b25ae835d4 // indirect
 	gopkg.in/DataDog/dd-trace-go.v1 v1.74.8 // indirect
