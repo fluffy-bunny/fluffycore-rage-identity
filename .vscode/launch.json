@@ -90,14 +90,14 @@
 
                 "RAGE_oidcUIConfig__appSettings__ApplicationEnvironment": "Production",
                 "RAGE_oidcUIConfig__staticFilePath": "./static/go-app/oidc-login/",
-                "RAGE_oidcUIConfig__uriEntryPath": "http://localhost:3000/oidc-login/",
+                "RAGE_oidcUIConfig__uriEntryPath": "http://localhost:9044/oidc-login/",
                 "RAGE_oidcUIConfig__cacheBustingConfig__filePath": "./static/go-app/oidc-login/index_template.html",
                 "RAGE_oidcUIConfig__cacheBustingConfig__staticPath": "./static/go-app/oidc-login/",
      
 
                 "RAGE_accountUIConfig__appSettings__ApplicationEnvironment": "Production",
                 "RAGE_accountUIConfig__staticFilePath": "./static/go-app/management",
-                "RAGE_accountUIConfig__uriEntryPath": "http://localhost:9046/management/",
+                "RAGE_accountUIConfig__uriEntryPath": "http://localhost:9044/management/",
                 "RAGE_accountUIConfig__cacheBustingConfig__filePath":   "./static/go-app/management/index_template.html",
                 "RAGE_accountUIConfig__cacheBustingConfig__staticPath": "./static/go-app/management/",
 

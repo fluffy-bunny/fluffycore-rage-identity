@@ -1,7 +1,0 @@
-{
-  "email": "test@mapped.com",
-  "directive": "directiveStartExternalLogin",
-  "directiveStartExternalLogin": {
-    "slug": "google-social"
-  }
-}

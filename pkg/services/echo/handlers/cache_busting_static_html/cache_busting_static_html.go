@@ -141,7 +141,18 @@ func (s *service) Do(c echo.Context) error {
 		// Match against the stripped path
 		// Pattern "web/app.json" should match "/web/app.json"
 		patternWithSlash := "/" + strings.TrimPrefix(routePattern.Pattern, "/")
-		if strings.HasPrefix(strippedPath, patternWithSlash) || strippedPath == patternWithSlash {
+
+		// Check for exact match first, then prefix match
+		// This ensures /web/app.wasm doesn't match /web/app.json pattern
+		matched := false
+		if strippedPath == patternWithSlash {
+			matched = true
+		} else if strings.HasPrefix(strippedPath, patternWithSlash+"/") {
+			// Only match as prefix if followed by a slash (for directory-like patterns)
+			matched = true
+		}
+
+		if matched {
 			// Build the full file path
 			filePath := s.config.StaticPath + strippedPath
 

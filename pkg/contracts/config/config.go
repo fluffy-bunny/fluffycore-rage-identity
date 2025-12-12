@@ -128,6 +128,8 @@ type (
 		ReplaceParams []*KeyValuePair `json:"replaceParams"`
 		// RoutePatterns defines custom handlers for specific routes
 		RoutePatterns []*RoutePattern `json:"routePatterns"`
+		// Version used for cache busting.  It replaces {version} in the file.
+		Version string `json:"version"`
 	}
 	OIDCUIConfig struct {
 		AppSettings        *models_api_appsettings.OIDCUIAppSettings `json:"appSettings"`

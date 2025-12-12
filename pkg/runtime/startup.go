@@ -49,12 +49,6 @@ type (
 		oidcserverFuture  async.Future[*fluffycore_async.AsyncResponse]
 		oidcserverRuntime *core_echo_runtime.Runtime
 
-		oidcLoginUIServerFuture  async.Future[*fluffycore_async.AsyncResponse]
-		oidcLoginUIServerRuntime *core_echo_runtime.Runtime
-
-		accountManagementServerFuture  async.Future[*fluffycore_async.AsyncResponse]
-		accountManagementServerRuntime *core_echo_runtime.Runtime
-
 		ext pkg_types.ConfigureServices
 	}
 )

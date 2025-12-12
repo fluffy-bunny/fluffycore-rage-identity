@@ -31,7 +31,7 @@ func (s *service) Ctor(fluffyCoreUserServiceServer proto_external_user.IFluffyCo
 	}, nil
 }
 
-func AddSingletonIClaimsAugmentor(cb di.ContainerBuilder) {
+func AddSingletonIAuthorizationCodeClaimsAugmentor(cb di.ContainerBuilder) {
 	di.AddSingleton[contracts_tokenservice.IAuthorizationCodeClaimsAugmentor](cb, stemService.Ctor)
 }
 

@@ -16,7 +16,6 @@ import (
 	services_ScopedMemoryCache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/ScopedMemoryCache"
 	services_handlers_api "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/api"
 	services_handlers_authorization_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/authorization_endpoint"
-	services_handlers_cache_busting_static_html "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/cache_busting_static_html"
 	services_handlers_discovery_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/discovery_endpoint"
 	services_handlers_error "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/error"
 	services_handlers_externalidp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/externalidp"
@@ -58,7 +57,6 @@ import (
 	services_handlers_webauthn_registrationfinish "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn/registrationfinish"
 	services_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/oidc_session"
 	pkg_types "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/types"
-	pkg_version "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/version"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidcuser "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
@@ -75,7 +73,6 @@ import (
 	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	echo_middleware "github.com/labstack/echo/v4/middleware"
-	xid "github.com/rs/xid"
 	zerolog "github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
 	codes "google.golang.org/grpc/codes"
@@ -233,22 +230,23 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_passwordreset.AddScopedIHandler(builder)
 	services_handlers_api.AddScopedIHandler(builder)
 
-	guid := xid.New().String()
-	if pkg_version.Version() != "dev-build" {
-		guid = pkg_version.Version()
-	}
-	s.config.OIDCUIConfig.CacheBustingConfig.ReplaceParams = []*contracts_config.KeyValuePair{
-		{
-			Key:   "{title}",
-			Value: s.config.ApplicationName,
-		},
-		{
-			Key:   "{version}",
-			Value: guid,
-		},
-	}
-	services_handlers_cache_busting_static_html.AddScopedIHandler(builder, s.config.OIDCUIConfig.CacheBustingConfig)
-
+	/*
+		guid := xid.New().String()
+		if pkg_version.Version() != "dev-build" {
+			guid = pkg_version.Version()
+		}
+			s.config.OIDCUIConfig.CacheBustingConfig.ReplaceParams = []*contracts_config.KeyValuePair{
+				{
+					Key:   "{title}",
+					Value: s.config.ApplicationName,
+				},
+				{
+					Key:   "{version}",
+					Value: guid,
+				},
+			}
+			services_handlers_cache_busting_static_html.AddScopedIHandler(builder, s.config.OIDCUIConfig.CacheBustingConfig)
+	*/
 	if s.config.WebAuthNConfig != nil && s.config.WebAuthNConfig.Enabled {
 		services_handlers_oidcloginpasskey.AddScopedIHandler(builder)
 		services_handlers_rest_api_user_remove_passkey.AddScopedIHandler(builder)
