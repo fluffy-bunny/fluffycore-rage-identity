@@ -3,7 +3,7 @@ services:
     extends:
       file: ./docker-compose-common-proxy.yml
       service: micro
-    image: traefik:latest
+    image: traefik:3.6.4
     container_name: traefik
     restart: unless-stopped
     security_opt:
