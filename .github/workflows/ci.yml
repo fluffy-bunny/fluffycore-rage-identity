@@ -121,20 +121,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-
-      # Copy and replace files
-      - name: Copy and replace files
-        run: |
-          rm -rf ./cmd/server/static/blazor/oidc-login-ui
-          rm -rf ./cmd/server/static/blazor/management
-          cp -r ./blazorassets/static-files/oidc-login-ui ./cmd/server/static/blazor/oidc-login-ui
-          cp -r ./blazorassets/static-files/management ./cmd/server/static/blazor/management
-          cp -r ./production/static/blazor ./cmd/server/static/blazor
-
-      # List the files and directories
-      - name: List files and directories
-        run: |
-          ls -l ./cmd/server/static/blazor
       - uses: actions/setup-node@v6
         if: false
         with:
