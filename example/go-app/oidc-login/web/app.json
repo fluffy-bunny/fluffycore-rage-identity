@@ -1,0 +1,8 @@
+{
+    "bannerBranding": {
+        "title": "RAGE Identity",
+        "logoUrl": "web/m_logo.svg",
+        "showBannerVersion": true
+    },
+    "rageBaseUrl": "http://localhost:9044"
+}
