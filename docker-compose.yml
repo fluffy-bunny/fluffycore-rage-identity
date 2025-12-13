@@ -55,6 +55,7 @@ services:
       RAGE_someSecret: "1234567890"
       RAGE_jwtValidators__issuers: "http://rage:30053"
       RAGE_jwtValidators__jwksUrls: "http://rage:30053/.well-known/jwks"
+      RAGE_configFiles__myAppPath: "/config/myapp.json"
       RAGE_configFiles__oidcClientPath: "/config/oidc-clients.json"
       RAGE_configFiles__idpsPath: "/config/idps.json"
       RAGE_configFiles__ragePath: "/config/rage.json"
@@ -73,9 +74,15 @@ services:
       RAGE_echoOIDCUI__port: "9045"
       RAGE_echoAccount__port: "9046"
       RAGE_systemConfig__developerMode: "true"
-      RAGE_oidcUIConfig__appSettings__ApplicationEnvironment: "Production"
-      ___RAGE_oidcUIConfig__appSettings__BaseApiUrl: "https://rage.localhost.dev"
-      ___RAGE_oidcUIConfig__uriEntryPath: "https://oidc.rage.localhost.dev"
+      # Management App Config (WASM)
+      managementAppConfig__returnUrl: "https://rage.localhost.dev/management/"
+      managementAppConfig__rageBaseUrl: "https://rage.localhost.dev"
+      managementAppConfig__accountManagementBaseUrl: "https://rage.localhost.dev"
+      # OIDC Login App Config (WASM)
+      oidcLoginAppConfig__rageBaseUrl: "https://rage.localhost.dev"
+      configFiles__myAppPath: "/config/myapp.json"
+
+      # Legacy API settings
       RAGE_accountAppSettings__BaseApiUrl: "https://rage.localhost.dev"
       RAGE_accountAppSettings__ApplicationEnvironment: "Production"
       RAGE_apiAppSettings__ApplicationEnvironment: "Production"
@@ -89,7 +96,6 @@ services:
       # Define the network that should be used
       - "traefik.docker.network=proxy"
       # URL to reach this container
-      - "traefik.enable=true"
 
       # Configuration for rage.localhost.dev
       - "traefik.http.routers.rage.rule=Host(`rage.localhost.dev`)"
@@ -118,6 +124,7 @@ services:
       - "traefik.http.routers.rage-oidc.middlewares=cors-headers"
 
     volumes:
+      - ./cmd/server/config/myapp.json:/config/myapp.json
       - ./cmd/server/config/rage.docker.json:/config/rage.json
       - ./cmd/server/config/oidc-clients.json:/config/oidc-clients.json
       - ./cmd/server/config/idps.docker.json:/config/idps.json

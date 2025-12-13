@@ -101,6 +101,12 @@
                 "RAGE_accountUIConfig__cacheBustingConfig__filePath":   "./static/go-app/management/index_template.html",
                 "RAGE_accountUIConfig__cacheBustingConfig__staticPath": "./static/go-app/management/",
 
+                "managementAppConfig__returnUrl": "http://localhost:9044/management/",
+                "managementAppConfig__rageBaseUrl": "http://localhost:9044",
+                "managementAppConfig__accountManagementBaseUrl": "http://localhost:9044",
+
+                "oidcLoginAppConfig__rageBaseUrl": "http://localhost:9044",
+
             },
             "args": [ "serve" ]        
         },
