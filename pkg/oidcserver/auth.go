@@ -47,6 +47,8 @@ func RequiresNoAuth() map[string]bool {
 	// needs to be a func as some of these are configured in.
 	if requiresNoAuthPaths == nil {
 		requiresNoAuthPaths = map[string]bool{
+			wellknown_echo.API_Login: true,
+
 			wellknown_echo.ManagementPath:      true,
 			wellknown_echo.ManagementAllPath:   true,
 			wellknown_echo.StaticPath:          true,

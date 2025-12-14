@@ -6,11 +6,94 @@ package helloworld
 import (
 	context "context"
 	fluffy_dozm_di "github.com/fluffy-bunny/fluffy-dozm-di"
+	GRPCClientFactory "github.com/fluffy-bunny/fluffycore/contracts/GRPCClientFactory"
 	endpoint "github.com/fluffy-bunny/fluffycore/contracts/endpoint"
+	tokensource "github.com/fluffy-bunny/fluffycore/contracts/tokensource"
+	grpcclient "github.com/fluffy-bunny/fluffycore/grpcclient"
 	dicontext "github.com/fluffy-bunny/fluffycore/middleware/dicontext"
 	runtime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	grpc "google.golang.org/grpc"
+	sync "sync"
 )
+
+// IAppGreeterClientAccessor defines the grpc client
+type IAppGreeterClientAccessor interface {
+	GetClient() (GreeterClient, error)
+}
+
+// AppGreeterClientAccessorConfig defines the grpc client struct
+type AppGreeterClientAccessorConfig struct {
+	Url string
+}
+
+// AppGreeterClientAccessor defines the grpc client struct
+type AppGreeterClientAccessor struct {
+	rwLock            sync.RWMutex
+	config            *AppGreeterClientAccessorConfig
+	appTokenSource    tokensource.IAppTokenSource
+	grpcClientFactory GRPCClientFactory.IGRPCClientFactory
+	client            GreeterClient
+}
+
+var stemAppGreeterClientAccessor = (*AppGreeterClientAccessor)(nil)
+var _ IAppGreeterClientAccessor = stemAppGreeterClientAccessor
+
+func (s *AppGreeterClientAccessor) Ctor(
+	config *AppGreeterClientAccessorConfig,
+	appTokenSource tokensource.IAppTokenSource,
+	grpcClientFactory GRPCClientFactory.IGRPCClientFactory,
+) (IAppGreeterClientAccessor, error) {
+	return &AppGreeterClientAccessor{
+		config:            config,
+		appTokenSource:    appTokenSource,
+		grpcClientFactory: grpcClientFactory,
+	}, nil
+}
+
+// AddSingletonIAppGreeterClientAccessor ...
+func AddSingletonIAppGreeterClientAccessor(
+	cb fluffy_dozm_di.ContainerBuilder,
+	config *AppGreeterClientAccessorConfig,
+) {
+	fluffy_dozm_di.AddInstance[*AppGreeterClientAccessorConfig](cb, config)
+	fluffy_dozm_di.AddSingleton[IAppGreeterClientAccessor](cb, stemAppGreeterClientAccessor.Ctor)
+}
+
+func (s *AppGreeterClientAccessor) GetClient() (GreeterClient, error) {
+	doGetClient := func() GreeterClient {
+		s.rwLock.RLock()
+		defer s.rwLock.RUnlock()
+		if s.client != nil {
+			return s.client
+		}
+		return nil
+	}
+
+	client := doGetClient()
+	if client != nil {
+		return client, nil
+	}
+
+	tokenSource, err := s.appTokenSource.GetTokenSource()
+	if err != nil {
+		return nil, err
+	}
+	//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
+	s.rwLock.Lock()
+	defer s.rwLock.Unlock()
+	//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
+
+	grpcClient, err := s.grpcClientFactory.NewGrpcClient(
+		grpcclient.WithTarget(s.config.Url),
+		grpcclient.WithTokenSource(tokenSource),
+		grpcclient.WithInsecure(true), // TODO: remove this in production
+	)
+	if err != nil {
+		return nil, err
+	}
+	s.client = NewGreeterClient(grpcClient.GetConnection())
+	return s.client, nil
+}
 
 // IFluffyCoreGreeterServer defines the grpc server
 type IFluffyCoreGreeterServer interface {
@@ -52,6 +135,85 @@ func (s *GreeterFluffyCoreServer) SayHello(ctx context.Context, request *HelloRe
 	requestContainer := dicontext.GetRequestContainer(ctx)
 	downstreamService := fluffy_dozm_di.Get[IFluffyCoreGreeterServer](requestContainer)
 	return downstreamService.SayHello(ctx, request)
+}
+
+// IAppMyStreamServiceClientAccessor defines the grpc client
+type IAppMyStreamServiceClientAccessor interface {
+	GetClient() (MyStreamServiceClient, error)
+}
+
+// AppMyStreamServiceClientAccessorConfig defines the grpc client struct
+type AppMyStreamServiceClientAccessorConfig struct {
+	Url string
+}
+
+// AppMyStreamServiceClientAccessor defines the grpc client struct
+type AppMyStreamServiceClientAccessor struct {
+	rwLock            sync.RWMutex
+	config            *AppMyStreamServiceClientAccessorConfig
+	appTokenSource    tokensource.IAppTokenSource
+	grpcClientFactory GRPCClientFactory.IGRPCClientFactory
+	client            MyStreamServiceClient
+}
+
+var stemAppMyStreamServiceClientAccessor = (*AppMyStreamServiceClientAccessor)(nil)
+var _ IAppMyStreamServiceClientAccessor = stemAppMyStreamServiceClientAccessor
+
+func (s *AppMyStreamServiceClientAccessor) Ctor(
+	config *AppMyStreamServiceClientAccessorConfig,
+	appTokenSource tokensource.IAppTokenSource,
+	grpcClientFactory GRPCClientFactory.IGRPCClientFactory,
+) (IAppMyStreamServiceClientAccessor, error) {
+	return &AppMyStreamServiceClientAccessor{
+		config:            config,
+		appTokenSource:    appTokenSource,
+		grpcClientFactory: grpcClientFactory,
+	}, nil
+}
+
+// AddSingletonIAppMyStreamServiceClientAccessor ...
+func AddSingletonIAppMyStreamServiceClientAccessor(
+	cb fluffy_dozm_di.ContainerBuilder,
+	config *AppMyStreamServiceClientAccessorConfig,
+) {
+	fluffy_dozm_di.AddInstance[*AppMyStreamServiceClientAccessorConfig](cb, config)
+	fluffy_dozm_di.AddSingleton[IAppMyStreamServiceClientAccessor](cb, stemAppMyStreamServiceClientAccessor.Ctor)
+}
+
+func (s *AppMyStreamServiceClientAccessor) GetClient() (MyStreamServiceClient, error) {
+	doGetClient := func() MyStreamServiceClient {
+		s.rwLock.RLock()
+		defer s.rwLock.RUnlock()
+		if s.client != nil {
+			return s.client
+		}
+		return nil
+	}
+
+	client := doGetClient()
+	if client != nil {
+		return client, nil
+	}
+
+	tokenSource, err := s.appTokenSource.GetTokenSource()
+	if err != nil {
+		return nil, err
+	}
+	//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
+	s.rwLock.Lock()
+	defer s.rwLock.Unlock()
+	//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
+
+	grpcClient, err := s.grpcClientFactory.NewGrpcClient(
+		grpcclient.WithTarget(s.config.Url),
+		grpcclient.WithTokenSource(tokenSource),
+		grpcclient.WithInsecure(true), // TODO: remove this in production
+	)
+	if err != nil {
+		return nil, err
+	}
+	s.client = NewMyStreamServiceClient(grpcClient.GetConnection())
+	return s.client, nil
 }
 
 // IFluffyCoreMyStreamServiceServer defines the grpc server

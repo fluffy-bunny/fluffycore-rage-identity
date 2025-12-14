@@ -1,0 +1,88 @@
+{
+  "idps": [
+    {
+      "id": "google-social",
+      "enabled": true,
+      "slug": "google-social",
+      "name": "Google",
+      "description": "Google",
+      "protocol": {
+        "oidc": {
+          "authority": "https://accounts.google.com",
+          "client_id": "1096301616546-edbl612881t7rkpljp3qa3juminskulo.apps.googleusercontent.com",
+          "client_secret": "${GOOGLE_apps_googleusercontent_com_CLIENT_SECRET}",
+          "scope": "openid email profile"
+        }
+      },
+      "hidden": false,
+      "emailVerificationRequired": true,
+      "multiFactorRequired": true,
+      "metadata": {
+        "image_ref": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
+      }
+    },
+    {
+      "id": "github-social",
+      "enabled": true,
+      "slug": "github-social",
+      "name": "Github",
+      "description": "Github",
+      "protocol": {
+        "github": {
+          "client_id": "bdbe2f2235eb3a02065c",
+          "client_secret": "${GITHUB_bdbe2f2235eb3a02065c_CLIENT_SECRET}"
+        }
+      },
+      "hidden": false,
+      "emailVerificationRequired": true,
+      "multiFactorRequired": true,
+      "metadata": {
+        "image_ref": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
+      }
+    },
+    {
+      "id": "microsoft-social",
+      "enabled": true,
+      "slug": "microsoft-social",
+      "name": "Microsoft",
+      "description": "Microsoft",
+      "protocol": {
+        "oidc": {
+          "authority": "https://login.microsoftonline.com/9188040d-6c67-4c5b-b112-36a304b66dad/v2.0",
+          "client_id": "0f81aa6c-b280-4503-b130-adc0567bfbe4",
+          "client_secret": "${AZUREAD_0f81aa6c_b280_4503_b130_adc0567bfbe4_CLIENT_SECRET}",
+          "scope": "openid profile email User.Read"
+        }
+      },
+      "hidden": false,
+      "emailVerificationRequired": true,
+      "multiFactorRequired": true,
+      "metadata": {
+        "image_ref": "png_url::https://www.google.com/images/branding/product/1x/googleg_48dp.png"
+      }
+    },
+    {
+      "id": "mapped-enterprise",
+      "enabled": true,
+      "slug": "mapped-enterprise",
+      "name": "Mapped.com",
+      "description": "Mapped.com",
+      "protocol": {
+        "oidc": {
+          "authority": "https://login.microsoftonline.com/5905aed6-175d-4ef4-914d-3ee92a398d55/v2.0",
+          "client_id": "3b918868-9bff-431f-bd9c-f9896d628e6b",
+          "client_secret": "${AZUREAD_3b918868_9bff_431f_bd9c_f9896d628e6b_CLIENT_SECRET}",
+          "scope": "openid email profile"
+        }
+      },
+      "hidden": true,
+      "emailVerificationRequired": false,
+      "multiFactorRequired": false,
+      "autoCreate": true,
+      "metadata": {},
+      "claimedDomains": [
+        "mapped.com"
+      ]
+    }
+  ]
+}

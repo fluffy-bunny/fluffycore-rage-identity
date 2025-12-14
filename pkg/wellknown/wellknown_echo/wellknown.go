@@ -28,8 +28,8 @@ var (
 	OAuth2TokenEndpointPath                          = "/token"
 	OIDCAuthorizationEndpointPath                    = "/oidc/v1/auth"
 	OIDCLoginPath                                    = "/oidc-login"
-	OIDCLoginUIPath                                  = "/oidc-login-ui"
-	OIDCLoginUIStaticPath                            = "/oidc-login-ui/*"
+	OIDCLoginUIPath                                  = "/oidc-login/"
+	OIDCLoginUIStaticPath                            = "/oidc-login/*"
 	OIDCLoginPasskeyPath                             = "/oidc-login-passkey"
 	OIDCLoginPasswordPath                            = "/oidc-login-password"
 	OIDCLoginTOTPPath                                = "/oidc-login-totp"
@@ -56,6 +56,8 @@ var (
 
 	API_AppSettings            = "/api/appsettings"
 	API_Manifest               = "/api/manifest"
+	API_AppConfig              = "/api/app-config"
+	Config_AppJSON             = "/config/app.json"
 	API_OIDCFlowAppConfig      = "/api/oidc-flow-app-config"
 	API_StartOver              = "/api/start-over"
 	API_Start_ExternalLogin    = "/api/start-external-login"
@@ -72,6 +74,7 @@ var (
 	API_PasswordResetFinish    = "/api/password-reset-finish"
 	API_UserProfilePath        = "/api/user-profile"
 	API_Logout                 = "/api/logout"
+	API_Login                  = "/api/login"
 	API_UserLinkedAccounts     = "/api/user-linked-accounts"
 	API_IsAuthorized           = "/api/is-authorized"
 )

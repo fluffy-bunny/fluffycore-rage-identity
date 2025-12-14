@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	contracts_util "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/util"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v4"
@@ -12,7 +11,6 @@ import (
 
 type (
 	service struct {
-		someUtil contracts_util.ISomeUtil
 	}
 )
 
@@ -20,10 +18,8 @@ var stemService = (*service)(nil)
 
 var _ contracts_handler.IHandler = stemService
 
-func (s *service) Ctor(someUtil contracts_util.ISomeUtil) (*service, error) {
-	return &service{
-		someUtil: someUtil,
-	}, nil
+func (s *service) Ctor() (*service, error) {
+	return &service{}, nil
 }
 
 // AddScopedIHandler registers the *service as a singleton.

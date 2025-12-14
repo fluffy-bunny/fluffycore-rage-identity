@@ -2,6 +2,7 @@ package callback
 
 import (
 	"net/http"
+	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
@@ -12,8 +13,10 @@ import (
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
+	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type (
@@ -26,9 +29,7 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_handler.IHandler = stemService
-}
+var _ contracts_handler.IHandler = stemService
 
 func (s *service) Ctor(
 	container di.Container,
@@ -93,8 +94,17 @@ func (s *service) Do(c echo.Context) error {
 	}
 
 	isValidPath := func(path string) bool {
-		_, ok := validReturnUrlPaths[path]
-		return ok
+		if fluffycore_utils.IsEmptyOrNil(path) {
+			return false
+		}
+		// Must be a relative path starting with / or a full http/https URL
+		if strings.HasPrefix(path, "/") {
+			return true
+		}
+		if strings.HasPrefix(path, "http://") || strings.HasPrefix(path, "https://") {
+			return true
+		}
+		return false
 	}
 	if !isValidPath(loginRequest.ReturnUrl) {
 		loginRequest.ReturnUrl = wellknown_echo.HomePath
@@ -143,21 +153,36 @@ func (s *service) Do(c echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 	var claims struct {
-		Email         string `json:"email"`
-		EmailVerified bool   `json:"email_verified"`
+		Email         string   `json:"email"`
+		EmailVerified bool     `json:"email_verified"`
+		Acr           []string `json:"acr"`
+		Amr           []string `json:"amr"`
+		Idp           []string `json:"idp"`
 	}
 	if err := idToken.Claims(&claims); err != nil {
 		log.Error().Err(err).Msg("Claims")
 		return c.Redirect(http.StatusFound, "/error")
 	}
 
+	// Determine IdpSlug from idp claim (take first one if available)
+	idpSlug := models.RootIdp
+	if len(claims.Idp) > 0 {
+		idpSlug = claims.Idp[0]
+	}
+
+	now := timestamppb.Now()
 	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
 		AuthCookie: &contracts_cookies.AuthCookie{
 			Identity: &proto_oidc_models.Identity{
 				Subject:       idToken.Subject,
 				Email:         claims.Email,
 				EmailVerified: claims.EmailVerified,
+				IdpSlug:       idpSlug,
+				CreatedOn:     now,
+				UpdatedOn:     now,
 			},
+			Acr: claims.Acr,
+			Amr: claims.Amr,
 		},
 	})
 	if err != nil {

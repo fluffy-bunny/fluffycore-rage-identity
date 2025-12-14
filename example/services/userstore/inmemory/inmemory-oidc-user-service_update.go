@@ -195,6 +195,44 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 		if err != nil {
 			return err
 		}
+		doLinkedIdentitiesUpdate := func() error {
+			linkedIdentitiesUpdate := updateRageUser.LinkedIdentities
+			if linkedIdentitiesUpdate == nil {
+				// nothing to do
+				return nil
+			}
+			if rageUser.LinkedIdentities == nil {
+				rageUser.LinkedIdentities = &proto_oidc_models.LinkedIdentities{
+					Identities: make([]*proto_oidc_models.Identity, 0),
+				}
+			}
+			switch v := linkedIdentitiesUpdate.Update.(type) {
+			case *proto_oidc_models.LinkedIdentitiesUpdate_Granular_:
+				// Create map of existing identities keyed by subject
+				mapExisting := make(map[string]*proto_oidc_models.Identity)
+				for _, identity := range rageUser.LinkedIdentities.Identities {
+					mapExisting[identity.Subject] = identity
+				}
+				// Remove specified identities
+				for _, identity := range v.Granular.Remove {
+					delete(mapExisting, identity.Subject)
+				}
+				// Add new identities
+				for _, identity := range v.Granular.Add {
+					mapExisting[identity.Subject] = identity
+				}
+				// Rebuild the identities array
+				rageUser.LinkedIdentities.Identities = make([]*proto_oidc_models.Identity, 0, len(mapExisting))
+				for _, identity := range mapExisting {
+					rageUser.LinkedIdentities.Identities = append(rageUser.LinkedIdentities.Identities, identity)
+				}
+			}
+			return nil
+		}
+		err = doLinkedIdentitiesUpdate()
+		if err != nil {
+			return err
+		}
 		return nil
 
 	}

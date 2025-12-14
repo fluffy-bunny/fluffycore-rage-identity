@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strings"
 
 	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/tokenservice"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	proto_events_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/events/types"
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
+	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	fluffycore_services_claims "github.com/fluffy-bunny/fluffycore/services/claims"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
@@ -143,6 +145,27 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 	}
 	if len(authorizationFinal.Identity.Acr) > 0 {
 		acrClaims = append(acrClaims, authorizationFinal.Identity.Acr...)
+	}
+	// Check if user came from a claimed domain
+	if fluffycore_utils.IsNotEmptyOrNil(authorizationFinal.Identity.Email) && fluffycore_utils.IsNotEmptyOrNil(authorizationFinal.Identity.IdpSlug) {
+		// Extract domain from email
+		emailParts := strings.Split(authorizationFinal.Identity.Email, "@")
+		if len(emailParts) == 2 {
+			domainPart := strings.ToLower(emailParts[1])
+			// Check if this IDP has claimed this domain
+			getIDPResponse, err := s.idpServiceServer.GetIDPBySlug(ctx, &proto_oidc_idp.GetIDPBySlugRequest{
+				Slug: authorizationFinal.Identity.IdpSlug,
+			})
+			if err == nil && getIDPResponse.Idp != nil {
+				// Check if the domain is in the claimed domains list
+				for _, claimedDomain := range getIDPResponse.Idp.ClaimedDomains {
+					if strings.ToLower(claimedDomain) == domainPart {
+						acrClaims = append(acrClaims, models.ACRClaimedDomain)
+						break
+					}
+				}
+			}
+		}
 	}
 	idpClaims := []string{}
 	for _, acrValue := range acrClaims {

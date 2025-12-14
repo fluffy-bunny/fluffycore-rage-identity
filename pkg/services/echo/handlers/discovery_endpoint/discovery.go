@@ -5,7 +5,6 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
-	contracts_util "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/util"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -14,8 +13,7 @@ import (
 
 type (
 	service struct {
-		config   *contracts_config.Config
-		someUtil contracts_util.ISomeUtil
+		config *contracts_config.Config
 	}
 )
 
@@ -23,10 +21,9 @@ var stemService = (*service)(nil)
 
 var _ contracts_handler.IHandler = stemService
 
-func (s *service) Ctor(config *contracts_config.Config, someUtil contracts_util.ISomeUtil) (*service, error) {
+func (s *service) Ctor(config *contracts_config.Config) (*service, error) {
 	return &service{
-		config:   config,
-		someUtil: someUtil,
+		config: config,
 	}, nil
 }
 

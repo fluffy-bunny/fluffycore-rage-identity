@@ -1,0 +1,11 @@
+{
+    "basehref": "management",
+    "bannerBranding": {
+        "title": "RAGE Identity Management",
+        "logoUrl": "web/m_logo.svg",
+        "showBannerVersion": true
+    },
+    "returnUrl": "http://localhost:9044/management/",
+    "rageBaseUrl": "http://localhost:9044",
+    "accountManagementBaseUrl": "http://localhost:9044"
+}

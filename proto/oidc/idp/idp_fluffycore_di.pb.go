@@ -6,11 +6,94 @@ package idp
 import (
 	context "context"
 	fluffy_dozm_di "github.com/fluffy-bunny/fluffy-dozm-di"
+	GRPCClientFactory "github.com/fluffy-bunny/fluffycore/contracts/GRPCClientFactory"
 	endpoint "github.com/fluffy-bunny/fluffycore/contracts/endpoint"
+	tokensource "github.com/fluffy-bunny/fluffycore/contracts/tokensource"
+	grpcclient "github.com/fluffy-bunny/fluffycore/grpcclient"
 	dicontext "github.com/fluffy-bunny/fluffycore/middleware/dicontext"
 	runtime "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	grpc "google.golang.org/grpc"
+	sync "sync"
 )
+
+// IAppIDPServiceClientAccessor defines the grpc client
+type IAppIDPServiceClientAccessor interface {
+	GetClient() (IDPServiceClient, error)
+}
+
+// AppIDPServiceClientAccessorConfig defines the grpc client struct
+type AppIDPServiceClientAccessorConfig struct {
+	Url string
+}
+
+// AppIDPServiceClientAccessor defines the grpc client struct
+type AppIDPServiceClientAccessor struct {
+	rwLock            sync.RWMutex
+	config            *AppIDPServiceClientAccessorConfig
+	appTokenSource    tokensource.IAppTokenSource
+	grpcClientFactory GRPCClientFactory.IGRPCClientFactory
+	client            IDPServiceClient
+}
+
+var stemAppIDPServiceClientAccessor = (*AppIDPServiceClientAccessor)(nil)
+var _ IAppIDPServiceClientAccessor = stemAppIDPServiceClientAccessor
+
+func (s *AppIDPServiceClientAccessor) Ctor(
+	config *AppIDPServiceClientAccessorConfig,
+	appTokenSource tokensource.IAppTokenSource,
+	grpcClientFactory GRPCClientFactory.IGRPCClientFactory,
+) (IAppIDPServiceClientAccessor, error) {
+	return &AppIDPServiceClientAccessor{
+		config:            config,
+		appTokenSource:    appTokenSource,
+		grpcClientFactory: grpcClientFactory,
+	}, nil
+}
+
+// AddSingletonIAppIDPServiceClientAccessor ...
+func AddSingletonIAppIDPServiceClientAccessor(
+	cb fluffy_dozm_di.ContainerBuilder,
+	config *AppIDPServiceClientAccessorConfig,
+) {
+	fluffy_dozm_di.AddInstance[*AppIDPServiceClientAccessorConfig](cb, config)
+	fluffy_dozm_di.AddSingleton[IAppIDPServiceClientAccessor](cb, stemAppIDPServiceClientAccessor.Ctor)
+}
+
+func (s *AppIDPServiceClientAccessor) GetClient() (IDPServiceClient, error) {
+	doGetClient := func() IDPServiceClient {
+		s.rwLock.RLock()
+		defer s.rwLock.RUnlock()
+		if s.client != nil {
+			return s.client
+		}
+		return nil
+	}
+
+	client := doGetClient()
+	if client != nil {
+		return client, nil
+	}
+
+	tokenSource, err := s.appTokenSource.GetTokenSource()
+	if err != nil {
+		return nil, err
+	}
+	//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
+	s.rwLock.Lock()
+	defer s.rwLock.Unlock()
+	//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
+
+	grpcClient, err := s.grpcClientFactory.NewGrpcClient(
+		grpcclient.WithTarget(s.config.Url),
+		grpcclient.WithTokenSource(tokenSource),
+		grpcclient.WithInsecure(true), // TODO: remove this in production
+	)
+	if err != nil {
+		return nil, err
+	}
+	s.client = NewIDPServiceClient(grpcClient.GetConnection())
+	return s.client, nil
+}
 
 // IFluffyCoreIDPServiceServer defines the grpc server
 type IFluffyCoreIDPServiceServer interface {

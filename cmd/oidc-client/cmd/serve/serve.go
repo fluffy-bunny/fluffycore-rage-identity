@@ -4,6 +4,7 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package serve
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -18,11 +19,11 @@ import (
 	oidc "github.com/coreos/go-oidc/v3/oidc"
 	shared "github.com/fluffy-bunny/fluffycore-rage-identity/cmd/oidc-client/shared"
 	cobra_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/cobra_utils"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	req "github.com/imroc/req/v3"
 	zerolog "github.com/rs/zerolog"
 	cobra "github.com/spf13/cobra"
-	context "golang.org/x/net/context"
 	oauth2 "golang.org/x/oauth2"
 )
 
@@ -38,7 +39,7 @@ var serveCmd = &cobra.Command{
 	},
 }
 var (
-	callbackPath = "/auth/callback"
+	callbackPath = wellknown_echo.AccountCallbackPath
 )
 
 func InitCommand(parent *cobra.Command) {

@@ -16,7 +16,6 @@ import (
 	services_ScopedMemoryCache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/ScopedMemoryCache"
 	services_handlers_api "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/api"
 	services_handlers_authorization_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/authorization_endpoint"
-	services_handlers_cache_busting_static_html "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/cache_busting_static_html"
 	services_handlers_discovery_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/discovery_endpoint"
 	services_handlers_error "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/error"
 	services_handlers_externalidp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/externalidp"
@@ -58,8 +57,6 @@ import (
 	services_handlers_webauthn_registrationfinish "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn/registrationfinish"
 	services_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/oidc_session"
 	pkg_types "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/types"
-	pkg_version "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/version"
-	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidcuser "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
@@ -76,7 +73,6 @@ import (
 	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	echo_middleware "github.com/labstack/echo/v4/middleware"
-	xid "github.com/rs/xid"
 	zerolog "github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
 	codes "google.golang.org/grpc/codes"
@@ -92,9 +88,7 @@ type (
 	}
 )
 
-func init() {
-	var _ contracts_startup.IStartup = (*startup)(nil)
-}
+var _ contracts_startup.IStartup = (*startup)(nil)
 
 type WithOption func(startup *startup)
 
@@ -236,22 +230,23 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_passwordreset.AddScopedIHandler(builder)
 	services_handlers_api.AddScopedIHandler(builder)
 
-	guid := xid.New().String()
-	if pkg_version.Version() != "dev-build" {
-		guid = pkg_version.Version()
-	}
-	s.config.OIDCUIConfig.CacheBustingConfig.ReplaceParams = []*contracts_config.KeyValuePair{
-		{
-			Key:   "{title}",
-			Value: s.config.ApplicationName,
-		},
-		{
-			Key:   "{version}",
-			Value: guid,
-		},
-	}
-	services_handlers_cache_busting_static_html.AddScopedIHandler(builder, s.config.OIDCUIConfig.CacheBustingConfig)
-
+	/*
+		guid := xid.New().String()
+		if pkg_version.Version() != "dev-build" {
+			guid = pkg_version.Version()
+		}
+			s.config.OIDCUIConfig.CacheBustingConfig.ReplaceParams = []*contracts_config.KeyValuePair{
+				{
+					Key:   "{title}",
+					Value: s.config.ApplicationName,
+				},
+				{
+					Key:   "{version}",
+					Value: guid,
+				},
+			}
+			services_handlers_cache_busting_static_html.AddScopedIHandler(builder, s.config.OIDCUIConfig.CacheBustingConfig)
+	*/
 	if s.config.WebAuthNConfig != nil && s.config.WebAuthNConfig.Enabled {
 		services_handlers_oidcloginpasskey.AddScopedIHandler(builder)
 		services_handlers_rest_api_user_remove_passkey.AddScopedIHandler(builder)
@@ -279,6 +274,71 @@ func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 	// i.e. e.Static("/css", "./css")
 	e.Static("/static", "./static")
 	return nil
+}
+
+func noCacheMiddleware(config *contracts_config.NoCacheConfig) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			requestUrlPath := c.Request().URL.Path
+			noCacheIt := false
+
+			// Check exact path matches
+			for _, path := range config.Paths {
+				if requestUrlPath == path {
+					noCacheIt = true
+					break
+				}
+			}
+
+			// Check path prefixes (e.g., /oidc-login/, /management/)
+			if !noCacheIt {
+				for _, prefix := range config.PathPrefixes {
+					if strings.HasPrefix(requestUrlPath, prefix) {
+						noCacheIt = true
+						break
+					}
+				}
+			}
+
+			// Check file extensions (e.g., index.html)
+			if !noCacheIt {
+				for _, ext := range config.FileExtensions {
+					if strings.HasSuffix(requestUrlPath, ext) {
+						noCacheIt = true
+						break
+					}
+				}
+			}
+
+			if noCacheIt {
+				c.Response().Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+				c.Response().Header().Set("Pragma", "no-cache")
+				c.Response().Header().Set("Expires", "0")
+			}
+			return next(c)
+		}
+	}
+}
+
+func urlRewriteMiddleware(config *contracts_config.URLRewritesConfig) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			requestPath := c.Request().URL.Path
+
+			// Apply rewrite rules in order
+			for _, rule := range config.Rules {
+				if rule.From == requestPath {
+					// Rewrite the path
+					c.Request().URL.Path = rule.To
+					// Update the path in the context
+					c.SetPath(rule.To)
+					break
+				}
+			}
+
+			return next(c)
+		}
+	}
 }
 
 // Configure
@@ -323,36 +383,17 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 			MaxAge:                                   s.config.CORSConfig.MaxAge,
 		}))
 	}
+	if s.config.URLRewritesConfig != nil && s.config.URLRewritesConfig.Enabled {
+		e.Use(urlRewriteMiddleware(s.config.URLRewritesConfig))
+	}
 	e.Use(EnsureAuth(root))
-	e.Use(noCacheMiddleware)
+	if s.config.NoCacheConfig != nil && s.config.NoCacheConfig.Enabled {
+		e.Use(noCacheMiddleware(s.config.NoCacheConfig))
+	}
 
 	return nil
 }
 
-var noCachePaths = []string{
-	wellknown_echo.HomePath,
-	wellknown_echo.OIDCLoginUIPath,
-	wellknown_echo.ManagementPath,
-}
-
-func noCacheMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		requestUrlPath := c.Request().URL.Path
-		noCacheIt := strings.HasSuffix(requestUrlPath, "index.html")
-		for _, path := range noCachePaths {
-			if noCacheIt || requestUrlPath == path {
-				noCacheIt = true
-				break
-			}
-		}
-		if noCacheIt {
-			c.Response().Header().Set("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
-			c.Response().Header().Set("Pragma", "no-cache")
-			c.Response().Header().Set("Expires", "0")
-		}
-		return next(c)
-	}
-}
 func EnsureLocalizer(_ di.Container) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -394,21 +435,39 @@ func EnsureCookieClaimsPrincipal(_ di.Container) echo.MiddlewareFunc {
 			}
 			rootIdentity := getAuthCookieResponse.AuthCookie.Identity
 			scopedMemoryCache.Set("rootIdentity", rootIdentity)
-			claimsPrincipal.AddClaim(
-				fluffycore_contracts_common.Claim{
+			claims := []fluffycore_contracts_common.Claim{
+				{
 					Type:  fluffycore_echo_wellknown.ClaimTypeAuthenticated,
 					Value: "true",
 				},
-				fluffycore_contracts_common.Claim{
+				{
 					Type:  fluffycore_echo_wellknown.ClaimTypeSubject,
 					Value: rootIdentity.Subject,
-				}, fluffycore_contracts_common.Claim{
+				},
+				{
 					Type:  "email",
 					Value: rootIdentity.Email,
-				}, fluffycore_contracts_common.Claim{
+				},
+				{
 					Type:  "email_verified",
 					Value: strconv.FormatBool(rootIdentity.EmailVerified),
+				},
+			}
+			// Add ACR claims
+			for _, acr := range getAuthCookieResponse.AuthCookie.Acr {
+				claims = append(claims, fluffycore_contracts_common.Claim{
+					Type:  "acr",
+					Value: acr,
 				})
+			}
+			// Add AMR claims
+			for _, amr := range getAuthCookieResponse.AuthCookie.Amr {
+				claims = append(claims, fluffycore_contracts_common.Claim{
+					Type:  "amr",
+					Value: amr,
+				})
+			}
+			claimsPrincipal.AddClaim(claims...)
 
 			return next(c)
 		}
