@@ -12,7 +12,7 @@ import (
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	zerolog "github.com/rs/zerolog"
-	"google.golang.org/protobuf/types/known/timestamppb"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type (
@@ -25,9 +25,8 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer = stemService
-}
+var _ proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer = stemService
+
 func (s *service) Ctor(oidcFlowCache contracts_eko_gocache.IAuthorizationRequestStateCache) (proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer, error) {
 	return &service{
 		oidcFlowCache: oidcFlowCache,

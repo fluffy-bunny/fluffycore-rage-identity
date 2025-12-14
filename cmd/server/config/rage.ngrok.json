@@ -41,6 +41,19 @@
     "enabled": false,
     "issuerName": "EXAMPLE.RAGE.IDENTITY"
   },
+  "urlRewritesConfig": {
+    "enabled": true,
+    "rules": [
+      {
+        "from": "/",
+        "to": "/management/"
+      },
+      {
+        "from": "/home",
+        "to": "/management/"
+      }
+    ]
+  },
   "webAuthNConfig": {
     "rpDisplayName": "RAGE",
     "rpID": "${DOMAIN}",

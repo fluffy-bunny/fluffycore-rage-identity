@@ -239,8 +239,15 @@ func (b *BaseHandler) Render(c echo.Context, code int, name string, data map[str
 	type auth struct {
 		CSRF string `param:"csrf" query:"csrf" header:"csrf" form:"csrf" json:"csrf" xml:"csrf"`
 	}
+	csrfValue := c.Get("csrf")
+	csrfStr := ""
+	if csrfValue != nil {
+		if str, ok := csrfValue.(string); ok {
+			csrfStr = str
+		}
+	}
 	authArtifacts := &auth{
-		CSRF: c.Get("csrf").(string),
+		CSRF: csrfStr,
 	}
 	data["security"] = authArtifacts
 	data["csrf"] = authArtifacts.CSRF

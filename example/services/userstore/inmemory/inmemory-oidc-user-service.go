@@ -22,10 +22,9 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ proto_oidc_user.IFluffyCoreRageUserServiceServer = stemService
-	var _ proto_external_user.IFluffyCoreUserServiceServer = stemService
-}
+var _ proto_oidc_user.IFluffyCoreRageUserServiceServer = stemService
+var _ proto_external_user.IFluffyCoreUserServiceServer = stemService
+
 func (s *service) Ctor() (*service, error) {
 	return &service{
 		userMap: make(map[string]*proto_external_models.ExampleUser),

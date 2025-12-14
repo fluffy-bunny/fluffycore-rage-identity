@@ -477,6 +477,8 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 				EmailVerified: authorizationFinal.Identity.EmailVerified,
 				IdpSlug:       authorizationFinal.Identity.IdpSlug,
 			},
+			Acr: authorizationFinal.Identity.Acr,
+			Amr: authorizationFinal.Identity.Amr,
 		},
 	})
 	if err != nil {

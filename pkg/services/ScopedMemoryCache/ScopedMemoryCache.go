@@ -15,9 +15,8 @@ type (
 
 var stemService = (*service)(nil)
 
-func init() {
-	var _ contracts_cache.IScopedMemoryCache = stemService
-}
+var _ contracts_cache.IScopedMemoryCache = stemService
+
 func (s *service) Ctor() (contracts_cache.IScopedMemoryCache, error) {
 	return &service{}, nil
 }

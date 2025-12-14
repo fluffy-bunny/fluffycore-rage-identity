@@ -168,6 +168,7 @@ func (s *service) Do(c echo.Context) error {
 	authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
 		Subject: user.RootIdentity.Subject,
 		Email:   user.RootIdentity.Email,
+		IdpSlug: models.RootIdp,
 		Acr: []string{
 			models.ACRPasskey,
 			models.ACRIdpRoot,

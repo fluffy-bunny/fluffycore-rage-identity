@@ -4,7 +4,7 @@
     "allowCredentials": true,
     "unsafeWildcardOriginWithAllowCredentials": true,
     "allowedOrigins": [
-      "http://${DOMAIN}",
+      "https://${DOMAIN}",
       "http://localhost1.com:3000",
       "http://localhost1.com:3001",
       "http://localhost:3000",
@@ -40,6 +40,19 @@
   "totp": {
     "enabled": false,
     "issuerName": "EXAMPLE.RAGE.IDENTITY"
+  },
+  "urlRewritesConfig": {
+    "enabled": true,
+    "rules": [
+      {
+        "from": "/",
+        "to": "/management/"
+      },
+      {
+        "from": "/home",
+        "to": "/management/"
+      }
+    ]
   },
   "webAuthNConfig": {
     "rpDisplayName": "RAGE",

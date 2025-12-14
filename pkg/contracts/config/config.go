@@ -12,6 +12,7 @@ import (
 	fluffycore_contracts_otel "github.com/fluffy-bunny/fluffycore/contracts/otel"
 	fluffycore_echo_contracts_cookies "github.com/fluffy-bunny/fluffycore/echo/contracts/cookies"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
+	echo "github.com/labstack/echo/v4"
 )
 
 type (
@@ -28,6 +29,20 @@ type (
 		UnsafeWildcardOriginWithAllowCredentials bool     `json:"unsafeWildcardOriginWithAllowCredentials"`
 		ExposeHeaders                            []string `json:"exposeHeaders"`
 		MaxAge                                   int      `json:"maxAge"`
+	}
+	URLRewriteRule struct {
+		From string `json:"from"`
+		To   string `json:"to"`
+	}
+	URLRewritesConfig struct {
+		Enabled bool              `json:"enabled"`
+		Rules   []*URLRewriteRule `json:"rules"`
+	}
+	NoCacheConfig struct {
+		Enabled        bool     `json:"enabled"`
+		Paths          []string `json:"paths"`
+		FileExtensions []string `json:"fileExtensions"`
+		PathPrefixes   []string `json:"pathPrefixes"`
 	}
 	CSRFConfig struct {
 		SkipApi bool `json:"skipApi"`
@@ -93,12 +108,28 @@ type (
 		Key   string `json:"key"`
 		Value string `json:"value"`
 	}
+	// RouteHandler is a function that handles a specific route pattern
+	// Returns (handled bool, error). If handled=true, the request was processed
+	RouteHandler func(c echo.Context, filePath string) (bool, error)
+
+	// RoutePattern defines a pattern matcher and handler for a route
+	RoutePattern struct {
+		// Pattern is the route pattern to match (e.g., "web/app.json")
+		Pattern string
+		// Handler is the function to call when the pattern matches
+		Handler RouteHandler
+	}
+
 	CacheBustingHTMLConfig struct {
 		FilePath      string          `json:"filePath"`
 		EchoPath      string          `json:"echoPath"`
 		StaticPath    string          `json:"staticPath"`
 		RootPath      string          `json:"rootPath"`
 		ReplaceParams []*KeyValuePair `json:"replaceParams"`
+		// RoutePatterns defines custom handlers for specific routes
+		RoutePatterns []*RoutePattern `json:"routePatterns"`
+		// Version used for cache busting.  It replaces {version} in the file.
+		Version string `json:"version"`
 	}
 	OIDCUIConfig struct {
 		AppSettings        *models_api_appsettings.OIDCUIAppSettings `json:"appSettings"`
@@ -138,6 +169,8 @@ type (
 		PasswordConfig                 *PasswordConfig                                `json:"passwordConfig"`
 		CORSConfig                     *CORSConfig                                    `json:"corsConfig"`
 		CSRFConfig                     *CSRFConfig                                    `json:"csrfConfig"`
+		NoCacheConfig                  *NoCacheConfig                                 `json:"noCacheConfig"`
+		URLRewritesConfig              *URLRewritesConfig                             `json:"urlRewritesConfig"`
 		OTELConfig                     *fluffycore_contracts_otel.OTELConfig          `json:"otelConfig"`
 		OIDCUIConfig                   *OIDCUIConfig                                  `json:"oidcUIConfig"`
 		AccountUIConfig                *AccountUIConfig                               `json:"accountUIConfig"`
@@ -189,12 +222,12 @@ const configDefaultJSONTemplate = `
 			"baseApiUrl": ""
 		},
 		"staticFilePath": "./static",
-		"uriEntryPath": "/oidc-login-ui/",
+		"uriEntryPath": "/oidc-login/",
 		"cacheBustingConfig": {
 			"filePath": "IN_ENVIRONMENT",
             "staticPath": "IN_ENVIRONMENT",
-            "rootPath": "/oidc-login-ui/",
-			"echoPath": "/oidc-login-ui/*"
+            "rootPath": "/oidc-login/",
+			"echoPath": "/oidc-login/*"
 		}
 	},
     "oidcUIAppSettings": {
@@ -210,6 +243,16 @@ const configDefaultJSONTemplate = `
     },
     "csrfConfig": {
         "skipApi": false
+    },
+    "noCacheConfig": {
+        "enabled": true,
+        "paths": ["/"],
+        "fileExtensions": ["index.html"],
+        "pathPrefixes": ["/oidc-login/", "/management/"]
+    },
+    "urlRewritesConfig": {
+        "enabled": false,
+        "rules": []
     },
     "corsConfig": {
         "enabled": true,

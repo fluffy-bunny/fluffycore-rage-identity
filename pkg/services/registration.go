@@ -30,7 +30,6 @@ import (
 	services_oidcproviderfactory "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/oidcproviderfactory"
 	services_selfoauth2provider "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/selfoauth2provider"
 	services_tokenservice "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/tokenservice"
-	services_util "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/util"
 	services_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/webauthn"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	fluffycore_contracts_jwtminter "github.com/fluffy-bunny/fluffycore/contracts/jwtminter"
@@ -62,7 +61,6 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	services_codeexchanges_github.AddSingletonIGithubCodeExchange(builder)
 	services_codeexchanges_genericoidc.AddSingletonIGenericOIDCCodeExchange(builder)
 	services_oidcproviderfactory.AddSingletonIOIDCProviderFactory(builder)
-	services_util.AddSingletonISomeUtil(builder)
 	services_identity_passwordhasher.AddSingletonIPasswordHasher(builder)
 	services_identity_userid.AddSingletonIUserIdGenerator(builder)
 	switch config.BackingCache.Type {

@@ -24,6 +24,7 @@ import (
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type (
@@ -259,12 +260,15 @@ func (s *service) DoPost(c echo.Context) error {
 		})
 	}
 	subjectId := s.userIdGenerator.GenerateUserId()
+	now := timestamppb.Now()
 	user := &proto_oidc_models.RageUser{
 		RootIdentity: &proto_oidc_models.Identity{
 			Subject:       subjectId,
 			Email:         model.UserName,
 			IdpSlug:       models.RootIdp,
 			EmailVerified: false,
+			CreatedOn:     now,
+			UpdatedOn:     now,
 		},
 		State: proto_oidc_models.RageUserState_USER_STATE_PENDING,
 	}
