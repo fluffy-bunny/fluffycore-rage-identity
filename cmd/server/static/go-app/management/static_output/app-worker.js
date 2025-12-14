@@ -1,12 +1,12 @@
 // -----------------------------------------------------------------------------
 // PWA
 // -----------------------------------------------------------------------------
-const cacheName = "app-" + "1765722103";
-const resourcesToCache = ["web/styles.css?v=1765722103","web/m_logo.svg?v=1765722103","web/logging-helper.js?v=1765722103","web/common.js?v=1765722103","web/build_version.js?v=1765722103","web/app.wasm?v=1765722103","wasm_exec.js?v=1765722103","manifest.webmanifest?v=1765722103","app.js?v=1765722103","app.css?v=1765722103"];
+const cacheName = "app-" + "1765728231";
+const resourcesToCache = ["web/styles.css?v=1765728231","web/m_logo.svg?v=1765728231","web/logging-helper.js?v=1765728231","web/common.js?v=1765728231","web/build_version.js?v=1765728231","web/app.wasm?v=1765728231","wasm_exec.js?v=1765728231","manifest.webmanifest?v=1765728231","app.js?v=1765728231","app.css?v=1765728231"];
 
 self.addEventListener("install", async (event) => {
   try {
-    console.log("installing app worker 1765722103");
+    console.log("installing app worker 1765728231");
     await installWorker();
     await self.skipWaiting();
   } catch (error) {
@@ -23,7 +23,7 @@ self.addEventListener("activate", async (event) => {
   try {
     await deletePreviousCaches(); // Await cache cleanup
     await self.clients.claim(); // Ensure the service worker takes control of the clients
-    console.log("app worker 1765722103 is activated");
+    console.log("app worker 1765728231 is activated");
   } catch (error) {
     console.error("error during activation:", error);
   }
