@@ -3,7 +3,9 @@ package runtime
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"os"
 
 	"strings"
 
@@ -194,8 +196,14 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 			{
 				Pattern: "/web/app.wasm",
 				Handler: func(c echo.Context, filePath string) (bool, error) {
-					// Set correct MIME type for WASM files
+					// Get file info to set Content-Length
+					fileInfo, err := os.Stat(filePath)
+					if err != nil {
+						return false, err
+					}
+					// Set correct MIME type and Content-Length for WASM files
 					c.Response().Header().Set("Content-Type", "application/wasm")
+					c.Response().Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
 					return true, c.File(filePath)
 				},
 			},
@@ -246,8 +254,14 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 			{
 				Pattern: "/web/app.wasm",
 				Handler: func(c echo.Context, filePath string) (bool, error) {
-					// Set correct MIME type for WASM files
+					// Get file info to set Content-Length
+					fileInfo, err := os.Stat(filePath)
+					if err != nil {
+						return false, err
+					}
+					// Set correct MIME type and Content-Length for WASM files
 					c.Response().Header().Set("Content-Type", "application/wasm")
+					c.Response().Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
 					return true, c.File(filePath)
 				},
 			},
