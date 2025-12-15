@@ -1,6 +1,7 @@
 package api_user_passkeys
 
 import (
+	"encoding/base64"
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
@@ -117,7 +118,7 @@ func (s *service) Do(c echo.Context) error {
 	if user.WebAuthN != nil && user.WebAuthN.Credentials != nil {
 		for _, cred := range user.WebAuthN.Credentials {
 			passkey := PasskeyResponse{
-				ID:        string(cred.ID),
+				ID:        base64.RawURLEncoding.EncodeToString(cred.ID),
 				Transport: cred.Transport,
 			}
 

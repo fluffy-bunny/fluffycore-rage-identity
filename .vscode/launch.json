@@ -15,6 +15,7 @@
             "env": {
                 "ENABLE_GRPC_SERVER_REFLECTION": "true",
                 "DOMAIN":"localhost:9044",
+                "RPID_DOMAIN":"localhost",
                 "COOKIE_DOMAIN":"localhost",                
                 "RAGE_APPLICATION_NAME": "RAGE Account",
                 "RAGE_APPLICATION_ENVIRONMENT":"Development",

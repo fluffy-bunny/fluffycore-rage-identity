@@ -2,6 +2,8 @@ package RageApiClient
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_OIDCFlowAppConfig "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/OIDCFlowAppConfig"
@@ -195,4 +197,111 @@ func (s *service) StartExternalLogin(ctx context.Context, request *models_api_ex
 			Data:          request,
 			CustomHeaders: buildCustomHeaders(),
 		})
+}
+
+// TOTP/Authenticator APIs
+func (s *service) GetTOTPStatus(ctx context.Context) ([]byte, error) {
+	resp, err := fluffycore_go_app_fetch.FetchWrappedResponseT[map[string]interface{}](ctx,
+		&fluffycore_go_app_fetch.CallInput{
+			Method:        "GET",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_UserTOTP),
+			CustomHeaders: buildCustomHeaders(),
+		})
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(resp.Response)
+}
+
+func (s *service) EnrollTOTP(ctx context.Context) ([]byte, error) {
+	resp, err := fluffycore_go_app_fetch.FetchWrappedResponseT[map[string]interface{}](ctx,
+		&fluffycore_go_app_fetch.CallInput{
+			Method:        "POST",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_UserTOTPEnroll),
+			CustomHeaders: buildCustomHeaders(),
+		})
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(resp.Response)
+}
+
+func (s *service) VerifyTOTP(ctx context.Context, code string) ([]byte, error) {
+	request := map[string]string{"code": code}
+	resp, err := fluffycore_go_app_fetch.FetchWrappedResponseT[map[string]interface{}](ctx,
+		&fluffycore_go_app_fetch.CallInput{
+			Method:        "POST",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_UserTOTPVerify),
+			Data:          request,
+			CustomHeaders: buildCustomHeaders(),
+		})
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(resp.Response)
+}
+
+func (s *service) DisableTOTP(ctx context.Context) ([]byte, error) {
+	resp, err := fluffycore_go_app_fetch.FetchWrappedResponseT[map[string]interface{}](ctx,
+		&fluffycore_go_app_fetch.CallInput{
+			Method:        "DELETE",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_UserTOTP),
+			CustomHeaders: buildCustomHeaders(),
+		})
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(resp.Response)
+}
+
+// Passkey APIs
+func (s *service) GetPasskeys(ctx context.Context) ([]byte, error) {
+	resp, err := fluffycore_go_app_fetch.FetchWrappedResponseT[map[string]interface{}](ctx,
+		&fluffycore_go_app_fetch.CallInput{
+			Method:        "GET",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_Passkeys),
+			CustomHeaders: buildCustomHeaders(),
+		})
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(resp.Response)
+}
+
+func (s *service) DeletePasskey(ctx context.Context, credentialID string) ([]byte, error) {
+	// credentialID is already base64-encoded from the GET response
+	url := s.fixUpRageApi(ctx, wellknown_echo.API_Passkeys) + "/" + credentialID
+	resp, err := fluffycore_go_app_fetch.FetchWrappedResponseT[map[string]interface{}](ctx,
+		&fluffycore_go_app_fetch.CallInput{
+			Method:        "DELETE",
+			Url:           url,
+			CustomHeaders: buildCustomHeaders(),
+		})
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(resp.Response)
+}
+
+func (s *service) RenamePasskey(ctx context.Context, credentialID string, friendlyName string) ([]byte, error) {
+	fmt.Printf("🔵 RenamePasskey called - credentialID (already base64): %s, friendlyName: %s\n", credentialID, friendlyName)
+
+	// credentialID is already base64-encoded from the GET response, use it directly
+	request := map[string]string{"friendlyName": friendlyName}
+	url := s.fixUpRageApi(ctx, wellknown_echo.API_Passkeys) + "/" + credentialID
+	fmt.Printf("🔵 RenamePasskey URL: %s\n", url)
+	fmt.Printf("🔵 RenamePasskey request body: %+v\n", request)
+	resp, err := fluffycore_go_app_fetch.FetchWrappedResponseT[map[string]interface{}](ctx,
+		&fluffycore_go_app_fetch.CallInput{
+			Method:        "PATCH",
+			Url:           url,
+			Data:          request,
+			CustomHeaders: buildCustomHeaders(),
+		})
+	if err != nil {
+		fmt.Printf("❌ RenamePasskey error: %v\n", err)
+		return nil, err
+	}
+	fmt.Printf("✅ RenamePasskey response: %+v\n", resp)
+	return json.Marshal(resp.Response)
 }

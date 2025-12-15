@@ -36,5 +36,16 @@ type (
 		PasswordResetFinish(ctx context.Context, request *models_api_login_models.PasswordResetFinishRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_login_models.PasswordResetFinishResponse], error)
 		VerifyCodeBegin(ctx context.Context) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_verify_code.VerifyCodeBeginResponse], error)
 		VerifyCode(ctx context.Context, request *models_api_login_models.VerifyCodeRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_login_models.VerifyCodeResponse], error)
+
+		// TOTP/Authenticator APIs
+		GetTOTPStatus(ctx context.Context) ([]byte, error)
+		EnrollTOTP(ctx context.Context) ([]byte, error)
+		VerifyTOTP(ctx context.Context, code string) ([]byte, error)
+		DisableTOTP(ctx context.Context) ([]byte, error)
+
+		// Passkey APIs
+		GetPasskeys(ctx context.Context) ([]byte, error)
+		DeletePasskey(ctx context.Context, credentialID string) ([]byte, error)
+		RenamePasskey(ctx context.Context, credentialID string, friendlyName string) ([]byte, error)
 	}
 )

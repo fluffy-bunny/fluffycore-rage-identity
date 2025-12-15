@@ -15,6 +15,7 @@ import (
 	services_RageClientConfigAccessor "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/RageClientConfigAccessor"
 	services_composers_Home "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/composers/Home"
 	services_composers_LinkedAccounts "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/composers/LinkedAccounts"
+	services_composers_PasskeyManager "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/composers/PasskeyManager"
 	services_composers_PasswordManager "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/composers/PasswordManager"
 	services_composers_Profile "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/composers/Profile"
 	servies_i18n_Localizer "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/i18n/Localizer"
@@ -38,12 +39,14 @@ func RegisterServices(ctx context.Context, cb di.ContainerBuilder) {
 	services_composers_Home.AddScopedIHomeComposer(cb)
 	services_composers_Profile.AddScopedIProfileComposer(cb)
 	services_composers_PasswordManager.AddScopedIPasswordManagerComposer(cb)
+	services_composers_PasskeyManager.AddScopedIPasskeyManagerComposer(cb)
 	services_composers_LinkedAccounts.AddScopedILinkedAccountsComposer(cb)
-	services_go_app_ManagementApiClient.AddScopedIManagementApiClient(cb)
 	services_AppConfigAccessor.AddScopedIAppConfigAccessor(cb)
 	services_RageClientConfigAccessor.AddScopedIRageClientConfigAccessor(cb)
 	services_ManagementClientConfigAccessor.AddScopedIManagementClientConfigAccessor(cb)
+	// Register RageApiClient first, as ManagementApiClient depends on it
 	services_go_app_RageApiClient.AddScopedIRageApiClient(cb)
+	services_go_app_ManagementApiClient.AddScopedIManagementApiClient(cb)
 	var appContext contracts_App.AppContext = ctx
 	di.AddInstance[contracts_App.AppContext](cb, appContext)
 }
@@ -122,6 +125,13 @@ func NewWASMApp(ctx context.Context, generateStaticMode bool) {
 		app.Route(routePasswordManager, func() app.Composer {
 			log.Info().Msg("Routing to " + routePasswordManager)
 			return newScopedWizardApp(contracts_routes.WellknownRoute_PasswordManager)
+		})
+
+		// Register PasskeyManager route
+		routePasskeyManager := fixupRoute(contracts_routes.WellknownRoute_PasskeyManager)
+		app.Route(routePasskeyManager, func() app.Composer {
+			log.Info().Msg("Routing to " + routePasskeyManager)
+			return newScopedWizardApp(contracts_routes.WellknownRoute_PasskeyManager)
 		})
 
 		// Register LinkedAccounts route

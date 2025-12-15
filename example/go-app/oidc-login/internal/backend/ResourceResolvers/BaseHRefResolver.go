@@ -47,6 +47,7 @@ func (r versionedCacheBustingBaseHRefResourceResolver) Resolve(path string) stri
 		"web/m_logo.svg",
 		"/web/build_version.js",
 		"/web/common.js",
+		"/web/webauthn.js",
 		"/web/logging-helper.js",
 		"/app.js",
 		"/app-worker.js",

@@ -61,9 +61,9 @@
   "webAuthNConfig": {
     "enabled": true,
     "rpDisplayName": "RAGE",
-    "rpID": "${DOMAIN}",
+    "rpID": "${RPID_DOMAIN}",
     "rpOrigins": [
-      "https://${DOMAIN}"
+      "http://${DOMAIN}"
     ]
   }
 }
