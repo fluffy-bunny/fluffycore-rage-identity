@@ -1358,9 +1358,10 @@ func (x *TOTP) GetVerified() bool {
 }
 
 type TOTPUpdate struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Enabled       *wrapperspb.BoolValue  `protobuf:"bytes,2,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	Verified      *wrapperspb.BoolValue  `protobuf:"bytes,3,opt,name=verified,proto3" json:"verified,omitempty"`
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Secret        *wrapperspb.StringValue `protobuf:"bytes,1,opt,name=secret,proto3" json:"secret,omitempty"`
+	Enabled       *wrapperspb.BoolValue   `protobuf:"bytes,2,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	Verified      *wrapperspb.BoolValue   `protobuf:"bytes,3,opt,name=verified,proto3" json:"verified,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1393,6 +1394,13 @@ func (x *TOTPUpdate) ProtoReflect() protoreflect.Message {
 // Deprecated: Use TOTPUpdate.ProtoReflect.Descriptor instead.
 func (*TOTPUpdate) Descriptor() ([]byte, []int) {
 	return file_proto_oidc_models_user_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *TOTPUpdate) GetSecret() *wrapperspb.StringValue {
+	if x != nil {
+		return x.Secret
+	}
+	return nil
 }
 
 func (x *TOTPUpdate) GetEnabled() *wrapperspb.BoolValue {
@@ -1872,9 +1880,10 @@ const file_proto_oidc_models_user_proto_rawDesc = "" +
 	"\x04TOTP\x12\x16\n" +
 	"\x06secret\x18\x01 \x01(\tR\x06secret\x12\x18\n" +
 	"\aenabled\x18\x02 \x01(\bR\aenabled\x12\x1a\n" +
-	"\bverified\x18\x03 \x01(\bR\bverified\"z\n" +
+	"\bverified\x18\x03 \x01(\bR\bverified\"\xb0\x01\n" +
 	"\n" +
 	"TOTPUpdate\x124\n" +
+	"\x06secret\x18\x01 \x01(\v2\x1c.google.protobuf.StringValueR\x06secret\x124\n" +
 	"\aenabled\x18\x02 \x01(\v2\x1a.google.protobuf.BoolValueR\aenabled\x126\n" +
 	"\bverified\x18\x03 \x01(\v2\x1a.google.protobuf.BoolValueR\bverified\"\xb3\x03\n" +
 	"\bRageUser\x126\n" +
@@ -1987,36 +1996,37 @@ var file_proto_oidc_models_user_proto_depIdxs = []int32{
 	15, // 21: proto.oidc.models.RecoveryUpdate.email:type_name -> proto.oidc.models.EmailUpdate
 	32, // 22: proto.oidc.models.WebAuthN.credentials:type_name -> proto.types.webauthn.Credential
 	33, // 23: proto.oidc.models.WebAuthNUpdate.credentials:type_name -> proto.types.webauthn.CredentialArrayUpdate
-	31, // 24: proto.oidc.models.TOTPUpdate.enabled:type_name -> google.protobuf.BoolValue
-	31, // 25: proto.oidc.models.TOTPUpdate.verified:type_name -> google.protobuf.BoolValue
-	0,  // 26: proto.oidc.models.RageUser.state:type_name -> proto.oidc.models.RageUserState
-	4,  // 27: proto.oidc.models.RageUser.root_identity:type_name -> proto.oidc.models.Identity
-	11, // 28: proto.oidc.models.RageUser.linked_identities:type_name -> proto.oidc.models.LinkedIdentities
-	16, // 29: proto.oidc.models.RageUser.recovery:type_name -> proto.oidc.models.Recovery
-	2,  // 30: proto.oidc.models.RageUser.password:type_name -> proto.oidc.models.Password
-	18, // 31: proto.oidc.models.RageUser.web_auth_n:type_name -> proto.oidc.models.WebAuthN
-	20, // 32: proto.oidc.models.RageUser.t_o_t_p:type_name -> proto.oidc.models.TOTP
-	22, // 33: proto.oidc.models.RageUsers.users:type_name -> proto.oidc.models.RageUser
-	12, // 34: proto.oidc.models.RageUserUpdate.root_identity:type_name -> proto.oidc.models.IdentityUpdate
-	1,  // 35: proto.oidc.models.RageUserUpdate.state:type_name -> proto.oidc.models.RageUserStateValue
-	13, // 36: proto.oidc.models.RageUserUpdate.linked_identities:type_name -> proto.oidc.models.LinkedIdentitiesUpdate
-	17, // 37: proto.oidc.models.RageUserUpdate.recovery:type_name -> proto.oidc.models.RecoveryUpdate
-	3,  // 38: proto.oidc.models.RageUserUpdate.password:type_name -> proto.oidc.models.PasswordUpdate
-	19, // 39: proto.oidc.models.RageUserUpdate.web_auth_n:type_name -> proto.oidc.models.WebAuthNUpdate
-	21, // 40: proto.oidc.models.RageUserUpdate.t_o_t_p:type_name -> proto.oidc.models.TOTPUpdate
-	29, // 41: proto.oidc.models.RageUserFilter.root_subject:type_name -> proto.types.IDFilterExpression
-	29, // 42: proto.oidc.models.RageUserFilter.root_idp_slug:type_name -> proto.types.IDFilterExpression
-	30, // 43: proto.oidc.models.RageUserFilter.root_email:type_name -> proto.types.StringFilterExpression
-	29, // 44: proto.oidc.models.RageUserFilter.linked_identity_subject:type_name -> proto.types.IDFilterExpression
-	29, // 45: proto.oidc.models.RageUserFilter.linked_identity_idp_slug:type_name -> proto.types.IDFilterExpression
-	30, // 46: proto.oidc.models.RageUserFilter.linked_identity_email:type_name -> proto.types.StringFilterExpression
-	4,  // 47: proto.oidc.models.LinkedIdentitiesUpdate.Granular.add:type_name -> proto.oidc.models.Identity
-	4,  // 48: proto.oidc.models.LinkedIdentitiesUpdate.Granular.remove:type_name -> proto.oidc.models.Identity
-	49, // [49:49] is the sub-list for method output_type
-	49, // [49:49] is the sub-list for method input_type
-	49, // [49:49] is the sub-list for extension type_name
-	49, // [49:49] is the sub-list for extension extendee
-	0,  // [0:49] is the sub-list for field type_name
+	27, // 24: proto.oidc.models.TOTPUpdate.secret:type_name -> google.protobuf.StringValue
+	31, // 25: proto.oidc.models.TOTPUpdate.enabled:type_name -> google.protobuf.BoolValue
+	31, // 26: proto.oidc.models.TOTPUpdate.verified:type_name -> google.protobuf.BoolValue
+	0,  // 27: proto.oidc.models.RageUser.state:type_name -> proto.oidc.models.RageUserState
+	4,  // 28: proto.oidc.models.RageUser.root_identity:type_name -> proto.oidc.models.Identity
+	11, // 29: proto.oidc.models.RageUser.linked_identities:type_name -> proto.oidc.models.LinkedIdentities
+	16, // 30: proto.oidc.models.RageUser.recovery:type_name -> proto.oidc.models.Recovery
+	2,  // 31: proto.oidc.models.RageUser.password:type_name -> proto.oidc.models.Password
+	18, // 32: proto.oidc.models.RageUser.web_auth_n:type_name -> proto.oidc.models.WebAuthN
+	20, // 33: proto.oidc.models.RageUser.t_o_t_p:type_name -> proto.oidc.models.TOTP
+	22, // 34: proto.oidc.models.RageUsers.users:type_name -> proto.oidc.models.RageUser
+	12, // 35: proto.oidc.models.RageUserUpdate.root_identity:type_name -> proto.oidc.models.IdentityUpdate
+	1,  // 36: proto.oidc.models.RageUserUpdate.state:type_name -> proto.oidc.models.RageUserStateValue
+	13, // 37: proto.oidc.models.RageUserUpdate.linked_identities:type_name -> proto.oidc.models.LinkedIdentitiesUpdate
+	17, // 38: proto.oidc.models.RageUserUpdate.recovery:type_name -> proto.oidc.models.RecoveryUpdate
+	3,  // 39: proto.oidc.models.RageUserUpdate.password:type_name -> proto.oidc.models.PasswordUpdate
+	19, // 40: proto.oidc.models.RageUserUpdate.web_auth_n:type_name -> proto.oidc.models.WebAuthNUpdate
+	21, // 41: proto.oidc.models.RageUserUpdate.t_o_t_p:type_name -> proto.oidc.models.TOTPUpdate
+	29, // 42: proto.oidc.models.RageUserFilter.root_subject:type_name -> proto.types.IDFilterExpression
+	29, // 43: proto.oidc.models.RageUserFilter.root_idp_slug:type_name -> proto.types.IDFilterExpression
+	30, // 44: proto.oidc.models.RageUserFilter.root_email:type_name -> proto.types.StringFilterExpression
+	29, // 45: proto.oidc.models.RageUserFilter.linked_identity_subject:type_name -> proto.types.IDFilterExpression
+	29, // 46: proto.oidc.models.RageUserFilter.linked_identity_idp_slug:type_name -> proto.types.IDFilterExpression
+	30, // 47: proto.oidc.models.RageUserFilter.linked_identity_email:type_name -> proto.types.StringFilterExpression
+	4,  // 48: proto.oidc.models.LinkedIdentitiesUpdate.Granular.add:type_name -> proto.oidc.models.Identity
+	4,  // 49: proto.oidc.models.LinkedIdentitiesUpdate.Granular.remove:type_name -> proto.oidc.models.Identity
+	50, // [50:50] is the sub-list for method output_type
+	50, // [50:50] is the sub-list for method input_type
+	50, // [50:50] is the sub-list for extension type_name
+	50, // [50:50] is the sub-list for extension extendee
+	0,  // [0:50] is the sub-list for field type_name
 }
 
 func init() { file_proto_oidc_models_user_proto_init() }
