@@ -12,6 +12,7 @@ var (
 	WellknownRoute_Home           WellknownRoute = "/"
 	WellknownRoute_CreateAccount  WellknownRoute = "/create-account"
 	WellknownRoute_Password       WellknownRoute = "/password"
+	WellknownRoute_Passkey        WellknownRoute = "/passkey"
 	WellknownRoute_ForgotPassword WellknownRoute = "/forgot-password"
 	WellknownRoute_ResetPassword  WellknownRoute = "/reset-password"
 	WellknownRoute_VerifyCode     WellknownRoute = "/verify-code"

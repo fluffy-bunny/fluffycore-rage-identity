@@ -178,13 +178,14 @@ func (s *service) renderEmptyState() app.UI {
 	return app.Div().Class("profile-card").Body(
 		app.Div().Class("card-header").Body(
 			app.Div().Class("card-header-content").Body(
-				app.Div().Class("card-icon passkey-icon").Body(
-					app.Raw(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<circle cx="7" cy="7" r="3"></circle>
-						<path d="M5 22v-5l-1-1v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4l-1 1v5"></path>
-						<path d="M14 6h8"></path>
-						<path d="M18 2v8"></path>
-					</svg>`),
+				app.Div().Class("card-icon password-icon").Body(
+					app.Raw(`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<circle cx="7" cy="7" r="2"></circle>
+								<path d="M7 9v4a2 2 0 0 0 2 2h4"></path>
+								<circle cx="19" cy="15" r="4"></circle>
+								<path d="M19 11v-1"></path>
+								<path d="M22 15h-1"></path>
+								</svg>`),
 				),
 				app.Div().Class("card-title-group").Body(
 					app.H2().Text("No Passkeys Configured"),

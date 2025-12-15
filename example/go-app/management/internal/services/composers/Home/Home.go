@@ -6,6 +6,7 @@ import (
 	contracts_App "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/App"
 	contracts_Localizer "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/Localizer"
 	contracts_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/LocalizerBundle"
+	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/config"
 	contracts_routes "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/routes"
 	services_ComposerBase "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/ComposerBase"
 	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
@@ -18,6 +19,7 @@ type (
 		services_ComposerBase.ComposerBase
 
 		managementApiClient contracts_go_app_ManagementApiClient.IManagementApiClient
+		appConfigAccessor   contracts_config.IAppConfigAccessor
 		isAuthenticated     bool
 		isClaimedDomain     bool
 	}
@@ -31,6 +33,7 @@ func (s *service) Ctor(
 	container di.Container,
 	appContext contracts_App.AppContext,
 	localizer contracts_Localizer.ILocalizer,
+	appConfigAccessor contracts_config.IAppConfigAccessor,
 	managementApiClient contracts_go_app_ManagementApiClient.IManagementApiClient,
 
 ) (contracts_App.IHomeComposer, error) {
@@ -41,6 +44,7 @@ func (s *service) Ctor(
 			AppContext: appContext,
 			Localizer:  localizer,
 		},
+		appConfigAccessor:   appConfigAccessor,
 		managementApiClient: managementApiClient,
 		isAuthenticated:     false,
 	}, nil
@@ -51,6 +55,8 @@ func AddScopedIHomeComposer(cb di.ContainerBuilder) {
 }
 
 func (s *service) Render() app.UI {
+	appConfig := s.appConfigAccessor.GetAppConfig(s.AppContext)
+
 	return app.Div().Class("home-container").Body(
 		// Hero Section
 		app.Div().Class("home-hero").Body(
@@ -71,6 +77,21 @@ func (s *service) Render() app.UI {
 					</svg>`,
 				contracts_routes.WellknownRoute_PasswordManager,
 			),
+			app.If(appConfig.EnabledWebAuthN, func() app.UI {
+				return s.renderFeatureCard(
+					"passkey-icon",
+					s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyPasskeys),
+					s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyManageYourPasskeys),
+					`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<circle cx="7" cy="7" r="2"></circle>
+						<path d="M7 9v4a2 2 0 0 0 2 2h4"></path>
+						<circle cx="19" cy="15" r="4"></circle>
+						<path d="M19 11v-1"></path>
+						<path d="M22 15h-1"></path>
+					</svg>`,
+					contracts_routes.WellknownRoute_PasskeyManager,
+				)
+			}),
 			s.renderFeatureCard(
 				"accounts-icon",
 				s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyLinkedAccounts),

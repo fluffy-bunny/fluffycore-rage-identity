@@ -947,6 +947,10 @@ body {
   color: #1967d2;
 }
 
+.home-feature-icon.passkey-icon {
+  color: #9333ea;
+}
+
 .home-feature-icon.accounts-icon {
   color: #0f9d58;
 }

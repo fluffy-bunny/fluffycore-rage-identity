@@ -79,6 +79,27 @@ func (s *service) OnMount(ctx app.Context) {
 	s.oidcFlowConfig = oidcFlowConfig
 }
 
+func (s *service) renderPasskeyLogin() app.UI {
+	return app.Div().Class("passkey-login-section").Body(
+		app.Div().Class("divider").Body(
+			app.Span().Text("or"),
+		),
+		app.Button().
+			Class("passkey-btn").
+			OnClick(s.handlePasskeyLogin).
+			Body(
+				app.Raw(`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<circle cx="7" cy="7" r="2"></circle>
+					<path d="M7 9v4a2 2 0 0 0 2 2h4"></path>
+					<circle cx="19" cy="15" r="4"></circle>
+					<path d="M19 11v-1"></path>
+					<path d="M22 15h-1"></path>
+				</svg>`),
+				app.Span().Text("Sign in with passkey"),
+			),
+	)
+}
+
 func (s *service) renderCreateAccountUI() app.UI {
 	return app.Div().Body(app.Div().Class("create-account").
 		Body(
@@ -104,8 +125,8 @@ func (s *service) Render() app.UI {
 	return app.Div().Class("step-container").Body(
 		app.If(s.showError, s.renderErrorBanner),
 
-		app.H2().Text(s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyWelcomeBack)),
-		app.P().Text(s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyEnterYourEmailToContinue)),
+		//app.H2().Text(s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyWelcomeBack)),
+		//app.P().Text(s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyEnterYourEmailToContinue)),
 
 		app.Form().OnSubmit(s.handleEmailSubmit).Body(
 			app.Div().Class("form-group").Body(
@@ -126,9 +147,13 @@ func (s *service) Render() app.UI {
 			app.Div().Class("button-group").Body(
 				app.Button().
 					Type("submit").
-					Class("btn-primary").
+					Class("passkey-btn").
 					Text(s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyContinue)),
 			),
+		),
+		app.If(
+			s.oidcFlowConfig.EnabledWebAuthN,
+			s.renderPasskeyLogin,
 		),
 		app.If(
 			!s.oidcFlowConfig.DisableSocialAccounts,
@@ -439,6 +464,15 @@ func (s *service) handleDismissError(ctx app.Context, e app.Event) {
 	s.showError = false
 	s.errorMessage = ""
 	ctx.Update()
+}
+
+func (s *service) handlePasskeyLogin(ctx app.Context, e app.Event) {
+	log := zerolog.Ctx(s.AppContext).With().Str("component", "HomeComposer").Logger()
+	log.Info().Msg("Passkey login clicked")
+	e.PreventDefault()
+
+	// Navigate to passkey login page
+	ctx.Navigate(contracts_routes.GetFixedRoute(contracts_routes.WellknownRoute_Passkey))
 }
 
 func (s *service) showErrorMessage(ctx app.Context, message string) {
