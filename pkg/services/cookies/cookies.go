@@ -25,10 +25,8 @@ type (
 )
 
 var stemService = (*service)(nil)
+var _ contracts_cookies.IWellknownCookies = stemService
 
-func init() {
-	var _ contracts_cookies.IWellknownCookies = stemService
-}
 func (s *service) Ctor(
 	insecureCookies fluffycore_contracts_cookies.ICookies,
 	secureCookies fluffycore_contracts_cookies.ISecureCookies,
