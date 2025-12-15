@@ -24,8 +24,10 @@ type (
 	}
 
 	OIDCLoginAppConfig struct {
-		RageBaseURL    string         `json:"rageBaseUrl"`
-		BannerBranding BannerBranding `json:"bannerBranding,omitempty"`
+		RageBaseURL     string         `json:"rageBaseUrl"`
+		BannerBranding  BannerBranding `json:"bannerBranding,omitempty"`
+		EnabledWebAuthN bool           `json:"enabledWebAuthN,omitempty"`
+		EnabledTotp     bool           `json:"enabledTotp,omitempty"`
 	}
 )
 
@@ -85,6 +87,8 @@ func (s *service) Do(c echo.Context) error {
 			LogoURL:           "web/apple-touch-icon-192x192.png",
 			ShowBannerVersion: s.config.SystemConfig.DeveloperMode,
 		},
+		EnabledWebAuthN: s.config.OIDCLoginAppConfig.EnabledWebAuthN,
+		EnabledTotp:     s.config.OIDCLoginAppConfig.EnabledTotp,
 	}
 	return c.JSON(http.StatusOK, appConfig)
 }

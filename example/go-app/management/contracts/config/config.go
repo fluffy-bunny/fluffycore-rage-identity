@@ -12,5 +12,7 @@ type (
 		RageBaseURL              string         `json:"rageBaseUrl,omitempty"`
 		AccountManagementBaseURL string         `json:"accountManagementBaseUrl,omitempty"`
 		BannerBranding           BannerBranding `json:"bannerBranding,omitempty"`
+		EnabledWebAuthN          bool           `json:"enabledWebAuthN,omitempty"`
+		EnabledTotp              bool           `json:"enabledTotp,omitempty"`
 	}
 )

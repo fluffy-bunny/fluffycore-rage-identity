@@ -71,6 +71,8 @@
                 "managementAppConfig__returnUrl": "http://localhost:9044/management/",
                 "managementAppConfig__rageBaseUrl": "http://localhost:9044",
                 "managementAppConfig__accountManagementBaseUrl": "http://localhost:9044",
+                "managementAppConfig__enabledWebAuthN": "true",
+                "managementAppConfig__enabledTotp": "true",
 
                 "oidcLoginAppConfig__rageBaseUrl": "http://localhost:9044",
 

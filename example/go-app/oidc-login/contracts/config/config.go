@@ -7,8 +7,10 @@ type (
 		ShowBannerVersion bool   `json:"showBannerVersion,omitempty"`
 	}
 	AppConfig struct {
-		BaseHREF       string         `json:"basehref,omitempty"`
-		RageBaseURL    string         `json:"rageBaseUrl,omitempty"`
-		BannerBranding BannerBranding `json:"bannerBranding,omitempty"`
+		BaseHREF        string         `json:"basehref,omitempty"`
+		RageBaseURL     string         `json:"rageBaseUrl,omitempty"`
+		BannerBranding  BannerBranding `json:"bannerBranding,omitempty"`
+		EnabledWebAuthN bool           `json:"enabledWebAuthN,omitempty"`
+		EnabledTotp     bool           `json:"enabledTotp,omitempty"`
 	}
 )

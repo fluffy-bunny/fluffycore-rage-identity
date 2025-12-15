@@ -202,6 +202,8 @@ func (s *service) renderSidebar() app.UI {
 }
 
 func (s *service) renderAuthenticatedSidebar() app.UI {
+	appConfig := s.appConfigAccessor.GetAppConfig(s.AppContext)
+
 	return app.Div().Class("sidebar-section").Body(
 		app.Div().Class("sidebar-section-title").Text("Account"),
 		s.renderSidebarLink(
@@ -228,16 +230,20 @@ func (s *service) renderAuthenticatedSidebar() app.UI {
 						<path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
 					</svg>`,
 		),
-		s.renderSidebarLink(
-			contracts_routes.WellknownRoute_PasskeyManager,
-			"Passkeys",
-			`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+		app.If(appConfig.EnabledWebAuthN,
+			func() app.UI {
+				return s.renderSidebarLink(
+					contracts_routes.WellknownRoute_PasskeyManager,
+					"Passkeys",
+					`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 						<circle cx="7" cy="7" r="2"></circle>
 						<path d="M7 9v4a2 2 0 0 0 2 2h4"></path>
 						<circle cx="19" cy="15" r="4"></circle>
 						<path d="M19 11v-1"></path>
 						<path d="M22 15h-1"></path>
 					</svg>`,
+				)
+			},
 		),
 		s.renderSidebarLink(
 			contracts_routes.WellknownRoute_LinkedAccounts,

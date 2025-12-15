@@ -32,6 +32,14 @@ func (s *service) OnNav(ctx app.Context) {
 	// Note: Authentication check removed from here to avoid race condition
 	// OnMount will handle route protection after GetUserInfo completes
 
+	// Check if trying to access PasskeyManager when WebAuthN is disabled
+	appConfig := s.appConfigAccessor.GetAppConfig(s.AppContext)
+	if pathRoute == contracts_routes.WellknownRoute_PasskeyManager && !appConfig.EnabledWebAuthN {
+		log.Info().Msg("WebAuthN disabled, redirecting from PasskeyManager to Home")
+		ctx.Navigate(contracts_routes.GetFixedRoute(contracts_routes.WellknownRoute_Home))
+		return
+	}
+
 	switch pathRoute {
 	case contracts_routes.WellknownRoute_Profile:
 		s.currentPage = contracts_routes.WellknownRoute_Profile
