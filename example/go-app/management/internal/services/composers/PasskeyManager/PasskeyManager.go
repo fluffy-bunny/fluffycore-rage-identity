@@ -5,6 +5,7 @@ import (
 	contracts_go_app_ManagementApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/contracts/ManagementApiClient"
 	contracts_App "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/App"
 	contracts_Localizer "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/Localizer"
+	contracts_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/LocalizerBundle"
 	services_ComposerBase "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/ComposerBase"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/models"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
@@ -32,6 +33,7 @@ type (
 		showSuccess         bool
 		isLoading           bool
 		isAddingPasskey     bool
+		isClaimedDomain     bool
 	}
 )
 
@@ -64,9 +66,30 @@ func AddScopedIPasskeyManagerComposer(cb di.ContainerBuilder) {
 
 func (s *service) OnMount(ctx app.Context) {
 	log := zerolog.Ctx(s.AppContext).With().Str("component", "PasskeyManager").Logger()
-	log.Info().Msg("PasskeyManager page mounted, fetching passkeys")
+	log.Info().Msg("PasskeyManager page mounted")
 
-	s.loadPasskeys(ctx)
+	// Fetch user profile first to check if claimed domain
+	ctx.Async(func() {
+		response, err := s.managementApiClient.GetUserProfile(s.AppContext)
+		ctx.Dispatch(func(ctx app.Context) {
+			if err == nil && response != nil && response.Code == 200 && response.Response != nil {
+				s.isClaimedDomain = response.Response.IsClaimedDomain
+				log.Info().Bool("isClaimedDomain", s.isClaimedDomain).Msg("Profile loaded")
+
+				// Only load passkeys if not a claimed domain
+				if !s.isClaimedDomain {
+					s.loadPasskeys(ctx)
+				} else {
+					s.isLoading = false
+					ctx.Update()
+				}
+			} else {
+				log.Error().Err(err).Msg("Failed to load profile")
+				s.isLoading = false
+				ctx.Update()
+			}
+		})
+	})
 }
 
 func (s *service) loadPasskeys(ctx app.Context) {
@@ -104,6 +127,26 @@ func (s *service) loadPasskeys(ctx app.Context) {
 }
 
 func (s *service) Render() app.UI {
+	// Show unavailable message for claimed domain users
+	if s.isClaimedDomain {
+		return app.Div().Class("profile-container").Body(
+			app.Div().Class("profile-header").Body(
+				app.H1().Text("Passkeys"),
+				app.P().Class("profile-subtitle").Text("Manage your passkeys for passwordless authentication"),
+			),
+			app.Div().Class("profile-card").Body(
+				app.Div().Class("card-header").Body(
+					app.H2().Text(s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyPasskeysNotAvailable)),
+				),
+				app.Div().Class("card-body").Body(
+					app.P().Class("card-description").Style("color", "var(--text-secondary)").Text(
+						s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyPasskeysNotAvailableDescription),
+					),
+				),
+			),
+		)
+	}
+
 	return app.Div().Class("profile-container").Body(
 		app.If(s.showError, s.renderErrorBanner),
 		app.If(s.showSuccess, s.renderSuccessBanner),
