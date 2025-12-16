@@ -8,17 +8,13 @@ import (
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	services_handlers_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
-	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	protocol "github.com/go-webauthn/webauthn/protocol"
 	go_webauthn "github.com/go-webauthn/webauthn/webauthn"
-	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
-	codes "google.golang.org/grpc/codes"
 )
 
 type (
@@ -83,67 +79,32 @@ func (s *service) Do(c echo.Context) error {
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
-	// Try to get the signin cookie, but don't fail if it doesn't exist
-	// This supports both flows:
-	// 1. User enters email first (cookie exists) - specific user authentication
-	// 2. User clicks passkey directly (no cookie) - discoverable credential authentication
-	signinResponse, err := s.cookies.GetSigninUserNameCookie(c)
+	// For passkey login, we should always use discoverable credentials
+	// Delete any existing signin cookie to prevent conflicts
+	s.cookies.DeleteSigninUserNameCookie(c)
+	log.Info().Msg("Cleared signin cookie for passkey login")
 
-	var webAuthNUser *services_handlers_webauthn.WebAuthNUser
-	var userIdentity *proto_oidc_models.Identity
-	var isDiscoverableFlow bool
-
-	if err != nil {
-		// No signin cookie - use discoverable credentials (resident keys)
-		log.Info().Msg("No signin cookie found, using discoverable credentials flow")
-		isDiscoverableFlow = true
-		userIdentity = nil
-	} else {
-		// Signin cookie exists - get the specific user
-		log.Info().Str("email", signinResponse.Value.Email).Msg("Signin cookie found, authenticating specific user")
-		isDiscoverableFlow = false
-
-		// get the user from the store
-		getRageUserResponse, err := s.RageUserService().GetRageUser(ctx,
-			&proto_oidc_user.GetRageUserRequest{
-				By: &proto_oidc_user.GetRageUserRequest_Email{
-					Email: signinResponse.Value.Email,
-				},
-			})
-		if err != nil {
-			st, ok := status.FromError(err)
-			if ok {
-				if st.Code() == codes.NotFound {
-					return c.JSON(http.StatusNotFound, "User not found")
-				}
-			}
-			log.Error().Err(err).Msg("GetRageUser")
-			return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginBegin_002)
-		}
-		webAuthNUser = services_handlers_webauthn.NewWebAuthNUser(getRageUserResponse.User)
-		userIdentity = getRageUserResponse.User.RootIdentity
-	}
+	// Always use discoverable credentials for passkey login
+	// This allows the user to select any passkey for any account
+	log.Info().Msg("Using discoverable credentials flow")
+	var userIdentity *proto_oidc_models.Identity = nil
 
 	var credentialAssertion *protocol.CredentialAssertion
 	var webAuthNSession *go_webauthn.SessionData
 
-	if isDiscoverableFlow {
-		// For discoverable credentials, use BeginDiscoverableLogin which doesn't require a user
-		var err error
-		credentialAssertion, webAuthNSession, err = s.webAuthN.GetWebAuthN().BeginDiscoverableLogin()
-		if err != nil {
-			log.Error().Err(err).Msg("BeginDiscoverableLogin")
-			return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginBegin_003)
-		}
-	} else {
-		// For specific user, use regular BeginLogin
-		var err error
-		credentialAssertion, webAuthNSession, err = s.webAuthN.GetWebAuthN().BeginLogin(webAuthNUser)
-		if err != nil {
-			log.Error().Err(err).Msg("BeginLogin")
-			return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginBegin_003)
-		}
+	// Always use BeginDiscoverableLogin for passkey authentication
+	credentialAssertion, webAuthNSession, err := s.webAuthN.GetWebAuthN().BeginDiscoverableLogin()
+	if err != nil {
+		log.Error().Err(err).Msg("BeginDiscoverableLogin")
+		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginBegin_003)
 	}
+
+	// Log the challenge being sent to the client
+	log.Info().
+		Str("challenge", string(webAuthNSession.Challenge)).
+		Str("challenge_in_assertion", string(credentialAssertion.Response.Challenge)).
+		Msg("Sending credential assertion to client")
+
 	cookieValue := &contracts_cookies.WebAuthNCookie{
 		Identity:    userIdentity, // Will be nil for discoverable credentials
 		SessionData: webAuthNSession,

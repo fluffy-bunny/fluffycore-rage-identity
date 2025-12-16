@@ -205,11 +205,14 @@ async function registerUser(returnUrl, friendlyName) {
   }
 }
 
-async function LoginUser(returnFailedUrl, useConditionalUI = false) {
+async function LoginUser(returnFailedUrl, useConditionalUI = false, errorCallback = null) {
   let abortController = null;
+  
+  console.log("LoginUser called with errorCallback:", errorCallback, "type:", typeof errorCallback);
   
   try {
     // Fetch authentication options from server
+    // The server will automatically clear any stale signin cookies
     const response = await fetch("/webauthn/login/begin");
     
     if (!response.ok) {
@@ -218,16 +221,22 @@ async function LoginUser(returnFailedUrl, useConditionalUI = false) {
     }
     
     const optionsJSON = await response.json();
-    console.log("Authentication options:", optionsJSON);
 
     // Use parseRequestOptionsFromJSON if available (recommended by Google/W3C)
     // This handles base64url decoding automatically
-    let options;
+    let credentialRequestOptions;
     if (PublicKeyCredential.parseRequestOptionsFromJSON) {
-      options = PublicKeyCredential.parseRequestOptionsFromJSON(optionsJSON);
+      // parseRequestOptionsFromJSON expects the publicKey object directly, not wrapped
+      const publicKeyOptions = optionsJSON.publicKey || optionsJSON;
+      const parsedOptions = PublicKeyCredential.parseRequestOptionsFromJSON(publicKeyOptions);
+      
+      // parseRequestOptionsFromJSON returns the publicKey options, wrap it for navigator.credentials.get
+      credentialRequestOptions = {
+        publicKey: parsedOptions
+      };
     } else {
       // Fallback: manual decoding for older browsers
-      options = optionsJSON;
+      const options = optionsJSON;
       options.publicKey.challenge = bufferDecode(options.publicKey.challenge);
       
       if (options.publicKey.allowCredentials) {
@@ -235,19 +244,20 @@ async function LoginUser(returnFailedUrl, useConditionalUI = false) {
           allowCredential.id = bufferDecode(allowCredential.id);
         });
       }
+      
+      credentialRequestOptions = {
+        publicKey: options.publicKey,
+      };
     }
 
     // Create abort controller for timeout
-    abortController = new AbortController();
+    const abortController = new AbortController();
     const timeoutId = setTimeout(() => {
       abortController.abort();
     }, 120000); // 2 minute timeout
 
-    // Configure credential request options
-    const credentialRequestOptions = {
-      publicKey: options.publicKey || options,
-      signal: abortController.signal,
-    };
+    // Add signal to options
+    credentialRequestOptions.signal = abortController.signal;
 
     // Add conditional UI (autofill) support if requested and available
     if (useConditionalUI && window.PublicKeyCredential.isConditionalMediationAvailable) {
@@ -321,20 +331,26 @@ async function LoginUser(returnFailedUrl, useConditionalUI = false) {
     }
 
     const data = await finishResponse.json();
-    console.log("Authentication complete:", data);
     
-    // Redirect on success
-    window.location.href = data.redirectUri || returnFailedUrl;
+    // Redirect on success (check both redirectUrl and redirectUri for compatibility)
+    const redirectUrl = data.redirectUrl || data.redirectUri || returnFailedUrl;
+    window.location.href = redirectUrl;
   } catch (error) {
     console.error("Authentication error:", error);
     
     // User-friendly error message
     const message = getWebAuthnErrorMessage(error);
-    alert(`Passkey authentication failed: ${message}`);
     
-    // Redirect to failed URL
-    if (returnFailedUrl) {
-      window.location.href = returnFailedUrl;
+    // Use callback if provided (from WASM), otherwise use alert
+    if (errorCallback && typeof errorCallback === 'function') {
+      errorCallback(message);
+    } else {
+      alert(`Passkey authentication failed: ${message}`);
+      
+      // Redirect to failed URL only if using alert (not callback)
+      if (returnFailedUrl) {
+        window.location.href = returnFailedUrl;
+      }
     }
   } finally {
     if (abortController) {

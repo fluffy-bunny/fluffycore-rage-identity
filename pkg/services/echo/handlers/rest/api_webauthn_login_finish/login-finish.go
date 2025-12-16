@@ -123,6 +123,15 @@ func (s *service) Do(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_003)
 	}
 
+	// Log what we parsed immediately
+	log.Info().
+		Str("credentialId", string(parsedCredentialAssertionData.RawID)).
+		Int("userHandleLen", len(parsedCredentialAssertionData.Response.UserHandle)).
+		Str("clientDataType", string(parsedCredentialAssertionData.Response.CollectedClientData.Type)).
+		Str("clientDataChallenge", parsedCredentialAssertionData.Response.CollectedClientData.Challenge).
+		Str("rawClientDataJSON", string(parsedCredentialAssertionData.Raw.AssertionResponse.ClientDataJSON)).
+		Msg("Parsed credential assertion data")
+
 	// Determine how to look up the user
 	var getRageUserRequest *proto_oidc_user.GetRageUserRequest
 
@@ -168,11 +177,46 @@ func (s *service) Do(c echo.Context) error {
 	}
 	user := getRageUserResponse.User
 	webAuthNUser := services_handlers_webauthn.NewWebAuthNUser(user)
-	credential, err := s.webAuthN.GetWebAuthN().ValidateLogin(webAuthNUser, *sessionData, parsedCredentialAssertionData)
-	if err != nil {
-		// Handle Error and return.
-		log.Error().Err(err).Msg("ValidateLogin")
-		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_004)
+
+	// Use different validation methods based on whether this is a discoverable credential flow
+	var credential *go_webauthn.Credential
+	if getWebAuthNCookieResponse.Value.Identity == nil {
+		// Discoverable credentials flow - use ValidateDiscoverableLogin
+
+		// Log detailed info about what we received
+		log.Info().
+			Str("type", string(parsedCredentialAssertionData.Response.CollectedClientData.Type)).
+			Str("challenge", parsedCredentialAssertionData.Response.CollectedClientData.Challenge).
+			Str("origin", parsedCredentialAssertionData.Response.CollectedClientData.Origin).
+			Bool("crossOrigin", parsedCredentialAssertionData.Response.CollectedClientData.CrossOrigin).
+			Msg("Collected client data from response")
+
+		log.Info().
+			Str("session_challenge", string(sessionData.Challenge)).
+			Str("response_challenge", parsedCredentialAssertionData.Response.CollectedClientData.Challenge).
+			Msg("Challenge comparison for discoverable login")
+
+		// Create a handler that returns the user we just looked up
+		handler := func(rawID, userHandle []byte) (go_webauthn.User, error) {
+			log.Info().
+				Str("rawID", string(rawID)).
+				Str("userHandle", string(userHandle)).
+				Msg("DiscoverableUserHandler called")
+			return webAuthNUser, nil
+		}
+		credential, err = s.webAuthN.GetWebAuthN().ValidateDiscoverableLogin(handler, *sessionData, parsedCredentialAssertionData)
+		if err != nil {
+			log.Error().Err(err).Msg("ValidateDiscoverableLogin")
+			return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_004)
+		}
+		log.Info().Msg("ValidateDiscoverableLogin succeeded")
+	} else {
+		// Specific user flow - use ValidateLogin
+		credential, err = s.webAuthN.GetWebAuthN().ValidateLogin(webAuthNUser, *sessionData, parsedCredentialAssertionData)
+		if err != nil {
+			log.Error().Err(err).Msg("ValidateLogin")
+			return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_004)
+		}
 	}
 	session, err := s.getSession()
 	if err != nil {
