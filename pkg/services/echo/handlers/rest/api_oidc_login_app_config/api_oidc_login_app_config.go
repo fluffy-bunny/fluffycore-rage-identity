@@ -87,8 +87,8 @@ func (s *service) Do(c echo.Context) error {
 			LogoURL:           "web/apple-touch-icon-192x192.png",
 			ShowBannerVersion: s.config.SystemConfig.DeveloperMode,
 		},
-		EnabledWebAuthN: s.config.OIDCLoginAppConfig.EnabledWebAuthN,
-		EnabledTotp:     s.config.OIDCLoginAppConfig.EnabledTotp,
+		EnabledWebAuthN: s.config.WebAuthNConfig.Enabled,
+		EnabledTotp:     s.config.TOTP.Enabled,
 	}
 	return c.JSON(http.StatusOK, appConfig)
 }
