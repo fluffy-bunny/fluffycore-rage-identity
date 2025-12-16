@@ -2,6 +2,7 @@ package Home
 
 import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	go_app_common "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/common"
 	contracts_go_app_ManagementApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/contracts/ManagementApiClient"
 	contracts_App "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/App"
 	contracts_Localizer "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/Localizer"
@@ -82,13 +83,16 @@ func (s *service) Render() app.UI {
 					"passkey-icon",
 					s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyPasskeys),
 					s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyManageYourPasskeys),
-					`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<circle cx="7" cy="7" r="2"></circle>
-						<path d="M7 9v4a2 2 0 0 0 2 2h4"></path>
-						<circle cx="19" cy="15" r="4"></circle>
-						<path d="M19 11v-1"></path>
-						<path d="M22 15h-1"></path>
-					</svg>`,
+					go_app_common.PasskeyIconLargeSVG,
+					/*
+						`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<circle cx="7" cy="7" r="2"></circle>
+							<path d="M7 9v4a2 2 0 0 0 2 2h4"></path>
+							<circle cx="19" cy="15" r="4"></circle>
+							<path d="M19 11v-1"></path>
+							<path d="M22 15h-1"></path>
+						</svg>`,
+					*/
 					contracts_routes.WellknownRoute_PasskeyManager,
 				)
 			}),

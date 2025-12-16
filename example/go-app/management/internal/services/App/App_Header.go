@@ -1,7 +1,8 @@
 package App
 
 import (
-	common "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/common"
+	go_app_common "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/common"
+	"github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/common"
 	contracts_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/LocalizerBundle"
 	contracts_routes "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/routes"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
@@ -235,13 +236,7 @@ func (s *service) renderAuthenticatedSidebar() app.UI {
 				return s.renderSidebarLink(
 					contracts_routes.WellknownRoute_PasskeyManager,
 					"Passkeys",
-					`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<circle cx="7" cy="7" r="2"></circle>
-						<path d="M7 9v4a2 2 0 0 0 2 2h4"></path>
-						<circle cx="19" cy="15" r="4"></circle>
-						<path d="M19 11v-1"></path>
-						<path d="M22 15h-1"></path>
-					</svg>`,
+					go_app_common.PasskeyIconSmallSVG,
 				)
 			},
 		),

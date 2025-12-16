@@ -2,6 +2,7 @@ package PasskeyManager
 
 import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	go_app_common "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/common"
 	contracts_go_app_ManagementApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/contracts/ManagementApiClient"
 	contracts_App "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/App"
 	contracts_Localizer "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/Localizer"
@@ -265,9 +266,7 @@ func (s *service) renderPasskeyCard(passkey *passkeyItem, index int) app.UI {
 		app.Div().Class("card-header").Body(
 			app.Div().Class("card-header-content").Body(
 				app.Div().Class("card-icon passkey-icon").Body(
-					app.Raw(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
-					</svg>`),
+					app.Raw(go_app_common.PasskeyIconSmallSVG),
 				),
 				app.Div().Class("card-title-group").Body(
 					app.If(!passkey.IsRenaming, func() app.UI {
