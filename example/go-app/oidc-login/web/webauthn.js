@@ -205,8 +205,10 @@ async function registerUser(returnUrl, friendlyName) {
   }
 }
 
-async function LoginUser(returnFailedUrl, useConditionalUI = false) {
+async function LoginUser(returnFailedUrl, useConditionalUI = false, errorCallback = null) {
   let abortController = null;
+  
+  console.log("LoginUser called with errorCallback:", errorCallback, "type:", typeof errorCallback);
   
   try {
     // Fetch authentication options from server
@@ -330,11 +332,17 @@ async function LoginUser(returnFailedUrl, useConditionalUI = false) {
     
     // User-friendly error message
     const message = getWebAuthnErrorMessage(error);
-    alert(`Passkey authentication failed: ${message}`);
     
-    // Redirect to failed URL
-    if (returnFailedUrl) {
-      window.location.href = returnFailedUrl;
+    // Use callback if provided (from WASM), otherwise use alert
+    if (errorCallback && typeof errorCallback === 'function') {
+      errorCallback(message);
+    } else {
+      alert(`Passkey authentication failed: ${message}`);
+      
+      // Redirect to failed URL only if using alert (not callback)
+      if (returnFailedUrl) {
+        window.location.href = returnFailedUrl;
+      }
     }
   } finally {
     if (abortController) {

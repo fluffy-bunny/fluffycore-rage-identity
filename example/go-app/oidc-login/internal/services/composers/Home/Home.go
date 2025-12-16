@@ -471,8 +471,91 @@ func (s *service) handlePasskeyLogin(ctx app.Context, e app.Event) {
 	log.Info().Msg("Passkey login clicked")
 	e.PreventDefault()
 
-	// Navigate to passkey login page
-	ctx.Navigate(contracts_routes.GetFixedRoute(contracts_routes.WellknownRoute_Passkey))
+	// If email is provided and valid, set the cookie first
+	if s.email != "" && s.validateEmail(s.email) {
+		log.Info().Str("email", s.email).Msg("Email provided, setting signin cookie first")
+
+		// Set loading state
+		s.isLoading = true
+		ctx.Update()
+
+		ctx.Async(func() {
+			ctx.LocalStorage().Set("email", s.email)
+
+			response, err := s.rageApiCliient.LoginPhaseOne(s.AppContext,
+				&login_models.LoginPhaseOneRequest{
+					Email: s.email,
+				})
+
+			ctx.Dispatch(func(ctx app.Context) {
+				s.isLoading = false
+
+				if err != nil {
+					log.Error().Err(err).Msg("LoginPhaseOne failed before passkey login")
+					s.showErrorMessage(ctx, "Failed to initiate passkey login")
+					return
+				}
+
+				if response == nil || response.Code >= 400 {
+					log.Error().Msg("LoginPhaseOne returned error response")
+					s.showErrorMessage(ctx, "User not found")
+					return
+				}
+
+				// Cookie is set, now call WebAuthn
+				log.Info().Msg("Signin cookie set, initiating WebAuthn flow")
+
+				// Create error callback that will be called from JavaScript
+				errorCallback := app.FuncOf(func(this app.Value, args []app.Value) interface{} {
+					if len(args) > 0 {
+						errorMsg := args[0].String()
+						log.Error().Str("error", errorMsg).Msg("Passkey login failed")
+						ctx.Dispatch(func(ctx app.Context) {
+							s.showErrorMessage(ctx, errorMsg)
+						})
+					}
+					return nil
+				})
+
+				result := app.Window().Call("LoginUser", "", false, errorCallback)
+
+				if !result.Truthy() {
+					log.Error().Msg("Failed to initiate passkey login")
+					s.showErrorMessage(ctx, "Failed to start passkey authentication")
+					return
+				}
+
+				log.Info().Msg("Passkey authentication initiated")
+			})
+		})
+	} else {
+		// No email provided - try passkey login directly
+		log.Info().Msg("No email provided, attempting direct passkey login")
+
+		// Create error callback that will be called from JavaScript
+		errorCallback := app.FuncOf(func(this app.Value, args []app.Value) interface{} {
+			if len(args) > 0 {
+				errorMsg := args[0].String()
+				log.Error().Str("error", errorMsg).Msg("Passkey login failed")
+				ctx.Dispatch(func(ctx app.Context) {
+					s.showErrorMessage(ctx, errorMsg)
+				})
+			}
+			return nil
+		})
+
+		// Call the WebAuthn JavaScript function directly
+		// This will trigger the browser's passkey selection UI
+		result := app.Window().Call("LoginUser", "", false, errorCallback)
+
+		if !result.Truthy() {
+			log.Error().Msg("Failed to initiate passkey login")
+			s.showErrorMessage(ctx, "Failed to start passkey authentication")
+			return
+		}
+
+		log.Info().Msg("Passkey authentication initiated without email")
+	}
 }
 
 func (s *service) showErrorMessage(ctx app.Context, message string) {

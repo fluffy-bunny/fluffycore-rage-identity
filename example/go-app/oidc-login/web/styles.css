@@ -846,6 +846,18 @@ input.error:focus {
   font-weight: 600;
 }
 
+.passkey-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.passkey-btn.disabled:hover {
+  transform: none;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
 /* Error Banner */
 .error-banner {
   position: absolute;

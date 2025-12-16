@@ -365,9 +365,8 @@ func (s *service) validateSetWebAuthNCookieRequest(request *contracts_cookies.Se
 	if request.Value == nil {
 		return status.Error(codes.InvalidArgument, "request.Value is nil")
 	}
-	if request.Value.Identity == nil {
-		return status.Error(codes.InvalidArgument, "request.Value.Identity is nil")
-	}
+	// Identity can be nil for discoverable credentials flow
+	// In this case, the user will be identified from the credential's UserHandle during finish
 	return nil
 }
 func (s *service) SetWebAuthNCookie(c echo.Context, request *contracts_cookies.SetWebAuthNCookieRequest) error {

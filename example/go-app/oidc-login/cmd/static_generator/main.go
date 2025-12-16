@@ -77,6 +77,7 @@ func main() {
 			fmt.Sprintf(`<meta name="app-build-time" content="%s">`, common.BuildTime),
 			fmt.Sprintf(`<meta name="app-git-commit" content="%s">`, common.GitCommit),
 			fmt.Sprintf(`<meta name="app-git-branch" content="%s">`, common.GitBranch),
+			`<script src="web/webauthn.js"></script>`,
 			`<link rel="icon" type="image/svg+xml" href="web/m_logo.svg">`,
 			`<link rel="icon" type="image/png" sizes="16x16" href="web/favicon-16x16.png">`,
 			`<link rel="icon" type="image/png" sizes="32x32" href="web/favicon-32x32.png">`,
@@ -96,7 +97,6 @@ func main() {
 			"/web/build_version.js",
 			"/web/common.js",
 			"/web/logging-helper.js",
-			"/web/webauthn.js",
 		},
 		Resources: resourceResolver,
 		Icon: app.Icon{

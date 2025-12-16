@@ -113,25 +113,8 @@ func (s *service) Do(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_001)
 	}
 	sessionData := getWebAuthNCookieResponse.Value.SessionData
-	// get the user from the store
-	getRageUserResponse, err := s.RageUserService().GetRageUser(ctx,
-		&proto_oidc_user.GetRageUserRequest{
-			By: &proto_oidc_user.GetRageUserRequest_Subject{
-				Subject: getWebAuthNCookieResponse.Value.Identity.Subject,
-			},
-		})
-	if err != nil {
-		st, ok := status.FromError(err)
-		if ok {
-			if st.Code() == codes.NotFound {
-				return c.JSON(http.StatusNotFound, "User not found")
-			}
-		}
-		log.Error().Err(err).Msg("GetRageUser")
-		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_002)
-	}
-	user := getRageUserResponse.User
-	webAuthNUser := services_handlers_webauthn.NewWebAuthNUser(user)
+
+	// Parse the credential response first to get user handle for discoverable credentials
 	body := r.Body
 	parsedCredentialAssertionData, err := protocol.ParseCredentialRequestResponseBody(body)
 	if err != nil {
@@ -139,6 +122,52 @@ func (s *service) Do(c echo.Context) error {
 		log.Error().Err(err).Msg("ParseCredentialRequestResponseBody")
 		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_003)
 	}
+
+	// Determine how to look up the user
+	var getRageUserRequest *proto_oidc_user.GetRageUserRequest
+
+	if getWebAuthNCookieResponse.Value.Identity != nil {
+		// Specific user flow - identity was in the cookie
+		log.Info().Str("subject", getWebAuthNCookieResponse.Value.Identity.Subject).Msg("Using identity from cookie")
+		getRageUserRequest = &proto_oidc_user.GetRageUserRequest{
+			By: &proto_oidc_user.GetRageUserRequest_Subject{
+				Subject: getWebAuthNCookieResponse.Value.Identity.Subject,
+			},
+		}
+	} else {
+		// Discoverable credential flow - use user handle from the credential
+		userHandle := parsedCredentialAssertionData.Response.UserHandle
+		if len(userHandle) == 0 {
+			log.Error().Msg("No user handle in credential response for discoverable login")
+			return c.JSON(http.StatusBadRequest, "Invalid credential: missing user handle")
+		}
+		userHandleStr := string(userHandle)
+		log.Info().Str("user_handle", userHandleStr).Msg("Using user handle from discoverable credential")
+		getRageUserRequest = &proto_oidc_user.GetRageUserRequest{
+			By: &proto_oidc_user.GetRageUserRequest_Subject{
+				Subject: userHandleStr,
+			},
+		}
+	}
+
+	// get the user from the store
+	getRageUserResponse, err := s.RageUserService().GetRageUser(ctx, getRageUserRequest)
+	if err != nil {
+		st, ok := status.FromError(err)
+		if ok {
+			if st.Code() == codes.NotFound {
+				// User not found - this passkey is orphaned (user was deleted)
+				log.Warn().Str("user_handle", getRageUserRequest.GetSubject()).Msg("Passkey used for non-existent user")
+				return c.JSON(http.StatusNotFound, map[string]string{
+					"error": "This passkey is no longer valid. The associated account has been removed. Please delete this passkey from your device and register a new one.",
+				})
+			}
+		}
+		log.Error().Err(err).Msg("GetRageUser")
+		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_002)
+	}
+	user := getRageUserResponse.User
+	webAuthNUser := services_handlers_webauthn.NewWebAuthNUser(user)
 	credential, err := s.webAuthN.GetWebAuthN().ValidateLogin(webAuthNUser, *sessionData, parsedCredentialAssertionData)
 	if err != nil {
 		// Handle Error and return.
