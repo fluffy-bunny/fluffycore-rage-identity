@@ -59,15 +59,34 @@ func HTTPDataT[T any](ctx context.Context, input *CallInput) (*T, int, error) {
 		Str("component", "HTTPDataT").
 		Interface("input", input).
 		Logger()
-	req, err := http.NewRequest(input.Method, input.Url, nil)
+
+	// Prepare request body if data is provided
+	var bodyReader io.Reader
+	if input.Data != nil {
+		jsonData, err := json.Marshal(input.Data)
+		if err != nil {
+			log.Error().Err(err).Msg("HTTPDataT: marshal error")
+			return nil, 0, fmt.Errorf("failed to marshal data: %w", err)
+		}
+		bodyReader = bytes.NewReader(jsonData)
+	}
+
+	req, err := http.NewRequest(input.Method, input.Url, bodyReader)
 	if err != nil {
 		log.Error().Err(err).Msg("HTTPDataT: NewRequest error")
 		return nil, 0, fmt.Errorf("failed to create request: %w", err)
 	}
 
+	// Set Content-Type for requests with body
+	if input.Data != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	// Apply custom headers
 	for key, value := range input.CustomHeaders {
 		req.Header.Set(key, value)
 	}
+
 	// http.DefaultClient in WASM automatically includes cookies (credentials: 'include')
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
