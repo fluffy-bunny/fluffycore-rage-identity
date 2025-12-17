@@ -20,7 +20,8 @@ type (
 	passkeyItem struct {
 		ID           string
 		FriendlyName string
-		CreatedAt    string
+		CreatedAt    int64
+		LastUsedAt   int64
 		Transport    []string
 		IsRenaming   bool
 		EditName     string
@@ -47,6 +48,24 @@ type (
 var stemService = (*service)(nil)
 
 var _ contracts_App.IPasskeyManagerComposer = stemService
+
+// formatUnixTime converts unix timestamp to friendly date format
+func formatUnixTime(unixTime int64) string {
+	if unixTime == 0 {
+		return ""
+	}
+	t := time.Unix(unixTime, 0)
+	return t.Format("January 2, 2006")
+}
+
+// formatLastUsed returns a friendly string for last used timestamp
+func formatLastUsed(lastUsedAt int64) string {
+	if lastUsedAt == 0 {
+		return "Never been used"
+	}
+	t := time.Unix(lastUsedAt, 0)
+	return "Last used on " + t.Format("January 2, 2006 at 3:04 PM")
+}
 
 func (s *service) Ctor(
 	container di.Container,
@@ -128,7 +147,7 @@ func (s *service) loadPasskeys(ctx app.Context) {
 						ID:           passkey.ID,
 						FriendlyName: passkey.FriendlyName,
 						CreatedAt:    passkey.CreatedAt,
-						Transport:    passkey.Transport,
+						LastUsedAt:   passkey.LastUsedAt,
 						IsRenaming:   false,
 						EditName:     passkey.FriendlyName,
 					}
@@ -172,7 +191,7 @@ func (s *service) loadPasskeysSync(ctx app.Context) {
 				ID:           passkey.ID,
 				FriendlyName: passkey.FriendlyName,
 				CreatedAt:    passkey.CreatedAt,
-				Transport:    passkey.Transport,
+				LastUsedAt:   passkey.LastUsedAt,
 				IsRenaming:   false,
 				EditName:     passkey.FriendlyName,
 			}
@@ -242,13 +261,7 @@ func (s *service) renderEmptyState() app.UI {
 		app.Div().Class("card-header").Body(
 			app.Div().Class("card-header-content").Body(
 				app.Div().Class("card-icon password-icon").Body(
-					app.Raw(`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-								<circle cx="7" cy="7" r="2"></circle>
-								<path d="M7 9v4a2 2 0 0 0 2 2h4"></path>
-								<circle cx="19" cy="15" r="4"></circle>
-								<path d="M19 11v-1"></path>
-								<path d="M22 15h-1"></path>
-								</svg>`),
+					app.Raw(go_app_common.PasskeyAddIconSmallSVG),
 				),
 				app.Div().Class("card-title-group").Body(
 					app.H2().Text("No Passkeys Configured"),
@@ -257,12 +270,16 @@ func (s *service) renderEmptyState() app.UI {
 			),
 		),
 		app.Div().Class("card-body").Body(
+			app.P().Class("card-description").Style("margin-bottom", "1.5rem").Text(
+				s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyPasskeyUsageDefinition),
+			),
 			app.Div().Class("button-group").Body(
 				app.Button().
 					Class("btn-primary").
 					Disabled(s.isAddingPasskey).
 					OnClick(s.handleAddPasskey).
 					Text(func() string {
+
 						if s.isAddingPasskey {
 							return "Adding Passkey..."
 						}
@@ -285,7 +302,7 @@ func (s *service) renderPasskeysList() app.UI {
 		items = append(items, s.renderPasskeyCard(&s.passkeys[idx], idx))
 	}
 
-	return app.Div().Body(items...)
+	return app.Div().Style("display", "flex").Style("flex-direction", "column").Style("gap", "1rem").Body(items...)
 }
 
 func (s *service) renderAddPasskeyCard() app.UI {
@@ -293,12 +310,7 @@ func (s *service) renderAddPasskeyCard() app.UI {
 		app.Div().Class("card-header").Body(
 			app.Div().Class("card-header-content").Body(
 				app.Div().Class("card-icon passkey-icon").Body(
-					app.Raw(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<circle cx="7" cy="7" r="3"></circle>
-						<path d="M5 22v-5l-1-1v-4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v4l-1 1v5"></path>
-						<path d="M14 6h8"></path>
-						<path d="M18 2v8"></path>
-					</svg>`),
+					app.Raw(go_app_common.PasskeyAddIconSmallSVG),
 				),
 				app.Div().Class("card-title-group").Body(
 					app.H2().Text("Add New Passkey"),
@@ -307,6 +319,9 @@ func (s *service) renderAddPasskeyCard() app.UI {
 			),
 		),
 		app.Div().Class("card-body").Body(
+			app.P().Class("card-description").Style("margin-bottom", "1.5rem").Text(
+				s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyPasskeyUsageDefinition),
+			),
 			app.Div().Class("button-group").Body(
 				app.Button().
 					Class("btn-primary").
@@ -331,7 +346,11 @@ func (s *service) renderPasskeyCard(passkey *passkeyItem, index int) app.UI {
 					app.Raw(go_app_common.PasskeyIconSmallSVG)),
 				app.Div().Class("card-title-group").Body(
 					app.If(!passkey.IsRenaming, func() app.UI {
-						return app.H2().Text(passkey.FriendlyName)
+						title := passkey.FriendlyName
+						if passkey.CreatedAt > 0 {
+							title += " (" + formatUnixTime(passkey.CreatedAt) + ")"
+						}
+						return app.H2().Text(title)
 					}),
 					app.If(passkey.IsRenaming, func() app.UI {
 						return app.Div().Class("form-group").Style("margin", "0").Body(
@@ -342,6 +361,7 @@ func (s *service) renderPasskeyCard(passkey *passkeyItem, index int) app.UI {
 								Placeholder("Enter passkey name"),
 						)
 					}),
+					app.P().Class("card-description").Text(formatLastUsed(passkey.LastUsedAt)),
 				),
 			),
 		),
@@ -710,7 +730,7 @@ func (s *service) handleConfirmDelete(ctx app.Context, e app.Event) {
 							ID:           passkey.ID,
 							FriendlyName: passkey.FriendlyName,
 							CreatedAt:    passkey.CreatedAt,
-							Transport:    passkey.Transport,
+							LastUsedAt:   passkey.LastUsedAt,
 							IsRenaming:   false,
 							EditName:     passkey.FriendlyName,
 						}

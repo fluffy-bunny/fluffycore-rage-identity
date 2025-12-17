@@ -1,10 +1,10 @@
 package models
 
 type PasskeyItem struct {
-	ID           string   `json:"id"`
-	FriendlyName string   `json:"friendlyName"`
-	CreatedAt    string   `json:"createdAt,omitempty"`
-	Transport    []string `json:"transport,omitempty"`
+	ID           string `json:"id"`
+	FriendlyName string `json:"friendlyName"`
+	CreatedAt    int64  `json:"createdAt,omitempty"`
+	LastUsedAt   int64  `json:"lastUsedAt,omitempty"`
 }
 
 type PasskeysResponse struct {

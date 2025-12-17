@@ -18,6 +18,7 @@ import (
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type (
@@ -235,6 +236,7 @@ func (s *service) handleRename(c echo.Context) error {
 			if string(cred.ID) == string(credentialIDBytes) {
 				if cred.Authenticator != nil {
 					cred.Authenticator.FriendlyName = req.FriendlyName
+					cred.UpdatedOn = timestamppb.Now()
 					found = true
 					break
 				}

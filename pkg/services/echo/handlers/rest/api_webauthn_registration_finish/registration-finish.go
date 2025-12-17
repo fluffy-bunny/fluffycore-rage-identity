@@ -22,6 +22,7 @@ import (
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type (
@@ -181,6 +182,7 @@ func (s *service) Do(c echo.Context) error {
 										Attachment:   string(credential.Authenticator.Attachment),
 										FriendlyName: friendlyName,
 									},
+									CreatedOn: timestamppb.Now(),
 								},
 							},
 						},

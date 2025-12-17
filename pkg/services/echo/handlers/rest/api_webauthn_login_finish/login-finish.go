@@ -16,6 +16,7 @@ import (
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
+	proto_types_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types/webauthn"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	protocol "github.com/go-webauthn/webauthn/protocol"
@@ -24,6 +25,7 @@ import (
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type (
@@ -218,6 +220,38 @@ func (s *service) Do(c echo.Context) error {
 			return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_004)
 		}
 	}
+
+	// Update LastUsedOn timestamp for the credential that was just used
+	if user.WebAuthN != nil && user.WebAuthN.Credentials != nil {
+		for _, cred := range user.WebAuthN.Credentials {
+			if string(cred.ID) == string(credential.ID) {
+				cred.LastUsedOn = timestamppb.Now()
+				break
+			}
+		}
+		// Update the user with the timestamp
+		_, err = s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
+			User: &proto_oidc_models.RageUserUpdate{
+				RootIdentity: &proto_oidc_models.IdentityUpdate{
+					Subject: user.RootIdentity.Subject,
+				},
+				WebAuthN: &proto_oidc_models.WebAuthNUpdate{
+					Credentials: &proto_types_webauthn.CredentialArrayUpdate{
+						Update: &proto_types_webauthn.CredentialArrayUpdate_Granular_{
+							Granular: &proto_types_webauthn.CredentialArrayUpdate_Granular{
+								Add: user.WebAuthN.Credentials,
+							},
+						},
+					},
+				},
+			},
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("UpdateRageUser - LastUsedOn update failed")
+			// Don't fail the login, just log the error
+		}
+	}
+
 	session, err := s.getSession()
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_005)

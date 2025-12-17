@@ -1,8 +1,8 @@
 // Build version information
 // This file is auto-generated during the build process
 window.BUILD_VERSION = window.BUILD_VERSION || {
-  version: '1765944426',
-  buildTime: '2025-12-17_04:07:06',
-  gitCommit: '9a3fe9c',
+  version: '1765998674',
+  buildTime: '2025-12-17_19:11:14',
+  gitCommit: '2586482',
   gitBranch: 'idp_abstraction'
 };

@@ -60,10 +60,10 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type PasskeyResponse struct {
-	ID           string   `json:"id"`
-	FriendlyName string   `json:"friendlyName"`
-	CreatedAt    string   `json:"createdAt,omitempty"`
-	Transport    []string `json:"transport,omitempty"`
+	ID           string `json:"id"`
+	FriendlyName string `json:"friendlyName"`
+	CreatedAt    int64  `json:"createdAt,omitempty"`
+	LastUsedAt   int64  `json:"lastUsedAt,omitempty"`
 }
 
 type PasskeysListResponse struct {
@@ -118,12 +118,19 @@ func (s *service) Do(c echo.Context) error {
 	if user.WebAuthN != nil && user.WebAuthN.Credentials != nil {
 		for _, cred := range user.WebAuthN.Credentials {
 			passkey := PasskeyResponse{
-				ID:        base64.RawURLEncoding.EncodeToString(cred.ID),
-				Transport: cred.Transport,
+				ID: base64.RawURLEncoding.EncodeToString(cred.ID),
 			}
 
 			if cred.Authenticator != nil {
 				passkey.FriendlyName = cred.Authenticator.FriendlyName
+			}
+
+			// Convert protobuf timestamps to unix time
+			if cred.CreatedOn != nil {
+				passkey.CreatedAt = cred.CreatedOn.AsTime().Unix()
+			}
+			if cred.LastUsedOn != nil {
+				passkey.LastUsedAt = cred.LastUsedOn.AsTime().Unix()
 			}
 
 			passkeys = append(passkeys, passkey)

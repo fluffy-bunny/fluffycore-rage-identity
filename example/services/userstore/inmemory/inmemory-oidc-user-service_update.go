@@ -12,6 +12,7 @@ import (
 	status "github.com/gogo/status"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (s *service) validateUpdateUserRequest(request *proto_external_user.UpdateUserRequest) error {
@@ -86,7 +87,28 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 				}
 				// Add or update credentials
 				for _, credential := range v.Granular.Add {
-					mapExisting[string(credential.ID)] = credential
+					existing := mapExisting[string(credential.ID)]
+					if existing != nil {
+						// Merge: preserve CreatedOn, update other fields
+						existing.Authenticator = credential.Authenticator
+						existing.PublicKey = credential.PublicKey
+						existing.AttestationType = credential.AttestationType
+						existing.Transport = credential.Transport
+						existing.Flags = credential.Flags
+						if credential.UpdatedOn != nil {
+							existing.UpdatedOn = credential.UpdatedOn
+						}
+						if credential.LastUsedOn != nil {
+							existing.LastUsedOn = credential.LastUsedOn
+						}
+						// Keep existing.CreatedOn unchanged
+					} else {
+						// New credential - ensure CreatedOn is set
+						if credential.CreatedOn == nil {
+							credential.CreatedOn = timestamppb.Now()
+						}
+						mapExisting[string(credential.ID)] = credential
+					}
 				}
 				// Rebuild credentials array
 				rageUser.WebAuthN.Credentials = make([]*proto_types_webauthn.Credential, 0, len(mapExisting))
