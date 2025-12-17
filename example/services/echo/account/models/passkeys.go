@@ -12,7 +12,7 @@ type PasskeysResponse struct {
 }
 
 type PasskeyRenameRequest struct {
-	CredentialID string `json:"credentialID"S`
+	CredentialID string `json:"credentialID"`
 	FriendlyName string `json:"friendlyName"`
 }
 
@@ -21,7 +21,7 @@ type PasskeyRenameResponse struct {
 }
 
 type PasskeyDeleteRequest struct {
-	CredentialID string `json:"credentialID"S`
+	CredentialID string `json:"credentialID"`
 }
 type PasskeyDeleteResponse struct {
 	Success bool `json:"success"`
