@@ -42,8 +42,7 @@ import (
 	services_handlers_rest_api_start_over "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_start_over"
 	services_handlers_rest_api_user_identity_info "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_identity_info"
 	services_handlers_rest_api_user_linked_accounts "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_linked_accounts"
-	services_handlers_rest_api_user_passkey_delete "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_passkey_delete"
-	services_handlers_rest_api_user_passkey_rename "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_passkey_rename"
+	services_handlers_rest_api_user_passkey_credential "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_passkey_credential"
 	services_handlers_rest_api_user_passkeys "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_passkeys"
 	services_handlers_rest_api_user_remove_passkey "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_remove_passkey"
 	services_handlers_rest_api_user_totp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_totp"
@@ -257,8 +256,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	if s.config.WebAuthNConfig != nil && s.config.WebAuthNConfig.Enabled {
 		services_handlers_oidcloginpasskey.AddScopedIHandler(builder)
 		services_handlers_rest_api_user_passkeys.AddScopedIHandler(builder)
-		services_handlers_rest_api_user_passkey_delete.AddScopedIHandler(builder)
-		services_handlers_rest_api_user_passkey_rename.AddScopedIHandler(builder)
+		services_handlers_rest_api_user_passkey_credential.AddScopedIHandler(builder)
 		services_handlers_rest_api_user_remove_passkey.AddScopedIHandler(builder)
 		// WebAuthN Handlers
 		//--------------------------------------------------------

@@ -9,7 +9,6 @@ import (
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	proto_types_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types/webauthn"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
-	uuid "github.com/gofrs/uuid"
 	status "github.com/gogo/status"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
@@ -76,20 +75,21 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 					rageUser.WebAuthN.Credentials = make([]*proto_types_webauthn.Credential, 0)
 				}
 			case *proto_types_webauthn.CredentialArrayUpdate_Granular_:
-				mapExisting := make(map[uuid.UUID]*proto_types_webauthn.Credential)
+				// Use credential ID as the map key (not AAGUID which identifies the authenticator model)
+				mapExisting := make(map[string]*proto_types_webauthn.Credential)
 				for _, credential := range rageUser.WebAuthN.Credentials {
-					aaguid, _ := uuid.FromBytes(credential.Authenticator.AAGUID)
-					mapExisting[aaguid] = credential
+					mapExisting[string(credential.ID)] = credential
 				}
-				for _, aaGUID := range v.Granular.RemoveAAGUIDs {
-					aaguid, _ := uuid.FromBytes(aaGUID)
-					delete(mapExisting, aaguid)
+				// Remove credentials by their ID
+				for _, credentialID := range v.Granular.RemoveAAGUIDs {
+					delete(mapExisting, string(credentialID))
 				}
+				// Add or update credentials
 				for _, credential := range v.Granular.Add {
-					aaguid, _ := uuid.FromBytes(credential.Authenticator.AAGUID)
-					mapExisting[aaguid] = credential
+					mapExisting[string(credential.ID)] = credential
 				}
-				rageUser.WebAuthN.Credentials = make([]*proto_types_webauthn.Credential, 0)
+				// Rebuild credentials array
+				rageUser.WebAuthN.Credentials = make([]*proto_types_webauthn.Credential, 0, len(mapExisting))
 				for _, credential := range mapExisting {
 					rageUser.WebAuthN.Credentials = append(rageUser.WebAuthN.Credentials, credential)
 				}

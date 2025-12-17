@@ -43,9 +43,9 @@ type (
 		VerifyTOTP(ctx context.Context, code string) ([]byte, error)
 		DisableTOTP(ctx context.Context) ([]byte, error)
 
-		// Passkey APIs
-		GetPasskeys(ctx context.Context) ([]byte, error)
-		DeletePasskey(ctx context.Context, credentialID string) ([]byte, error)
-		RenamePasskey(ctx context.Context, credentialID string, friendlyName string) ([]byte, error)
+		// Passkey APIs - HTTP-based (avoiding JS fetch interop)
+		GetPasskeysHTTP(ctx context.Context) (*fluffycore_go_app_fetch.WrappedResonseT[map[string]interface{}], error)
+		DeletePasskeyHTTP(ctx context.Context, credentialID string) (*fluffycore_go_app_fetch.WrappedResonseT[map[string]interface{}], error)
+		RenamePasskeyHTTP(ctx context.Context, credentialID string, friendlyName string) (*fluffycore_go_app_fetch.WrappedResonseT[map[string]interface{}], error)
 	}
 )

@@ -73,8 +73,10 @@
                 "managementAppConfig__accountManagementBaseUrl": "http://localhost:9044",
                 "managementAppConfig__enabledWebAuthN": "true",
                 "managementAppConfig__enabledTotp": "true",
+                "managementAppConfig__bannerBranding__showBannerVersion": "true",
 
                 "oidcLoginAppConfig__rageBaseUrl": "http://localhost:9044",
+                "oidcLoginAppConfig__bannerBranding__showBannerVersion": "true",
 
             },
             "args": [ "serve" ]        

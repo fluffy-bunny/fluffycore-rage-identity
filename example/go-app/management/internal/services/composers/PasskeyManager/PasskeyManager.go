@@ -1,6 +1,8 @@
 package PasskeyManager
 
 import (
+	"time"
+
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	go_app_common "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/common"
 	contracts_go_app_ManagementApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/contracts/ManagementApiClient"
@@ -9,6 +11,7 @@ import (
 	contracts_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/LocalizerBundle"
 	services_ComposerBase "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/ComposerBase"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/models"
+	fluffycore_go_app_fetch "github.com/fluffy-bunny/fluffycore/go-app/fetch"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
 	zerolog "github.com/rs/zerolog"
 )
@@ -35,6 +38,9 @@ type (
 		isLoading           bool
 		isAddingPasskey     bool
 		isClaimedDomain     bool
+		showDeleteConfirm   bool
+		deleteCredentialID  string
+		isDeleting          bool
 	}
 )
 
@@ -93,11 +99,14 @@ func (s *service) OnMount(ctx app.Context) {
 	})
 }
 
+// loadPasskeys fetches passkeys asynchronously (for initial page load)
 func (s *service) loadPasskeys(ctx app.Context) {
 	log := zerolog.Ctx(s.AppContext).With().Str("component", "PasskeyManager").Logger()
+	log.Info().Msg("🔵 loadPasskeys() - using ctx.Async + HTTP")
 
 	ctx.Async(func() {
-		response, err := s.managementApiClient.GetPasskeys(s.AppContext)
+		response, err := s.managementApiClient.GetPasskeysHTTP(s.AppContext)
+
 		ctx.Dispatch(func(ctx app.Context) {
 			s.isLoading = false
 
@@ -105,11 +114,16 @@ func (s *service) loadPasskeys(ctx app.Context) {
 				log.Error().Err(err).Msg("Failed to fetch passkeys")
 				s.errorMessage = "Failed to load passkeys. Please try again."
 				s.showError = true
-			} else if response != nil && response.Code == 200 && response.Response != nil {
-				log.Info().Int("count", len(response.Response.Passkeys)).Msg("Passkeys loaded")
+			} else if response != nil && response.Code == 200 {
+				var passkeys []models.PasskeyItem
+				if response.Response != nil && response.Response.Passkeys != nil {
+					passkeys = response.Response.Passkeys
+				}
 
-				s.passkeys = make([]passkeyItem, len(response.Response.Passkeys))
-				for i, passkey := range response.Response.Passkeys {
+				log.Info().Int("count", len(passkeys)).Msg("Passkeys loaded")
+
+				s.passkeys = make([]passkeyItem, len(passkeys))
+				for i, passkey := range passkeys {
 					s.passkeys[i] = passkeyItem{
 						ID:           passkey.ID,
 						FriendlyName: passkey.FriendlyName,
@@ -123,8 +137,55 @@ func (s *service) loadPasskeys(ctx app.Context) {
 				s.errorMessage = "Failed to load passkeys"
 				s.showError = true
 			}
+			ctx.Update()
 		})
 	})
+}
+
+// loadPasskeysSync fetches passkeys synchronously (call from within ctx.Dispatch)
+func (s *service) loadPasskeysSync(ctx app.Context) {
+	log := zerolog.Ctx(s.AppContext).With().Str("component", "PasskeyManager").Logger()
+	app.Log("🔵 loadPasskeysSync() - using HTTP (not fetch)")
+
+	response, err := s.managementApiClient.GetPasskeysHTTP(s.AppContext)
+	app.Log("🔵 GetPasskeysHTTP returned - err:", err)
+
+	s.isLoading = false
+
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to fetch passkeys")
+		app.Log("❌ Failed to fetch passkeys")
+		s.errorMessage = "Failed to load passkeys. Please try again."
+		s.showError = true
+	} else if response != nil && response.Code == 200 {
+		var passkeys []models.PasskeyItem
+		if response.Response != nil && response.Response.Passkeys != nil {
+			passkeys = response.Response.Passkeys
+		}
+
+		log.Info().Int("count", len(passkeys)).Msg("Passkeys loaded")
+		app.Log("✅ Loaded", len(passkeys), "passkeys via HTTP")
+
+		s.passkeys = make([]passkeyItem, len(passkeys))
+		for i, passkey := range passkeys {
+			s.passkeys[i] = passkeyItem{
+				ID:           passkey.ID,
+				FriendlyName: passkey.FriendlyName,
+				CreatedAt:    passkey.CreatedAt,
+				Transport:    passkey.Transport,
+				IsRenaming:   false,
+				EditName:     passkey.FriendlyName,
+			}
+		}
+	} else {
+		app.Log("❌ Unexpected response")
+		s.errorMessage = "Failed to load passkeys"
+		s.showError = true
+	}
+
+	app.Log("🔵 Calling ctx.Update()")
+	ctx.Update()
+	app.Log("✅ UI updated")
 }
 
 func (s *service) Render() app.UI {
@@ -150,7 +211,8 @@ func (s *service) Render() app.UI {
 
 	return app.Div().Class("profile-container").Body(
 		app.If(s.showError, s.renderErrorBanner),
-		app.If(s.showSuccess, s.renderSuccessBanner),
+		app.If(s.showSuccess, s.renderSuccessNotification),
+		app.If(s.showDeleteConfirm, s.renderDeleteConfirmation),
 
 		// Page Header
 		app.Div().Class("profile-header").Body(
@@ -266,8 +328,7 @@ func (s *service) renderPasskeyCard(passkey *passkeyItem, index int) app.UI {
 		app.Div().Class("card-header").Body(
 			app.Div().Class("card-header-content").Body(
 				app.Div().Class("card-icon passkey-icon").Body(
-					app.Raw(go_app_common.PasskeyIconSmallSVG),
-				),
+					app.Raw(go_app_common.PasskeyIconSmallSVG)),
 				app.Div().Class("card-title-group").Body(
 					app.If(!passkey.IsRenaming, func() app.UI {
 						return app.H2().Text(passkey.FriendlyName)
@@ -281,25 +342,10 @@ func (s *service) renderPasskeyCard(passkey *passkeyItem, index int) app.UI {
 								Placeholder("Enter passkey name"),
 						)
 					}),
-					app.If(!passkey.IsRenaming, func() app.UI {
-						return app.P().Class("card-description").Text("Registered passkey device")
-					}),
 				),
 			),
 		),
 		app.Div().Class("card-body").Body(
-			app.Div().Class("info-rows").Body(
-				app.Div().Class("info-row").Body(
-					app.Span().Class("info-label").Text("Created"),
-					app.Span().Class("info-value").Text(passkey.CreatedAt),
-				),
-				app.If(len(passkey.Transport) > 0, func() app.UI {
-					return app.Div().Class("info-row").Body(
-						app.Span().Class("info-label").Text("Transport"),
-						app.Span().Class("info-value").Text(joinTransports(passkey.Transport)),
-					)
-				}),
-			),
 			app.Div().Class("button-group").Body(
 				app.If(!passkey.IsRenaming, func() app.UI {
 					return app.Button().
@@ -321,7 +367,7 @@ func (s *service) renderPasskeyCard(passkey *passkeyItem, index int) app.UI {
 				}),
 				app.If(!passkey.IsRenaming, func() app.UI {
 					return app.Button().
-						Class("btn-danger").
+						Class("btn-unlink").
 						OnClick(s.handleDeletePasskey(passkey.ID)).
 						Text("Delete")
 				}),
@@ -354,27 +400,60 @@ func (s *service) renderErrorBanner() app.UI {
 	)
 }
 
-func (s *service) renderSuccessBanner() app.UI {
-	return app.Div().Class("success-banner").Body(
-		app.Div().Class("success-content").Body(
-			app.Div().Class("success-icon").Body(
-				app.Raw(`<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-					<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-				</svg>`),
-			),
-			app.Div().Class("success-text").Body(
-				app.Span().Class("success-title").Text("Success"),
-				app.Span().Class("success-message").Text(s.successMessage),
-			),
+func (s *service) renderSuccessNotification() app.UI {
+	return app.Div().Class("success-notification").Body(
+		app.Div().Class("success-notification-icon").Body(
+			app.Raw(`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+				<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+			</svg>`),
 		),
+		app.Div().Class("success-notification-text").Text(s.successMessage),
 		app.Button().
-			Class("success-close").
+			Class("success-notification-close").
 			OnClick(s.handleCloseSuccess).
 			Body(
 				app.Raw(`<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
 					<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
 				</svg>`),
 			),
+	)
+}
+
+func (s *service) renderDeleteConfirmation() app.UI {
+	return app.Div().Class("modal-overlay").OnClick(s.handleCancelDelete).Body(
+		app.Div().Class("modal-content").OnClick(func(ctx app.Context, e app.Event) {
+			e.PreventDefault()
+			// Stop event from bubbling to overlay which would close the modal
+			e.JSValue().Call("stopPropagation")
+		}).Body(
+			app.Div().Class("modal-header").Body(
+				app.H3().Text("Delete Passkey"),
+				app.Button().Class("modal-close").OnClick(s.handleCancelDelete).Body(
+					app.Raw(`<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+						<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+					</svg>`),
+				),
+			),
+			app.Div().Class("modal-body").Body(
+				app.P().Text("Are you sure you want to delete this passkey? This action cannot be undone."),
+			),
+			app.Div().Class("modal-footer").Body(
+				app.Button().
+					Class("btn-secondary").
+					OnClick(s.handleCancelDelete).
+					Text("Cancel"),
+				app.Button().
+					Class("btn-unlink").
+					Disabled(s.isDeleting).
+					OnClick(s.handleConfirmDelete).
+					Text(func() string {
+						if s.isDeleting {
+							return "Deleting..."
+						}
+						return "Delete"
+					}()),
+			),
+		),
 	)
 }
 
@@ -447,17 +526,29 @@ func (s *service) handleAddPasskey(ctx app.Context, e app.Event) {
 
 			if success {
 				log.Info().Msg("Passkey registration completed successfully")
+				app.Log("✅ Passkey added successfully")
 				s.successMessage = "Passkey added successfully!"
 				s.showSuccess = true
+				ctx.Update()
 
-				// Reload passkeys to show the new one
-				s.loadPasskeys(ctx)
+				// Auto-dismiss after 3 seconds
+				go func() {
+					time.Sleep(3 * time.Second)
+					ctx.Dispatch(func(ctx app.Context) {
+						s.showSuccess = false
+						ctx.Update()
+					})
+				}()
+
+				// Reload passkeys - use sync version to avoid nested ctx.Async → ctx.Dispatch
+				app.Log("✅ Calling loadPasskeysSync() to refresh list")
+				s.loadPasskeysSync(ctx)
 			} else {
 				log.Error().Msg("Passkey registration failed or was cancelled")
 				s.errorMessage = "Failed to add passkey. Please try again."
 				s.showError = true
+				ctx.Update()
 			}
-			ctx.Update()
 		})
 	})
 }
@@ -497,12 +588,12 @@ func (s *service) handleSaveRename(index int) app.EventHandler {
 		s.showSuccess = false
 
 		ctx.Async(func() {
-			app.Log("🔵 About to call RenamePasskey API")
-			response, err := s.managementApiClient.RenamePasskey(s.AppContext, credentialID, &models.PasskeyRenameRequest{
+			app.Log("🔵 About to call RenamePasskeyHTTP API")
+			response, err := s.managementApiClient.RenamePasskeyHTTP(s.AppContext, credentialID, &models.PasskeyRenameRequest{
 				FriendlyName: newName,
 			})
 
-			app.Log("🔵 RenamePasskey API returned - err:", err, "response:", response)
+			app.Log("🔵 RenamePasskeyHTTP API returned - err:", err, "response:", response)
 
 			ctx.Dispatch(func(ctx app.Context) {
 				if err != nil {
@@ -517,6 +608,16 @@ func (s *service) handleSaveRename(index int) app.EventHandler {
 					s.passkeys[index].IsRenaming = false
 					s.successMessage = "Passkey renamed successfully"
 					s.showSuccess = true
+					ctx.Update()
+
+					// Auto-dismiss after 3 seconds
+					go func() {
+						time.Sleep(3 * time.Second)
+						ctx.Dispatch(func(ctx app.Context) {
+							s.showSuccess = false
+							ctx.Update()
+						})
+					}()
 				} else {
 					app.Log("❌ Unexpected response code:", response)
 					s.errorMessage = "Failed to rename passkey"
@@ -529,40 +630,102 @@ func (s *service) handleSaveRename(index int) app.EventHandler {
 
 func (s *service) handleDeletePasskey(credentialID string) app.EventHandler {
 	return func(ctx app.Context, e app.Event) {
-		log := zerolog.Ctx(s.AppContext).With().Str("component", "PasskeyManager").Logger()
+		s.deleteCredentialID = credentialID
+		s.showDeleteConfirm = true
+		ctx.Update()
+	}
+}
 
-		// Confirm deletion
-		if !app.Window().Call("confirm", "Are you sure you want to delete this passkey?").Bool() {
-			return
+func (s *service) handleConfirmDelete(ctx app.Context, e app.Event) {
+	log := zerolog.Ctx(s.AppContext).With().Str("component", "PasskeyManager").Logger()
+	credentialID := s.deleteCredentialID
+
+	log.Info().Str("credentialID", credentialID).Msg("🔴 Deleting passkey - starting")
+	app.Log("🔴 Deleting passkey from modal - credentialID:", credentialID)
+
+	// Start deleting, but keep modal open
+	s.isDeleting = true
+	s.showError = false
+	s.showSuccess = false
+	ctx.Update()
+
+	ctx.Async(func() {
+		app.Log("🔴 Calling DeletePasskeyHTTP API...")
+		deleteResp, deleteErr := s.managementApiClient.DeletePasskeyHTTP(s.AppContext, credentialID)
+		app.Log("🔴 Delete complete - err:", deleteErr, "response code:", deleteResp)
+
+		var loadResp *fluffycore_go_app_fetch.WrappedResonseT[models.PasskeysResponse]
+		var loadErr error
+
+		// If delete successful, immediately load fresh passkey list
+		if deleteErr == nil && deleteResp != nil && deleteResp.Code == 200 {
+			app.Log("🔴 Delete successful, loading fresh passkeys...")
+			loadResp, loadErr = s.managementApiClient.GetPasskeysHTTP(s.AppContext)
+			app.Log("🔴 Load passkeys complete - err:", loadErr)
 		}
 
-		log.Info().Str("credentialID", credentialID).Msg("Deleting passkey")
+		ctx.Dispatch(func(ctx app.Context) {
+			app.Log("🔴 INSIDE ctx.Dispatch - updating UI after delete")
+			
+			// NOW close the modal
+			s.showDeleteConfirm = false
+			s.isDeleting = false
 
-		s.showError = false
-		s.showSuccess = false
+			if deleteErr != nil {
+				log.Error().Err(deleteErr).Msg("❌ Failed to delete passkey")
+				s.errorMessage = "Failed to delete passkey"
+				s.showError = true
+			} else if deleteResp != nil && deleteResp.Code == 200 {
+				log.Info().Msg("✅ Passkey deleted successfully")
+				app.Log("✅ Passkey deleted - showing success")
 
-		ctx.Async(func() {
-			response, err := s.managementApiClient.DeletePasskey(s.AppContext, credentialID)
+				s.successMessage = "Passkey deleted successfully"
+				s.showSuccess = true
 
-			ctx.Dispatch(func(ctx app.Context) {
-				if err != nil {
-					log.Error().Err(err).Msg("Failed to delete passkey")
-					s.errorMessage = "Failed to delete passkey"
-					s.showError = true
-				} else if response != nil && response.Code == 200 {
-					log.Info().Msg("Passkey deleted successfully")
-					s.successMessage = "Passkey deleted successfully"
-					s.showSuccess = true
+				// Auto-dismiss after 3 seconds
+				go func() {
+					time.Sleep(3 * time.Second)
+					ctx.Dispatch(func(ctx app.Context) {
+						s.showSuccess = false
+						ctx.Update()
+					})
+				}()
 
-					// Reload passkeys
-					s.loadPasskeys(ctx)
+				// Update passkeys list from the fresh load
+				if loadErr == nil && loadResp != nil && loadResp.Code == 200 {
+					var passkeys []models.PasskeyItem
+					if loadResp.Response != nil && loadResp.Response.Passkeys != nil {
+						passkeys = loadResp.Response.Passkeys
+					}
+
+					app.Log("✅ Loaded", len(passkeys), "passkeys after delete")
+					s.passkeys = make([]passkeyItem, len(passkeys))
+					for i, passkey := range passkeys {
+						s.passkeys[i] = passkeyItem{
+							ID:           passkey.ID,
+							FriendlyName: passkey.FriendlyName,
+							CreatedAt:    passkey.CreatedAt,
+							Transport:    passkey.Transport,
+							IsRenaming:   false,
+							EditName:     passkey.FriendlyName,
+						}
+					}
 				} else {
-					s.errorMessage = "Failed to delete passkey"
-					s.showError = true
+					app.Log("❌ Failed to load passkeys after delete")
 				}
-			})
+			} else {
+				app.Log("❌ Unexpected delete response")
+				s.errorMessage = "Failed to delete passkey"
+				s.showError = true
+			}
+			ctx.Update()
 		})
-	}
+	})
+}
+
+func (s *service) handleCancelDelete(ctx app.Context, e app.Event) {
+	s.showDeleteConfirm = false
+	s.deleteCredentialID = ""
 }
 
 func (s *service) handleCloseError(ctx app.Context, e app.Event) {
@@ -571,6 +734,7 @@ func (s *service) handleCloseError(ctx app.Context, e app.Event) {
 
 func (s *service) handleCloseSuccess(ctx app.Context, e app.Event) {
 	s.showSuccess = false
+	ctx.Update()
 }
 
 // Helper function to join transport methods

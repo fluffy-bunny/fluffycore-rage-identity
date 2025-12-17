@@ -1,4 +1,4 @@
-package api_user_passkey_rename
+package api_user_passkey_credential
 
 import (
 	"encoding/base64"
@@ -30,11 +30,11 @@ var stemService = (*service)(nil)
 var _ contracts_handler.IHandler = stemService
 
 const (
-	InternalError_PasskeyRename_001 = "rg-passkey-rename-001"
-	InternalError_PasskeyRename_002 = "rg-passkey-rename-002"
-	InternalError_PasskeyRename_003 = "rg-passkey-rename-003"
-	InternalError_PasskeyRename_004 = "rg-passkey-rename-004"
-	InternalError_PasskeyRename_005 = "rg-passkey-rename-005"
+	InternalError_PasskeyCredential_001 = "rg-passkey-cred-001"
+	InternalError_PasskeyCredential_002 = "rg-passkey-cred-002"
+	InternalError_PasskeyCredential_003 = "rg-passkey-cred-003"
+	InternalError_PasskeyCredential_004 = "rg-passkey-cred-004"
+	InternalError_PasskeyCredential_005 = "rg-passkey-cred-005"
 )
 
 func (s *service) Ctor(
@@ -51,9 +51,10 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
 		stemService.Ctor,
 		[]contracts_handler.HTTPVERB{
+			contracts_handler.DELETE,
 			contracts_handler.PATCH,
 		},
-		wellknown_echo.API_PasskeyRename,
+		wellknown_echo.API_PasskeyCredentialId,
 	)
 }
 
@@ -61,26 +62,41 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
 
-type RenamePasskeyRequest struct {
+type PasskeyCredentialRequest struct {
 	CredentialID string `param:"credentialId" json:"credentialId"`
 	FriendlyName string `json:"friendlyName"`
 }
 
-// API RenamePasskey godoc
-// @Summary rename a user's passkey.
-// @Description update the friendly name of a user's passkey.
+// API PasskeyCredential godoc
+// @Summary Delete or rename a user's passkey
+// @Description DELETE: delete a passkey by credential ID. PATCH: rename a passkey by credential ID.
 // @Tags account
 // @Accept json
 // @Produce json
 // @Param credentialId path string true "Credential ID (base64 encoded)"
-// @Param request body RenamePasskeyRequest true "Rename request"
+// @Param body body PasskeyCredentialRequest false "Rename request body (PATCH only)"
 // @Success 200 {object} wellknown_echo.RestSuccessResponse
 // @Failure 400 {object} wellknown_echo.RestErrorResponse
 // @Failure 401 {object} wellknown_echo.RestErrorResponse
 // @Failure 404 {object} wellknown_echo.RestErrorResponse
+// @Failure 405 {object} wellknown_echo.RestErrorResponse
 // @Failure 500 {object} wellknown_echo.RestErrorResponse
+// @Router /api/passkeys/{credentialId} [delete]
 // @Router /api/passkeys/{credentialId} [patch]
 func (s *service) Do(c echo.Context) error {
+
+	// Switch based on HTTP method
+	switch c.Request().Method {
+	case http.MethodDelete:
+		return s.handleDelete(c)
+	case http.MethodPatch:
+		return s.handleRename(c)
+	default:
+		return c.JSONPretty(http.StatusMethodNotAllowed, wellknown_echo.RestErrorResponse{Error: "Method Not Allowed"}, "  ")
+	}
+}
+
+func (s *service) handleDelete(c echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
@@ -96,8 +112,84 @@ func (s *service) Do(c echo.Context) error {
 	}
 	subject := claim.Value
 
-	// Bind the request
-	req := &RenamePasskeyRequest{}
+	// Bind the credential ID from path parameter
+	req := &PasskeyCredentialRequest{}
+	if err := c.Bind(req); err != nil {
+		log.Error().Err(err).Msg("Bind")
+		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: "Invalid request"}, "  ")
+	}
+
+	if fluffycore_utils.IsEmptyOrNil(req.CredentialID) {
+		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: "Credential ID is required"}, "  ")
+	}
+
+	// Decode the base64 credential ID
+	credentialIDBytes, err := base64.RawURLEncoding.DecodeString(req.CredentialID)
+	if err != nil {
+		log.Error().Err(err).Str("credentialId", req.CredentialID).Msg("Failed to decode credential ID")
+		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: "Invalid credential ID format"}, "  ")
+	}
+
+	// Get the user to verify they own this credential
+	_, err = s.RageUserService().GetRageUser(ctx,
+		&proto_oidc_user.GetRageUserRequest{
+			By: &proto_oidc_user.GetRageUserRequest_Subject{
+				Subject: subject,
+			},
+		})
+	if err != nil {
+		st, ok := status.FromError(err)
+		if ok && st.Code() == codes.NotFound {
+			return c.JSONPretty(http.StatusNotFound, wellknown_echo.RestErrorResponse{Error: "User not found"}, "  ")
+		}
+		log.Error().Err(err).Msg("GetRageUser")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_PasskeyCredential_001}, "  ")
+	}
+
+	// Update the user to remove the credential
+	_, err = s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
+		User: &proto_oidc_models.RageUserUpdate{
+			RootIdentity: &proto_oidc_models.IdentityUpdate{
+				Subject: subject,
+			},
+			WebAuthN: &proto_oidc_models.WebAuthNUpdate{
+				Credentials: &proto_types_webauthn.CredentialArrayUpdate{
+					Update: &proto_types_webauthn.CredentialArrayUpdate_Granular_{
+						Granular: &proto_types_webauthn.CredentialArrayUpdate_Granular{
+							RemoveAAGUIDs: [][]byte{credentialIDBytes},
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("UpdateRageUser")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_PasskeyCredential_002}, "  ")
+	}
+
+	log.Info().Msg("Passkey deleted successfully")
+	return c.JSONPretty(http.StatusOK, wellknown_echo.RestSuccessResponse{Message: "Passkey deleted successfully"}, "  ")
+}
+
+func (s *service) handleRename(c echo.Context) error {
+	ctx := c.Request().Context()
+	log := zerolog.Ctx(ctx).With().Logger()
+
+	// Get the user subject from claims principal
+	claimsPrincipal := s.ClaimsPrincipal()
+	subjectClaims := claimsPrincipal.GetClaimsByType(fluffycore_echo_wellknown.ClaimTypeSubject)
+	if fluffycore_utils.IsEmptyOrNil(subjectClaims) {
+		return c.JSONPretty(http.StatusUnauthorized, wellknown_echo.RestErrorResponse{Error: "Unauthorized"}, "  ")
+	}
+	claim := subjectClaims[0]
+	if fluffycore_utils.IsEmptyOrNil(claim.Value) {
+		return c.JSONPretty(http.StatusUnauthorized, wellknown_echo.RestErrorResponse{Error: "Unauthorized"}, "  ")
+	}
+	subject := claim.Value
+
+	// Bind the credential ID from path parameter and friendly name from body
+	req := &PasskeyCredentialRequest{}
 	if err := c.Bind(req); err != nil {
 		log.Error().Err(err).Msg("Bind")
 		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: "Invalid request"}, "  ")
@@ -131,7 +223,7 @@ func (s *service) Do(c echo.Context) error {
 			return c.JSONPretty(http.StatusNotFound, wellknown_echo.RestErrorResponse{Error: "User not found"}, "  ")
 		}
 		log.Error().Err(err).Msg("GetRageUser")
-		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_PasskeyRename_001}, "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_PasskeyCredential_003}, "  ")
 	}
 
 	user := getRageUserResponse.User
@@ -173,8 +265,9 @@ func (s *service) Do(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("UpdateRageUser")
-		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_PasskeyRename_002}, "  ")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_PasskeyCredential_004}, "  ")
 	}
 
+	log.Info().Msg("Passkey renamed successfully")
 	return c.JSONPretty(http.StatusOK, wellknown_echo.RestSuccessResponse{Message: "Passkey renamed successfully"}, "  ")
 }

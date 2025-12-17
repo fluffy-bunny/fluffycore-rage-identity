@@ -81,8 +81,7 @@ var (
 	API_UserTOTP               = "/api/totp"
 	API_UserTOTPEnroll         = "/api/totp/enroll"
 	API_UserTOTPVerify         = "/api/totp/verify"
-	API_PasskeyDelete          = "/api/passkeys/:credentialId"
-	API_PasskeyRename          = "/api/passkeys/:credentialId"
+	API_PasskeyCredentialId    = "/api/passkeys/:credentialId"
 )
 
 type Paths struct {

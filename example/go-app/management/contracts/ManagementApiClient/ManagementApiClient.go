@@ -27,10 +27,10 @@ type (
 		GetUserLinkedAccounts(ctx context.Context) (*fluffycore_go_app_fetch.WrappedResonseT[models.LinkedAccountsResponse], error)
 		DeleteUserLinkedAccount(ctx context.Context, identity string) (*fluffycore_go_app_fetch.WrappedResonseT[models.DeleteLinkedAccountResponse], error)
 
-		// Passkey management (delegated to core RageApiClient)
-		GetPasskeys(ctx context.Context) (*fluffycore_go_app_fetch.WrappedResonseT[models.PasskeysResponse], error)
-		DeletePasskey(ctx context.Context, credentialID string) (*fluffycore_go_app_fetch.WrappedResonseT[models.PasskeyDeleteResponse], error)
-		RenamePasskey(ctx context.Context, credentialID string, body *models.PasskeyRenameRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models.PasskeyRenameResponse], error)
+		// Passkey management - HTTP-based (avoiding JS fetch interop)
+		GetPasskeysHTTP(ctx context.Context) (*fluffycore_go_app_fetch.WrappedResonseT[models.PasskeysResponse], error)
+		DeletePasskeyHTTP(ctx context.Context, credentialID string) (*fluffycore_go_app_fetch.WrappedResonseT[models.PasskeyDeleteResponse], error)
+		RenamePasskeyHTTP(ctx context.Context, credentialID string, body *models.PasskeyRenameRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models.PasskeyRenameResponse], error)
 
 		// Access to core RageApiClient for TOTP and other core APIs
 		GetRageApiClient() contracts_go_app_RageApiClient.IRageApiClient

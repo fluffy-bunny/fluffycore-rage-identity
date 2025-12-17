@@ -164,53 +164,74 @@ func (s *service) GetRageApiClient() contracts_go_app_RageApiClient.IRageApiClie
 }
 
 // Typed wrapper methods for passkey operations from RageApiClient
-func (s *service) GetPasskeys(ctx context.Context) (*fluffycore_go_app_fetch.WrappedResonseT[models.PasskeysResponse], error) {
-	data, err := s.rageApiClient.GetPasskeys(ctx)
+func (s *service) RenamePasskeyHTTP(ctx context.Context, credentialID string, body *models.PasskeyRenameRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models.PasskeyRenameResponse], error) {
+	wrappedResp, err := s.rageApiClient.RenamePasskeyHTTP(ctx, credentialID, body.FriendlyName)
 	if err != nil {
 		return nil, err
 	}
 
-	var response models.PasskeysResponse
-	if err := json.Unmarshal(data, &response); err != nil {
-		return nil, err
-	}
-
-	return &fluffycore_go_app_fetch.WrappedResonseT[models.PasskeysResponse]{
-		Code:     200,
-		Response: &response,
-	}, nil
-}
-
-func (s *service) DeletePasskey(ctx context.Context, credentialID string) (*fluffycore_go_app_fetch.WrappedResonseT[models.PasskeyDeleteResponse], error) {
-	data, err := s.rageApiClient.DeletePasskey(ctx, credentialID)
-	if err != nil {
-		return nil, err
-	}
-
-	var response models.PasskeyDeleteResponse
-	if err := json.Unmarshal(data, &response); err != nil {
-		return nil, err
-	}
-
-	return &fluffycore_go_app_fetch.WrappedResonseT[models.PasskeyDeleteResponse]{
-		Code:     200,
-		Response: &response,
-	}, nil
-}
-
-func (s *service) RenamePasskey(ctx context.Context, credentialID string, body *models.PasskeyRenameRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models.PasskeyRenameResponse], error) {
-	data, err := s.rageApiClient.RenamePasskey(ctx, credentialID, body.FriendlyName)
-	if err != nil {
-		return nil, err
-	}
-
-	var response models.PasskeyRenameResponse
-	if err := json.Unmarshal(data, &response); err != nil {
-		return nil, err
+	// Convert map response to typed response
+	var renameResp models.PasskeyRenameResponse
+	if wrappedResp.Response != nil {
+		data, err := json.Marshal(wrappedResp.Response)
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(data, &renameResp); err != nil {
+			return nil, err
+		}
 	}
 
 	return &fluffycore_go_app_fetch.WrappedResonseT[models.PasskeyRenameResponse]{
-		Code:     200,
-		Response: &response,
+		Code:     wrappedResp.Code,
+		Response: &renameResp,
+	}, nil
+}
+
+func (s *service) GetPasskeysHTTP(ctx context.Context) (*fluffycore_go_app_fetch.WrappedResonseT[models.PasskeysResponse], error) {
+	wrappedResp, err := s.rageApiClient.GetPasskeysHTTP(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert map response to typed response
+	var passkeyResp models.PasskeysResponse
+	if wrappedResp.Response != nil {
+		data, err := json.Marshal(wrappedResp.Response)
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(data, &passkeyResp); err != nil {
+			return nil, err
+		}
+	}
+
+	return &fluffycore_go_app_fetch.WrappedResonseT[models.PasskeysResponse]{
+		Code:     wrappedResp.Code,
+		Response: &passkeyResp,
+	}, nil
+}
+
+func (s *service) DeletePasskeyHTTP(ctx context.Context, credentialID string) (*fluffycore_go_app_fetch.WrappedResonseT[models.PasskeyDeleteResponse], error) {
+	wrappedResp, err := s.rageApiClient.DeletePasskeyHTTP(ctx, credentialID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert map response to typed response
+	var deleteResp models.PasskeyDeleteResponse
+	if wrappedResp.Response != nil {
+		data, err := json.Marshal(wrappedResp.Response)
+		if err != nil {
+			return nil, err
+		}
+		if err := json.Unmarshal(data, &deleteResp); err != nil {
+			return nil, err
+		}
+	}
+
+	return &fluffycore_go_app_fetch.WrappedResonseT[models.PasskeyDeleteResponse]{
+		Code:     wrappedResp.Code,
+		Response: &deleteResp,
 	}, nil
 }
