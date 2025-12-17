@@ -4,6 +4,7 @@ import (
 	"context"
 
 	contracts_OIDCFlowAppConfig "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/OIDCFlowAppConfig"
+	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/common"
 	models_api_external_idp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/external_idp"
 	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	models_api_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
@@ -44,7 +45,7 @@ type (
 		DisableTOTP(ctx context.Context) ([]byte, error)
 
 		// Passkey APIs - HTTP-based (avoiding JS fetch interop)
-		GetPasskeysHTTP(ctx context.Context) (*fluffycore_go_app_fetch.WrappedResonseT[map[string]interface{}], error)
+		GetPasskeysHTTP(ctx context.Context) (*common.WrappedResonseT[map[string]interface{}], error)
 		DeletePasskeyHTTP(ctx context.Context, credentialID string) (*fluffycore_go_app_fetch.WrappedResonseT[map[string]interface{}], error)
 		RenamePasskeyHTTP(ctx context.Context, credentialID string, friendlyName string) (*fluffycore_go_app_fetch.WrappedResonseT[map[string]interface{}], error)
 	}

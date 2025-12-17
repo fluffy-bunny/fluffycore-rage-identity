@@ -10,6 +10,7 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_OIDCFlowAppConfig "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/OIDCFlowAppConfig"
+	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/common"
 	contracts_go_app_RageApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/contracts/RageApiClient"
 	models_api_external_idp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/external_idp"
 	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
@@ -18,7 +19,6 @@ import (
 	models_api_verify_code "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/verify_code"
 	models_api_verify_username "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/verify_username"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
-	fluffycore_go_app_cookies "github.com/fluffy-bunny/fluffycore/go-app/cookies"
 	fluffycore_go_app_fetch "github.com/fluffy-bunny/fluffycore/go-app/fetch"
 )
 
@@ -46,26 +46,6 @@ func AddScopedIRageApiClient(cb di.ContainerBuilder) {
 	di.AddScoped[contracts_go_app_RageApiClient.IRageApiClient](cb, stemService.Ctor)
 }
 
-// getCSRFToken retrieves the CSRF token from the _csrf cookie
-func getCSRFToken() string {
-	csrfToken, err := fluffycore_go_app_cookies.GetCookie[string]("_csrf")
-	if err != nil {
-		return ""
-	}
-	return csrfToken
-}
-
-// buildCustomHeaders creates custom headers map with CSRF token if it exists
-func buildCustomHeaders() map[string]string {
-	csrfToken := getCSRFToken()
-	if csrfToken != "" {
-		return map[string]string{
-			"X-Csrf-Token": csrfToken,
-		}
-	}
-	return nil
-}
-
 func (s *service) fixUpRageApi(ctx context.Context, relativePath string) string {
 	rageClientConfig := s.rageClientConfigAccessor.GetRageClientConfig(ctx)
 	if rageClientConfig == nil {
@@ -82,7 +62,7 @@ func (s *service) GetOIDCFlowAppConfig(ctx context.Context) (*fluffycore_go_app_
 		&fluffycore_go_app_fetch.CallInput{
 			Method:        "GET",
 			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_OIDCFlowAppConfig),
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: common.BuildCustomHeaders(),
 		})
 
 	return s.cachedRageConfigResponse, err
@@ -101,7 +81,7 @@ func (s *service) LoginPhaseOne(ctx context.Context, request *models_api_login_m
 			Method:        "POST",
 			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_LoginPhaseOne),
 			Data:          request,
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: common.BuildCustomHeaders(),
 		})
 }
 
@@ -111,7 +91,7 @@ func (s *service) VerifyPasswordStrength(ctx context.Context, request *models_ap
 			Method:        "POST",
 			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_VerifyPasswordStrength),
 			Data:          request,
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: common.BuildCustomHeaders(),
 		})
 }
 
@@ -121,7 +101,7 @@ func (s *service) GetManifest(ctx context.Context) (*fluffycore_go_app_fetch.Wra
 		&fluffycore_go_app_fetch.CallInput{
 			Method:        "GET",
 			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_Manifest),
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: common.BuildCustomHeaders(),
 		})
 }
 
@@ -132,7 +112,7 @@ func (s *service) Signup(ctx context.Context, request *models_api_login_models.S
 			Method:        "POST",
 			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_Signup),
 			Data:          request,
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: common.BuildCustomHeaders(),
 		})
 }
 
@@ -142,7 +122,7 @@ func (s *service) LoginPassword(ctx context.Context, request *models_api_login_m
 			Method:        "POST",
 			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_LoginPassword),
 			Data:          request,
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: common.BuildCustomHeaders(),
 		})
 }
 func (s *service) PasswordResetStart(ctx context.Context, request *models_api_login_models.PasswordResetStartRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_login_models.PasswordResetStartResponse], error) {
@@ -151,7 +131,7 @@ func (s *service) PasswordResetStart(ctx context.Context, request *models_api_lo
 			Method:        "POST",
 			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_PasswordResetStart),
 			Data:          request,
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: common.BuildCustomHeaders(),
 		})
 }
 func (s *service) PasswordResetFinish(ctx context.Context, request *models_api_login_models.PasswordResetFinishRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_login_models.PasswordResetFinishResponse], error) {
@@ -160,7 +140,7 @@ func (s *service) PasswordResetFinish(ctx context.Context, request *models_api_l
 			Method:        "POST",
 			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_PasswordResetFinish),
 			Data:          request,
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: common.BuildCustomHeaders(),
 		})
 }
 func (s *service) VerifyUserName(ctx context.Context, request *models_api_verify_username.VerifyUsernameRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_verify_username.VerifyUsernameResponse], error) {
@@ -169,7 +149,7 @@ func (s *service) VerifyUserName(ctx context.Context, request *models_api_verify
 			Method:        "POST",
 			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_VerifyUsername),
 			Data:          request,
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: common.BuildCustomHeaders(),
 		})
 }
 
@@ -178,7 +158,7 @@ func (s *service) VerifyCodeBegin(ctx context.Context) (*fluffycore_go_app_fetch
 		&fluffycore_go_app_fetch.CallInput{
 			Method:        "GET",
 			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_VerifyCodeBegin),
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: common.BuildCustomHeaders(),
 		})
 }
 
@@ -188,7 +168,7 @@ func (s *service) VerifyCode(ctx context.Context, request *models_api_login_mode
 			Method:        "POST",
 			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_VerifyCode),
 			Data:          request,
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: common.BuildCustomHeaders(),
 		})
 }
 
@@ -198,7 +178,7 @@ func (s *service) StartExternalLogin(ctx context.Context, request *models_api_ex
 			Method:        "POST",
 			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_Start_ExternalLogin),
 			Data:          request,
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: common.BuildCustomHeaders(),
 		})
 }
 
@@ -208,7 +188,7 @@ func (s *service) GetTOTPStatus(ctx context.Context) ([]byte, error) {
 		&fluffycore_go_app_fetch.CallInput{
 			Method:        "GET",
 			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_UserTOTP),
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: common.BuildCustomHeaders(),
 		})
 	if err != nil {
 		return nil, err
@@ -221,7 +201,7 @@ func (s *service) EnrollTOTP(ctx context.Context) ([]byte, error) {
 		&fluffycore_go_app_fetch.CallInput{
 			Method:        "POST",
 			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_UserTOTPEnroll),
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: common.BuildCustomHeaders(),
 		})
 	if err != nil {
 		return nil, err
@@ -236,7 +216,7 @@ func (s *service) VerifyTOTP(ctx context.Context, code string) ([]byte, error) {
 			Method:        "POST",
 			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_UserTOTPVerify),
 			Data:          request,
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: common.BuildCustomHeaders(),
 		})
 	if err != nil {
 		return nil, err
@@ -249,7 +229,7 @@ func (s *service) DisableTOTP(ctx context.Context) ([]byte, error) {
 		&fluffycore_go_app_fetch.CallInput{
 			Method:        "DELETE",
 			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_UserTOTP),
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: common.BuildCustomHeaders(),
 		})
 	if err != nil {
 		return nil, err
@@ -259,45 +239,16 @@ func (s *service) DisableTOTP(ctx context.Context) ([]byte, error) {
 
 // Passkey APIs - HTTP-based implementations (avoiding JS fetch interop)
 // These use Go's native http.Client which automatically includes cookies
-func (s *service) GetPasskeysHTTP(ctx context.Context) (*fluffycore_go_app_fetch.WrappedResonseT[map[string]interface{}], error) {
-	url := s.fixUpRageApi(ctx, wellknown_echo.API_Passkeys)
+func (s *service) GetPasskeysHTTP(ctx context.Context) (*common.WrappedResonseT[map[string]interface{}], error) {
 
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
+	resp, err := common.HTTPFetchWrappedResponseT[map[string]interface{}](ctx,
+		&common.CallInput{
+			Method:        "GET",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_Passkeys),
+			CustomHeaders: common.BuildCustomHeaders(),
+		})
+	return resp, err
 
-	// Add CSRF token header
-	csrfToken := getCSRFToken()
-	if csrfToken != "" {
-		req.Header.Set("X-Csrf-Token", csrfToken)
-	}
-
-	// http.DefaultClient in WASM automatically includes cookies (credentials: 'include')
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response: %w", err)
-	}
-
-	var result map[string]interface{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
-	}
-
-	return &fluffycore_go_app_fetch.WrappedResonseT[map[string]interface{}]{
-		Code:     resp.StatusCode,
-		Response: &result,
-	}, nil
 }
 
 func (s *service) DeletePasskeyHTTP(ctx context.Context, credentialID string) (*fluffycore_go_app_fetch.WrappedResonseT[map[string]interface{}], error) {
@@ -309,7 +260,7 @@ func (s *service) DeletePasskeyHTTP(ctx context.Context, credentialID string) (*
 	}
 
 	// Add CSRF token header
-	csrfToken := getCSRFToken()
+	csrfToken := common.GetCSRFToken()
 	if csrfToken != "" {
 		req.Header.Set("X-Csrf-Token", csrfToken)
 	}
@@ -358,7 +309,7 @@ func (s *service) RenamePasskeyHTTP(ctx context.Context, credentialID string, fr
 	req.Header.Set("Content-Type", "application/json")
 
 	// Add CSRF token header
-	csrfToken := getCSRFToken()
+	csrfToken := common.GetCSRFToken()
 	if csrfToken != "" {
 		req.Header.Set("X-Csrf-Token", csrfToken)
 	}
