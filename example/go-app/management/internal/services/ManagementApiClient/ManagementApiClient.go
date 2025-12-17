@@ -7,6 +7,7 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_go_app_ManagementApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/contracts/ManagementApiClient"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/models"
+	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/common"
 	contracts_go_app_RageApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/contracts/RageApiClient"
 	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
@@ -164,8 +165,8 @@ func (s *service) GetRageApiClient() contracts_go_app_RageApiClient.IRageApiClie
 }
 
 // Typed wrapper methods for passkey operations from RageApiClient
-func (s *service) RenamePasskeyHTTP(ctx context.Context, credentialID string, body *models.PasskeyRenameRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models.PasskeyRenameResponse], error) {
-	wrappedResp, err := s.rageApiClient.RenamePasskeyHTTP(ctx, credentialID, body.FriendlyName)
+func (s *service) RenamePasskeyHTTP(ctx context.Context, request *models.PasskeyRenameRequest) (*common.WrappedResonseT[models.PasskeyRenameResponse], error) {
+	wrappedResp, err := s.rageApiClient.RenamePasskeyHTTP(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -182,13 +183,13 @@ func (s *service) RenamePasskeyHTTP(ctx context.Context, credentialID string, bo
 		}
 	}
 
-	return &fluffycore_go_app_fetch.WrappedResonseT[models.PasskeyRenameResponse]{
+	return &common.WrappedResonseT[models.PasskeyRenameResponse]{
 		Code:     wrappedResp.Code,
 		Response: &renameResp,
 	}, nil
 }
 
-func (s *service) GetPasskeysHTTP(ctx context.Context) (*fluffycore_go_app_fetch.WrappedResonseT[models.PasskeysResponse], error) {
+func (s *service) GetPasskeysHTTP(ctx context.Context) (*common.WrappedResonseT[models.PasskeysResponse], error) {
 	wrappedResp, err := s.rageApiClient.GetPasskeysHTTP(ctx)
 	if err != nil {
 		return nil, err
@@ -206,14 +207,14 @@ func (s *service) GetPasskeysHTTP(ctx context.Context) (*fluffycore_go_app_fetch
 		}
 	}
 
-	return &fluffycore_go_app_fetch.WrappedResonseT[models.PasskeysResponse]{
+	return &common.WrappedResonseT[models.PasskeysResponse]{
 		Code:     wrappedResp.Code,
 		Response: &passkeyResp,
 	}, nil
 }
 
-func (s *service) DeletePasskeyHTTP(ctx context.Context, credentialID string) (*fluffycore_go_app_fetch.WrappedResonseT[models.PasskeyDeleteResponse], error) {
-	wrappedResp, err := s.rageApiClient.DeletePasskeyHTTP(ctx, credentialID)
+func (s *service) DeletePasskeyHTTP(ctx context.Context, request *models.PasskeyDeleteRequest) (*common.WrappedResonseT[models.PasskeyDeleteResponse], error) {
+	wrappedResp, err := s.rageApiClient.DeletePasskeyHTTP(ctx, request)
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +231,7 @@ func (s *service) DeletePasskeyHTTP(ctx context.Context, credentialID string) (*
 		}
 	}
 
-	return &fluffycore_go_app_fetch.WrappedResonseT[models.PasskeyDeleteResponse]{
+	return &common.WrappedResonseT[models.PasskeyDeleteResponse]{
 		Code:     wrappedResp.Code,
 		Response: &deleteResp,
 	}, nil

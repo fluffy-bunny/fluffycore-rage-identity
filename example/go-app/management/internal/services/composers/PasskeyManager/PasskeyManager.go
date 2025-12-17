@@ -11,7 +11,7 @@ import (
 	contracts_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/LocalizerBundle"
 	services_ComposerBase "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/ComposerBase"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/models"
-	fluffycore_go_app_fetch "github.com/fluffy-bunny/fluffycore/go-app/fetch"
+	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/common"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
 	zerolog "github.com/rs/zerolog"
 )
@@ -589,9 +589,11 @@ func (s *service) handleSaveRename(index int) app.EventHandler {
 
 		ctx.Async(func() {
 			app.Log("🔵 About to call RenamePasskeyHTTP API")
-			response, err := s.managementApiClient.RenamePasskeyHTTP(s.AppContext, credentialID, &models.PasskeyRenameRequest{
-				FriendlyName: newName,
-			})
+			response, err := s.managementApiClient.RenamePasskeyHTTP(s.AppContext,
+				&models.PasskeyRenameRequest{
+					CredentialID: credentialID,
+					FriendlyName: newName,
+				})
 
 			app.Log("🔵 RenamePasskeyHTTP API returned - err:", err, "response:", response)
 
@@ -651,10 +653,13 @@ func (s *service) handleConfirmDelete(ctx app.Context, e app.Event) {
 
 	ctx.Async(func() {
 		app.Log("🔴 Calling DeletePasskeyHTTP API...")
-		deleteResp, deleteErr := s.managementApiClient.DeletePasskeyHTTP(s.AppContext, credentialID)
+		deleteResp, deleteErr := s.managementApiClient.DeletePasskeyHTTP(s.AppContext,
+			&models.PasskeyDeleteRequest{
+				CredentialID: credentialID,
+			})
 		app.Log("🔴 Delete complete - err:", deleteErr, "response code:", deleteResp)
 
-		var loadResp *fluffycore_go_app_fetch.WrappedResonseT[models.PasskeysResponse]
+		var loadResp *common.WrappedResonseT[models.PasskeysResponse]
 		var loadErr error
 
 		// If delete successful, immediately load fresh passkey list
@@ -666,7 +671,7 @@ func (s *service) handleConfirmDelete(ctx app.Context, e app.Event) {
 
 		ctx.Dispatch(func(ctx app.Context) {
 			app.Log("🔴 INSIDE ctx.Dispatch - updating UI after delete")
-			
+
 			// NOW close the modal
 			s.showDeleteConfirm = false
 			s.isDeleting = false

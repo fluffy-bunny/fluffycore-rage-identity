@@ -4,6 +4,7 @@ import (
 	"context"
 
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/models"
+	common "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/common"
 	contracts_go_app_RageApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/contracts/RageApiClient"
 	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	fluffycore_go_app_fetch "github.com/fluffy-bunny/fluffycore/go-app/fetch"
@@ -28,9 +29,9 @@ type (
 		DeleteUserLinkedAccount(ctx context.Context, identity string) (*fluffycore_go_app_fetch.WrappedResonseT[models.DeleteLinkedAccountResponse], error)
 
 		// Passkey management - HTTP-based (avoiding JS fetch interop)
-		GetPasskeysHTTP(ctx context.Context) (*fluffycore_go_app_fetch.WrappedResonseT[models.PasskeysResponse], error)
-		DeletePasskeyHTTP(ctx context.Context, credentialID string) (*fluffycore_go_app_fetch.WrappedResonseT[models.PasskeyDeleteResponse], error)
-		RenamePasskeyHTTP(ctx context.Context, credentialID string, body *models.PasskeyRenameRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models.PasskeyRenameResponse], error)
+		GetPasskeysHTTP(ctx context.Context) (*common.WrappedResonseT[models.PasskeysResponse], error)
+		DeletePasskeyHTTP(ctx context.Context, request *models.PasskeyDeleteRequest) (*common.WrappedResonseT[models.PasskeyDeleteResponse], error)
+		RenamePasskeyHTTP(ctx context.Context, request *models.PasskeyRenameRequest) (*common.WrappedResonseT[models.PasskeyRenameResponse], error)
 
 		// Access to core RageApiClient for TOTP and other core APIs
 		GetRageApiClient() contracts_go_app_RageApiClient.IRageApiClient

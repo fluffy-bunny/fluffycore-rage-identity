@@ -1,14 +1,11 @@
 package RageApiClient
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	models "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/models"
 	contracts_OIDCFlowAppConfig "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/OIDCFlowAppConfig"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/common"
 	contracts_go_app_RageApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/contracts/RageApiClient"
@@ -239,9 +236,9 @@ func (s *service) DisableTOTP(ctx context.Context) ([]byte, error) {
 
 // Passkey APIs - HTTP-based implementations (avoiding JS fetch interop)
 // These use Go's native http.Client which automatically includes cookies
-func (s *service) GetPasskeysHTTP(ctx context.Context) (*common.WrappedResonseT[map[string]interface{}], error) {
+func (s *service) GetPasskeysHTTP(ctx context.Context) (*common.WrappedResonseT[*models.PasskeysResponse], error) {
 
-	resp, err := common.HTTPFetchWrappedResponseT[map[string]interface{}](ctx,
+	resp, err := common.HTTPFetchWrappedResponseT[*models.PasskeysResponse](ctx,
 		&common.CallInput{
 			Method:        "GET",
 			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_Passkeys),
@@ -251,91 +248,30 @@ func (s *service) GetPasskeysHTTP(ctx context.Context) (*common.WrappedResonseT[
 
 }
 
-func (s *service) DeletePasskeyHTTP(ctx context.Context, credentialID string) (*fluffycore_go_app_fetch.WrappedResonseT[map[string]interface{}], error) {
-	url := s.fixUpRageApi(ctx, wellknown_echo.API_Passkeys) + "/" + credentialID
+func (s *service) DeletePasskeyHTTP(ctx context.Context, request *models.PasskeyDeleteRequest) (*common.WrappedResonseT[*models.PasskeyDeleteResponse], error) {
 
-	req, err := http.NewRequest("DELETE", url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
+	url := s.fixUpRageApi(ctx, wellknown_echo.API_Passkeys) + "/" + request.CredentialID
 
-	// Add CSRF token header
-	csrfToken := common.GetCSRFToken()
-	if csrfToken != "" {
-		req.Header.Set("X-Csrf-Token", csrfToken)
-	}
+	resp, err := common.HTTPFetchWrappedResponseT[*models.PasskeyDeleteResponse](ctx,
+		&common.CallInput{
+			Method:        "DELETE",
+			Url:           url,
+			CustomHeaders: common.BuildCustomHeaders(),
+		})
+	return resp, err
 
-	// http.DefaultClient in WASM automatically includes cookies
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response: %w", err)
-	}
-
-	var result map[string]interface{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
-	}
-
-	return &fluffycore_go_app_fetch.WrappedResonseT[map[string]interface{}]{
-		Code:     resp.StatusCode,
-		Response: &result,
-	}, nil
 }
 
-func (s *service) RenamePasskeyHTTP(ctx context.Context, credentialID string, friendlyName string) (*fluffycore_go_app_fetch.WrappedResonseT[map[string]interface{}], error) {
-	url := s.fixUpRageApi(ctx, wellknown_echo.API_Passkeys) + "/" + credentialID
+func (s *service) RenamePasskeyHTTP(ctx context.Context, request *models.PasskeyRenameRequest) (*common.WrappedResonseT[*models.PasskeyRenameResponse], error) {
+	url := s.fixUpRageApi(ctx, wellknown_echo.API_Passkeys) + "/" + request.CredentialID
+	requestBody := map[string]string{"friendlyName": request.FriendlyName}
 
-	requestBody := map[string]string{"friendlyName": friendlyName}
-	bodyBytes, err := json.Marshal(requestBody)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request: %w", err)
-	}
-
-	req, err := http.NewRequest("PATCH", url, bytes.NewReader(bodyBytes))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-
-	// Add CSRF token header
-	csrfToken := common.GetCSRFToken()
-	if csrfToken != "" {
-		req.Header.Set("X-Csrf-Token", csrfToken)
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response: %w", err)
-	}
-
-	var result map[string]interface{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
-	}
-
-	return &fluffycore_go_app_fetch.WrappedResonseT[map[string]interface{}]{
-		Code:     resp.StatusCode,
-		Response: &result,
-	}, nil
+	resp, err := common.HTTPFetchWrappedResponseT[*models.PasskeyRenameResponse](ctx,
+		&common.CallInput{
+			Method:        "PATCH",
+			Url:           url,
+			CustomHeaders: common.BuildCustomHeaders(),
+			Data:          requestBody,
+		})
+	return resp, err
 }
