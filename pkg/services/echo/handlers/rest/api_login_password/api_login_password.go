@@ -25,6 +25,7 @@ import (
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type (
@@ -314,6 +315,21 @@ func (s *service) Do(c echo.Context) error {
 	}
 	// "urn:rage:idp:google", "urn:rage:idp:spacex", "urn:rage:idp:github-enterprise", etc.
 	// "urn:rage:password", "urn:rage:2fa", "urn:rage:email", etc.
+
+	// Update root identity LastUsedOn timestamp
+	_, err = s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
+		User: &proto_oidc_models.RageUserUpdate{
+			RootIdentity: &proto_oidc_models.IdentityUpdate{
+				Subject:    user.RootIdentity.Subject,
+				LastUsedOn: timestamppb.Now(),
+			},
+		},
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to update root identity LastUsedOn")
+		// Don't fail login, just log the error
+	}
+
 	// we are done with the state now.  Lets map it to the code so it can be looked up by the client.
 	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx,
 		&proto_oidc_flows.StoreAuthorizationRequestStateRequest{

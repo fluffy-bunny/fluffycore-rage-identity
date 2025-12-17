@@ -34,6 +34,7 @@ import (
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type (
@@ -371,6 +372,34 @@ func (s *service) Do(c echo.Context) error {
 					models.AMRIdp,
 				},
 			}
+
+			// Update LastUsedOn for both external identity and root identity
+			_, err := s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
+				User: &proto_oidc_models.RageUserUpdate{
+					RootIdentity: &proto_oidc_models.IdentityUpdate{
+						Subject:    user.RootIdentity.Subject,
+						LastUsedOn: timestamppb.Now(),
+					},
+					LinkedIdentities: &proto_oidc_models.LinkedIdentitiesUpdate{
+						Update: &proto_oidc_models.LinkedIdentitiesUpdate_Granular_{
+							Granular: &proto_oidc_models.LinkedIdentitiesUpdate_Granular{
+								Add: []*proto_oidc_models.Identity{
+									{
+										Subject:    externalIdentity.Subject,
+										IdpSlug:    externalOauth2State.Request.IdpHint,
+										LastUsedOn: timestamppb.Now(),
+									},
+								},
+							},
+						},
+					},
+				},
+			})
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to update identity LastUsedOn")
+				// Don't fail login, just log the error
+			}
+
 			_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
 				State:                     parentState,
 				AuthorizationRequestState: authorizationFinal,

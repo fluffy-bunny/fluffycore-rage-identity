@@ -251,14 +251,21 @@ func (s *service) DoGet(c echo.Context) error {
 			// Get email from identity
 			email := identity.Email
 
-			// Format linked timestamp - TODO: add timestamp when field is available
-			linkedAt := ""
+			// Get timestamps from identity
+			var createdOn, lastUsedOn int64
+			if identity.CreatedOn != nil {
+				createdOn = identity.CreatedOn.AsTime().Unix()
+			}
+			if identity.LastUsedOn != nil {
+				lastUsedOn = identity.LastUsedOn.AsTime().Unix()
+			}
 
 			response.Identities = append(response.Identities, models.LinkedIdentity{
-				Subject:  identity.Subject,
-				Provider: provider,
-				Email:    email,
-				LinkedAt: linkedAt,
+				Subject:    identity.Subject,
+				Provider:   provider,
+				Email:      email,
+				CreatedOn:  createdOn,
+				LastUsedOn: lastUsedOn,
 			})
 		}
 	}

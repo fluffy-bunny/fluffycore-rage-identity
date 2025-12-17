@@ -221,6 +221,7 @@ type Identity struct {
 	EmailVerified bool                   `protobuf:"varint,4,opt,name=email_verified,json=emailVerified,proto3" json:"email_verified,omitempty"`
 	CreatedOn     *timestamppb.Timestamp `protobuf:"bytes,50,opt,name=created_on,json=createdOn,proto3" json:"created_on,omitempty"`
 	UpdatedOn     *timestamppb.Timestamp `protobuf:"bytes,51,opt,name=updated_on,json=updatedOn,proto3" json:"updated_on,omitempty"`
+	LastUsedOn    *timestamppb.Timestamp `protobuf:"bytes,52,opt,name=last_used_on,json=lastUsedOn,proto3" json:"last_used_on,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -293,6 +294,13 @@ func (x *Identity) GetCreatedOn() *timestamppb.Timestamp {
 func (x *Identity) GetUpdatedOn() *timestamppb.Timestamp {
 	if x != nil {
 		return x.UpdatedOn
+	}
+	return nil
+}
+
+func (x *Identity) GetLastUsedOn() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LastUsedOn
 	}
 	return nil
 }
@@ -879,6 +887,7 @@ type IdentityUpdate struct {
 	Subject       string                  `protobuf:"bytes,1,opt,name=subject,proto3" json:"subject,omitempty"`
 	Email         *wrapperspb.StringValue `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
 	EmailVerified *wrapperspb.BoolValue   `protobuf:"bytes,4,opt,name=email_verified,json=emailVerified,proto3" json:"email_verified,omitempty"`
+	LastUsedOn    *timestamppb.Timestamp  `protobuf:"bytes,50,opt,name=last_used_on,json=lastUsedOn,proto3" json:"last_used_on,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -930,6 +939,13 @@ func (x *IdentityUpdate) GetEmail() *wrapperspb.StringValue {
 func (x *IdentityUpdate) GetEmailVerified() *wrapperspb.BoolValue {
 	if x != nil {
 		return x.EmailVerified
+	}
+	return nil
+}
+
+func (x *IdentityUpdate) GetLastUsedOn() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LastUsedOn
 	}
 	return nil
 }
@@ -1791,7 +1807,7 @@ const file_proto_oidc_models_user_proto_rawDesc = "" +
 	"\bPassword\x12\x12\n" +
 	"\x04hash\x18\x01 \x01(\tR\x04hash\"B\n" +
 	"\x0ePasswordUpdate\x120\n" +
-	"\x04hash\x18\x01 \x01(\v2\x1c.google.protobuf.StringValueR\x04hash\"\xf2\x01\n" +
+	"\x04hash\x18\x01 \x01(\v2\x1c.google.protobuf.StringValueR\x04hash\"\xb0\x02\n" +
 	"\bIdentity\x12\x18\n" +
 	"\asubject\x18\x01 \x01(\tR\asubject\x12\x19\n" +
 	"\bidp_slug\x18\x02 \x01(\tR\aidpSlug\x12\x14\n" +
@@ -1800,7 +1816,9 @@ const file_proto_oidc_models_user_proto_rawDesc = "" +
 	"\n" +
 	"created_on\x182 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedOn\x129\n" +
 	"\n" +
-	"updated_on\x183 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedOn\"\xc2\x01\n" +
+	"updated_on\x183 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedOn\x12<\n" +
+	"\flast_used_on\x184 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"lastUsedOn\"\xc2\x01\n" +
 	"\x0eIdentityFilter\x129\n" +
 	"\asubject\x18\x01 \x01(\v2\x1f.proto.types.IDFilterExpressionR\asubject\x12:\n" +
 	"\bidp_slug\x18\x02 \x01(\v2\x1f.proto.types.IDFilterExpressionR\aidpSlug\x129\n" +
@@ -1851,11 +1869,13 @@ const file_proto_oidc_models_user_proto_rawDesc = "" +
 	"\x10LinkedIdentities\x12;\n" +
 	"\n" +
 	"identities\x18\x01 \x03(\v2\x1b.proto.oidc.models.IdentityR\n" +
-	"identities\"\xa1\x01\n" +
+	"identities\"\xdf\x01\n" +
 	"\x0eIdentityUpdate\x12\x18\n" +
 	"\asubject\x18\x01 \x01(\tR\asubject\x122\n" +
 	"\x05email\x18\x03 \x01(\v2\x1c.google.protobuf.StringValueR\x05email\x12A\n" +
-	"\x0eemail_verified\x18\x04 \x01(\v2\x1a.google.protobuf.BoolValueR\remailVerified\"\xa5\x02\n" +
+	"\x0eemail_verified\x18\x04 \x01(\v2\x1a.google.protobuf.BoolValueR\remailVerified\x12<\n" +
+	"\flast_used_on\x182 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"lastUsedOn\"\xa5\x02\n" +
 	"\x16LinkedIdentitiesUpdate\x12P\n" +
 	"\bgranular\x18\x01 \x01(\v22.proto.oidc.models.LinkedIdentitiesUpdate.GranularH\x00R\bgranular\x12?\n" +
 	"\areplace\x18\x02 \x01(\v2#.proto.oidc.models.LinkedIdentitiesH\x00R\areplace\x1an\n" +
@@ -1976,57 +1996,59 @@ var file_proto_oidc_models_user_proto_depIdxs = []int32{
 	27, // 1: proto.oidc.models.PasswordUpdate.hash:type_name -> google.protobuf.StringValue
 	28, // 2: proto.oidc.models.Identity.created_on:type_name -> google.protobuf.Timestamp
 	28, // 3: proto.oidc.models.Identity.updated_on:type_name -> google.protobuf.Timestamp
-	29, // 4: proto.oidc.models.IdentityFilter.subject:type_name -> proto.types.IDFilterExpression
-	29, // 5: proto.oidc.models.IdentityFilter.idp_slug:type_name -> proto.types.IDFilterExpression
-	30, // 6: proto.oidc.models.IdentityFilter.email:type_name -> proto.types.StringFilterExpression
-	7,  // 7: proto.oidc.models.ExternalOauth2State.request:type_name -> proto.oidc.models.ExternalOauth2Request
-	4,  // 8: proto.oidc.models.ExternalOauth2State.identity:type_name -> proto.oidc.models.Identity
-	9,  // 9: proto.oidc.models.AuthorizationRequestState.request:type_name -> proto.oidc.models.AuthorizationRequest
-	6,  // 10: proto.oidc.models.AuthorizationRequestState.identity:type_name -> proto.oidc.models.OIDCIdentity
-	4,  // 11: proto.oidc.models.AuthorizationRequestState.external_identity:type_name -> proto.oidc.models.Identity
-	28, // 12: proto.oidc.models.AuthorizationRequestState.updated:type_name -> google.protobuf.Timestamp
-	4,  // 13: proto.oidc.models.LinkedIdentities.identities:type_name -> proto.oidc.models.Identity
-	27, // 14: proto.oidc.models.IdentityUpdate.email:type_name -> google.protobuf.StringValue
-	31, // 15: proto.oidc.models.IdentityUpdate.email_verified:type_name -> google.protobuf.BoolValue
-	26, // 16: proto.oidc.models.LinkedIdentitiesUpdate.granular:type_name -> proto.oidc.models.LinkedIdentitiesUpdate.Granular
-	11, // 17: proto.oidc.models.LinkedIdentitiesUpdate.replace:type_name -> proto.oidc.models.LinkedIdentities
-	27, // 18: proto.oidc.models.EmailUpdate.email:type_name -> google.protobuf.StringValue
-	31, // 19: proto.oidc.models.EmailUpdate.email_verified:type_name -> google.protobuf.BoolValue
-	14, // 20: proto.oidc.models.Recovery.email:type_name -> proto.oidc.models.Email
-	15, // 21: proto.oidc.models.RecoveryUpdate.email:type_name -> proto.oidc.models.EmailUpdate
-	32, // 22: proto.oidc.models.WebAuthN.credentials:type_name -> proto.types.webauthn.Credential
-	33, // 23: proto.oidc.models.WebAuthNUpdate.credentials:type_name -> proto.types.webauthn.CredentialArrayUpdate
-	27, // 24: proto.oidc.models.TOTPUpdate.secret:type_name -> google.protobuf.StringValue
-	31, // 25: proto.oidc.models.TOTPUpdate.enabled:type_name -> google.protobuf.BoolValue
-	31, // 26: proto.oidc.models.TOTPUpdate.verified:type_name -> google.protobuf.BoolValue
-	0,  // 27: proto.oidc.models.RageUser.state:type_name -> proto.oidc.models.RageUserState
-	4,  // 28: proto.oidc.models.RageUser.root_identity:type_name -> proto.oidc.models.Identity
-	11, // 29: proto.oidc.models.RageUser.linked_identities:type_name -> proto.oidc.models.LinkedIdentities
-	16, // 30: proto.oidc.models.RageUser.recovery:type_name -> proto.oidc.models.Recovery
-	2,  // 31: proto.oidc.models.RageUser.password:type_name -> proto.oidc.models.Password
-	18, // 32: proto.oidc.models.RageUser.web_auth_n:type_name -> proto.oidc.models.WebAuthN
-	20, // 33: proto.oidc.models.RageUser.t_o_t_p:type_name -> proto.oidc.models.TOTP
-	22, // 34: proto.oidc.models.RageUsers.users:type_name -> proto.oidc.models.RageUser
-	12, // 35: proto.oidc.models.RageUserUpdate.root_identity:type_name -> proto.oidc.models.IdentityUpdate
-	1,  // 36: proto.oidc.models.RageUserUpdate.state:type_name -> proto.oidc.models.RageUserStateValue
-	13, // 37: proto.oidc.models.RageUserUpdate.linked_identities:type_name -> proto.oidc.models.LinkedIdentitiesUpdate
-	17, // 38: proto.oidc.models.RageUserUpdate.recovery:type_name -> proto.oidc.models.RecoveryUpdate
-	3,  // 39: proto.oidc.models.RageUserUpdate.password:type_name -> proto.oidc.models.PasswordUpdate
-	19, // 40: proto.oidc.models.RageUserUpdate.web_auth_n:type_name -> proto.oidc.models.WebAuthNUpdate
-	21, // 41: proto.oidc.models.RageUserUpdate.t_o_t_p:type_name -> proto.oidc.models.TOTPUpdate
-	29, // 42: proto.oidc.models.RageUserFilter.root_subject:type_name -> proto.types.IDFilterExpression
-	29, // 43: proto.oidc.models.RageUserFilter.root_idp_slug:type_name -> proto.types.IDFilterExpression
-	30, // 44: proto.oidc.models.RageUserFilter.root_email:type_name -> proto.types.StringFilterExpression
-	29, // 45: proto.oidc.models.RageUserFilter.linked_identity_subject:type_name -> proto.types.IDFilterExpression
-	29, // 46: proto.oidc.models.RageUserFilter.linked_identity_idp_slug:type_name -> proto.types.IDFilterExpression
-	30, // 47: proto.oidc.models.RageUserFilter.linked_identity_email:type_name -> proto.types.StringFilterExpression
-	4,  // 48: proto.oidc.models.LinkedIdentitiesUpdate.Granular.add:type_name -> proto.oidc.models.Identity
-	4,  // 49: proto.oidc.models.LinkedIdentitiesUpdate.Granular.remove:type_name -> proto.oidc.models.Identity
-	50, // [50:50] is the sub-list for method output_type
-	50, // [50:50] is the sub-list for method input_type
-	50, // [50:50] is the sub-list for extension type_name
-	50, // [50:50] is the sub-list for extension extendee
-	0,  // [0:50] is the sub-list for field type_name
+	28, // 4: proto.oidc.models.Identity.last_used_on:type_name -> google.protobuf.Timestamp
+	29, // 5: proto.oidc.models.IdentityFilter.subject:type_name -> proto.types.IDFilterExpression
+	29, // 6: proto.oidc.models.IdentityFilter.idp_slug:type_name -> proto.types.IDFilterExpression
+	30, // 7: proto.oidc.models.IdentityFilter.email:type_name -> proto.types.StringFilterExpression
+	7,  // 8: proto.oidc.models.ExternalOauth2State.request:type_name -> proto.oidc.models.ExternalOauth2Request
+	4,  // 9: proto.oidc.models.ExternalOauth2State.identity:type_name -> proto.oidc.models.Identity
+	9,  // 10: proto.oidc.models.AuthorizationRequestState.request:type_name -> proto.oidc.models.AuthorizationRequest
+	6,  // 11: proto.oidc.models.AuthorizationRequestState.identity:type_name -> proto.oidc.models.OIDCIdentity
+	4,  // 12: proto.oidc.models.AuthorizationRequestState.external_identity:type_name -> proto.oidc.models.Identity
+	28, // 13: proto.oidc.models.AuthorizationRequestState.updated:type_name -> google.protobuf.Timestamp
+	4,  // 14: proto.oidc.models.LinkedIdentities.identities:type_name -> proto.oidc.models.Identity
+	27, // 15: proto.oidc.models.IdentityUpdate.email:type_name -> google.protobuf.StringValue
+	31, // 16: proto.oidc.models.IdentityUpdate.email_verified:type_name -> google.protobuf.BoolValue
+	28, // 17: proto.oidc.models.IdentityUpdate.last_used_on:type_name -> google.protobuf.Timestamp
+	26, // 18: proto.oidc.models.LinkedIdentitiesUpdate.granular:type_name -> proto.oidc.models.LinkedIdentitiesUpdate.Granular
+	11, // 19: proto.oidc.models.LinkedIdentitiesUpdate.replace:type_name -> proto.oidc.models.LinkedIdentities
+	27, // 20: proto.oidc.models.EmailUpdate.email:type_name -> google.protobuf.StringValue
+	31, // 21: proto.oidc.models.EmailUpdate.email_verified:type_name -> google.protobuf.BoolValue
+	14, // 22: proto.oidc.models.Recovery.email:type_name -> proto.oidc.models.Email
+	15, // 23: proto.oidc.models.RecoveryUpdate.email:type_name -> proto.oidc.models.EmailUpdate
+	32, // 24: proto.oidc.models.WebAuthN.credentials:type_name -> proto.types.webauthn.Credential
+	33, // 25: proto.oidc.models.WebAuthNUpdate.credentials:type_name -> proto.types.webauthn.CredentialArrayUpdate
+	27, // 26: proto.oidc.models.TOTPUpdate.secret:type_name -> google.protobuf.StringValue
+	31, // 27: proto.oidc.models.TOTPUpdate.enabled:type_name -> google.protobuf.BoolValue
+	31, // 28: proto.oidc.models.TOTPUpdate.verified:type_name -> google.protobuf.BoolValue
+	0,  // 29: proto.oidc.models.RageUser.state:type_name -> proto.oidc.models.RageUserState
+	4,  // 30: proto.oidc.models.RageUser.root_identity:type_name -> proto.oidc.models.Identity
+	11, // 31: proto.oidc.models.RageUser.linked_identities:type_name -> proto.oidc.models.LinkedIdentities
+	16, // 32: proto.oidc.models.RageUser.recovery:type_name -> proto.oidc.models.Recovery
+	2,  // 33: proto.oidc.models.RageUser.password:type_name -> proto.oidc.models.Password
+	18, // 34: proto.oidc.models.RageUser.web_auth_n:type_name -> proto.oidc.models.WebAuthN
+	20, // 35: proto.oidc.models.RageUser.t_o_t_p:type_name -> proto.oidc.models.TOTP
+	22, // 36: proto.oidc.models.RageUsers.users:type_name -> proto.oidc.models.RageUser
+	12, // 37: proto.oidc.models.RageUserUpdate.root_identity:type_name -> proto.oidc.models.IdentityUpdate
+	1,  // 38: proto.oidc.models.RageUserUpdate.state:type_name -> proto.oidc.models.RageUserStateValue
+	13, // 39: proto.oidc.models.RageUserUpdate.linked_identities:type_name -> proto.oidc.models.LinkedIdentitiesUpdate
+	17, // 40: proto.oidc.models.RageUserUpdate.recovery:type_name -> proto.oidc.models.RecoveryUpdate
+	3,  // 41: proto.oidc.models.RageUserUpdate.password:type_name -> proto.oidc.models.PasswordUpdate
+	19, // 42: proto.oidc.models.RageUserUpdate.web_auth_n:type_name -> proto.oidc.models.WebAuthNUpdate
+	21, // 43: proto.oidc.models.RageUserUpdate.t_o_t_p:type_name -> proto.oidc.models.TOTPUpdate
+	29, // 44: proto.oidc.models.RageUserFilter.root_subject:type_name -> proto.types.IDFilterExpression
+	29, // 45: proto.oidc.models.RageUserFilter.root_idp_slug:type_name -> proto.types.IDFilterExpression
+	30, // 46: proto.oidc.models.RageUserFilter.root_email:type_name -> proto.types.StringFilterExpression
+	29, // 47: proto.oidc.models.RageUserFilter.linked_identity_subject:type_name -> proto.types.IDFilterExpression
+	29, // 48: proto.oidc.models.RageUserFilter.linked_identity_idp_slug:type_name -> proto.types.IDFilterExpression
+	30, // 49: proto.oidc.models.RageUserFilter.linked_identity_email:type_name -> proto.types.StringFilterExpression
+	4,  // 50: proto.oidc.models.LinkedIdentitiesUpdate.Granular.add:type_name -> proto.oidc.models.Identity
+	4,  // 51: proto.oidc.models.LinkedIdentitiesUpdate.Granular.remove:type_name -> proto.oidc.models.Identity
+	52, // [52:52] is the sub-list for method output_type
+	52, // [52:52] is the sub-list for method input_type
+	52, // [52:52] is the sub-list for extension type_name
+	52, // [52:52] is the sub-list for extension extendee
+	0,  // [0:52] is the sub-list for field type_name
 }
 
 func init() { file_proto_oidc_models_user_proto_init() }

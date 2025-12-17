@@ -229,11 +229,12 @@ func (s *service) Do(c echo.Context) error {
 				break
 			}
 		}
-		// Update the user with the timestamp
+		// Update the user with the credential timestamp and root identity LastUsedOn
 		_, err = s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
 			User: &proto_oidc_models.RageUserUpdate{
 				RootIdentity: &proto_oidc_models.IdentityUpdate{
-					Subject: user.RootIdentity.Subject,
+					Subject:    user.RootIdentity.Subject,
+					LastUsedOn: timestamppb.Now(),
 				},
 				WebAuthN: &proto_oidc_models.WebAuthNUpdate{
 					Credentials: &proto_types_webauthn.CredentialArrayUpdate{
