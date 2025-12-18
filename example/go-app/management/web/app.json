@@ -7,5 +7,7 @@
     },
     "returnUrl": "http://localhost:9044/management/",
     "rageBaseUrl": "http://localhost:9044",
-    "accountManagementBaseUrl": "http://localhost:9044"
+    "accountManagementBaseUrl": "http://localhost:9044",
+    "enabledWebAuthN": true,
+    "enabledTotp": false
 }

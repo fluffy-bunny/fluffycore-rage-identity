@@ -25,3 +25,7 @@ go.work
 /certs/*.pem
 /node_modules
 .DS_Store
+
+# Auto-generated from shared source (example/web/webauthn.js)
+/example/go-app/oidc-login/web/webauthn.js
+/example/go-app/management/web/webauthn.js

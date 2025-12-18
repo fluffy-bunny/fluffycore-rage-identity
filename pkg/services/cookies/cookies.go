@@ -1,7 +1,9 @@
 package cookies
 
 import (
+	"encoding/json"
 	"strings"
+	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
@@ -25,10 +27,8 @@ type (
 )
 
 var stemService = (*service)(nil)
+var _ contracts_cookies.IWellknownCookies = stemService
 
-func init() {
-	var _ contracts_cookies.IWellknownCookies = stemService
-}
 func (s *service) Ctor(
 	insecureCookies fluffycore_contracts_cookies.ICookies,
 	secureCookies fluffycore_contracts_cookies.ISecureCookies,
@@ -367,9 +367,8 @@ func (s *service) validateSetWebAuthNCookieRequest(request *contracts_cookies.Se
 	if request.Value == nil {
 		return status.Error(codes.InvalidArgument, "request.Value is nil")
 	}
-	if request.Value.Identity == nil {
-		return status.Error(codes.InvalidArgument, "request.Value.Identity is nil")
-	}
+	// Identity can be nil for discoverable credentials flow
+	// In this case, the user will be identified from the credential's UserHandle during finish
 	return nil
 }
 func (s *service) SetWebAuthNCookie(c echo.Context, request *contracts_cookies.SetWebAuthNCookieRequest) error {
@@ -484,18 +483,33 @@ func (s *service) SetErrorCookie(c echo.Context, request *contracts_cookies.SetE
 	if err != nil {
 		return err
 	}
+	vCookie := map[string]interface{}{}
+	vB, err := json.Marshal(&request.Value)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(vB, &vCookie)
+	if err != nil {
+		return err
+	}
 
+	// Don't use SetCookieByRequest for ErrorCookie - it has nested maps that don't survive double marshal/unmarshal
+	// Instead, directly pass the struct to the cookie library
 	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
-		Name: contracts_cookies.CookieNameErrorName,
+		Name:    contracts_cookies.CookieNameErrorName,
+		Path:    "/",
+		Expires: time.Now().Add(30 * time.Minute),
+		Domain:  s.cookieConfig.Domain,
+		Value:   vCookie, // Pass the struct directly
 	}
 	if s.config.DisableSecureCookies {
 		setCookieRequest.HttpOnly = false
 		setCookieRequest.SameSite = 0
 		setCookieRequest.Secure = tPtr(false)
 	}
-	return SetCookieByRequest(c, s.cookieConfig, s.secureCookies, setCookieRequest,
-		request.Value)
 
+	_, err = s.insecureCookies.SetCookie(c, setCookieRequest)
+	return err
 }
 func (s *service) DeleteErrorCookie(c echo.Context) {
 	s.insecureCookies.DeleteCookie(c,

@@ -77,6 +77,11 @@ var (
 	API_Login                  = "/api/login"
 	API_UserLinkedAccounts     = "/api/user-linked-accounts"
 	API_IsAuthorized           = "/api/is-authorized"
+	API_Passkeys               = "/api/passkeys"
+	API_UserTOTP               = "/api/totp"
+	API_UserTOTPEnroll         = "/api/totp/enroll"
+	API_UserTOTPVerify         = "/api/totp/verify"
+	API_PasskeyCredentialId    = "/api/passkeys/:credentialId"
 )
 
 type Paths struct {
@@ -154,4 +159,8 @@ func GetGithubConfig(c echo.Context, protocol *proto_oidc_models.GithubOAuth2Pro
 
 type RestErrorResponse struct {
 	Error string `json:"error"`
+}
+
+type RestSuccessResponse struct {
+	Message string `json:"message"`
 }

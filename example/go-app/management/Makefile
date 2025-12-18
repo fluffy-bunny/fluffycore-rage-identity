@@ -98,6 +98,8 @@ generate-static: gen-images ## Build and generate static files
 	@echo "  gitCommit: '$(GIT_COMMIT)'," >> ./web/build_version.js
 	@echo "  gitBranch: '$(GIT_BRANCH)'" >> ./web/build_version.js
 	@echo "};" >> ./web/build_version.js
+	@echo "Syncing shared webauthn.js from example/web/..."
+	@cp ../../web/webauthn.js ./web/webauthn.js 2>/dev/null || powershell -Command "Copy-Item -Path ../../web/webauthn.js -Destination ./web/webauthn.js -Force"
 	@echo "Generating static output..."
 	MSYS_NO_PATHCONV=1 ./$(STATIC_GENERATOR_BINARY) -title "$(APP_TITLE)" -output $(STATIC_OUTPUT_DIR) -base-href "/$(BASE_HREF)"
 	@echo "Copying web assets..."

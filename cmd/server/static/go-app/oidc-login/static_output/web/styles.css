@@ -799,6 +799,65 @@ input.error:focus {
   }
 }
 
+/* Passkey Login Section */
+.passkey-login-section {
+  margin: 24px 0;
+}
+
+.passkey-login-section .divider {
+  margin: 20px 0;
+}
+
+.passkey-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.passkey-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46a3 100%);
+}
+
+.passkey-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.passkey-btn svg {
+  flex-shrink: 0;
+}
+
+.passkey-btn span {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.passkey-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.passkey-btn.disabled:hover {
+  transform: none;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
 /* Error Banner */
 .error-banner {
   position: absolute;

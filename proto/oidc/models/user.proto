@@ -37,6 +37,7 @@ message Identity {
 
     google.protobuf.Timestamp created_on = 50;
     google.protobuf.Timestamp updated_on = 51;
+    google.protobuf.Timestamp last_used_on = 52;
 
 }
 message IdentityFilter {
@@ -108,6 +109,7 @@ message IdentityUpdate {
     string subject = 1;
     google.protobuf.StringValue email = 3;
     google.protobuf.BoolValue email_verified = 4;
+    google.protobuf.Timestamp last_used_on = 50;
 
 }
 
@@ -150,6 +152,7 @@ message TOTP {
     bool verified = 3;
 }
 message TOTPUpdate {
+    google.protobuf.StringValue secret = 1;
     google.protobuf.BoolValue enabled = 2;
     google.protobuf.BoolValue verified = 3;
 }

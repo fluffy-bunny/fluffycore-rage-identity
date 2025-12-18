@@ -28,10 +28,8 @@ type (
 )
 
 var stemService = (*service)(nil)
+var _ contracts_oauth2factory.IOAuth2Factory = stemService
 
-func init() {
-	var _ contracts_oauth2factory.IOAuth2Factory = stemService
-}
 func (s *service) Ctor(config *contracts_config.Config,
 	oauth2ProviderFactory contracts_oauth2factory.IOIDCProviderFactory,
 	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer) (contracts_oauth2factory.IOAuth2Factory, error) {

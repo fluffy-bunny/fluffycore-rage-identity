@@ -24,10 +24,8 @@ type (
 )
 
 var stemService = (*service)(nil)
+var _ contracts_selfoauth2provider.ISelfOAuth2Provider = stemService
 
-func init() {
-	var _ contracts_selfoauth2provider.ISelfOAuth2Provider = stemService
-}
 func (s *service) Ctor(
 	config *contracts_config.SelfIDPConfig,
 ) (contracts_selfoauth2provider.ISelfOAuth2Provider, error) {

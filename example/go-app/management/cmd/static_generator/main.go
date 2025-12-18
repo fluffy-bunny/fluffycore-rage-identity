@@ -97,6 +97,7 @@ func main() {
 			"/web/build_version.js",
 			"/web/common.js",
 			"/web/logging-helper.js",
+			"/web/webauthn.js",
 		},
 		Resources: resourceResolver,
 		Icon: app.Icon{

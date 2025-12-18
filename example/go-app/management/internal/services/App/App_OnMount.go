@@ -80,6 +80,7 @@ func (s *service) OnMount(ctx app.Context) {
 				switch pathRoute {
 				case contracts_routes.WellknownRoute_Profile,
 					contracts_routes.WellknownRoute_PasswordManager,
+					contracts_routes.WellknownRoute_PasskeyManager,
 					contracts_routes.WellknownRoute_LinkedAccounts:
 					log.Info().Str("currentPath", currentPath).Msg("User not authenticated on protected route, redirecting to home")
 					appConfig := s.appConfigAccessor.GetAppConfig(s.AppContext)

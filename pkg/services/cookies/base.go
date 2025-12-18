@@ -8,6 +8,7 @@ import (
 	fluffycore_contracts_cookies "github.com/fluffy-bunny/fluffycore/echo/contracts/cookies"
 	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
+	"github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 )
 
@@ -44,11 +45,20 @@ func SetCookieByRequest[T any](c echo.Context,
 	if err != nil {
 		return err
 	}
+
+	// Debug: log the marshaled JSON
+	ctx := c.Request().Context()
+	log := zerolog.Ctx(ctx).With().Str("cookieName", request.Name).Logger()
+	log.Debug().Str("marshaledJSON", string(b)).Msg("SetCookieByRequest: marshaled data")
+
 	value := make(map[string]interface{})
 	err = json.Unmarshal(b, &value)
 	if err != nil {
 		return err
 	}
+
+	log.Debug().Interface("unmarshaledMap", value).Msg("SetCookieByRequest: unmarshaled to map")
+
 	request.Path = "/"
 	request.Expires = time.Now().Add(30 * time.Minute)
 	request.Domain = config.Domain

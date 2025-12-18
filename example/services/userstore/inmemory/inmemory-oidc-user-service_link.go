@@ -86,6 +86,7 @@ func (s *service) LinkRageUser(ctx context.Context, request *proto_oidc_user.Lin
 			request.ExternalIdentity.CreatedOn = now
 		}
 		request.ExternalIdentity.UpdatedOn = now
+		request.ExternalIdentity.LastUsedOn = now
 		if user.RageUser.LinkedIdentities == nil {
 			user.RageUser.LinkedIdentities = &proto_oidc_models.LinkedIdentities{}
 		}

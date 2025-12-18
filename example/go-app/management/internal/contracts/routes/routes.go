@@ -12,6 +12,7 @@ var (
 	WellknownRoute_Home            WellknownRoute = "/"
 	WellknownRoute_Profile         WellknownRoute = "/profile"
 	WellknownRoute_PasswordManager WellknownRoute = "/password-manager"
+	WellknownRoute_PasskeyManager  WellknownRoute = "/passkey-manager"
 	WellknownRoute_LinkedAccounts  WellknownRoute = "/linked-accounts"
 )
 

@@ -6,6 +6,7 @@ package proto.types.webauthn;
 
 import "google/protobuf/descriptor.proto";
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
 
 message Credential {
     // user friendly name to identity the credential
@@ -30,7 +31,11 @@ message Credential {
 
     // The Authenticator information for a given certificate
     Authenticator authenticator = 7;
- 
+
+    google.protobuf.Timestamp created_on    = 50;
+    google.protobuf.Timestamp updated_on    = 51;
+    google.protobuf.Timestamp last_used_on  = 52;
+
 }
 message CredentialFlags {
 	// Flag UP indicates the users presence.

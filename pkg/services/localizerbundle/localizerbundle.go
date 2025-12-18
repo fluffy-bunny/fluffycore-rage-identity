@@ -16,10 +16,8 @@ type (
 )
 
 var stemService = (*service)(nil)
+var _ contracts_localizer.ILocalizerBundle = stemService
 
-func init() {
-	var _ contracts_localizer.ILocalizerBundle = stemService
-}
 func (s *service) Ctor() (contracts_localizer.ILocalizerBundle, error) {
 	bundle := i18n.NewBundle(language.English)
 	bundle.RegisterUnmarshalFunc("json", json.Unmarshal)

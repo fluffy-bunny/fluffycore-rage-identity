@@ -4,5 +4,7 @@
         "logoUrl": "web/m_logo.svg",
         "showBannerVersion": true
     },
-    "rageBaseUrl": "http://localhost:9044"
+    "rageBaseUrl": "http://localhost:9044",
+    "enabledWebAuthN": true,
+    "enabledTotp": false
 }

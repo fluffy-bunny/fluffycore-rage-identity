@@ -26,10 +26,8 @@ var stemService = (*service)(nil)
 
 //go:embed aaguid.json
 var authenticatorMetadataJson []byte
+var _ contracts_webauthn.IWebAuthN = stemService
 
-func init() {
-	var _ contracts_webauthn.IWebAuthN = stemService
-}
 func (s *service) Ctor(
 	config *contracts_webauthn.WebAuthNConfig,
 ) (contracts_webauthn.IWebAuthN, error) {

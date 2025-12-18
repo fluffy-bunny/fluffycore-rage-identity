@@ -17,10 +17,8 @@ type (
 )
 
 var stemService = (*service)(nil)
+var _ contracts_tokenservice.IAuthorizationCodeClaimsAugmentor = stemService
 
-func init() {
-	var _ contracts_tokenservice.IAuthorizationCodeClaimsAugmentor = stemService
-}
 func (s *service) Ctor() (contracts_tokenservice.IAuthorizationCodeClaimsAugmentor, error) {
 	return &service{}, nil
 }

@@ -28,6 +28,8 @@ func (s *service) renderCurrentPage() app.UI {
 		return s.profileComposer
 	case contracts_routes.WellknownRoute_PasswordManager:
 		return s.passwordManagerComposer
+	case contracts_routes.WellknownRoute_PasskeyManager:
+		return s.passkeyManagerComposer
 	case contracts_routes.WellknownRoute_LinkedAccounts:
 		return s.linkedAccountsComposer
 	default:

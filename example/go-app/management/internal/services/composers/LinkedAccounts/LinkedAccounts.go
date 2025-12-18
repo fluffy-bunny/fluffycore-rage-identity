@@ -2,6 +2,8 @@ package LinkedAccounts
 
 import (
 	"strconv"
+	"strings"
+	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_go_app_ManagementApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/contracts/ManagementApiClient"
@@ -18,7 +20,8 @@ type (
 		Identity    string
 		Provider    string
 		Email       string
-		LinkedDate  string
+		CreatedOn   int64
+		LastUsedOn  int64
 		IsUnlinking bool
 	}
 
@@ -37,6 +40,24 @@ type (
 var stemService = (*service)(nil)
 
 var _ contracts_App.ILinkedAccountsComposer = stemService
+
+// formatUnixTime converts unix timestamp to friendly date string with time
+func formatUnixTime(unixTime int64) string {
+	if unixTime == 0 {
+		return ""
+	}
+	t := time.Unix(unixTime, 0)
+	return t.Format("January 2, 2006 at 3:04 PM")
+}
+
+// formatLastUsed returns a friendly string for last used timestamp
+func formatLastUsed(lastUsedOn int64) string {
+	if lastUsedOn == 0 {
+		return "Never been used"
+	}
+	t := time.Unix(lastUsedOn, 0)
+	return "Last used on " + t.Format("January 2, 2006 at 3:04 PM")
+}
 
 func (s *service) Ctor(
 	container di.Container,
@@ -93,7 +114,8 @@ func (s *service) OnMount(ctx app.Context) {
 						Identity:    identity.Subject,
 						Provider:    identity.Provider,
 						Email:       identity.Email,
-						LinkedDate:  identity.LinkedAt,
+						CreatedOn:   identity.CreatedOn,
+						LastUsedOn:  identity.LastUsedOn,
 						IsUnlinking: false,
 					}
 				}
@@ -153,9 +175,7 @@ func (s *service) renderAccountsList() app.UI {
 		accountCards[i] = s.renderAccountCard(i)
 	}
 
-	return app.Range(accountCards).Slice(func(i int) app.UI {
-		return accountCards[i]
-	})
+	return app.Div().Style("display", "flex").Style("flex-direction", "column").Style("gap", "1rem").Body(accountCards...)
 }
 
 func (s *service) renderAccountCard(index int) app.UI {
@@ -170,35 +190,49 @@ func (s *service) renderAccountCard(index int) app.UI {
 	return app.Div().Class("profile-card").Body(
 		app.Div().Class("card-header").Body(
 			app.Div().Class("card-header-content").Body(
-				app.Div().Class("card-icon").Class(s.getProviderIconClass(account.Provider)).Body(
-					app.Raw(s.getProviderIcon(account.Provider)),
-				),
+				app.Div().
+					Style("background", "white").
+					Style("border-radius", "50%").
+					Style("width", "48px").
+					Style("height", "48px").
+					Style("min-width", "48px").
+					Style("min-height", "48px").
+					Style("display", "flex").
+					Style("align-items", "center").
+					Style("justify-content", "center").
+					Style("padding", "8px").
+					Style("box-shadow", "0 2px 8px rgba(0,0,0,0.1)").
+					Body(
+						app.Raw(s.getProviderIcon(account.Provider)),
+					),
 				app.Div().Class("card-title-group").Body(
-					app.H2().Text(account.Provider),
-					app.P().Class("card-description").Text(account.Email),
+					app.H2().Text(func() string {
+						title := account.Provider
+						if account.CreatedOn > 0 {
+							title += " (" + formatUnixTime(account.CreatedOn) + ")"
+						}
+						return title
+					}()),
+					app.P().Class("card-description").Text(formatLastUsed(account.LastUsedOn)),
 				),
 			),
-			app.If(!s.isClaimedDomain, func() app.UI {
-				return app.Button().
-					Class("btn-unlink").
-					Disabled(account.IsUnlinking).
-					DataSet("index", index).
-					OnClick(s.handleUnlink).
-					Text(func() string {
-						if account.IsUnlinking {
-							return s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyUnlinkingDotDot)
-						}
-						return s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyUnlink)
-					}())
-			}),
 		),
 		app.Div().Class("card-body").Body(
-			app.Div().Class("info-rows").Body(
-				app.Div().Class("info-row").Body(
-					app.Span().Class("info-label").Text(s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyLinkedOn)),
-					app.Span().Class("info-value").Text(account.LinkedDate),
-				),
-			),
+			app.If(!s.isClaimedDomain, func() app.UI {
+				return app.Div().Class("button-group").Body(
+					app.Button().
+						Class("btn-unlink").
+						Disabled(account.IsUnlinking).
+						DataSet("index", index).
+						OnClick(s.handleUnlink).
+						Text(func() string {
+							if account.IsUnlinking {
+								return s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyUnlinkingDotDot)
+							}
+							return s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyUnlink)
+						}()),
+				)
+			}),
 		),
 	)
 }
@@ -236,38 +270,31 @@ func (s *service) renderErrorBanner() app.UI {
 	)
 }
 
-func (s *service) getProviderIconClass(provider string) string {
-	switch provider {
-	case "Google":
-		return "google-icon"
-	case "Microsoft":
-		return "microsoft-icon"
-	case "GitHub":
-		return "github-icon"
-	case "Facebook":
-		return "facebook-icon"
-	default:
-		return "linked-accounts-icon"
-	}
-}
-
 func (s *service) getProviderIcon(provider string) string {
-	switch provider {
-	case "Google":
-		return `<svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 48 48" width="48px" height="48px"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg>`
-	case "Microsoft":
-		return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="36px" height="36px"><path fill="#ff5722" d="M6 6H22V22H6z" transform="rotate(-180 14 14)"/><path fill="#4caf50" d="M26 6H42V22H26z" transform="rotate(-180 34 14)"/><path fill="#ffc107" d="M26 26H42V42H26z" transform="rotate(-180 34 34)"/><path fill="#03a9f4" d="M6 26H22V42H6z" transform="rotate(-180 14 34)"/></svg>`
-	case "GitHub":
-		return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-</svg>`
-
-	default:
-		return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-			<path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-			<circle cx="8.5" cy="7" r="4"></circle>
-			<line x1="20" y1="8" x2="20" y2="14"></line>
-			<line x1="23" y1="11" x2="17" y2="11"></line>
+	lowerProvider := strings.ToLower(provider)
+	if strings.Contains(lowerProvider, "google") {
+		return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+			<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+			<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+			<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+			<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+		</svg>`
+	} else if strings.Contains(lowerProvider, "microsoft") {
+		return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+			<path d="M11.4 11.4H2V2h9.4v9.4z" fill="#F25022"/>
+			<path d="M22 11.4h-9.4V2H22v9.4z" fill="#7FBA00"/>
+			<path d="M11.4 22H2v-9.4h9.4V22z" fill="#00A4EF"/>
+			<path d="M22 22h-9.4v-9.4H22V22z" fill="#FFB900"/>
+		</svg>`
+	} else if strings.Contains(lowerProvider, "github") {
+		return `<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+			<path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.137 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+		</svg>`
+	} else {
+		// Default chain/link icon for unknown providers
+		return `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2">
+			<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+			<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
 		</svg>`
 	}
 }

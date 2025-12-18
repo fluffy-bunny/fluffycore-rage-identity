@@ -48,6 +48,7 @@ func (r versionedCacheBustingBaseHRefResourceResolver) Resolve(path string) stri
 		"/web/build_version.js",
 		"/web/common.js",
 		"/web/logging-helper.js",
+		"/web/webauthn.js",
 		"/app.js",
 		"/app-worker.js",
 		"/wasm_exec.js",

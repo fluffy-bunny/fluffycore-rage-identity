@@ -21,10 +21,8 @@ type (
 )
 
 var stemService = (*service)(nil)
+var _ contracts_identity.IPasswordHasher = stemService
 
-func init() {
-	var _ contracts_identity.IPasswordHasher = stemService
-}
 func (s *service) Ctor(config *contracts_config.PasswordConfig) (contracts_identity.IPasswordHasher, error) {
 	// Compile the regex
 
