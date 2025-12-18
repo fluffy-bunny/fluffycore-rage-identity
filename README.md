@@ -14,6 +14,69 @@ The use case for this proof is the github.com user experience.
 
 No calls to the userinfo endpoint are supported. id_token is the only thing returned that is useful. It is meant to use that id_token as an argument to an internal token_exchange that knows more about the user in the context of that system.
 
+## Windows 11 Requirements
+
+To run the makefiles and build this project on a fresh Windows 11 machine, you'll need the following prerequisites:
+
+### Essential Tools
+
+- **PowerShell 5.1 or later** (usually pre-installed on Windows 11)
+- **Go 1.25 or later** - Download from [golang.org](https://golang.org/downloads/)
+- **Git for Windows** - Download from [git-scm.com](https://git-scm.com/download/win) (includes Git Bash with Unix tools)
+- **Docker Desktop** - Required for containerization and running docker-compose
+- **Unix Command Line Tools** - Required for makefile commands like `grep`, `awk`, `ls`, `cp`, `rm`, etc.:
+  - **Recommended**: Git Bash (included with Git for Windows) - provides most needed tools
+  - **Alternative**: WSL (Windows Subsystem for Linux) - `wsl --install`
+  - **Alternative**: MSYS2 - Download from [msys2.org](https://www.msys2.org/)
+  - **Alternative**: Individual tools via Chocolatey: `choco install grep sed awk`
+- **Make for Windows** - Several options:
+  - Install via Chocolatey: `choco install make`
+  - Install via winget: `winget install GnuWin32.Make`
+  - Included with Git for Windows (mingw32-make)
+  - Install MinGW-w64 or MSYS2
+
+### Protocol Buffers (for protobuf generation)
+- **protoc compiler** - Download from [protobuf releases](https://github.com/protocolbuffers/protobuf/releases)
+- **Go protobuf tools** (automatically installed via go install commands in the makefiles):
+  ```bash
+  go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest
+  go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest
+  go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+  go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+  ```
+
+### Optional Development Tools
+- **mkcert** - For generating local SSL certificates (referenced in build scripts)
+- **ngrok** - For HTTPS tunneling during passkey development
+- **Chocolatey** or **winget** - Package managers for easier tool installation
+- **VS Code** or **GoLand** - Recommended IDEs for Go development
+
+### Path Configuration
+Ensure the following are in your system PATH:
+- Go binary directory (usually `C:\Program Files\Go\bin`)
+- Git binary directory
+- Docker Desktop binary directory
+- Make binary directory
+- protoc binary directory
+
+### Verification
+After installation, verify your setup by running:
+```powershell
+go version          # Should show Go 1.25+
+git --version       # Should show Git version
+docker --version    # Should show Docker version
+make --version      # Should show Make version
+protoc --version    # Should show protoc version
+grep --version      # Should show grep version (in Git Bash or WSL)
+awk --version       # Should show awk version (in Git Bash or WSL)
+```
+
+### Important Notes for Windows Users
+- **Git Bash is recommended** as it provides most Unix tools needed by the makefiles (grep, awk, ls, cp, rm, etc.)
+- Run makefiles from **Git Bash terminal** rather than Command Prompt or PowerShell for best compatibility
+- If using WSL, you can run the makefiles from within your Linux distribution
+- Some makefile targets include PowerShell fallbacks for Windows compatibility
+
 ## TL;DR
 
 Just configure, build and run this thing;
