@@ -53,5 +53,12 @@
   "totp_enroll": "Enroll Two Factor Authentication",
   "totp_disable": "Disable Two Factor Authentication",
   "totp_enable": "Enable Two Factor Authentication",
-  "totp_authenticator_app_login": "Authenticator App Login"
+  "totp_authenticator_app_login": "Authenticator App Login",
+  "FlowError_AutoAccountCreationNotAllowed": "The username {username} was not found",
+  "FlowError_BadSession": "Your session has expired or is invalid. Please try again.",
+  "FlowError_InvalidRequest": "The request is invalid. Please try again.",
+  "FlowError_EmailSendFailed": "We could not send the verification email. Please try again later.",
+  "FlowError_LinkAccountFailed": "We could not link your accounts. Please try again.",
+  "FlowError_CreateAccountFailed": "We could not create your account. Please try again.",
+  "FlowError_InternalError": "An unexpected error occurred. Please try again later."
 }

@@ -10,10 +10,13 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/contracts/config"
 	contracts_routes "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/contracts/routes"
 	services_ComposerBase "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/ComposerBase"
+	utils "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/utils"
 	contracts_OIDCFlowAppConfig "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/OIDCFlowAppConfig"
+	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_go_app_RageApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/contracts/RageApiClient"
 	external_idp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/external_idp"
 	login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
+	models_errors "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/errors"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
 	zerolog "github.com/rs/zerolog"
 )
@@ -70,13 +73,65 @@ func AddScopedIHomeComposer(cb di.ContainerBuilder) {
 }
 
 func (s *service) OnMount(ctx app.Context) {
+	log := zerolog.Ctx(s.AppContext).With().Str("component", "HomeComposer").Logger()
+	log.Info().Msg("HomeComposer OnMount called")
+
 	oidcFlowConfig, err := s.appConfigAccessor.GetOIDCFlowAppConfig(s.AppContext)
 	if err != nil {
-		log := zerolog.Ctx(s.AppContext).With().Str("component", "HomeComposer").Logger()
 		log.Error().Err(err).Msg("Failed to get OIDC Flow App Config")
 		s.showErrorMessage(ctx, "Configuration error. Please try again later.")
+		return
 	}
 	s.oidcFlowConfig = oidcFlowConfig
+
+	s.checkAndDisplayErrorCookie(ctx)
+}
+
+func (s *service) OnNav(ctx app.Context) {
+	log := zerolog.Ctx(s.AppContext).With().Str("component", "HomeComposer").Logger()
+	log.Info().Msg("HomeComposer OnNav called")
+	s.checkAndDisplayErrorCookie(ctx)
+}
+func stringKeyMapToInterface[T any](input map[string]T) map[string]interface{} {
+	result := make(map[string]interface{})
+	for k, v := range input {
+		result[k] = v
+	}
+	return result
+}
+func (s *service) checkAndDisplayErrorCookie(ctx app.Context) {
+	log := zerolog.Ctx(s.AppContext).With().Str("component", "HomeComposer").Logger()
+
+	// Check for error cookie (e.g., from OAuth2 callback redirects)
+
+	errorCookie, err := utils.GetCookie[contracts_cookies.ErrorCookie]("_error")
+
+	log.Info().
+		Err(err).
+		Interface("errorCookie", errorCookie).
+		Interface("params", errorCookie.Params).
+		Int("paramsLen", len(errorCookie.Params)).
+		Msg("Checking for error cookie")
+	if err == nil && errorCookie.Error != "" {
+		msg := ""
+		errorCookieParams := stringKeyMapToInterface(errorCookie.Params)
+		log.Info().
+			Str("error", errorCookie.Error).
+			Str("code", errorCookie.Code).
+			Interface("params", errorCookie.Params).
+			Interface("convertedParams", errorCookieParams).
+			Msg("Found error cookie from backend, displaying to user")
+		switch errorCookie.Code {
+		case string(models_errors.FlowError_UserNotFound):
+			msg = s.Localizer.GetLocalizedStringF(contracts_LocalizerBundle.LocaleKeyUserNotFoundF, errorCookieParams)
+		default:
+			msg = s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyUnexpectedErrorOccurred)
+		}
+		s.showErrorMessage(ctx, msg)
+
+		// Delete the error cookie after reading it
+		utils.DeleteCookie("_error", utils.CookieOptions{Path: "/"})
+	}
 }
 
 func (s *service) renderPasskeyLogin() app.UI {
