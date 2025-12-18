@@ -16,7 +16,6 @@ import (
 type (
 	service struct {
 		config           *contracts_config.CacheBustingHTMLConfig
-		modifiedContent  string
 		staticMiddleware echo.MiddlewareFunc
 	}
 )
@@ -61,45 +60,16 @@ cacheBustingHTMLConfig := &contracts_config.CacheBustingHTMLConfig{
 func AddScopedIHandler(builder di.ContainerBuilder,
 	config *contracts_config.CacheBustingHTMLConfig) {
 
-	// load the index.html file and cache bust it
-
 	staticMiddleware := middleware.StaticWithConfig(middleware.StaticConfig{
 		Root:   config.StaticPath,
 		HTML5:  false, // Disable HTML5 mode so we can handle SPA fallback ourselves with cache-busted content
 		Browse: false,
 	})
 
-	indexContent, err := os.ReadFile(config.FilePath)
-	if err != nil {
-		panic(err)
-
-	}
-	modifiedContent := string(indexContent)
-	for _, kv := range config.ReplaceParams {
-		if kv == nil ||
-			fluffycore_utils.IsEmptyOrNil(kv.Key) ||
-			fluffycore_utils.IsEmptyOrNil(kv.Value) {
-			continue
-		}
-		modifiedContent = strings.ReplaceAll(modifiedContent, kv.Key, kv.Value)
-	}
-	/*
-		// Generate a unique GUID for cache busting
-		guid := xid.New().String()
-		if pkg_version.Version() != "dev-build" {
-			guid = pkg_version.Version()
-		}
-		// Convert the content to a string
-		contentStr := string(indexContent)
-
-		// Replace all instances of {version} with "guid"
-		modifiedContent := strings.ReplaceAll(contentStr, "{version}", guid)
-	*/
 	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
 		func() (*service, error) {
 			return &service{
 				config:           config,
-				modifiedContent:  modifiedContent,
 				staticMiddleware: staticMiddleware,
 			}, nil
 		},
@@ -120,9 +90,28 @@ func (s *service) Do(c echo.Context) error {
 
 	path := c.Request().URL.Path
 
+	// Set cache-control headers to prevent caching of HTML pages
+	c.Response().Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	c.Response().Header().Set("Pragma", "no-cache")
+	c.Response().Header().Set("Expires", "0")
+
 	// Serve index.html for root path requests
 	if path == s.config.RootPath {
-		return c.HTML(http.StatusOK, s.modifiedContent)
+		// Read and process template on each request (no caching)
+		indexContent, err := os.ReadFile(s.config.FilePath)
+		if err != nil {
+			return err
+		}
+		modifiedContent := string(indexContent)
+		for _, kv := range s.config.ReplaceParams {
+			if kv == nil ||
+				fluffycore_utils.IsEmptyOrNil(kv.Key) ||
+				fluffycore_utils.IsEmptyOrNil(kv.Value) {
+				continue
+			}
+			modifiedContent = strings.ReplaceAll(modifiedContent, kv.Key, kv.Value)
+		}
+		return c.HTML(http.StatusOK, modifiedContent)
 	}
 
 	// Strip the RootPath prefix upfront for all processing
@@ -184,7 +173,21 @@ func (s *service) Do(c echo.Context) error {
 	if ok && httpErr.Code == http.StatusNotFound {
 		// SPA fallback: serve index.html for 404s to support client-side routing
 		// This allows routes like /management/profile to load the WASM app
-		return c.HTML(http.StatusOK, s.modifiedContent)
+		// Read and process template on each request (no caching)
+		indexContent, err := os.ReadFile(s.config.FilePath)
+		if err != nil {
+			return err
+		}
+		modifiedContent := string(indexContent)
+		for _, kv := range s.config.ReplaceParams {
+			if kv == nil ||
+				fluffycore_utils.IsEmptyOrNil(kv.Key) ||
+				fluffycore_utils.IsEmptyOrNil(kv.Value) {
+				continue
+			}
+			modifiedContent = strings.ReplaceAll(modifiedContent, kv.Key, kv.Value)
+		}
+		return c.HTML(http.StatusOK, modifiedContent)
 	}
 
 	// Other errors, return as-is
