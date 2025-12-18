@@ -3,6 +3,7 @@ package LinkedAccounts
 import (
 	"strconv"
 	"strings"
+	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_go_app_ManagementApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/contracts/ManagementApiClient"
@@ -19,7 +20,8 @@ type (
 		Identity    string
 		Provider    string
 		Email       string
-		LinkedDate  string
+		CreatedOn   int64
+		LastUsedOn  int64
 		IsUnlinking bool
 	}
 
@@ -38,6 +40,24 @@ type (
 var stemService = (*service)(nil)
 
 var _ contracts_App.ILinkedAccountsComposer = stemService
+
+// formatUnixTime converts unix timestamp to friendly date string with time
+func formatUnixTime(unixTime int64) string {
+	if unixTime == 0 {
+		return ""
+	}
+	t := time.Unix(unixTime, 0)
+	return t.Format("January 2, 2006 at 3:04 PM")
+}
+
+// formatLastUsed returns a friendly string for last used timestamp
+func formatLastUsed(lastUsedOn int64) string {
+	if lastUsedOn == 0 {
+		return "Never been used"
+	}
+	t := time.Unix(lastUsedOn, 0)
+	return "Last used on " + t.Format("January 2, 2006 at 3:04 PM")
+}
 
 func (s *service) Ctor(
 	container di.Container,
@@ -90,15 +110,12 @@ func (s *service) OnMount(ctx app.Context) {
 				// Convert API response to internal linkedAccount struct
 				s.accounts = make([]linkedAccount, len(response.Response.Identities))
 				for i, identity := range response.Response.Identities {
-					linkedDate := ""
-					if identity.CreatedOn > 0 {
-						linkedDate = strconv.FormatInt(identity.CreatedOn, 10)
-					}
 					s.accounts[i] = linkedAccount{
 						Identity:    identity.Subject,
 						Provider:    identity.Provider,
 						Email:       identity.Email,
-						LinkedDate:  linkedDate,
+						CreatedOn:   identity.CreatedOn,
+						LastUsedOn:  identity.LastUsedOn,
 						IsUnlinking: false,
 					}
 				}
@@ -189,8 +206,14 @@ func (s *service) renderAccountCard(index int) app.UI {
 						app.Raw(s.getProviderIcon(account.Provider)),
 					),
 				app.Div().Class("card-title-group").Body(
-					app.H2().Text(account.Provider+" ("+account.Email+")"),
-					app.P().Class("card-description").Text("Linked on "+account.LinkedDate),
+					app.H2().Text(func() string {
+						title := account.Provider
+						if account.CreatedOn > 0 {
+							title += " (" + formatUnixTime(account.CreatedOn) + ")"
+						}
+						return title
+					}()),
+					app.P().Class("card-description").Text(formatLastUsed(account.LastUsedOn)),
 				),
 			),
 		),

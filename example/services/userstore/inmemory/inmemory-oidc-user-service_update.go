@@ -230,18 +230,56 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 			}
 			switch v := linkedIdentitiesUpdate.Update.(type) {
 			case *proto_oidc_models.LinkedIdentitiesUpdate_Granular_:
-				// Create map of existing identities keyed by subject
+				// Create map of existing identities keyed by subject+idpSlug
 				mapExisting := make(map[string]*proto_oidc_models.Identity)
 				for _, identity := range rageUser.LinkedIdentities.Identities {
-					mapExisting[identity.Subject] = identity
+					key := identity.Subject + ":" + identity.IdpSlug
+					mapExisting[key] = identity
 				}
 				// Remove specified identities
 				for _, identity := range v.Granular.Remove {
-					delete(mapExisting, identity.Subject)
+					key := identity.Subject + ":" + identity.IdpSlug
+					delete(mapExisting, key)
 				}
-				// Add new identities
+				// Add or update identities
+				now := timestamppb.Now()
 				for _, identity := range v.Granular.Add {
-					mapExisting[identity.Subject] = identity
+					key := identity.Subject + ":" + identity.IdpSlug
+					existing := mapExisting[key]
+					if existing != nil {
+						// Merge: preserve CreatedOn, update other fields
+						existing.Email = identity.Email
+						existing.EmailVerified = identity.EmailVerified
+						existing.IdpSlug = identity.IdpSlug
+
+						// UpdatedOn: use provided or set to now
+						if identity.UpdatedOn != nil {
+							existing.UpdatedOn = identity.UpdatedOn
+						} else {
+							existing.UpdatedOn = now
+						}
+
+						// LastUsedOn: use provided value if set
+						if identity.LastUsedOn != nil {
+							existing.LastUsedOn = identity.LastUsedOn
+						}
+
+						// Keep existing.CreatedOn unchanged
+					} else {
+						// New identity - ensure timestamps are set
+						if identity.CreatedOn == nil {
+							identity.CreatedOn = now
+						}
+						if identity.UpdatedOn == nil {
+							identity.UpdatedOn = now
+						}
+						// For new identities, set LastUsedOn to now if not provided
+						// This handles the case where an identity is created during a login flow
+						if identity.LastUsedOn == nil {
+							identity.LastUsedOn = now
+						}
+						mapExisting[key] = identity
+					}
 				}
 				// Rebuild the identities array
 				rageUser.LinkedIdentities.Identities = make([]*proto_oidc_models.Identity, 0, len(mapExisting))

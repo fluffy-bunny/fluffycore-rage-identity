@@ -80,6 +80,22 @@ func (s *service) CreateUser(ctx context.Context, request *proto_external_user.C
 		Enabled:  false,
 		Verified: false, // need to get the code from the auth app and verify it
 	}
+
+	// Set timestamps for linked identities if present
+	if user.RageUser.LinkedIdentities != nil && len(user.RageUser.LinkedIdentities.Identities) > 0 {
+		for _, identity := range user.RageUser.LinkedIdentities.Identities {
+			if identity.CreatedOn == nil {
+				identity.CreatedOn = user.RageUser.RootIdentity.CreatedOn
+			}
+			if identity.UpdatedOn == nil {
+				identity.UpdatedOn = user.RageUser.RootIdentity.UpdatedOn
+			}
+			if identity.LastUsedOn == nil {
+				identity.LastUsedOn = user.RageUser.RootIdentity.CreatedOn
+			}
+		}
+	}
+
 	user.Metadata = append(user.Metadata, &proto_external_models.MetadataRecord{
 		Key:   "integrity_id",
 		Value: "0",

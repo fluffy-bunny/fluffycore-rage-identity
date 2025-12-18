@@ -491,6 +491,7 @@ func (s *service) Do(c echo.Context) error {
 			} else {
 				emailVerified = true
 			}
+			tsNow := timestamppb.Now()
 			createUserResponse, err := s.RageUserService().CreateRageUser(ctx,
 				&proto_oidc_user.CreateRageUserRequest{
 					User: &proto_oidc_models.RageUser{
@@ -499,6 +500,9 @@ func (s *service) Do(c echo.Context) error {
 							IdpSlug:       models.WellknownIdpRoot,
 							Email:         externalIdentity.Email,
 							EmailVerified: emailVerified,
+							CreatedOn:     tsNow,
+							UpdatedOn:     tsNow,
+							LastUsedOn:    tsNow,
 						},
 						LinkedIdentities: &proto_oidc_models.LinkedIdentities{
 							Identities: []*proto_oidc_models.Identity{
@@ -507,6 +511,9 @@ func (s *service) Do(c echo.Context) error {
 									Email:         externalIdentity.Email,
 									IdpSlug:       externalOauth2State.Request.IdpHint,
 									EmailVerified: externalIdentity.EmailVerified,
+									CreatedOn:     tsNow,
+									UpdatedOn:     tsNow,
+									LastUsedOn:    tsNow,
 								},
 							},
 						},
