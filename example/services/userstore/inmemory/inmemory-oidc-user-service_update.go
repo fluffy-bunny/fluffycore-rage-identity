@@ -211,6 +211,10 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 			if fluffycore_utils.IsNotEmptyOrNil(rootIdentityUpdate.Email) {
 				rootIdentity.Email = rootIdentityUpdate.Email.Value
 			}
+			if rootIdentityUpdate.LastUsedOn != nil {
+				rootIdentity.LastUsedOn = rootIdentityUpdate.LastUsedOn
+			}
+
 			return nil
 		}
 		err = doRootIdentityUpdate()
@@ -247,9 +251,14 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 					key := identity.Subject + ":" + identity.IdpSlug
 					existing := mapExisting[key]
 					if existing != nil {
-						// Merge: preserve CreatedOn, update other fields
-						existing.Email = identity.Email
-						existing.EmailVerified = identity.EmailVerified
+						// Merge: preserve CreatedOn, update other fields only if provided
+						if fluffycore_utils.IsNotEmptyOrNil(identity.Email) {
+							existing.Email = identity.Email
+						}
+						// Only update EmailVerified if it's true (we don't want to accidentally set it to false)
+						if identity.EmailVerified {
+							existing.EmailVerified = identity.EmailVerified
+						}
 						existing.IdpSlug = identity.IdpSlug
 
 						// UpdatedOn: use provided or set to now

@@ -234,9 +234,10 @@ func (s *service) Do(c echo.Context) error {
 		*/
 		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
 	}
-	getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
-		State: parentState,
-	})
+	getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().GetAuthorizationRequestState(ctx,
+		&proto_oidc_flows.GetAuthorizationRequestStateRequest{
+			State: parentState,
+		})
 	if err != nil {
 		log.Error().Err(err).Msg("GetAuthorizationRequestState")
 		return s.TeleportBackToLoginWithError(c, InternalError_Callback_001, InternalError_Callback_001)
@@ -355,25 +356,13 @@ func (s *service) Do(c echo.Context) error {
 
 		}
 		loginLinkedUser := func(user *proto_oidc_models.RageUser, directive string) error {
-			if idp.MultiFactorRequired || !user.RootIdentity.EmailVerified {
-				if user.RootIdentity.EmailVerified {
-					return doEmailVerification(user, directive, contracts_cookies.VerifyCode_Challenge)
-				}
-				return doEmailVerification(user, directive, contracts_cookies.VerifyCode_EmailVerification)
-			}
-			authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
-				Subject: user.RootIdentity.Subject,
-				Email:   user.RootIdentity.Email,
-				IdpSlug: externalOauth2State.Request.IdpHint,
-				Acr: []string{
-					fmt.Sprintf("urn:rage:idp:%s", externalOauth2State.Request.IdpHint),
-				},
-				Amr: []string{
-					models.AMRIdp,
-				},
-			}
-
 			// Update LastUsedOn for both external identity and root identity
+			log.Debug().
+				Str("rootSubject", user.RootIdentity.Subject).
+				Str("externalSubject", externalIdentity.Subject).
+				Str("idpSlug", externalOauth2State.Request.IdpHint).
+				Msg("Updating LastUsedOn timestamps for external login")
+
 			_, err := s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
 				User: &proto_oidc_models.RageUserUpdate{
 					RootIdentity: &proto_oidc_models.IdentityUpdate{
@@ -398,12 +387,32 @@ func (s *service) Do(c echo.Context) error {
 			if err != nil {
 				log.Error().Err(err).Msg("Failed to update identity LastUsedOn")
 				// Don't fail login, just log the error
+			} else {
+				log.Info().Msg("Successfully updated LastUsedOn timestamps")
+			}
+			if idp.MultiFactorRequired || !user.RootIdentity.EmailVerified {
+				if user.RootIdentity.EmailVerified {
+					return doEmailVerification(user, directive, contracts_cookies.VerifyCode_Challenge)
+				}
+				return doEmailVerification(user, directive, contracts_cookies.VerifyCode_EmailVerification)
+			}
+			authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
+				Subject: user.RootIdentity.Subject,
+				Email:   user.RootIdentity.Email,
+				IdpSlug: externalOauth2State.Request.IdpHint,
+				Acr: []string{
+					fmt.Sprintf("urn:rage:idp:%s", externalOauth2State.Request.IdpHint),
+				},
+				Amr: []string{
+					models.AMRIdp,
+				},
 			}
 
-			_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-				State:                     parentState,
-				AuthorizationRequestState: authorizationFinal,
-			})
+			_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx,
+				&proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+					State:                     parentState,
+					AuthorizationRequestState: authorizationFinal,
+				})
 			if err != nil {
 				log.Error().Err(err).Msg("StoreAuthorizationRequestState")
 				return s.TeleportBackToLoginWithError(c, InternalError_Callback_002, InternalError_Callback_002)
