@@ -99,10 +99,11 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type LoginGetRequest struct {
-	Email     string `param:"email" query:"email" form:"email" json:"email" xml:"email"`
-	Error     string `param:"error" query:"error" form:"error" json:"error" xml:"error"`
-	ErrorCode string `param:"error_code" query:"error_code" form:"error_code" json:"error_code" xml:"error_code"`
-	Directive string `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
+	Email string `param:"email" query:"email" form:"email" json:"email" xml:"email"`
+	//Error            string            `param:"error" query:"error" form:"error" json:"error" xml:"error"`
+	//ErrorCode        string            `param:"error_code" query:"error_code" form:"error_code" json:"error_code" xml:"error_code"`
+	Directive        string            `param:"directive" query:"directive" form:"directive" json:"directive" xml:"directive"`
+	AdditionalParams map[string]string `param:"additional_params" query:"additional_params" form:"additional_params" json:"additional_params" xml:"additional_params"`
 }
 type ExternalIDPAuthRequest struct {
 	IDPHint string `param:"idp_hint" query:"idp_hint" form:"idp_hint" json:"idp_hint" xml:"idp_hint"`
@@ -131,20 +132,42 @@ func (s *service) DoGet(c echo.Context) error {
 		return s.TeleportBackToLoginWithError(c, InternalError_OIDCLogin_099, InternalError_OIDCLogin_099)
 	}
 	log.Debug().Interface("model", model).Msg("model")
-
 	var errors []string
-	if fluffycore_utils.IsNotEmptyOrNil(model.Error) {
-		code := InternalError_OIDCLogin_099
-		if fluffycore_utils.IsNotEmptyOrNil(model.ErrorCode) {
-			code = model.ErrorCode
+
+	/*
+		// not going to write errors here anymore.
+		// the originator of the error should drop their own cookie.
+			 		// Check for errors from query parameters
+					if fluffycore_utils.IsNotEmptyOrNil(model.Error) {
+						code := InternalError_OIDCLogin_099
+						if fluffycore_utils.IsNotEmptyOrNil(model.ErrorCode) {
+							code = model.ErrorCode
+						}
+						s.wellknownCookies.SetErrorCookie(c, &contracts_cookies.SetErrorCookieRequest{
+							Value: &contracts_cookies.ErrorCookie{
+								Code:  code,
+								Error: model.Error,
+							},
+						})
+						errors = append(errors, model.Error)
+					}
+
+	*/
+
+	// Check for errors from cookie (e.g., from OAuth2 callback redirects)
+	// Note: Don't delete the cookie here - let the WASM app read and delete it
+	errorCookieResponse, err := s.wellknownCookies.GetErrorCookie(c)
+	if err == nil && errorCookieResponse != nil && errorCookieResponse.Value != nil {
+		if fluffycore_utils.IsNotEmptyOrNil(errorCookieResponse.Value.Error) {
+			log.Info().
+				Str("error", errorCookieResponse.Value.Error).
+				Str("code", errorCookieResponse.Value.Code).
+				Msg("Found error cookie (will be displayed by WASM app)")
+			errors = append(errors, errorCookieResponse.Value.Error)
+			// Don't delete the cookie here - the WASM app will read and delete it
 		}
-		s.wellknownCookies.SetErrorCookie(c, &contracts_cookies.SetErrorCookieRequest{
-			Value: &contracts_cookies.ErrorCookie{
-				Code:  code,
-				Error: model.Error,
-			},
-		})
-		errors = append(errors, model.Error)
+	} else if err != nil {
+		log.Debug().Err(err).Msg("No error cookie found")
 	}
 	session, err := s.getSession()
 	if err != nil {

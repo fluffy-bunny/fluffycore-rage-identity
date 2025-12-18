@@ -54,10 +54,8 @@ const (
 var GithubScopes = []string{"user:email"}
 
 var stemService = (*service)(nil)
+var _ contracts_codeexchange.IGithubCodeExchange = stemService
 
-func init() {
-	var _ contracts_codeexchange.IGithubCodeExchange = stemService
-}
 func (s *service) Ctor(config *contracts_config.Config,
 	tokenService contracts_tokenservice.ITokenService,
 	oauth2Factory contracts_oauth2factory.IOAuth2Factory) (contracts_codeexchange.IGithubCodeExchange, error) {

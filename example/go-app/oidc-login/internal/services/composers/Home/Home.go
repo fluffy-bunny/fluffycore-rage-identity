@@ -10,10 +10,13 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/contracts/config"
 	contracts_routes "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/contracts/routes"
 	services_ComposerBase "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/ComposerBase"
+	utils "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/utils"
 	contracts_OIDCFlowAppConfig "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/OIDCFlowAppConfig"
+	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_go_app_RageApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/contracts/RageApiClient"
 	external_idp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/external_idp"
 	login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
+	models_errors "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/errors"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
 	zerolog "github.com/rs/zerolog"
 )
@@ -70,13 +73,86 @@ func AddScopedIHomeComposer(cb di.ContainerBuilder) {
 }
 
 func (s *service) OnMount(ctx app.Context) {
+	log := zerolog.Ctx(s.AppContext).With().Str("component", "HomeComposer").Logger()
+	log.Info().Msg("HomeComposer OnMount called")
+
 	oidcFlowConfig, err := s.appConfigAccessor.GetOIDCFlowAppConfig(s.AppContext)
 	if err != nil {
-		log := zerolog.Ctx(s.AppContext).With().Str("component", "HomeComposer").Logger()
 		log.Error().Err(err).Msg("Failed to get OIDC Flow App Config")
 		s.showErrorMessage(ctx, "Configuration error. Please try again later.")
+		return
 	}
 	s.oidcFlowConfig = oidcFlowConfig
+
+	s.checkAndDisplayErrorCookie(ctx)
+}
+
+func (s *service) OnNav(ctx app.Context) {
+	log := zerolog.Ctx(s.AppContext).With().Str("component", "HomeComposer").Logger()
+	log.Info().Msg("HomeComposer OnNav called")
+	s.checkAndDisplayErrorCookie(ctx)
+}
+func stringKeyMapToInterface[T any](input map[string]T) map[string]interface{} {
+	result := make(map[string]interface{})
+	for k, v := range input {
+		result[k] = v
+	}
+	return result
+}
+func (s *service) checkAndDisplayErrorCookie(ctx app.Context) {
+	log := zerolog.Ctx(s.AppContext).With().Str("component", "HomeComposer").Logger()
+
+	// Check for error cookie (e.g., from OAuth2 callback redirects)
+
+	errorCookie, err := utils.GetCookie[contracts_cookies.ErrorCookie]("_error")
+
+	log.Info().
+		Err(err).
+		Interface("errorCookie", errorCookie).
+		Interface("params", errorCookie.Params).
+		Int("paramsLen", len(errorCookie.Params)).
+		Msg("Checking for error cookie")
+	if err == nil && errorCookie.Error != "" {
+		msg := ""
+		errorCookieParams := stringKeyMapToInterface(errorCookie.Params)
+		log.Info().
+			Str("error", errorCookie.Error).
+			Str("code", errorCookie.Code).
+			Interface("params", errorCookie.Params).
+			Interface("convertedParams", errorCookieParams).
+			Msg("Found error cookie from backend, displaying to user")
+		switch errorCookie.Code {
+		case string(models_errors.FlowError_UserNotFound):
+			msg = s.Localizer.GetLocalizedStringF(contracts_LocalizerBundle.LocaleKeyUserNotFoundF, errorCookieParams)
+		default:
+			msg = s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyUnexpectedErrorOccurred)
+		}
+		s.showErrorMessage(ctx, msg)
+
+		// Delete the error cookie after reading it
+		utils.DeleteCookie("_error", utils.CookieOptions{Path: "/"})
+	}
+}
+
+func (s *service) renderPasskeyLogin() app.UI {
+	return app.Div().Class("passkey-login-section").Body(
+		app.Div().Class("divider").Body(
+			app.Span().Text("or"),
+		),
+		app.Button().
+			Class("passkey-btn").
+			OnClick(s.handlePasskeyLogin).
+			Body(
+				app.Raw(`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<circle cx="7" cy="7" r="2"></circle>
+					<path d="M7 9v4a2 2 0 0 0 2 2h4"></path>
+					<circle cx="19" cy="15" r="4"></circle>
+					<path d="M19 11v-1"></path>
+					<path d="M22 15h-1"></path>
+				</svg>`),
+				app.Span().Text("Sign in with passkey"),
+			),
+	)
 }
 
 func (s *service) renderCreateAccountUI() app.UI {
@@ -104,8 +180,8 @@ func (s *service) Render() app.UI {
 	return app.Div().Class("step-container").Body(
 		app.If(s.showError, s.renderErrorBanner),
 
-		app.H2().Text(s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyWelcomeBack)),
-		app.P().Text(s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyEnterYourEmailToContinue)),
+		//app.H2().Text(s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyWelcomeBack)),
+		//app.P().Text(s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyEnterYourEmailToContinue)),
 
 		app.Form().OnSubmit(s.handleEmailSubmit).Body(
 			app.Div().Class("form-group").Body(
@@ -126,9 +202,13 @@ func (s *service) Render() app.UI {
 			app.Div().Class("button-group").Body(
 				app.Button().
 					Type("submit").
-					Class("btn-primary").
+					Class("passkey-btn").
 					Text(s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyContinue)),
 			),
+		),
+		app.If(
+			s.oidcFlowConfig.EnabledWebAuthN,
+			s.renderPasskeyLogin,
 		),
 		app.If(
 			!s.oidcFlowConfig.DisableSocialAccounts,
@@ -439,6 +519,44 @@ func (s *service) handleDismissError(ctx app.Context, e app.Event) {
 	s.showError = false
 	s.errorMessage = ""
 	ctx.Update()
+}
+
+func (s *service) handlePasskeyLogin(ctx app.Context, e app.Event) {
+	log := zerolog.Ctx(s.AppContext).With().Str("component", "HomeComposer").Logger()
+	log.Info().Msg("Passkey login clicked")
+	e.PreventDefault()
+
+	// Clear any existing email field to ensure clean state
+	s.email = ""
+	s.emailError = ""
+
+	// Always use discoverable credentials flow for passkey login
+	// This ensures the user can select any passkey for any account
+	log.Info().Msg("Using discoverable credentials flow for passkey login")
+
+	// Create error callback that will be called from JavaScript
+	errorCallback := app.FuncOf(func(this app.Value, args []app.Value) interface{} {
+		if len(args) > 0 {
+			errorMsg := args[0].String()
+			log.Error().Str("error", errorMsg).Msg("Passkey login failed")
+			ctx.Dispatch(func(ctx app.Context) {
+				s.showErrorMessage(ctx, errorMsg)
+			})
+		}
+		return nil
+	})
+
+	// Call the WebAuthn JavaScript function directly
+	// This will trigger the browser's passkey selection UI
+	result := app.Window().Call("LoginUser", "", false, errorCallback)
+
+	if !result.Truthy() {
+		log.Error().Msg("Failed to initiate passkey login")
+		s.showErrorMessage(ctx, "Failed to start passkey authentication")
+		return
+	}
+
+	log.Info().Msg("Passkey authentication initiated")
 }
 
 func (s *service) showErrorMessage(ctx app.Context, message string) {

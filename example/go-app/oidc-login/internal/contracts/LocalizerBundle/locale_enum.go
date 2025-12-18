@@ -71,6 +71,7 @@ const (
 	LocaleKeyStartOver LocaleKey = "StartOver"
 	LocaleKeySubmit LocaleKey = "Submit"
 	LocaleKeyUnexpectedErrorOccurred LocaleKey = "UnexpectedErrorOccurred"
+	LocaleKeyUserNotFoundF LocaleKey = "UserNotFoundF"
 	LocaleKeyVerificationCode LocaleKey = "VerificationCode"
 	LocaleKeyVerificationCodeRequired LocaleKey = "VerificationCodeRequired"
 	LocaleKeyVerifyCode LocaleKey = "VerifyCode"
@@ -143,6 +144,7 @@ var AllLocaleKeys = []LocaleKey{
 	LocaleKeyStartOver,
 	LocaleKeySubmit,
 	LocaleKeyUnexpectedErrorOccurred,
+	LocaleKeyUserNotFoundF,
 	LocaleKeyVerificationCode,
 	LocaleKeyVerificationCodeRequired,
 	LocaleKeyVerifyCode,

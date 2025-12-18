@@ -89,6 +89,7 @@ func (r versionedCacheBustingResourceResolver) Resolve(path string) string {
 		"web/m_logo.svg",
 		"/web/build_version.js",
 		"/web/common.js",
+		"/web/webauthn.js",
 		"/app.js",
 		"/app-worker.js",
 		"/wasm_exec.js",

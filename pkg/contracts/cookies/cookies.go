@@ -94,8 +94,9 @@ type (
 		Value *SigninUserNameCookie `json:"signinUserNameCookie"`
 	}
 	ErrorCookie struct {
-		Code  string `json:"code"`
-		Error string `json:"error"`
+		Code   string            `json:"code"`
+		Error  string            `json:"error"`
+		Params map[string]string `json:"params"`
 	}
 	SetErrorCookieRequest struct {
 		Value *ErrorCookie `json:"errorCookie"`

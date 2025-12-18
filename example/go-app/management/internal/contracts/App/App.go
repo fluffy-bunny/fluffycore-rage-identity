@@ -42,4 +42,7 @@ type (
 	ILinkedAccountsComposer interface {
 		contracts_GoApp.IBaseComposer
 	}
+	IPasskeyManagerComposer interface {
+		contracts_GoApp.IBaseComposer
+	}
 )

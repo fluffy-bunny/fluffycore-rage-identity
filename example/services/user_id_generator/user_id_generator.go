@@ -13,10 +13,8 @@ type (
 )
 
 var stemService = (*service)(nil)
+var _ contracts_identity.IUserIdGenerator = stemService
 
-func init() {
-	var _ contracts_identity.IUserIdGenerator = stemService
-}
 func (s *service) Ctor() (contracts_identity.IUserIdGenerator, error) {
 	return &service{}, nil
 }

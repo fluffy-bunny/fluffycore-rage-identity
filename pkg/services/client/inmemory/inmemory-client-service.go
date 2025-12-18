@@ -24,10 +24,8 @@ type (
 )
 
 var stemService = (*service)(nil)
+var _ proto_oidc_client.IFluffyCoreClientServiceServer = stemService
 
-func init() {
-	var _ proto_oidc_client.IFluffyCoreClientServiceServer = stemService
-}
 func (s *service) Ctor(clients *proto_oidc_models.Clients,
 	passwordHasher contracts_identity.IPasswordHasher) (proto_oidc_client.IFluffyCoreClientServiceServer, error) {
 	clientsMap := make(map[string]*proto_oidc_models.Client)

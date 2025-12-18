@@ -74,7 +74,9 @@ var ConfigDefaultJSON = []byte(`
         },
         "returnUrl": "http://{environment}/management/",
         "rageBaseUrl": "http://{environment}",
-        "accountManagementBaseUrl": "http://{environment}"
+        "accountManagementBaseUrl": "http://{environment}",
+        "enabledWebAuthN": true,
+        "enabledTotp": false
     },
     "oidcLoginAppConfig": {
 	    "basehref": "oidc-login",
@@ -83,7 +85,9 @@ var ConfigDefaultJSON = []byte(`
             "logoUrl": "web/m_logo.svg",
             "showBannerVersion": false
         },
-        "rageBaseUrl": "http://{environment}"
+        "rageBaseUrl": "http://{environment}",
+        "enabledWebAuthN": true,
+        "enabledTotp": false
     }
 }
 `)

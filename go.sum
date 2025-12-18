@@ -123,8 +123,6 @@ github.com/fluffy-bunny/fluffy-dozm-di v0.0.5 h1:M8xOsYCRbMpHXj5uDFAzFoZDMf9hdNM
 github.com/fluffy-bunny/fluffy-dozm-di v0.0.5/go.mod h1:PA52mI82qkPp/CFvDcb4vGsRQqN3NP4YM62gCAU7FiA=
 github.com/fluffy-bunny/fluffycore v1.0.229 h1:H4/GbAMDx/3ym1TzngJ3UZR1F4y7fOuTZ0sm/E1N03E=
 github.com/fluffy-bunny/fluffycore v1.0.229/go.mod h1:W3FXtqO82aW4Y8m1s49l6e2U7aUPNMw34TRbuOIxpMc=
-github.com/fluffy-bunny/req/v3 v3.0.0-20251213162032-0048121fe388 h1:wRd7azmZ1+063+GFT850kTy3AhcpOZ+4cr2a3lZUeBI=
-github.com/fluffy-bunny/req/v3 v3.0.0-20251213162032-0048121fe388/go.mod h1:OdtFU+4C4CbodHvxtyyiuhLXv+Il+96LWVFUJs6Achc=
 github.com/fluffy-bunny/viperEx v0.0.34 h1:VUV2Aim5AJppLE0Nql/sudurqXP4neoHd6rN1QPUh3Y=
 github.com/fluffy-bunny/viperEx v0.0.34/go.mod h1:E3GxB/gftRUKZxHfo5tqYzCh7qVzbtGQzScpHmarpK0=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
@@ -235,6 +233,8 @@ github.com/icholy/digest v1.1.0 h1:HfGg9Irj7i+IX1o1QAmPfIBNu/Q5A5Tu3n/MED9k9H4=
 github.com/icholy/digest v1.1.0/go.mod h1:QNrsSGQ5v7v9cReDI0+eyjsXGUoRSUZQHeQ5C4XLa0Y=
 github.com/imkira/go-interpol v1.1.0 h1:KIiKr0VSG2CUW1hl1jpiyuzuJeKUUpC8iM1AIE7N1Vk=
 github.com/imkira/go-interpol v1.1.0/go.mod h1:z0h2/2T3XF8kyEPpRgJ3kmNv+C43p+I/CoI+jC3w2iA=
+github.com/imroc/req/v3 v3.57.0 h1:LMTUjNRUybUkTPn8oJDq8Kg3JRBOBTcnDhKu7mzupKI=
+github.com/imroc/req/v3 v3.57.0/go.mod h1:JL62ey1nvSLq81HORNcosvlf7SxZStONNqOprg0Pz00=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/invopop/jsonschema v0.13.0 h1:KvpoAJWEjR3uD9Kbm2HWJmqsEaHt8lBUpd0qHcIi21E=

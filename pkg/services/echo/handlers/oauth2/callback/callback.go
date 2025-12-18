@@ -34,6 +34,7 @@ import (
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type (
@@ -233,9 +234,10 @@ func (s *service) Do(c echo.Context) error {
 		*/
 		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
 	}
-	getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
-		State: parentState,
-	})
+	getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().GetAuthorizationRequestState(ctx,
+		&proto_oidc_flows.GetAuthorizationRequestStateRequest{
+			State: parentState,
+		})
 	if err != nil {
 		log.Error().Err(err).Msg("GetAuthorizationRequestState")
 		return s.TeleportBackToLoginWithError(c, InternalError_Callback_001, InternalError_Callback_001)
@@ -353,7 +355,89 @@ func (s *service) Do(c echo.Context) error {
 			return nil, status.Error(codes.NotFound, "user not found")
 
 		}
+		doAutoCreateUser := func(externalIdentity *proto_oidc_models.OIDCIdentity) (*proto_oidc_models.RageUser, error) {
+			emailVerified := false
+			emailVerificationRequired := idp.EmailVerificationRequired
+			if emailVerificationRequired {
+				emailVerified = false
+				/*
+					the external IDP may say its been verified, but we don't trust it, we want our own verification
+					if externalIdentity.EmailVerified {
+						emailVerified = true
+					}
+				*/
+			} else {
+				emailVerified = true
+			}
+			tsNow := timestamppb.Now()
+			createUserResponse, err := s.RageUserService().CreateRageUser(ctx,
+				&proto_oidc_user.CreateRageUserRequest{
+					User: &proto_oidc_models.RageUser{
+						RootIdentity: &proto_oidc_models.Identity{
+							Subject:       s.userIdGenerator.GenerateUserId(),
+							IdpSlug:       models.WellknownIdpRoot,
+							Email:         externalIdentity.Email,
+							EmailVerified: emailVerified,
+							CreatedOn:     tsNow,
+							UpdatedOn:     tsNow,
+							LastUsedOn:    tsNow,
+						},
+						LinkedIdentities: &proto_oidc_models.LinkedIdentities{
+							Identities: []*proto_oidc_models.Identity{
+								{
+									Subject:       externalIdentity.Subject,
+									Email:         externalIdentity.Email,
+									IdpSlug:       externalOauth2State.Request.IdpHint,
+									EmailVerified: externalIdentity.EmailVerified,
+									CreatedOn:     tsNow,
+									UpdatedOn:     tsNow,
+									LastUsedOn:    tsNow,
+								},
+							},
+						},
+					},
+				})
+			if err != nil {
+				log.Error().Err(err).Msg("CreateUser")
+				return nil, err
+			}
+			return createUserResponse.User, nil
+		}
 		loginLinkedUser := func(user *proto_oidc_models.RageUser, directive string) error {
+			// Update LastUsedOn for both external identity and root identity
+			log.Debug().
+				Str("rootSubject", user.RootIdentity.Subject).
+				Str("externalSubject", externalIdentity.Subject).
+				Str("idpSlug", externalOauth2State.Request.IdpHint).
+				Msg("Updating LastUsedOn timestamps for external login")
+
+			_, err := s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
+				User: &proto_oidc_models.RageUserUpdate{
+					RootIdentity: &proto_oidc_models.IdentityUpdate{
+						Subject:    user.RootIdentity.Subject,
+						LastUsedOn: timestamppb.Now(),
+					},
+					LinkedIdentities: &proto_oidc_models.LinkedIdentitiesUpdate{
+						Update: &proto_oidc_models.LinkedIdentitiesUpdate_Granular_{
+							Granular: &proto_oidc_models.LinkedIdentitiesUpdate_Granular{
+								Add: []*proto_oidc_models.Identity{
+									{
+										Subject:    externalIdentity.Subject,
+										IdpSlug:    externalOauth2State.Request.IdpHint,
+										LastUsedOn: timestamppb.Now(),
+									},
+								},
+							},
+						},
+					},
+				},
+			})
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to update identity LastUsedOn")
+				// Don't fail login, just log the error
+			} else {
+				log.Info().Msg("Successfully updated LastUsedOn timestamps")
+			}
 			if idp.MultiFactorRequired || !user.RootIdentity.EmailVerified {
 				if user.RootIdentity.EmailVerified {
 					return doEmailVerification(user, directive, contracts_cookies.VerifyCode_Challenge)
@@ -371,10 +455,12 @@ func (s *service) Do(c echo.Context) error {
 					models.AMRIdp,
 				},
 			}
-			_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-				State:                     parentState,
-				AuthorizationRequestState: authorizationFinal,
-			})
+
+			_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx,
+				&proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+					State:                     parentState,
+					AuthorizationRequestState: authorizationFinal,
+				})
 			if err != nil {
 				log.Error().Err(err).Msg("StoreAuthorizationRequestState")
 				return s.TeleportBackToLoginWithError(c, InternalError_Callback_002, InternalError_Callback_002)
@@ -382,33 +468,6 @@ func (s *service) Do(c echo.Context) error {
 			// redirect back
 			return doLoginBounceBack()
 		}
-
-		// is this user already linked.
-		getRageUserResponse, err := s.RageUserService().GetRageUser(ctx,
-			&proto_oidc_user.GetRageUserRequest{
-				By: &proto_oidc_user.GetRageUserRequest_ExternalIdentity{
-					ExternalIdentity: &proto_oidc_models.Identity{
-						Subject: externalIdentity.Subject,
-						IdpSlug: externalOauth2State.Request.IdpHint,
-					},
-				},
-			})
-
-		if err != nil {
-			st, ok := status.FromError(err)
-			if ok && st.Code() == codes.NotFound {
-				err = nil
-			} else {
-				log.Error().Err(err).Msg("GetUser")
-				return s.TeleportBackToLoginWithError(c, InternalError_Callback_003, InternalError_Callback_003)
-			}
-		}
-
-		if getRageUserResponse != nil {
-			user := getRageUserResponse.User
-			return loginLinkedUser(user, models.MFA_VerifyEmailDirective)
-		}
-
 		linkUser := func(candidateUserID string, externalIdentity *proto_oidc_models.OIDCIdentity) (*proto_oidc_models.RageUser, error) {
 			getUserResponse, err := s.RageUserService().GetRageUser(ctx,
 				&proto_oidc_user.GetRageUserRequest{
@@ -448,47 +507,32 @@ func (s *service) Do(c echo.Context) error {
 			}
 			return loginLinkedUser(user, models.MFA_VerifyEmailDirective)
 		}
-		doAutoCreateUser := func() (*proto_oidc_models.RageUser, error) {
-			emailVerified := false
-			emailVerificationRequired := idp.EmailVerificationRequired
-			if emailVerificationRequired {
-				emailVerified = false
-				/*
-					the external IDP may say its been verified, but we don't trust it, we want our own verification
-					if externalIdentity.EmailVerified {
-						emailVerified = true
-					}
-				*/
-			} else {
-				emailVerified = true
-			}
-			createUserResponse, err := s.RageUserService().CreateRageUser(ctx,
-				&proto_oidc_user.CreateRageUserRequest{
-					User: &proto_oidc_models.RageUser{
-						RootIdentity: &proto_oidc_models.Identity{
-							Subject:       s.userIdGenerator.GenerateUserId(),
-							IdpSlug:       models.WellknownIdpRoot,
-							Email:         externalIdentity.Email,
-							EmailVerified: emailVerified,
-						},
-						LinkedIdentities: &proto_oidc_models.LinkedIdentities{
-							Identities: []*proto_oidc_models.Identity{
-								{
-									Subject:       externalIdentity.Subject,
-									Email:         externalIdentity.Email,
-									IdpSlug:       externalOauth2State.Request.IdpHint,
-									EmailVerified: externalIdentity.EmailVerified,
-								},
-							},
-						},
+		// is this user already linked.
+		getRageUserResponse, err := s.RageUserService().GetRageUser(ctx,
+			&proto_oidc_user.GetRageUserRequest{
+				By: &proto_oidc_user.GetRageUserRequest_ExternalIdentity{
+					ExternalIdentity: &proto_oidc_models.Identity{
+						Subject: externalIdentity.Subject,
+						IdpSlug: externalOauth2State.Request.IdpHint,
 					},
-				})
-			if err != nil {
-				log.Error().Err(err).Msg("CreateUser")
-				return nil, err
+				},
+			})
+
+		if err != nil {
+			st, ok := status.FromError(err)
+			if ok && st.Code() == codes.NotFound {
+				err = nil
+			} else {
+				log.Error().Err(err).Msg("GetUser")
+				return s.TeleportBackToLoginWithError(c, InternalError_Callback_003, InternalError_Callback_003)
 			}
-			return createUserResponse.User, nil
 		}
+
+		if getRageUserResponse != nil {
+			user := getRageUserResponse.User
+			return loginLinkedUser(user, models.MFA_VerifyEmailDirective)
+		}
+
 		// in both cases we do an auto link if we get a perfect hit.
 		// a perfect email match beats out a candidate user
 		//--------------------------------------------------------------------------------------------
@@ -511,7 +555,7 @@ func (s *service) Do(c echo.Context) error {
 
 			// is AUTO-ACCOUNT creation enabled for this IDP?
 			if idp.AutoCreate {
-				user, err := doAutoCreateUser()
+				user, err := doAutoCreateUser(externalIdentity)
 				if err != nil {
 					log.Error().Err(err).Msg("doAutoCreateUser")
 					return s.TeleportBackToLoginWithError(c, InternalError_Callback_005, InternalError_Callback_005)
@@ -519,22 +563,24 @@ func (s *service) Do(c echo.Context) error {
 				return loginLinkedUser(user, models.MFA_VerifyEmailDirective)
 
 			}
+			msg := utils.LocalizeWithInterperlate(localizer, "username.not.found", map[string]string{"username": externalIdentity.Email})
+			errorCookie := &contracts_cookies.ErrorCookie{
+				Code:   string(models_errors.FlowError_UserNotFound),
+				Error:  msg,
+				Params: map[string]string{"email": externalIdentity.Email},
+			}
 			// write a current error cookie
 			err = s.wellknownCookies.SetErrorCookie(c, &contracts_cookies.SetErrorCookieRequest{
-				Value: &contracts_cookies.ErrorCookie{
-					Code:  string(models_errors.FlowError_AutoAccountCreationNotAllowed),
-					Error: "auto account creation is not allowed for this identity provider",
-				},
+				Value: errorCookie,
 			})
 			if err != nil {
 				log.Error().Err(err).Msg("SetErrorCookie")
 				err = nil
 			}
 			// we bounce the user back to go through a sigunup flow
-			msg := utils.LocalizeWithInterperlate(localizer, "username.not.found", map[string]string{"username": externalIdentity.Email})
-			return s.TeleportBackToLoginWithError(c, string(models_errors.FlowError_AutoAccountCreationNotAllowed), msg)
+			return s.TeleportBackToLoginWithError(c, string(models_errors.FlowError_UserNotFound), msg)
 		case models.SignupDirective:
-			user, err := doAutoCreateUser()
+			user, err := doAutoCreateUser(externalIdentity)
 			if err != nil {
 				log.Error().Err(err).Msg("doAutoCreateUser")
 				return s.TeleportBackToLoginWithError(c, InternalError_Callback_006, InternalError_Callback_006)

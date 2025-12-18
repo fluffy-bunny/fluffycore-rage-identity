@@ -400,6 +400,8 @@ const configDefaultJSONTemplate = `
 	"oidcFlowAppConfig": {
 		"social_idps": [],
 		"passkey_enabled": false,
+		"enabledWebAuthN": true,
+		"enabledTotp": false,
 		"development_mode": false,
 		"disable_local_account_creation": false,
 		"disable_social_accounts": false

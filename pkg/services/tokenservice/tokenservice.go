@@ -21,10 +21,8 @@ type (
 )
 
 var stemService = (*service)(nil)
+var _ contracts_tokenservice.ITokenService = stemService
 
-func init() {
-	var _ contracts_tokenservice.ITokenService = stemService
-}
 func (s *service) Ctor(
 	oidcConfig *contracts_config.OIDCConfig,
 	jwtMinter fluffycore_contracts_jwtminter.IJWTMinter,

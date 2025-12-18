@@ -110,6 +110,27 @@ func fixHTMLFile(filePath string) error {
 	wizardContainerRegex := regexp.MustCompile(`(?s)<div class="wizard-container">.*?</div>\s*(<aside)`)
 	contentStr = wizardContainerRegex.ReplaceAllString(contentStr, "$1")
 
+	// Move webauthn.js script to load BEFORE wasm_exec.js and app.js (which have defer)
+	// Find webauthn.js script tag (with or without defer)
+	webauthnRegex := regexp.MustCompile(`(?m)^\s*<script\s+(?:defer\s+)?src="web/webauthn\.js[^"]*">\s*</script>\s*\n?`)
+	webauthnScript := webauthnRegex.FindString(contentStr)
+
+	if webauthnScript != "" {
+		// Remove it from current position
+		contentStr = webauthnRegex.ReplaceAllString(contentStr, "")
+
+		// Insert it just before wasm_exec.js (ensure it loads/executes first)
+		// Pattern: find wasm_exec.js and insert webauthn.js before it
+		wasmExecRegex := regexp.MustCompile(`(\s*)(<script\s+defer\s+src="wasm_exec\.js)`)
+
+		// Clean up the webauthn script tag and ensure no defer attribute
+		webauthnClean := strings.TrimSpace(webauthnScript)
+		webauthnClean = strings.ReplaceAll(webauthnClean, " defer ", " ")
+		webauthnClean = strings.ReplaceAll(webauthnClean, "defer ", "")
+
+		contentStr = wasmExecRegex.ReplaceAllString(contentStr, "$1"+webauthnClean+"\n$1$2")
+	}
+
 	// Write back to file
 	err = os.WriteFile(filePath, []byte(contentStr), 0644)
 	if err != nil {

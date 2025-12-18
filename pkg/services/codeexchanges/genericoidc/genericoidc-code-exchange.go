@@ -39,10 +39,8 @@ type (
 )
 
 var stemService = (*service)(nil)
+var _ contracts_codeexchange.IGenericOIDCCodeExchange = stemService
 
-func init() {
-	var _ contracts_codeexchange.IGenericOIDCCodeExchange = stemService
-}
 func (s *service) Ctor(config *contracts_config.Config,
 	tokenService contracts_tokenservice.ITokenService,
 	oauth2Factory contracts_oauth2factory.IOAuth2Factory,

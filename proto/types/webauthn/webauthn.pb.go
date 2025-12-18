@@ -10,6 +10,7 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	_ "google.golang.org/protobuf/types/descriptorpb"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 	reflect "reflect"
 	sync "sync"
@@ -41,7 +42,10 @@ type Credential struct {
 	// The commonly stored flags.
 	Flags *CredentialFlags `protobuf:"bytes,6,opt,name=flags,proto3" json:"flags,omitempty"`
 	// The Authenticator information for a given certificate
-	Authenticator *Authenticator `protobuf:"bytes,7,opt,name=authenticator,proto3" json:"authenticator,omitempty"`
+	Authenticator *Authenticator         `protobuf:"bytes,7,opt,name=authenticator,proto3" json:"authenticator,omitempty"`
+	CreatedOn     *timestamppb.Timestamp `protobuf:"bytes,50,opt,name=created_on,json=createdOn,proto3" json:"created_on,omitempty"`
+	UpdatedOn     *timestamppb.Timestamp `protobuf:"bytes,51,opt,name=updated_on,json=updatedOn,proto3" json:"updated_on,omitempty"`
+	LastUsedOn    *timestamppb.Timestamp `protobuf:"bytes,52,opt,name=last_used_on,json=lastUsedOn,proto3" json:"last_used_on,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -121,6 +125,27 @@ func (x *Credential) GetFlags() *CredentialFlags {
 func (x *Credential) GetAuthenticator() *Authenticator {
 	if x != nil {
 		return x.Authenticator
+	}
+	return nil
+}
+
+func (x *Credential) GetCreatedOn() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedOn
+	}
+	return nil
+}
+
+func (x *Credential) GetUpdatedOn() *timestamppb.Timestamp {
+	if x != nil {
+		return x.UpdatedOn
+	}
+	return nil
+}
+
+func (x *Credential) GetLastUsedOn() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LastUsedOn
 	}
 	return nil
 }
@@ -423,7 +448,7 @@ var File_proto_types_webauthn_webauthn_proto protoreflect.FileDescriptor
 
 const file_proto_types_webauthn_webauthn_proto_rawDesc = "" +
 	"\n" +
-	"#proto/types/webauthn/webauthn.proto\x12\x14proto.types.webauthn\x1a google/protobuf/descriptor.proto\x1a\x1egoogle/protobuf/wrappers.proto\"\xa1\x02\n" +
+	"#proto/types/webauthn/webauthn.proto\x12\x14proto.types.webauthn\x1a google/protobuf/descriptor.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xd5\x03\n" +
 	"\n" +
 	"Credential\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x0f\n" +
@@ -433,7 +458,13 @@ const file_proto_types_webauthn_webauthn_proto_rawDesc = "" +
 	"\x10attestation_type\x18\x04 \x01(\tR\x0fattestationType\x12\x1c\n" +
 	"\ttransport\x18\x05 \x03(\tR\ttransport\x12;\n" +
 	"\x05flags\x18\x06 \x01(\v2%.proto.types.webauthn.CredentialFlagsR\x05flags\x12I\n" +
-	"\rauthenticator\x18\a \x01(\v2#.proto.types.webauthn.AuthenticatorR\rauthenticator\"\xa5\x01\n" +
+	"\rauthenticator\x18\a \x01(\v2#.proto.types.webauthn.AuthenticatorR\rauthenticator\x129\n" +
+	"\n" +
+	"created_on\x182 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedOn\x129\n" +
+	"\n" +
+	"updated_on\x183 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedOn\x12<\n" +
+	"\flast_used_on\x184 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"lastUsedOn\"\xa5\x01\n" +
 	"\x0fCredentialFlags\x12!\n" +
 	"\fuser_present\x18\x01 \x01(\bR\vuserPresent\x12#\n" +
 	"\ruser_verified\x18\x02 \x01(\bR\fuserVerified\x12'\n" +
@@ -476,19 +507,23 @@ var file_proto_types_webauthn_webauthn_proto_goTypes = []any{
 	(*Authenticator)(nil),                  // 2: proto.types.webauthn.Authenticator
 	(*CredentialArrayUpdate)(nil),          // 3: proto.types.webauthn.CredentialArrayUpdate
 	(*CredentialArrayUpdate_Granular)(nil), // 4: proto.types.webauthn.CredentialArrayUpdate.Granular
-	(*wrapperspb.BoolValue)(nil),           // 5: google.protobuf.BoolValue
+	(*timestamppb.Timestamp)(nil),          // 5: google.protobuf.Timestamp
+	(*wrapperspb.BoolValue)(nil),           // 6: google.protobuf.BoolValue
 }
 var file_proto_types_webauthn_webauthn_proto_depIdxs = []int32{
 	1, // 0: proto.types.webauthn.Credential.flags:type_name -> proto.types.webauthn.CredentialFlags
 	2, // 1: proto.types.webauthn.Credential.authenticator:type_name -> proto.types.webauthn.Authenticator
-	4, // 2: proto.types.webauthn.CredentialArrayUpdate.granular:type_name -> proto.types.webauthn.CredentialArrayUpdate.Granular
-	5, // 3: proto.types.webauthn.CredentialArrayUpdate.delete_all:type_name -> google.protobuf.BoolValue
-	0, // 4: proto.types.webauthn.CredentialArrayUpdate.Granular.add:type_name -> proto.types.webauthn.Credential
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	5, // 2: proto.types.webauthn.Credential.created_on:type_name -> google.protobuf.Timestamp
+	5, // 3: proto.types.webauthn.Credential.updated_on:type_name -> google.protobuf.Timestamp
+	5, // 4: proto.types.webauthn.Credential.last_used_on:type_name -> google.protobuf.Timestamp
+	4, // 5: proto.types.webauthn.CredentialArrayUpdate.granular:type_name -> proto.types.webauthn.CredentialArrayUpdate.Granular
+	6, // 6: proto.types.webauthn.CredentialArrayUpdate.delete_all:type_name -> google.protobuf.BoolValue
+	0, // 7: proto.types.webauthn.CredentialArrayUpdate.Granular.add:type_name -> proto.types.webauthn.Credential
+	8, // [8:8] is the sub-list for method output_type
+	8, // [8:8] is the sub-list for method input_type
+	8, // [8:8] is the sub-list for extension type_name
+	8, // [8:8] is the sub-list for extension extendee
+	0, // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_proto_types_webauthn_webauthn_proto_init() }

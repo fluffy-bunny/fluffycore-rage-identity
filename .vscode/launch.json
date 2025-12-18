@@ -15,6 +15,7 @@
             "env": {
                 "ENABLE_GRPC_SERVER_REFLECTION": "true",
                 "DOMAIN":"localhost:9044",
+                "RPID_DOMAIN":"localhost",
                 "COOKIE_DOMAIN":"localhost",                
                 "RAGE_APPLICATION_NAME": "RAGE Account",
                 "RAGE_APPLICATION_ENVIRONMENT":"Development",
@@ -70,8 +71,12 @@
                 "managementAppConfig__returnUrl": "http://localhost:9044/management/",
                 "managementAppConfig__rageBaseUrl": "http://localhost:9044",
                 "managementAppConfig__accountManagementBaseUrl": "http://localhost:9044",
+                "managementAppConfig__enabledWebAuthN": "true",
+                "managementAppConfig__enabledTotp": "true",
+                "managementAppConfig__bannerBranding__showBannerVersion": "true",
 
                 "oidcLoginAppConfig__rageBaseUrl": "http://localhost:9044",
+                "oidcLoginAppConfig__bannerBranding__showBannerVersion": "true",
 
             },
             "args": [ "serve" ]        

@@ -18,10 +18,8 @@ type (
 )
 
 var stemService = (*service)(nil)
+var _ contracts_events.IEventSink = stemService
 
-func init() {
-	var _ contracts_events.IEventSink = stemService
-}
 func (s *service) Ctor() (contracts_events.IEventSink, error) {
 	return &service{}, nil
 }

@@ -60,11 +60,16 @@ const (
 	LocaleKeyLogin LocaleKey = "Login"
 	LocaleKeyLogo LocaleKey = "Logo"
 	LocaleKeyManageYourLinkedAccounts LocaleKey = "ManageYourLinkedAccounts"
+	LocaleKeyManageYourPasskeys LocaleKey = "ManageYourPasskeys"
 	LocaleKeyManageYourPersonalInfo LocaleKey = "ManageYourPersonalInfo"
 	LocaleKeyNewPassword LocaleKey = "NewPassword"
 	LocaleKeyNoLinkedAccounts LocaleKey = "NoLinkedAccounts"
 	LocaleKeyNoLinkedAccountsDescription LocaleKey = "NoLinkedAccountsDescription"
 	LocaleKeyOr LocaleKey = "Or"
+	LocaleKeyPasskeyUsageDefinition LocaleKey = "PasskeyUsageDefinition"
+	LocaleKeyPasskeys LocaleKey = "Passkeys"
+	LocaleKeyPasskeysNotAvailable LocaleKey = "PasskeysNotAvailable"
+	LocaleKeyPasskeysNotAvailableDescription LocaleKey = "PasskeysNotAvailableDescription"
 	LocaleKeyPassword LocaleKey = "Password"
 	LocaleKeyPasswordManager LocaleKey = "PasswordManager"
 	LocaleKeyPasswordMustBeAtLeast8Characters LocaleKey = "PasswordMustBeAtLeast8Characters"
@@ -161,11 +166,16 @@ var AllLocaleKeys = []LocaleKey{
 	LocaleKeyLogin,
 	LocaleKeyLogo,
 	LocaleKeyManageYourLinkedAccounts,
+	LocaleKeyManageYourPasskeys,
 	LocaleKeyManageYourPersonalInfo,
 	LocaleKeyNewPassword,
 	LocaleKeyNoLinkedAccounts,
 	LocaleKeyNoLinkedAccountsDescription,
 	LocaleKeyOr,
+	LocaleKeyPasskeyUsageDefinition,
+	LocaleKeyPasskeys,
+	LocaleKeyPasskeysNotAvailable,
+	LocaleKeyPasskeysNotAvailableDescription,
 	LocaleKeyPassword,
 	LocaleKeyPasswordManager,
 	LocaleKeyPasswordMustBeAtLeast8Characters,

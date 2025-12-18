@@ -22,10 +22,8 @@ type (
 )
 
 var stemService = (*service)(nil)
+var _ proto_oidc_idp.IFluffyCoreIDPServiceServer = stemService
 
-func init() {
-	var _ proto_oidc_idp.IFluffyCoreIDPServiceServer = stemService
-}
 func (s *service) Ctor(idps *proto_oidc_models.IDPs) (proto_oidc_idp.IFluffyCoreIDPServiceServer, error) {
 
 	for _, idp := range idps.Idps {

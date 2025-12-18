@@ -9,10 +9,10 @@ import (
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	proto_types_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types/webauthn"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
-	uuid "github.com/gofrs/uuid"
 	status "github.com/gogo/status"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func (s *service) validateUpdateUserRequest(request *proto_external_user.UpdateUserRequest) error {
@@ -76,20 +76,42 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 					rageUser.WebAuthN.Credentials = make([]*proto_types_webauthn.Credential, 0)
 				}
 			case *proto_types_webauthn.CredentialArrayUpdate_Granular_:
-				mapExisting := make(map[uuid.UUID]*proto_types_webauthn.Credential)
+				// Use credential ID as the map key (not AAGUID which identifies the authenticator model)
+				mapExisting := make(map[string]*proto_types_webauthn.Credential)
 				for _, credential := range rageUser.WebAuthN.Credentials {
-					aaguid, _ := uuid.FromBytes(credential.Authenticator.AAGUID)
-					mapExisting[aaguid] = credential
+					mapExisting[string(credential.ID)] = credential
 				}
-				for _, aaGUID := range v.Granular.RemoveAAGUIDs {
-					aaguid, _ := uuid.FromBytes(aaGUID)
-					delete(mapExisting, aaguid)
+				// Remove credentials by their ID
+				for _, credentialID := range v.Granular.RemoveAAGUIDs {
+					delete(mapExisting, string(credentialID))
 				}
+				// Add or update credentials
 				for _, credential := range v.Granular.Add {
-					aaguid, _ := uuid.FromBytes(credential.Authenticator.AAGUID)
-					mapExisting[aaguid] = credential
+					existing := mapExisting[string(credential.ID)]
+					if existing != nil {
+						// Merge: preserve CreatedOn, update other fields
+						existing.Authenticator = credential.Authenticator
+						existing.PublicKey = credential.PublicKey
+						existing.AttestationType = credential.AttestationType
+						existing.Transport = credential.Transport
+						existing.Flags = credential.Flags
+						if credential.UpdatedOn != nil {
+							existing.UpdatedOn = credential.UpdatedOn
+						}
+						if credential.LastUsedOn != nil {
+							existing.LastUsedOn = credential.LastUsedOn
+						}
+						// Keep existing.CreatedOn unchanged
+					} else {
+						// New credential - ensure CreatedOn is set
+						if credential.CreatedOn == nil {
+							credential.CreatedOn = timestamppb.Now()
+						}
+						mapExisting[string(credential.ID)] = credential
+					}
 				}
-				rageUser.WebAuthN.Credentials = make([]*proto_types_webauthn.Credential, 0)
+				// Rebuild credentials array
+				rageUser.WebAuthN.Credentials = make([]*proto_types_webauthn.Credential, 0, len(mapExisting))
 				for _, credential := range mapExisting {
 					rageUser.WebAuthN.Credentials = append(rageUser.WebAuthN.Credentials, credential)
 				}
@@ -189,6 +211,10 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 			if fluffycore_utils.IsNotEmptyOrNil(rootIdentityUpdate.Email) {
 				rootIdentity.Email = rootIdentityUpdate.Email.Value
 			}
+			if rootIdentityUpdate.LastUsedOn != nil {
+				rootIdentity.LastUsedOn = rootIdentityUpdate.LastUsedOn
+			}
+
 			return nil
 		}
 		err = doRootIdentityUpdate()
@@ -208,18 +234,61 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 			}
 			switch v := linkedIdentitiesUpdate.Update.(type) {
 			case *proto_oidc_models.LinkedIdentitiesUpdate_Granular_:
-				// Create map of existing identities keyed by subject
+				// Create map of existing identities keyed by subject+idpSlug
 				mapExisting := make(map[string]*proto_oidc_models.Identity)
 				for _, identity := range rageUser.LinkedIdentities.Identities {
-					mapExisting[identity.Subject] = identity
+					key := identity.Subject + ":" + identity.IdpSlug
+					mapExisting[key] = identity
 				}
 				// Remove specified identities
 				for _, identity := range v.Granular.Remove {
-					delete(mapExisting, identity.Subject)
+					key := identity.Subject + ":" + identity.IdpSlug
+					delete(mapExisting, key)
 				}
-				// Add new identities
+				// Add or update identities
+				now := timestamppb.Now()
 				for _, identity := range v.Granular.Add {
-					mapExisting[identity.Subject] = identity
+					key := identity.Subject + ":" + identity.IdpSlug
+					existing := mapExisting[key]
+					if existing != nil {
+						// Merge: preserve CreatedOn, update other fields only if provided
+						if fluffycore_utils.IsNotEmptyOrNil(identity.Email) {
+							existing.Email = identity.Email
+						}
+						// Only update EmailVerified if it's true (we don't want to accidentally set it to false)
+						if identity.EmailVerified {
+							existing.EmailVerified = identity.EmailVerified
+						}
+						existing.IdpSlug = identity.IdpSlug
+
+						// UpdatedOn: use provided or set to now
+						if identity.UpdatedOn != nil {
+							existing.UpdatedOn = identity.UpdatedOn
+						} else {
+							existing.UpdatedOn = now
+						}
+
+						// LastUsedOn: use provided value if set
+						if identity.LastUsedOn != nil {
+							existing.LastUsedOn = identity.LastUsedOn
+						}
+
+						// Keep existing.CreatedOn unchanged
+					} else {
+						// New identity - ensure timestamps are set
+						if identity.CreatedOn == nil {
+							identity.CreatedOn = now
+						}
+						if identity.UpdatedOn == nil {
+							identity.UpdatedOn = now
+						}
+						// For new identities, set LastUsedOn to now if not provided
+						// This handles the case where an identity is created during a login flow
+						if identity.LastUsedOn == nil {
+							identity.LastUsedOn = now
+						}
+						mapExisting[key] = identity
+					}
 				}
 				// Rebuild the identities array
 				rageUser.LinkedIdentities.Identities = make([]*proto_oidc_models.Identity, 0, len(mapExisting))

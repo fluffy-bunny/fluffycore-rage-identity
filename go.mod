@@ -2,8 +2,6 @@ module github.com/fluffy-bunny/fluffycore-rage-identity
 
 go 1.25
 
-replace github.com/imroc/req/v3 => github.com/fluffy-bunny/req/v3 v3.0.0-20251213162032-0048121fe388
-
 //replace github.com/fluffy-bunny/fluffycore => ../fluffycore
 
 //replace github.com/fluffy-bunny/viperEx => ../ViperEx
@@ -23,7 +21,7 @@ require (
 	github.com/gogo/status v1.1.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.3
-	github.com/imroc/req/v3 v3.56.0
+	github.com/imroc/req/v3 v3.57.0
 	github.com/labstack/echo/v4 v4.14.0
 	github.com/lestrrat-go/jwx/v2 v2.1.6
 	github.com/maxence-charriere/go-app/v10 v10.1.8

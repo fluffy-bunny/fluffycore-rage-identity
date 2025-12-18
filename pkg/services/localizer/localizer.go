@@ -15,10 +15,8 @@ type (
 )
 
 var stemService = (*service)(nil)
+var _ contracts_localizer.ILocalizer = stemService
 
-func init() {
-	var _ contracts_localizer.ILocalizer = stemService
-}
 func (s *service) Ctor(bundle contracts_localizer.ILocalizerBundle) (contracts_localizer.ILocalizer, error) {
 	return &service{
 		bundle: bundle,

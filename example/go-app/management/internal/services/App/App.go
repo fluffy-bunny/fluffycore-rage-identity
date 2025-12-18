@@ -26,6 +26,7 @@ type (
 		homeComposer            contracts_App.IHomeComposer
 		profileComposer         contracts_App.IProfileComposer
 		passwordManagerComposer contracts_App.IPasswordManagerComposer
+		passkeyManagerComposer  contracts_App.IPasskeyManagerComposer
 		linkedAccountsComposer  contracts_App.ILinkedAccountsComposer
 
 		currentPage      contracts_routes.WellknownRoute
@@ -53,6 +54,7 @@ func (s *service) Ctor(
 	homeComposer contracts_App.IHomeComposer,
 	profileComposer contracts_App.IProfileComposer,
 	passwordManagerComposer contracts_App.IPasswordManagerComposer,
+	passkeyManagerComposer contracts_App.IPasskeyManagerComposer,
 	linkedAccountsComposer contracts_App.ILinkedAccountsComposer,
 
 ) (contracts_App.IApp, error) {
@@ -68,6 +70,7 @@ func (s *service) Ctor(
 		homeComposer:            homeComposer,
 		profileComposer:         profileComposer,
 		passwordManagerComposer: passwordManagerComposer,
+		passkeyManagerComposer:  passkeyManagerComposer,
 		linkedAccountsComposer:  linkedAccountsComposer,
 		isAuthenticated:         false, // Default to unauthenticated
 	}, nil

@@ -80,10 +80,11 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type Profile struct {
-	Email       string `json:"email"` // not editable
-	GivenName   string `json:"givenName"`
-	FamilyName  string `json:"familyName"`
-	PhoneNumber string `json:"phoneNumber"`
+	Email           string `json:"email"` // not editable
+	GivenName       string `json:"givenName"`
+	FamilyName      string `json:"familyName"`
+	PhoneNumber     string `json:"phoneNumber"`
+	IsClaimedDomain bool   `json:"isClaimedDomain"`
 }
 
 func (s *service) Do(c echo.Context) error {
@@ -224,5 +225,23 @@ func (s *service) DoGet(c echo.Context) error {
 			profileResponse.PhoneNumber = user.Profile.PhoneNumbers[0].Number
 		}
 	}
+
+	// Check if user has claimed domain ACR from ClaimsPrincipal
+	cp := s.ClaimsPrincipal()
+	isClaimedDomain := false
+	acrClaims := cp.GetClaimsByType("acr")
+	log.Info().Interface("acrClaims", acrClaims).Int("count", len(acrClaims)).Msg("Checking ACR claims for claimed domain")
+
+	for _, claim := range acrClaims {
+		if claim.Value == "urn:rage:claimed-domain" {
+			isClaimedDomain = true
+			log.Info().Msg("Found claimed domain ACR")
+			break
+		}
+	}
+
+	profileResponse.IsClaimedDomain = isClaimedDomain
+	log.Info().Bool("isClaimedDomain", isClaimedDomain).Msg("Profile response prepared")
+
 	return c.JSONPretty(http.StatusOK, profileResponse, "  ")
 }

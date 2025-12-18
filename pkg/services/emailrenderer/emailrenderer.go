@@ -19,10 +19,8 @@ type (
 )
 
 var stemService = (*service)(nil)
+var _ contracts_email.IEmailRenderer = stemService
 
-func init() {
-	var _ contracts_email.IEmailRenderer = stemService
-}
 func (s *service) Ctor(config *contracts_email.EmailConfig) (contracts_email.IEmailRenderer, error) {
 	return &service{
 		config: config,

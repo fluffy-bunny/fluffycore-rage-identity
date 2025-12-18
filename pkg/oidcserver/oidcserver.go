@@ -42,19 +42,25 @@ import (
 	services_handlers_rest_api_start_over "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_start_over"
 	services_handlers_rest_api_user_identity_info "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_identity_info"
 	services_handlers_rest_api_user_linked_accounts "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_linked_accounts"
+	services_handlers_rest_api_user_passkey_credential "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_passkey_credential"
+	services_handlers_rest_api_user_passkeys "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_passkeys"
 	services_handlers_rest_api_user_remove_passkey "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_remove_passkey"
+	services_handlers_rest_api_user_totp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_totp"
+	services_handlers_rest_api_user_totp_disable "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_totp_disable"
+	services_handlers_rest_api_user_totp_enroll "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_totp_enroll"
+	services_handlers_rest_api_user_totp_verify "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_user_totp_verify"
 	services_handlers_rest_api_verify_code "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_verify_code"
 	services_handlers_rest_api_verify_code_begin "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_verify_code_begin"
 	services_handlers_rest_api_verify_password_strength "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_verify_password_strength"
 	services_handlers_rest_api_verify_username "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_verify_username"
+	services_handlers_webauthn_loginbegin "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_webauthn_login_begin"
+	services_handlers_webauthn_loginfinish "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_webauthn_login_finish"
+	services_handlers_webauthn_registrationbegin "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_webauthn_registration_begin"
+	services_handlers_webauthn_registrationfinish "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_webauthn_registration_finish"
 	services_handlers_signup "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/signup"
 	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/swagger"
 	services_handlers_token_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/token_endpoint"
 	services_handlers_verifycode "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/verifycode"
-	services_handlers_webauthn_loginbegin "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn/loginbegin"
-	services_handlers_webauthn_loginfinish "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn/loginfinish"
-	services_handlers_webauthn_registrationbegin "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn/registrationbegin"
-	services_handlers_webauthn_registrationfinish "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn/registrationfinish"
 	services_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/oidc_session"
 	pkg_types "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/types"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
@@ -249,6 +255,8 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	*/
 	if s.config.WebAuthNConfig != nil && s.config.WebAuthNConfig.Enabled {
 		services_handlers_oidcloginpasskey.AddScopedIHandler(builder)
+		services_handlers_rest_api_user_passkeys.AddScopedIHandler(builder)
+		services_handlers_rest_api_user_passkey_credential.AddScopedIHandler(builder)
 		services_handlers_rest_api_user_remove_passkey.AddScopedIHandler(builder)
 		// WebAuthN Handlers
 		//--------------------------------------------------------
@@ -258,6 +266,14 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 		services_handlers_webauthn_loginbegin.AddScopedIHandler(builder)
 		services_handlers_webauthn_loginfinish.AddScopedIHandler(builder)
 	}
+
+	// TOTP/Authenticator Handlers
+	//----------------
+	services_handlers_rest_api_user_totp.AddScopedIHandler(builder)
+	services_handlers_rest_api_user_totp_enroll.AddScopedIHandler(builder)
+	services_handlers_rest_api_user_totp_verify.AddScopedIHandler(builder)
+	services_handlers_rest_api_user_totp_disable.AddScopedIHandler(builder)
+
 	// sessions
 	//----------------
 	fluffycore_echo_services_sessions_memory_session_store.AddSingletonBackendSessionStore(builder)

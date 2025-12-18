@@ -1,7 +1,8 @@
 package App
 
 import (
-	common "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/common"
+	go_app_common "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/common"
+	"github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/common"
 	contracts_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/LocalizerBundle"
 	contracts_routes "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/routes"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
@@ -202,6 +203,8 @@ func (s *service) renderSidebar() app.UI {
 }
 
 func (s *service) renderAuthenticatedSidebar() app.UI {
+	appConfig := s.appConfigAccessor.GetAppConfig(s.AppContext)
+
 	return app.Div().Class("sidebar-section").Body(
 		app.Div().Class("sidebar-section-title").Text("Account"),
 		s.renderSidebarLink(
@@ -227,6 +230,15 @@ func (s *service) renderAuthenticatedSidebar() app.UI {
 						<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
 						<path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
 					</svg>`,
+		),
+		app.If(appConfig.EnabledWebAuthN,
+			func() app.UI {
+				return s.renderSidebarLink(
+					contracts_routes.WellknownRoute_PasskeyManager,
+					"Passkeys",
+					go_app_common.PasskeyIconSmallSVG,
+				)
+			},
 		),
 		s.renderSidebarLink(
 			contracts_routes.WellknownRoute_LinkedAccounts,
