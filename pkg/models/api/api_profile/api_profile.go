@@ -1,4 +1,4 @@
-package models
+package api_profile
 
 type Profile struct {
 	Subject         string `json:"subject"`

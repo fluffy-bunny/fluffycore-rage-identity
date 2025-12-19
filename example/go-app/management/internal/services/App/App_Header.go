@@ -18,11 +18,7 @@ func (s *service) renderDashboardHeader() app.UI {
 				Class("sidebar-toggle").
 				OnClick(s.handleToggleSidebar).
 				Body(
-					app.Raw(`<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<line x1="3" y1="12" x2="21" y2="12"></line>
-						<line x1="3" y1="6" x2="21" y2="6"></line>
-						<line x1="3" y1="18" x2="21" y2="18"></line>
-					</svg>`),
+					app.Raw(go_app_common.HamburgerMenuIconSmallSVG),
 				),
 			app.Div().Class("dashboard-logo-group").Body(
 				app.Img().
@@ -73,9 +69,7 @@ func (s *service) renderAuthenticatedMenu() app.UI {
 			}).
 			Body(
 				app.Div().Class("user-avatar").Body(
-					app.Raw(`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-								<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-							</svg>`),
+					app.Raw(go_app_common.PersonLoggedInIconSmallSVG),
 				),
 				app.Span().Class("user-name").Text(func() string {
 					if s.profile.Email != "" {
@@ -122,11 +116,7 @@ func (s *service) renderLoginDropdown() app.UI {
 				ctx.Update()
 			}).
 			Body(
-				app.Raw(`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-					<polyline points="10 17 15 12 10 7"></polyline>
-					<line x1="15" y1="12" x2="3" y2="12"></line>
-				</svg>`),
+				app.Raw(go_app_common.SignOutIconSmallSVG),
 				app.Span().Text(s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeySignIn)),
 			),
 	)
@@ -136,16 +126,14 @@ func (s *service) renderUserDropdown() app.UI {
 	return app.Div().Class("user-dropdown").Body(
 		app.Div().Class("user-dropdown-header").Body(
 			app.Div().Class("user-dropdown-avatar").Body(
-				app.Raw(`<svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
-					<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-				</svg>`),
+				app.Raw(go_app_common.PersonLoggedInIconLargeSVG),
 			),
 			app.Div().Class("user-dropdown-info").Body(
 				app.Div().Class("user-dropdown-name").Text(func() string {
 					if s.profile.Email != "" {
 						return s.profile.Email
 					}
-					return "User"
+					return s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyUser)
 				}()),
 				app.Div().Class("user-dropdown-email").Text(func() string {
 					if s.profile.Subject != "" {
@@ -165,22 +153,15 @@ func (s *service) renderUserDropdown() app.UI {
 				ctx.Navigate(contracts_routes.GetFixedRoute(contracts_routes.WellknownRoute_Profile))
 			}).
 			Body(
-				app.Raw(`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-					<circle cx="12" cy="7" r="4"></circle>
-				</svg>`),
-				app.Span().Text("My Profile"),
+				app.Raw(go_app_common.PersonIconSmallSVG),
+				app.Span().Text(s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyMyProfile)),
 			),
 		app.Button().
 			Class("user-dropdown-item").
 			OnClick(s.handleSignOut).
 			Body(
-				app.Raw(`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-					<polyline points="16 17 21 12 16 7"></polyline>
-					<line x1="21" y1="12" x2="9" y2="12"></line>
-				</svg>`),
-				app.Span().Text("Sign Out"),
+				app.Raw(go_app_common.SignOutIconSmallSVG),
+				app.Span().Text(s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeySignOut)),
 			),
 	)
 }
@@ -210,43 +191,31 @@ func (s *service) renderAuthenticatedSidebar() app.UI {
 		s.renderSidebarLink(
 			contracts_routes.WellknownRoute_Home,
 			s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyHome),
-			`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-				<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-				<polyline points="9 22 9 12 15 12 15 22"></polyline>
-			</svg>`,
+			go_app_common.HomeIconSmallSVG,
 		),
 		s.renderSidebarLink(
 			contracts_routes.WellknownRoute_Profile,
-			"Profile",
-			`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-						<circle cx="12" cy="7" r="4"></circle>
-					</svg>`,
+			s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyProfile),
+			go_app_common.PersonIconSmallSVG,
 		),
 		s.renderSidebarLink(
 			contracts_routes.WellknownRoute_PasswordManager,
-			"Password",
-			`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-						<path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-					</svg>`,
+			s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyPassword),
+			go_app_common.LockIconSmallSVG,
 		),
 		app.If(appConfig.EnabledWebAuthN,
 			func() app.UI {
 				return s.renderSidebarLink(
 					contracts_routes.WellknownRoute_PasskeyManager,
-					"Passkeys",
+					s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyPasskeys),
 					go_app_common.PasskeyIconSmallSVG,
 				)
 			},
 		),
 		s.renderSidebarLink(
 			contracts_routes.WellknownRoute_LinkedAccounts,
-			"Linked Accounts",
-			`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-						<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-					</svg>`,
+			s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyLinkedAccounts),
+			go_app_common.LinkIconSmallSVG,
 		),
 	)
 }
@@ -256,10 +225,7 @@ func (s *service) renderUnauthenticatedSidebar() app.UI {
 		s.renderSidebarLink(
 			contracts_routes.WellknownRoute_Home,
 			s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyHome),
-			`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-				<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-				<polyline points="9 22 9 12 15 12 15 22"></polyline>
-			</svg>`,
+			go_app_common.HomeIconSmallSVG,
 		),
 	)
 }

@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	models "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/models"
 	rage_contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
+	models_api_linked_identities "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_linked_identities"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	proto_external_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/models"
 	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
@@ -187,7 +187,7 @@ func (s *service) DoDelete(c echo.Context) error {
 	}
 
 	log.Info().Str("identity", identity).Msg("Successfully deleted linked account")
-	return c.JSONPretty(http.StatusOK, &models.DeleteLinkedAccountResponse{Success: true}, "  ")
+	return c.JSONPretty(http.StatusOK, &models_api_linked_identities.DeleteLinkedAccountResponse{Success: true}, "  ")
 }
 
 // DoGet godoc
@@ -232,8 +232,8 @@ func (s *service) DoGet(c echo.Context) error {
 	}
 
 	user := getUserResponse.User
-	response := &models.LinkedAccountsResponse{
-		Identities: []models.LinkedIdentity{},
+	response := &models_api_linked_identities.LinkedAccountsResponse{
+		Identities: []models_api_linked_identities.LinkedIdentity{},
 	}
 
 	// Extract linked identities from user
@@ -260,7 +260,7 @@ func (s *service) DoGet(c echo.Context) error {
 				lastUsedOn = identity.LastUsedOn.AsTime().Unix()
 			}
 
-			response.Identities = append(response.Identities, models.LinkedIdentity{
+			response.Identities = append(response.Identities, models_api_linked_identities.LinkedIdentity{
 				Subject:    identity.Subject,
 				Provider:   provider,
 				Email:      email,

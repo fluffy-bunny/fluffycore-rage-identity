@@ -10,7 +10,9 @@ import (
 	contracts_App "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/App"
 	contracts_Localizer "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/Localizer"
 	contracts_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/LocalizerBundle"
+	contracts_routes "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/routes"
 	services_ComposerBase "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/ComposerBase"
+	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
 	zerolog "github.com/rs/zerolog"
 )
@@ -84,9 +86,34 @@ func AddScopedILinkedAccountsComposer(cb di.ContainerBuilder) {
 
 func (s *service) OnMount(ctx app.Context) {
 	log := zerolog.Ctx(s.AppContext).With().Str("component", "LinkedAccounts").Logger()
-	log.Info().Msg("LinkedAccounts page mounted, fetching linked accounts")
+	log.Info().Msg("LinkedAccounts page mounted")
 
-	// Fetch linked accounts from API
+	// First check authentication by fetching user profile
+	ctx.Async(func() {
+		response, err := s.managementApiClient.GetUserProfile(s.AppContext)
+		ctx.Dispatch(func(ctx app.Context) {
+			if err == nil && response != nil && response.Code == 200 && response.Response != nil {
+				s.isClaimedDomain = response.Response.IsClaimedDomain
+				log.Info().Bool("isClaimedDomain", s.isClaimedDomain).Msg("Profile loaded, fetching linked accounts")
+
+				// User is authenticated, now fetch linked accounts
+				s.loadLinkedAccounts(ctx)
+			} else {
+				// User is not authenticated, redirect to login
+				log.Warn().Msg("User not authenticated, redirecting to login")
+				s.isLoading = false
+				s.handleLoginWithReturnURL(ctx)
+				return
+			}
+		})
+	})
+}
+
+// loadLinkedAccounts fetches linked accounts from the API
+func (s *service) loadLinkedAccounts(ctx app.Context) {
+	log := zerolog.Ctx(s.AppContext).With().Str("component", "LinkedAccounts").Logger()
+	log.Info().Msg("Loading linked accounts")
+
 	ctx.Async(func() {
 		response, err := s.managementApiClient.GetUserLinkedAccounts(s.AppContext)
 		ctx.Dispatch(func(ctx app.Context) {
@@ -101,10 +128,8 @@ func (s *service) OnMount(ctx app.Context) {
 			}
 
 			if response != nil && response.Code == 200 && response.Response != nil {
-				s.isClaimedDomain = response.Response.IsClaimedDomain
 				log.Info().
 					Int("count", len(response.Response.Identities)).
-					Bool("isClaimedDomain", s.isClaimedDomain).
 					Msg("Linked accounts loaded")
 
 				// Convert API response to internal linkedAccount struct
@@ -343,6 +368,40 @@ func (s *service) handleUnlink(ctx app.Context, e app.Event) {
 				account.IsUnlinking = false
 			}
 			ctx.Update()
+		})
+	})
+}
+func (s *service) handleLoginWithReturnURL(ctx app.Context) {
+	log := zerolog.Ctx(s.AppContext).With().Str("component", "LinkedAccounts").Logger()
+	returnURL := contracts_routes.GetFixedRoute(contracts_routes.WellknownRoute_LinkedAccounts)
+	log.Info().Str("returnURL", returnURL).Msg("Initiating login with return URL")
+
+	ctx.Async(func() {
+		// Call login API with return URL
+		response, err := s.managementApiClient.Login(s.AppContext,
+			&models_api_login_models.LoginRequest{
+				ReturnURL: returnURL,
+			})
+		ctx.Dispatch(func(ctx app.Context) {
+			if err != nil {
+				log.Error().Err(err).Msg("login failed")
+				return
+			}
+
+			if response != nil {
+				switch response.Code {
+				case 404:
+					log.Error().Msg("login returned 404")
+					return
+				}
+
+				// Check if we got a redirect URL in the response
+				if response.Response != nil && response.Response.RedirectURL != "" {
+					log.Info().Str("redirectURL", response.Response.RedirectURL).Msg("Redirecting to login URL")
+					app.Window().Get("location").Set("href", response.Response.RedirectURL)
+					return
+				}
+			}
 		})
 	})
 }

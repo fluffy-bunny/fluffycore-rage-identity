@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	models "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/models"
 	contracts_OIDCFlowAppConfig "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/OIDCFlowAppConfig"
-	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/common"
+	common "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/common"
 	contracts_go_app_RageApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/contracts/RageApiClient"
+	models_api_passkey "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_passkey"
 	models_api_external_idp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/external_idp"
 	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	models_api_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
@@ -235,9 +235,9 @@ func (s *service) DisableTOTP(ctx context.Context) ([]byte, error) {
 
 // Passkey APIs - HTTP-based implementations (avoiding JS fetch interop)
 // These use Go's native http.Client which automatically includes cookies
-func (s *service) GetPasskeysHTTP(ctx context.Context) (*common.WrappedResonseT[*models.PasskeysResponse], error) {
+func (s *service) GetPasskeysHTTP(ctx context.Context) (*common.WrappedResonseT[*models_api_passkey.PasskeysResponse], error) {
 
-	resp, err := common.HTTPFetchWrappedResponseT[*models.PasskeysResponse](ctx,
+	resp, err := common.HTTPFetchWrappedResponseT[*models_api_passkey.PasskeysResponse](ctx,
 		&common.CallInput{
 			Method:        "GET",
 			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_Passkeys),
@@ -247,11 +247,11 @@ func (s *service) GetPasskeysHTTP(ctx context.Context) (*common.WrappedResonseT[
 
 }
 
-func (s *service) DeletePasskeyHTTP(ctx context.Context, request *models.PasskeyDeleteRequest) (*common.WrappedResonseT[*models.PasskeyDeleteResponse], error) {
+func (s *service) DeletePasskeyHTTP(ctx context.Context, request *models_api_passkey.PasskeyDeleteRequest) (*common.WrappedResonseT[*models_api_passkey.PasskeyDeleteResponse], error) {
 
 	url := s.fixUpRageApi(ctx, wellknown_echo.API_Passkeys) + "/" + request.CredentialID
 
-	resp, err := common.HTTPFetchWrappedResponseT[*models.PasskeyDeleteResponse](ctx,
+	resp, err := common.HTTPFetchWrappedResponseT[*models_api_passkey.PasskeyDeleteResponse](ctx,
 		&common.CallInput{
 			Method:        "DELETE",
 			Url:           url,
@@ -261,11 +261,11 @@ func (s *service) DeletePasskeyHTTP(ctx context.Context, request *models.Passkey
 
 }
 
-func (s *service) RenamePasskeyHTTP(ctx context.Context, request *models.PasskeyRenameRequest) (*common.WrappedResonseT[*models.PasskeyRenameResponse], error) {
+func (s *service) RenamePasskeyHTTP(ctx context.Context, request *models_api_passkey.PasskeyRenameRequest) (*common.WrappedResonseT[*models_api_passkey.PasskeyRenameResponse], error) {
 	url := s.fixUpRageApi(ctx, wellknown_echo.API_Passkeys) + "/" + request.CredentialID
 	requestBody := map[string]string{"friendlyName": request.FriendlyName}
 
-	resp, err := common.HTTPFetchWrappedResponseT[*models.PasskeyRenameResponse](ctx,
+	resp, err := common.HTTPFetchWrappedResponseT[*models_api_passkey.PasskeyRenameResponse](ctx,
 		&common.CallInput{
 			Method:        "PATCH",
 			Url:           url,

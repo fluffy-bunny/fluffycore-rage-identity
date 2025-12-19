@@ -2,6 +2,7 @@ package Home
 
 import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	"github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/common"
 	go_app_common "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/common"
 	contracts_go_app_ManagementApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/contracts/ManagementApiClient"
 	contracts_App "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/App"
@@ -73,9 +74,7 @@ func (s *service) Render() app.UI {
 				"security-icon",
 				s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeySecureAuthentication),
 				s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyProtectYourAccountWithAdvancedSecurity),
-				`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-						<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-					</svg>`,
+				common.SheildIconLargeSVG,
 				contracts_routes.WellknownRoute_PasswordManager,
 			),
 			app.If(appConfig.EnabledWebAuthN, func() app.UI {
@@ -84,15 +83,6 @@ func (s *service) Render() app.UI {
 					s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyPasskeys),
 					s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyManageYourPasskeys),
 					go_app_common.PasskeyIconLargeSVG,
-					/*
-						`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-							<circle cx="7" cy="7" r="2"></circle>
-							<path d="M7 9v4a2 2 0 0 0 2 2h4"></path>
-							<circle cx="19" cy="15" r="4"></circle>
-							<path d="M19 11v-1"></path>
-							<path d="M22 15h-1"></path>
-						</svg>`,
-					*/
 					contracts_routes.WellknownRoute_PasskeyManager,
 				)
 			}),
@@ -100,20 +90,14 @@ func (s *service) Render() app.UI {
 				"accounts-icon",
 				s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyLinkedAccounts),
 				s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyConnectMultipleAccountsInOnePlace),
-				`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-					<path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-				</svg>`,
+				common.LinkIconLargeSVG,
 				contracts_routes.WellknownRoute_LinkedAccounts,
 			),
 			s.renderFeatureCard(
 				"privacy-icon",
 				s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyYourPrivacyMatters),
 				s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyWeKeepYourDataSafeAndPrivate),
-				`<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-					<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-					<path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-				</svg>`,
+				common.LockIconLargeSVG,
 				contracts_routes.WellknownRoute_Profile,
 			),
 		),

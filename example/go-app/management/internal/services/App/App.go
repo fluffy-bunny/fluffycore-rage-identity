@@ -10,7 +10,7 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/config"
 	contracts_routes "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/routes"
 	services_ComposerBase "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/ComposerBase"
-	models "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/models"
+	models_api_profile "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_profile"
 	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
 	zerolog "github.com/rs/zerolog"
@@ -35,7 +35,7 @@ type (
 		showSidebar      bool
 		isAuthenticated  bool
 		isClaimedDomain  bool
-		profile          *models.Profile
+		profile          *models_api_profile.Profile
 	}
 )
 

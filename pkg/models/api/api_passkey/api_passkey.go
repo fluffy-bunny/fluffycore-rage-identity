@@ -1,4 +1,4 @@
-package models
+package api_passkey
 
 type PasskeyItem struct {
 	ID           string `json:"id"`

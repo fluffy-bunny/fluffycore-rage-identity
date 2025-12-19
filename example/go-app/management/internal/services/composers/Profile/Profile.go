@@ -6,8 +6,10 @@ import (
 	contracts_App "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/App"
 	contracts_Localizer "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/Localizer"
 	contracts_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/LocalizerBundle"
+	contracts_routes "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/routes"
 	services_ComposerBase "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/ComposerBase"
-	models "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/models"
+	models_api_profile "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_profile"
+	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
 	zerolog "github.com/rs/zerolog"
 )
@@ -256,7 +258,7 @@ func (s *service) handleSavePersonalInfo(ctx app.Context, e app.Event) {
 	ctx.Update()
 
 	ctx.Async(func() {
-		response, err := s.managementApiClient.UpdateUserProfile(s.AppContext, &models.Profile{
+		response, err := s.managementApiClient.UpdateUserProfile(s.AppContext, &models_api_profile.Profile{
 			Subject:     s.subject,
 			GivenName:   s.firstName,
 			FamilyName:  s.lastName,
@@ -309,15 +311,7 @@ func (s *service) OnMount(ctx app.Context) {
 		ctx.Dispatch(func(ctx app.Context) {
 			s.isLoading = false
 
-			if err != nil {
-				log.Error().Err(err).Msg("Failed to load profile")
-				s.errorMessage = s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyFailedToLoadProfile)
-				s.showError = true
-				ctx.Update()
-				return
-			}
-
-			if response != nil && response.Code == 200 && response.Response != nil {
+			if err == nil && response != nil && response.Code == 200 && response.Response != nil {
 				log.Info().Msg("Profile loaded successfully")
 				profile := response.Response
 				s.subject = profile.Subject
@@ -326,13 +320,48 @@ func (s *service) OnMount(ctx app.Context) {
 				s.lastName = profile.FamilyName
 				s.phoneNumber = profile.PhoneNumber
 				s.isClaimedDomain = profile.IsClaimedDomain
+				ctx.Update()
 			} else {
-				log.Error().Int("code", response.Code).Msg("Unexpected response code")
-				s.errorMessage = s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyFailedToLoadProfile)
-				s.showError = true
+				// User is not authenticated, redirect to login
+				log.Warn().Msg("User not authenticated, redirecting to login")
+				s.handleLoginWithReturnURL(ctx)
+				return
+			}
+		})
+	})
+}
+
+func (s *service) handleLoginWithReturnURL(ctx app.Context) {
+	log := zerolog.Ctx(s.AppContext).With().Str("component", "ProfileComposer").Logger()
+	returnURL := contracts_routes.GetFixedRoute(contracts_routes.WellknownRoute_Profile)
+	log.Info().Str("returnURL", returnURL).Msg("Initiating login with return URL")
+
+	ctx.Async(func() {
+		// Call login API with return URL
+		response, err := s.managementApiClient.Login(s.AppContext,
+			&models_api_login_models.LoginRequest{
+				ReturnURL: returnURL,
+			})
+		ctx.Dispatch(func(ctx app.Context) {
+			if err != nil {
+				log.Error().Err(err).Msg("login failed")
+				return
 			}
 
-			ctx.Update()
+			if response != nil {
+				switch response.Code {
+				case 404:
+					log.Error().Msg("login returned 404")
+					return
+				}
+
+				// Check if we got a redirect URL in the response
+				if response.Response != nil && response.Response.RedirectURL != "" {
+					log.Info().Str("redirectURL", response.Response.RedirectURL).Msg("Redirecting to login URL")
+					app.Window().Get("location").Set("href", response.Response.RedirectURL)
+					return
+				}
+			}
 		})
 	})
 }

@@ -48,12 +48,14 @@ const (
 	LocaleKeyInvalidRedirectURL LocaleKey = "InvalidRedirectURL"
 	LocaleKeyInvalidResponseFromServer LocaleKey = "InvalidResponseFromServer"
 	LocaleKeyInvalidVerificationCode LocaleKey = "InvalidVerificationCode"
+	LocaleKeyLinkedAccounts LocaleKey = "LinkedAccounts"
 	LocaleKeyLoadingDotDot LocaleKey = "LoadingDotDot"
 	LocaleKeyLogo LocaleKey = "Logo"
 	LocaleKeyNewPassword LocaleKey = "NewPassword"
 	LocaleKeyNotFound LocaleKey = "NotFound"
 	LocaleKeyOr LocaleKey = "Or"
 	LocaleKeyOrSignInWith LocaleKey = "OrSignInWith"
+	LocaleKeyPasskeys LocaleKey = "Passkeys"
 	LocaleKeyPassword LocaleKey = "Password"
 	LocaleKeyPasswordConfirmIsRequired LocaleKey = "PasswordConfirmIsRequired"
 	LocaleKeyPasswordIsRequired LocaleKey = "PasswordIsRequired"
@@ -61,11 +63,13 @@ const (
 	LocaleKeyPasswordRequired LocaleKey = "PasswordRequired"
 	LocaleKeyPasswordTooWeak LocaleKey = "PasswordTooWeak"
 	LocaleKeyPasswordsDoNotMatch LocaleKey = "PasswordsDoNotMatch"
+	LocaleKeyProfile LocaleKey = "Profile"
 	LocaleKeyProviderNotFound LocaleKey = "ProviderNotFound"
 	LocaleKeyRageAccounts LocaleKey = "RageAccounts"
 	LocaleKeyResetPassword LocaleKey = "ResetPassword"
 	LocaleKeyResettingPasswordDotDot LocaleKey = "ResettingPasswordDotDot"
 	LocaleKeySignIn LocaleKey = "SignIn"
+	LocaleKeySigninWithPasskey LocaleKey = "SigninWithPasskey"
 	LocaleKeySigningInDotDot LocaleKey = "SigningInDotDot"
 	LocaleKeySomethingWentWrong LocaleKey = "SomethingWentWrong"
 	LocaleKeyStartOver LocaleKey = "StartOver"
@@ -121,12 +125,14 @@ var AllLocaleKeys = []LocaleKey{
 	LocaleKeyInvalidRedirectURL,
 	LocaleKeyInvalidResponseFromServer,
 	LocaleKeyInvalidVerificationCode,
+	LocaleKeyLinkedAccounts,
 	LocaleKeyLoadingDotDot,
 	LocaleKeyLogo,
 	LocaleKeyNewPassword,
 	LocaleKeyNotFound,
 	LocaleKeyOr,
 	LocaleKeyOrSignInWith,
+	LocaleKeyPasskeys,
 	LocaleKeyPassword,
 	LocaleKeyPasswordConfirmIsRequired,
 	LocaleKeyPasswordIsRequired,
@@ -134,11 +140,13 @@ var AllLocaleKeys = []LocaleKey{
 	LocaleKeyPasswordRequired,
 	LocaleKeyPasswordTooWeak,
 	LocaleKeyPasswordsDoNotMatch,
+	LocaleKeyProfile,
 	LocaleKeyProviderNotFound,
 	LocaleKeyRageAccounts,
 	LocaleKeyResetPassword,
 	LocaleKeyResettingPasswordDotDot,
 	LocaleKeySignIn,
+	LocaleKeySigninWithPasskey,
 	LocaleKeySigningInDotDot,
 	LocaleKeySomethingWentWrong,
 	LocaleKeyStartOver,

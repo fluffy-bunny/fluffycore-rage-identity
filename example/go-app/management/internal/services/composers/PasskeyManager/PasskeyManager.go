@@ -9,9 +9,11 @@ import (
 	contracts_App "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/App"
 	contracts_Localizer "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/Localizer"
 	contracts_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/LocalizerBundle"
+	contracts_routes "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/routes"
 	services_ComposerBase "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/ComposerBase"
-	models "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/models"
-	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/common"
+	common "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/common"
+	models_api_passkey "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_passkey"
+	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
 	zerolog "github.com/rs/zerolog"
 )
@@ -110,9 +112,10 @@ func (s *service) OnMount(ctx app.Context) {
 					ctx.Update()
 				}
 			} else {
-				log.Error().Err(err).Msg("Failed to load profile")
-				s.isLoading = false
-				ctx.Update()
+				// User is not authenticated, redirect to login
+				log.Warn().Msg("User not authenticated, redirecting to login")
+				s.handleLoginWithReturnURL(ctx)
+				return
 			}
 		})
 	})
@@ -134,7 +137,7 @@ func (s *service) loadPasskeys(ctx app.Context) {
 				s.errorMessage = "Failed to load passkeys. Please try again."
 				s.showError = true
 			} else if response != nil && response.Code == 200 {
-				var passkeys []models.PasskeyItem
+				var passkeys []models_api_passkey.PasskeyItem
 				if response.Response != nil && response.Response.Passkeys != nil {
 					passkeys = response.Response.Passkeys
 				}
@@ -177,7 +180,7 @@ func (s *service) loadPasskeysSync(ctx app.Context) {
 		s.errorMessage = "Failed to load passkeys. Please try again."
 		s.showError = true
 	} else if response != nil && response.Code == 200 {
-		var passkeys []models.PasskeyItem
+		var passkeys []models_api_passkey.PasskeyItem
 		if response.Response != nil && response.Response.Passkeys != nil {
 			passkeys = response.Response.Passkeys
 		}
@@ -610,7 +613,7 @@ func (s *service) handleSaveRename(index int) app.EventHandler {
 		ctx.Async(func() {
 			app.Log("🔵 About to call RenamePasskeyHTTP API")
 			response, err := s.managementApiClient.RenamePasskeyHTTP(s.AppContext,
-				&models.PasskeyRenameRequest{
+				&models_api_passkey.PasskeyRenameRequest{
 					CredentialID: credentialID,
 					FriendlyName: newName,
 				})
@@ -674,12 +677,12 @@ func (s *service) handleConfirmDelete(ctx app.Context, e app.Event) {
 	ctx.Async(func() {
 		app.Log("🔴 Calling DeletePasskeyHTTP API...")
 		deleteResp, deleteErr := s.managementApiClient.DeletePasskeyHTTP(s.AppContext,
-			&models.PasskeyDeleteRequest{
+			&models_api_passkey.PasskeyDeleteRequest{
 				CredentialID: credentialID,
 			})
 		app.Log("🔴 Delete complete - err:", deleteErr, "response code:", deleteResp)
 
-		var loadResp *common.WrappedResonseT[models.PasskeysResponse]
+		var loadResp *common.WrappedResonseT[models_api_passkey.PasskeysResponse]
 		var loadErr error
 
 		// If delete successful, immediately load fresh passkey list
@@ -718,7 +721,7 @@ func (s *service) handleConfirmDelete(ctx app.Context, e app.Event) {
 
 				// Update passkeys list from the fresh load
 				if loadErr == nil && loadResp != nil && loadResp.Code == 200 {
-					var passkeys []models.PasskeyItem
+					var passkeys []models_api_passkey.PasskeyItem
 					if loadResp.Response != nil && loadResp.Response.Passkeys != nil {
 						passkeys = loadResp.Response.Passkeys
 					}
@@ -760,6 +763,41 @@ func (s *service) handleCloseError(ctx app.Context, e app.Event) {
 func (s *service) handleCloseSuccess(ctx app.Context, e app.Event) {
 	s.showSuccess = false
 	ctx.Update()
+}
+
+func (s *service) handleLoginWithReturnURL(ctx app.Context) {
+	log := zerolog.Ctx(s.AppContext).With().Str("component", "PasskeyManager").Logger()
+	returnURL := contracts_routes.GetFixedRoute(contracts_routes.WellknownRoute_PasskeyManager)
+	log.Info().Str("returnURL", returnURL).Msg("Initiating login with return URL")
+
+	ctx.Async(func() {
+		// Call login API with return URL
+		response, err := s.managementApiClient.Login(s.AppContext,
+			&models_api_login_models.LoginRequest{
+				ReturnURL: returnURL,
+			})
+		ctx.Dispatch(func(ctx app.Context) {
+			if err != nil {
+				log.Error().Err(err).Msg("login failed")
+				return
+			}
+
+			if response != nil {
+				switch response.Code {
+				case 404:
+					log.Error().Msg("login returned 404")
+					return
+				}
+
+				// Check if we got a redirect URL in the response
+				if response.Response != nil && response.Response.RedirectURL != "" {
+					log.Info().Str("redirectURL", response.Response.RedirectURL).Msg("Redirecting to login URL")
+					app.Window().Get("location").Set("href", response.Response.RedirectURL)
+					return
+				}
+			}
+		})
+	})
 }
 
 // Helper function to join transport methods

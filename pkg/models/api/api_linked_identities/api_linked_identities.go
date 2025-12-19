@@ -1,4 +1,4 @@
-package models
+package api_linked_identities
 
 type LinkedIdentity struct {
 	Subject    string `json:"subject"`

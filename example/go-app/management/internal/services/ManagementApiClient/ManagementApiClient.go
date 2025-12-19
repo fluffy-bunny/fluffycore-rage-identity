@@ -6,9 +6,11 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_go_app_ManagementApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/contracts/ManagementApiClient"
-	models "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/models"
 	common "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/common"
 	contracts_go_app_RageApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/contracts/RageApiClient"
+	models_api_linked_identities "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_linked_identities"
+	models_api_passkey "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_passkey"
+	models_api_profile "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_profile"
 	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	fluffycore_go_app_cookies "github.com/fluffy-bunny/fluffycore/go-app/cookies"
@@ -117,9 +119,9 @@ func (s *service) VerifyCode(ctx context.Context, request *models_api_login_mode
 		})
 }
 
-func (s *service) GetUserProfile(ctx context.Context) (*common.WrappedResonseT[models.Profile], error) {
+func (s *service) GetUserProfile(ctx context.Context) (*common.WrappedResonseT[models_api_profile.Profile], error) {
 
-	return common.HTTPFetchWrappedResponseT[models.Profile](ctx,
+	return common.HTTPFetchWrappedResponseT[models_api_profile.Profile](ctx,
 		&common.CallInput{
 			Method:        "GET",
 			Url:           s.fixupApiPath(ctx, wellknown_echo.API_UserProfilePath),
@@ -127,9 +129,9 @@ func (s *service) GetUserProfile(ctx context.Context) (*common.WrappedResonseT[m
 		})
 }
 
-func (s *service) UpdateUserProfile(ctx context.Context, profile *models.Profile) (*common.WrappedResonseT[models.Profile], error) {
+func (s *service) UpdateUserProfile(ctx context.Context, profile *models_api_profile.Profile) (*common.WrappedResonseT[models_api_profile.Profile], error) {
 
-	return common.HTTPFetchWrappedResponseT[models.Profile](ctx,
+	return common.HTTPFetchWrappedResponseT[models_api_profile.Profile](ctx,
 		&common.CallInput{
 			Method:        "POST",
 			Url:           s.fixupApiPath(ctx, wellknown_echo.API_UserProfilePath),
@@ -138,9 +140,9 @@ func (s *service) UpdateUserProfile(ctx context.Context, profile *models.Profile
 		})
 }
 
-func (s *service) GetUserLinkedAccounts(ctx context.Context) (*common.WrappedResonseT[models.LinkedAccountsResponse], error) {
+func (s *service) GetUserLinkedAccounts(ctx context.Context) (*common.WrappedResonseT[models_api_linked_identities.LinkedAccountsResponse], error) {
 
-	return common.HTTPFetchWrappedResponseT[models.LinkedAccountsResponse](ctx,
+	return common.HTTPFetchWrappedResponseT[models_api_linked_identities.LinkedAccountsResponse](ctx,
 		&common.CallInput{
 			Method:        "GET",
 			Url:           s.fixupApiPath(ctx, "/api/linked-accounts"),
@@ -148,9 +150,9 @@ func (s *service) GetUserLinkedAccounts(ctx context.Context) (*common.WrappedRes
 		})
 }
 
-func (s *service) DeleteUserLinkedAccount(ctx context.Context, identity string) (*common.WrappedResonseT[models.DeleteLinkedAccountResponse], error) {
+func (s *service) DeleteUserLinkedAccount(ctx context.Context, identity string) (*common.WrappedResonseT[models_api_linked_identities.DeleteLinkedAccountResponse], error) {
 
-	return common.HTTPFetchWrappedResponseT[models.DeleteLinkedAccountResponse](ctx,
+	return common.HTTPFetchWrappedResponseT[models_api_linked_identities.DeleteLinkedAccountResponse](ctx,
 		&common.CallInput{
 			Method:        "DELETE",
 			Url:           s.fixupApiPath(ctx, "/api/linked-accounts") + "?identity=" + identity,
@@ -164,14 +166,14 @@ func (s *service) GetRageApiClient() contracts_go_app_RageApiClient.IRageApiClie
 }
 
 // Typed wrapper methods for passkey operations from RageApiClient
-func (s *service) RenamePasskeyHTTP(ctx context.Context, request *models.PasskeyRenameRequest) (*common.WrappedResonseT[models.PasskeyRenameResponse], error) {
+func (s *service) RenamePasskeyHTTP(ctx context.Context, request *models_api_passkey.PasskeyRenameRequest) (*common.WrappedResonseT[models_api_passkey.PasskeyRenameResponse], error) {
 	wrappedResp, err := s.rageApiClient.RenamePasskeyHTTP(ctx, request)
 	if err != nil {
 		return nil, err
 	}
 
 	// Convert map response to typed response
-	var renameResp models.PasskeyRenameResponse
+	var renameResp models_api_passkey.PasskeyRenameResponse
 	if wrappedResp.Response != nil {
 		data, err := json.Marshal(wrappedResp.Response)
 		if err != nil {
@@ -182,20 +184,20 @@ func (s *service) RenamePasskeyHTTP(ctx context.Context, request *models.Passkey
 		}
 	}
 
-	return &common.WrappedResonseT[models.PasskeyRenameResponse]{
+	return &common.WrappedResonseT[models_api_passkey.PasskeyRenameResponse]{
 		Code:     wrappedResp.Code,
 		Response: &renameResp,
 	}, nil
 }
 
-func (s *service) GetPasskeysHTTP(ctx context.Context) (*common.WrappedResonseT[models.PasskeysResponse], error) {
+func (s *service) GetPasskeysHTTP(ctx context.Context) (*common.WrappedResonseT[models_api_passkey.PasskeysResponse], error) {
 	wrappedResp, err := s.rageApiClient.GetPasskeysHTTP(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Convert map response to typed response
-	var passkeyResp models.PasskeysResponse
+	var passkeyResp models_api_passkey.PasskeysResponse
 	if wrappedResp.Response != nil {
 		data, err := json.Marshal(wrappedResp.Response)
 		if err != nil {
@@ -206,20 +208,20 @@ func (s *service) GetPasskeysHTTP(ctx context.Context) (*common.WrappedResonseT[
 		}
 	}
 
-	return &common.WrappedResonseT[models.PasskeysResponse]{
+	return &common.WrappedResonseT[models_api_passkey.PasskeysResponse]{
 		Code:     wrappedResp.Code,
 		Response: &passkeyResp,
 	}, nil
 }
 
-func (s *service) DeletePasskeyHTTP(ctx context.Context, request *models.PasskeyDeleteRequest) (*common.WrappedResonseT[models.PasskeyDeleteResponse], error) {
+func (s *service) DeletePasskeyHTTP(ctx context.Context, request *models_api_passkey.PasskeyDeleteRequest) (*common.WrappedResonseT[models_api_passkey.PasskeyDeleteResponse], error) {
 	wrappedResp, err := s.rageApiClient.DeletePasskeyHTTP(ctx, request)
 	if err != nil {
 		return nil, err
 	}
 
 	// Convert map response to typed response
-	var deleteResp models.PasskeyDeleteResponse
+	var deleteResp models_api_passkey.PasskeyDeleteResponse
 	if wrappedResp.Response != nil {
 		data, err := json.Marshal(wrappedResp.Response)
 		if err != nil {
@@ -230,7 +232,7 @@ func (s *service) DeletePasskeyHTTP(ctx context.Context, request *models.Passkey
 		}
 	}
 
-	return &common.WrappedResonseT[models.PasskeyDeleteResponse]{
+	return &common.WrappedResonseT[models_api_passkey.PasskeyDeleteResponse]{
 		Code:     wrappedResp.Code,
 		Response: &deleteResp,
 	}, nil

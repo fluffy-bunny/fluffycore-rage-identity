@@ -62,6 +62,7 @@ const (
 	LocaleKeyManageYourLinkedAccounts LocaleKey = "ManageYourLinkedAccounts"
 	LocaleKeyManageYourPasskeys LocaleKey = "ManageYourPasskeys"
 	LocaleKeyManageYourPersonalInfo LocaleKey = "ManageYourPersonalInfo"
+	LocaleKeyMyProfile LocaleKey = "MyProfile"
 	LocaleKeyNewPassword LocaleKey = "NewPassword"
 	LocaleKeyNoLinkedAccounts LocaleKey = "NoLinkedAccounts"
 	LocaleKeyNoLinkedAccountsDescription LocaleKey = "NoLinkedAccountsDescription"
@@ -80,6 +81,7 @@ const (
 	LocaleKeyPasswordsDoNotMatch LocaleKey = "PasswordsDoNotMatch"
 	LocaleKeyPersonalInformation LocaleKey = "PersonalInformation"
 	LocaleKeyPhoneNumber LocaleKey = "PhoneNumber"
+	LocaleKeyProfile LocaleKey = "Profile"
 	LocaleKeyProtectYourAccountWithAdvancedSecurity LocaleKey = "ProtectYourAccountWithAdvancedSecurity"
 	LocaleKeyReadyToGetStarted LocaleKey = "ReadyToGetStarted"
 	LocaleKeyResetPassword LocaleKey = "ResetPassword"
@@ -94,6 +96,7 @@ const (
 	LocaleKeySendingCodeDotDot LocaleKey = "SendingCodeDotDot"
 	LocaleKeySignIn LocaleKey = "SignIn"
 	LocaleKeySignInToAccessYourAccount LocaleKey = "SignInToAccessYourAccount"
+	LocaleKeySignOut LocaleKey = "SignOut"
 	LocaleKeySigningInDotDot LocaleKey = "SigningInDotDot"
 	LocaleKeySomethingWentWrong LocaleKey = "SomethingWentWrong"
 	LocaleKeyStartOver LocaleKey = "StartOver"
@@ -102,6 +105,7 @@ const (
 	LocaleKeyUnexpectedErrorOccurred LocaleKey = "UnexpectedErrorOccurred"
 	LocaleKeyUnlink LocaleKey = "Unlink"
 	LocaleKeyUnlinkingDotDot LocaleKey = "UnlinkingDotDot"
+	LocaleKeyUser LocaleKey = "User"
 	LocaleKeyVerifyCode LocaleKey = "VerifyCode"
 	LocaleKeyVerifyingDotDot LocaleKey = "VerifyingDotDot"
 	LocaleKeyWeEncounteredAnError LocaleKey = "WeEncounteredAnError"
@@ -168,6 +172,7 @@ var AllLocaleKeys = []LocaleKey{
 	LocaleKeyManageYourLinkedAccounts,
 	LocaleKeyManageYourPasskeys,
 	LocaleKeyManageYourPersonalInfo,
+	LocaleKeyMyProfile,
 	LocaleKeyNewPassword,
 	LocaleKeyNoLinkedAccounts,
 	LocaleKeyNoLinkedAccountsDescription,
@@ -186,6 +191,7 @@ var AllLocaleKeys = []LocaleKey{
 	LocaleKeyPasswordsDoNotMatch,
 	LocaleKeyPersonalInformation,
 	LocaleKeyPhoneNumber,
+	LocaleKeyProfile,
 	LocaleKeyProtectYourAccountWithAdvancedSecurity,
 	LocaleKeyReadyToGetStarted,
 	LocaleKeyResetPassword,
@@ -200,6 +206,7 @@ var AllLocaleKeys = []LocaleKey{
 	LocaleKeySendingCodeDotDot,
 	LocaleKeySignIn,
 	LocaleKeySignInToAccessYourAccount,
+	LocaleKeySignOut,
 	LocaleKeySigningInDotDot,
 	LocaleKeySomethingWentWrong,
 	LocaleKeyStartOver,
@@ -208,6 +215,7 @@ var AllLocaleKeys = []LocaleKey{
 	LocaleKeyUnexpectedErrorOccurred,
 	LocaleKeyUnlink,
 	LocaleKeyUnlinkingDotDot,
+	LocaleKeyUser,
 	LocaleKeyVerifyCode,
 	LocaleKeyVerifyingDotDot,
 	LocaleKeyWeEncounteredAnError,

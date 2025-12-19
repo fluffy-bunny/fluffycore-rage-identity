@@ -8,6 +8,7 @@ import (
 	contracts_App "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/App"
 	contracts_Localizer "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/Localizer"
 	contracts_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/LocalizerBundle"
+	contracts_routes "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/routes"
 	services_ComposerBase "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/ComposerBase"
 	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
@@ -506,9 +507,47 @@ func (s *service) OnMount(ctx app.Context) {
 				s.email = response.Response.Email
 				log.Info().Bool("isClaimedDomain", s.isClaimedDomain).Str("email", s.email).Msg("Profile loaded")
 			} else {
-				log.Error().Err(err).Msg("Failed to load profile")
+				// User is not authenticated, redirect to login
+				log.Warn().Msg("User not authenticated, redirecting to login")
+				s.handleLoginWithReturnURL(ctx)
+				return
 			}
 			ctx.Update()
+		})
+	})
+}
+
+func (s *service) handleLoginWithReturnURL(ctx app.Context) {
+	log := zerolog.Ctx(s.AppContext).With().Str("component", "PasswordManager").Logger()
+	returnURL := contracts_routes.GetFixedRoute(contracts_routes.WellknownRoute_PasswordManager)
+	log.Info().Str("returnURL", returnURL).Msg("Initiating login with return URL")
+
+	ctx.Async(func() {
+		// Call login API with return URL
+		response, err := s.managementApiClient.Login(s.AppContext,
+			&models_api_login_models.LoginRequest{
+				ReturnURL: returnURL,
+			})
+		ctx.Dispatch(func(ctx app.Context) {
+			if err != nil {
+				log.Error().Err(err).Msg("login failed")
+				return
+			}
+
+			if response != nil {
+				switch response.Code {
+				case 404:
+					log.Error().Msg("login returned 404")
+					return
+				}
+
+				// Check if we got a redirect URL in the response
+				if response.Response != nil && response.Response.RedirectURL != "" {
+					log.Info().Str("redirectURL", response.Response.RedirectURL).Msg("Redirecting to login URL")
+					app.Window().Get("location").Set("href", response.Response.RedirectURL)
+					return
+				}
+			}
 		})
 	})
 }
