@@ -34,9 +34,9 @@ body {
 
 .wizard-container {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15), 0 0 60px rgba(0, 212, 170, 0.4),
-    0 0 100px rgba(0, 212, 170, 0.2);
+  border-radius: 0;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  border: 1px solid #374151;
   padding: 0;
   max-width: 480px;
   width: 90%;
@@ -54,7 +54,7 @@ body {
   margin: 0;
   padding: 24px 40px;
   background: linear-gradient(135deg, #0a2540 0%, #1a365d 100%);
-  border-radius: 8px 8px 0 0;
+  border-radius: 0;
 }
 
 .header-content {

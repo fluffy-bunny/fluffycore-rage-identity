@@ -7,12 +7,11 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_go_app_ManagementApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/contracts/ManagementApiClient"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/models"
-	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/common"
+	common "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/common"
 	contracts_go_app_RageApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/contracts/RageApiClient"
 	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	fluffycore_go_app_cookies "github.com/fluffy-bunny/fluffycore/go-app/cookies"
-	fluffycore_go_app_fetch "github.com/fluffy-bunny/fluffycore/go-app/fetch"
 )
 
 type (
@@ -68,9 +67,9 @@ func (s *service) fixupApiPath(ctx context.Context, relativePath string) string 
 	return appConfig.ApiBaseUrl + relativePath
 }
 
-func (s *service) Login(ctx context.Context, request *models_api_login_models.LoginRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_login_models.LoginResponse], error) {
-	return fluffycore_go_app_fetch.FetchWrappedResponseT[models_api_login_models.LoginResponse](ctx,
-		&fluffycore_go_app_fetch.CallInput{
+func (s *service) Login(ctx context.Context, request *models_api_login_models.LoginRequest) (*common.WrappedResonseT[models_api_login_models.LoginResponse], error) {
+	return common.HTTPFetchWrappedResponseT[models_api_login_models.LoginResponse](ctx,
+		&common.CallInput{
 			Method:        "POST",
 			Url:           s.fixupApiPath(ctx, wellknown_echo.API_Login),
 			Data:          request,
@@ -78,9 +77,9 @@ func (s *service) Login(ctx context.Context, request *models_api_login_models.Lo
 		})
 }
 
-func (s *service) Logout(ctx context.Context, request *models_api_login_models.LogoutRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_login_models.LogoutResponse], error) {
-	return fluffycore_go_app_fetch.FetchWrappedResponseT[models_api_login_models.LogoutResponse](ctx,
-		&fluffycore_go_app_fetch.CallInput{
+func (s *service) Logout(ctx context.Context, request *models_api_login_models.LogoutRequest) (*common.WrappedResonseT[models_api_login_models.LogoutResponse], error) {
+	return common.HTTPFetchWrappedResponseT[models_api_login_models.LogoutResponse](ctx,
+		&common.CallInput{
 			Method:        "POST",
 			Url:           s.fixupApiPath(ctx, wellknown_echo.API_Logout),
 			Data:          request,
@@ -88,9 +87,9 @@ func (s *service) Logout(ctx context.Context, request *models_api_login_models.L
 		})
 }
 
-func (s *service) PasswordResetStart(ctx context.Context, request *models_api_login_models.PasswordResetStartRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_login_models.PasswordResetStartResponse], error) {
-	return fluffycore_go_app_fetch.FetchWrappedResponseT[models_api_login_models.PasswordResetStartResponse](ctx,
-		&fluffycore_go_app_fetch.CallInput{
+func (s *service) PasswordResetStart(ctx context.Context, request *models_api_login_models.PasswordResetStartRequest) (*common.WrappedResonseT[models_api_login_models.PasswordResetStartResponse], error) {
+	return common.HTTPFetchWrappedResponseT[models_api_login_models.PasswordResetStartResponse](ctx,
+		&common.CallInput{
 			Method:        "POST",
 			Url:           s.fixupApiPath(ctx, wellknown_echo.API_PasswordResetStart),
 			Data:          request,
@@ -98,9 +97,9 @@ func (s *service) PasswordResetStart(ctx context.Context, request *models_api_lo
 		})
 }
 
-func (s *service) PasswordResetFinish(ctx context.Context, request *models_api_login_models.PasswordResetFinishRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_login_models.PasswordResetFinishResponse], error) {
-	return fluffycore_go_app_fetch.FetchWrappedResponseT[models_api_login_models.PasswordResetFinishResponse](ctx,
-		&fluffycore_go_app_fetch.CallInput{
+func (s *service) PasswordResetFinish(ctx context.Context, request *models_api_login_models.PasswordResetFinishRequest) (*common.WrappedResonseT[models_api_login_models.PasswordResetFinishResponse], error) {
+	return common.HTTPFetchWrappedResponseT[models_api_login_models.PasswordResetFinishResponse](ctx,
+		&common.CallInput{
 			Method:        "POST",
 			Url:           s.fixupApiPath(ctx, wellknown_echo.API_PasswordResetFinish),
 			Data:          request,
@@ -108,9 +107,9 @@ func (s *service) PasswordResetFinish(ctx context.Context, request *models_api_l
 		})
 }
 
-func (s *service) VerifyCode(ctx context.Context, request *models_api_login_models.VerifyCodeRequest) (*fluffycore_go_app_fetch.WrappedResonseT[models_api_login_models.VerifyCodeResponse], error) {
-	return fluffycore_go_app_fetch.FetchWrappedResponseT[models_api_login_models.VerifyCodeResponse](ctx,
-		&fluffycore_go_app_fetch.CallInput{
+func (s *service) VerifyCode(ctx context.Context, request *models_api_login_models.VerifyCodeRequest) (*common.WrappedResonseT[models_api_login_models.VerifyCodeResponse], error) {
+	return common.HTTPFetchWrappedResponseT[models_api_login_models.VerifyCodeResponse](ctx,
+		&common.CallInput{
 			Method:        "POST",
 			Url:           s.fixupApiPath(ctx, wellknown_echo.API_VerifyCode),
 			Data:          request,
@@ -118,20 +117,20 @@ func (s *service) VerifyCode(ctx context.Context, request *models_api_login_mode
 		})
 }
 
-func (s *service) GetUserProfile(ctx context.Context) (*fluffycore_go_app_fetch.WrappedResonseT[models.Profile], error) {
+func (s *service) GetUserProfile(ctx context.Context) (*common.WrappedResonseT[models.Profile], error) {
 
-	return fluffycore_go_app_fetch.FetchWrappedResponseT[models.Profile](ctx,
-		&fluffycore_go_app_fetch.CallInput{
+	return common.HTTPFetchWrappedResponseT[models.Profile](ctx,
+		&common.CallInput{
 			Method:        "GET",
 			Url:           s.fixupApiPath(ctx, wellknown_echo.API_UserProfilePath),
 			CustomHeaders: buildCustomHeaders(),
 		})
 }
 
-func (s *service) UpdateUserProfile(ctx context.Context, profile *models.Profile) (*fluffycore_go_app_fetch.WrappedResonseT[models.Profile], error) {
+func (s *service) UpdateUserProfile(ctx context.Context, profile *models.Profile) (*common.WrappedResonseT[models.Profile], error) {
 
-	return fluffycore_go_app_fetch.FetchWrappedResponseT[models.Profile](ctx,
-		&fluffycore_go_app_fetch.CallInput{
+	return common.HTTPFetchWrappedResponseT[models.Profile](ctx,
+		&common.CallInput{
 			Method:        "POST",
 			Url:           s.fixupApiPath(ctx, wellknown_echo.API_UserProfilePath),
 			Data:          profile,
@@ -139,20 +138,20 @@ func (s *service) UpdateUserProfile(ctx context.Context, profile *models.Profile
 		})
 }
 
-func (s *service) GetUserLinkedAccounts(ctx context.Context) (*fluffycore_go_app_fetch.WrappedResonseT[models.LinkedAccountsResponse], error) {
+func (s *service) GetUserLinkedAccounts(ctx context.Context) (*common.WrappedResonseT[models.LinkedAccountsResponse], error) {
 
-	return fluffycore_go_app_fetch.FetchWrappedResponseT[models.LinkedAccountsResponse](ctx,
-		&fluffycore_go_app_fetch.CallInput{
+	return common.HTTPFetchWrappedResponseT[models.LinkedAccountsResponse](ctx,
+		&common.CallInput{
 			Method:        "GET",
 			Url:           s.fixupApiPath(ctx, "/api/linked-accounts"),
 			CustomHeaders: buildCustomHeaders(),
 		})
 }
 
-func (s *service) DeleteUserLinkedAccount(ctx context.Context, identity string) (*fluffycore_go_app_fetch.WrappedResonseT[models.DeleteLinkedAccountResponse], error) {
+func (s *service) DeleteUserLinkedAccount(ctx context.Context, identity string) (*common.WrappedResonseT[models.DeleteLinkedAccountResponse], error) {
 
-	return fluffycore_go_app_fetch.FetchWrappedResponseT[models.DeleteLinkedAccountResponse](ctx,
-		&fluffycore_go_app_fetch.CallInput{
+	return common.HTTPFetchWrappedResponseT[models.DeleteLinkedAccountResponse](ctx,
+		&common.CallInput{
 			Method:        "DELETE",
 			Url:           s.fixupApiPath(ctx, "/api/linked-accounts") + "?identity=" + identity,
 			CustomHeaders: buildCustomHeaders(),

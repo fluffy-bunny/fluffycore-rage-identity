@@ -174,7 +174,7 @@ body {
   min-width: 280px;
   background: var(--surface);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 0;
   box-shadow: var(--shadow-lg);
   overflow: hidden;
   animation: dropdownFadeIn 0.2s ease;
@@ -488,7 +488,7 @@ body {
 
 .profile-card {
   background: var(--surface);
-  border-radius: 12px;
+  border-radius: 0;
   border: 1px solid var(--border-color);
   overflow: hidden;
   transition: all 0.2s ease;
@@ -886,7 +886,7 @@ body {
   padding: 80px 24px 60px;
   background: var(--surface);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 0;
   color: var(--text-primary);
   margin-bottom: 60px;
 }
@@ -920,7 +920,7 @@ body {
 .home-feature-card {
   background: var(--surface);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 0;
   padding: 32px;
   text-align: center;
   transition: all 0.3s ease;
