@@ -43,7 +43,7 @@
                 "RAGE_sessionConfig__insecure": "true",
                 "RAGE_sessionConfig__domain": "localhost",
                 "RAGE_GITHUB_CLIENT_ID": "bdbe2f2235eb3a02065c",
-                "RAGE_webAuthNConfig__enabled": "true",
+                "RAGE_webAuthNConfig__enabled": "false",
                 "RAGE_corsConfig__enabled": "true",
                 "RAGE_csrfConfig__skipApi": "true",
                  "___RAGE_oidcUIConfig__appSettings__BaseApiUrl": "http://localhost:9044",

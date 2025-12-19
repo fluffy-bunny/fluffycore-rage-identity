@@ -167,6 +167,15 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	services_handlers_account_profile.AddScopedIHandler(builder)
 	services_handlers_account_totp_management.AddScopedIHandler(builder)
 
+	// Sync WebAuthN config to app configs for frontend
+	if config.WebAuthNConfig != nil {
+		s.config.ManagementAppConfig.EnabledWebAuthN = config.WebAuthNConfig.Enabled
+		s.config.OIDCLoginAppConfig.EnabledWebAuthN = config.WebAuthNConfig.Enabled
+	} else {
+		s.config.ManagementAppConfig.EnabledWebAuthN = false
+		s.config.OIDCLoginAppConfig.EnabledWebAuthN = false
+	}
+
 	guid := xid.New().String()
 	if example_version.Version() != "dev-build" {
 		guid = example_version.Version()

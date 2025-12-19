@@ -59,7 +59,7 @@
     ]
   },
   "webAuthNConfig": {
-    "enabled": true,
+    "enabled": false,
     "rpDisplayName": "RAGE",
     "rpID": "${RPID_DOMAIN}",
     "rpOrigins": [

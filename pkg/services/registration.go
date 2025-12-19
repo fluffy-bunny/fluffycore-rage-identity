@@ -172,6 +172,14 @@ func OnConfigureServicesLoadIDPs(ctx context.Context, config *contracts_config.C
 			})
 		}
 	}
+
+	// Sync WebAuthN config to OIDC flow config for frontend
+	if config.WebAuthNConfig != nil {
+		config.OIDCFlowAppConfig.EnabledWebAuthN = config.WebAuthNConfig.Enabled
+	} else {
+		config.OIDCFlowAppConfig.EnabledWebAuthN = false
+	}
+
 	return nil
 
 }
