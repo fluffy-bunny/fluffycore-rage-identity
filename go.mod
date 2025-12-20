@@ -7,7 +7,7 @@ go 1.25
 //replace github.com/fluffy-bunny/viperEx => ../ViperEx
 
 require (
-	github.com/BurntSushi/toml v1.5.0
+	github.com/BurntSushi/toml v1.6.0
 	github.com/ahmetb/go-linq/v3 v3.2.0
 	github.com/alexedwards/argon2id v1.0.0
 	github.com/coreos/go-oidc/v3 v3.17.0
