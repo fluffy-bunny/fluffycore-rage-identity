@@ -93,7 +93,10 @@ func (s *service) newSession() (contracts_sessions.ISession, error) {
 		return nil, err
 	}
 
-	session.New()
+	err = session.New()
+	if err != nil {
+		return nil, err
+	}
 	return session, nil
 }
 
@@ -234,16 +237,44 @@ func (s *service) Do(c echo.Context) error {
 	}
 	// set the code and state in the session
 	// --~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
-	session.Set("request", model)
-	sessionId := model.Nonce
-	if fluffycore_utils.IsEmptyOrNil(sessionId) {
-		sessionId = xid.New().String()
+
+	// Panic protection for session.Set operations
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				log.Error().Interface("panic", r).Msg("panic recovered during session.Set, clearing session")
+				// Clear the session cookie
+
+				err = fmt.Errorf("session storage error: unable to store request data")
+			}
+		}()
+
+		err = session.Set("request", model)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to set session request")
+			// Clear the session on error
+
+			return
+		}
+		sessionId := model.Nonce
+		if fluffycore_utils.IsEmptyOrNil(sessionId) {
+			sessionId = xid.New().String()
+		}
+		session.Set("session_id", sessionId)
+		session.Set("landing_page", &models_api_manifest.LandingPage{
+			Page: models_api_manifest.PageUsernameEntry,
+		})
+		session.Save()
+	}()
+
+	if err != nil {
+		// Return a friendly JSON error response
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error":             "session_storage_error",
+			"error_description": "Unable to process your request due to a session storage issue. This may be caused by session data being too large or configuration issues.",
+			"message":           "Please try again or contact support if the problem persists.",
+		})
 	}
-	session.Set("session_id", sessionId)
-	session.Set("landing_page", &models_api_manifest.LandingPage{
-		Page: models_api_manifest.PageUsernameEntry,
-	})
-	session.Save()
 
 	mm, err := s.authorizationRequestStateStoreServer.GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
 		State: model.State,

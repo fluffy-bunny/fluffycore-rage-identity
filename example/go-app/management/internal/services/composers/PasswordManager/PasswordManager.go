@@ -555,6 +555,34 @@ func (s *service) handleLoginWithReturnURL(ctx app.Context) {
 func (s *service) OnNav(ctx app.Context) {
 	log := zerolog.Ctx(s.AppContext).With().Str("component", "PasswordManager").Logger()
 	log.Info().Msg("PasswordManager page navigated")
+
+	// Reset state and reload data on navigation (e.g., manual refresh)
+	s.isLoading = true
+	s.showError = false
+	s.currentStage = stageInitial
+	s.verificationCode = ""
+	s.newPassword = ""
+	s.confirmPassword = ""
+	ctx.Update()
+
+	// Fetch user profile to check if claimed domain and get email
+	ctx.Async(func() {
+		response, err := s.managementApiClient.GetUserProfile(s.AppContext)
+		ctx.Dispatch(func(ctx app.Context) {
+			s.isLoading = false
+			if err == nil && response != nil && response.Code == 200 && response.Response != nil {
+				s.isClaimedDomain = response.Response.IsClaimedDomain
+				s.email = response.Response.Email
+				log.Info().Bool("isClaimedDomain", s.isClaimedDomain).Str("email", s.email).Msg("Profile loaded")
+				ctx.Update()
+			} else {
+				// User is not authenticated, redirect to login
+				log.Warn().Msg("User not authenticated, redirecting to login")
+				s.handleLoginWithReturnURL(ctx)
+				return
+			}
+		})
+	})
 }
 
 func (s *service) OnDismount() {

@@ -158,6 +158,32 @@ func (s *service) loadLinkedAccounts(ctx app.Context) {
 func (s *service) OnNav(ctx app.Context) {
 	log := zerolog.Ctx(s.AppContext).With().Str("component", "LinkedAccounts").Logger()
 	log.Info().Msg("LinkedAccounts page navigated")
+
+	// Reset state and reload data on navigation (e.g., manual refresh)
+	s.isLoading = true
+	s.showError = false
+	s.accounts = nil
+	ctx.Update()
+
+	// First check authentication by fetching user profile
+	ctx.Async(func() {
+		response, err := s.managementApiClient.GetUserProfile(s.AppContext)
+		ctx.Dispatch(func(ctx app.Context) {
+			if err == nil && response != nil && response.Code == 200 && response.Response != nil {
+				s.isClaimedDomain = response.Response.IsClaimedDomain
+				log.Info().Bool("isClaimedDomain", s.isClaimedDomain).Msg("Profile loaded, fetching linked accounts")
+
+				// User is authenticated, now fetch linked accounts
+				s.loadLinkedAccounts(ctx)
+			} else {
+				// User is not authenticated, redirect to login
+				log.Warn().Msg("User not authenticated, redirecting to login")
+				s.isLoading = false
+				s.handleLoginWithReturnURL(ctx)
+				return
+			}
+		})
+	})
 }
 
 func (s *service) OnDismount() {

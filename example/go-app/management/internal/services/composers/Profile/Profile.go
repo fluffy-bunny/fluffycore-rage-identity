@@ -369,6 +369,38 @@ func (s *service) handleLoginWithReturnURL(ctx app.Context) {
 func (s *service) OnNav(ctx app.Context) {
 	log := zerolog.Ctx(s.AppContext).With().Logger()
 	log.Info().Msg("Profile page navigated")
+
+	// Reset state and reload data on navigation (e.g., manual refresh)
+	s.isLoading = true
+	s.showError = false
+	s.isEditing = false
+	ctx.Update()
+
+	// Load profile data
+	ctx.Async(func() {
+		response, err := s.managementApiClient.GetUserProfile(s.AppContext)
+
+		ctx.Dispatch(func(ctx app.Context) {
+			s.isLoading = false
+
+			if err == nil && response != nil && response.Code == 200 && response.Response != nil {
+				log.Info().Msg("Profile loaded successfully")
+				profile := response.Response
+				s.subject = profile.Subject
+				s.email = profile.Email
+				s.firstName = profile.GivenName
+				s.lastName = profile.FamilyName
+				s.phoneNumber = profile.PhoneNumber
+				s.isClaimedDomain = profile.IsClaimedDomain
+				ctx.Update()
+			} else {
+				// User is not authenticated, redirect to login
+				log.Warn().Msg("User not authenticated, redirecting to login")
+				s.handleLoginWithReturnURL(ctx)
+				return
+			}
+		})
+	})
 }
 
 func (s *service) OnDismount() {

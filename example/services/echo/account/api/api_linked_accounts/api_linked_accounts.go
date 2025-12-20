@@ -260,13 +260,14 @@ func (s *service) DoGet(c echo.Context) error {
 				lastUsedOn = identity.LastUsedOn.AsTime().Unix()
 			}
 
-			response.Identities = append(response.Identities, models_api_linked_identities.LinkedIdentity{
-				Subject:    identity.Subject,
-				Provider:   provider,
-				Email:      email,
-				CreatedOn:  createdOn,
-				LastUsedOn: lastUsedOn,
-			})
+			response.Identities = append(response.Identities,
+				models_api_linked_identities.LinkedIdentity{
+					Subject:    identity.Subject,
+					Provider:   provider,
+					Email:      email,
+					CreatedOn:  createdOn,
+					LastUsedOn: lastUsedOn,
+				})
 		}
 	}
 

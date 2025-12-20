@@ -484,15 +484,19 @@ func (s *service) Do(c echo.Context) error {
 				log.Error().Msg("user not found")
 				return nil, err
 			}
-			_, err = s.RageUserService().LinkRageUser(ctx, &proto_oidc_user.LinkRageUserRequest{
-				RootSubject: candidateUserID,
-				ExternalIdentity: &proto_oidc_models.Identity{
-					Subject:       externalIdentity.Subject,
-					Email:         externalIdentity.Email,
-					IdpSlug:       externalOauth2State.Request.IdpHint,
-					EmailVerified: externalIdentity.EmailVerified,
-				},
-			})
+			_, err = s.RageUserService().LinkRageUser(ctx,
+				&proto_oidc_user.LinkRageUserRequest{
+					RootSubject: candidateUserID,
+					ExternalIdentity: &proto_oidc_models.Identity{
+						Subject:       externalIdentity.Subject,
+						Email:         externalIdentity.Email,
+						IdpSlug:       externalOauth2State.Request.IdpHint,
+						EmailVerified: externalIdentity.EmailVerified,
+						CreatedOn:     timestamppb.Now(),
+						UpdatedOn:     timestamppb.Now(),
+						LastUsedOn:    timestamppb.Now(),
+					},
+				})
 			if err != nil {
 				log.Error().Err(err).Msg("LinkUsers")
 				return nil, err

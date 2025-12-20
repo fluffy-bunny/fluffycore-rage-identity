@@ -121,6 +121,44 @@ func (s *service) OnMount(ctx app.Context) {
 	})
 }
 
+// OnNav is called when navigating to the page (e.g., manual refresh)
+func (s *service) OnNav(ctx app.Context) {
+	log := zerolog.Ctx(s.AppContext).With().Str("component", "PasskeyManager").Logger()
+	log.Info().Msg("PasskeyManager page navigated")
+
+	// Reset state and reload data on navigation (e.g., manual refresh)
+	s.isLoading = true
+	s.showError = false
+	s.showSuccess = false
+	s.passkeys = nil
+	ctx.Update()
+
+	// Fetch user profile first to check if claimed domain
+	ctx.Async(func() {
+		response, err := s.managementApiClient.GetUserProfile(s.AppContext)
+		ctx.Dispatch(func(ctx app.Context) {
+			if err == nil && response != nil && response.Code == 200 && response.Response != nil {
+				s.isClaimedDomain = response.Response.IsClaimedDomain
+				log.Info().Bool("isClaimedDomain", s.isClaimedDomain).Msg("Profile loaded")
+
+				// Only load passkeys if not a claimed domain
+				if !s.isClaimedDomain {
+					s.loadPasskeys(ctx)
+				} else {
+					s.isLoading = false
+					ctx.Update()
+				}
+			} else {
+				// User is not authenticated, redirect to login
+				log.Warn().Msg("User not authenticated, redirecting to login")
+				s.isLoading = false
+				s.handleLoginWithReturnURL(ctx)
+				return
+			}
+		})
+	})
+}
+
 // loadPasskeys fetches passkeys asynchronously (for initial page load)
 func (s *service) loadPasskeys(ctx app.Context) {
 	log := zerolog.Ctx(s.AppContext).With().Str("component", "PasskeyManager").Logger()
