@@ -14,6 +14,8 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
+	protocol "github.com/go-webauthn/webauthn/protocol"
+	go_webauthn "github.com/go-webauthn/webauthn/webauthn"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
@@ -120,7 +122,18 @@ func (s *service) Do(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_RegisterBegin_001)
 	}
 	webAuthNUser := services_handlers_webauthn.NewWebAuthNUser(getRageUserResponse.User)
-	credentialCreation, webAuthNSession, err := s.webAuthN.GetWebAuthN().BeginRegistration(webAuthNUser)
+
+	// Configure registration to require resident keys (discoverable credentials)
+	// This allows the passkey to be used without specifying the user first
+	registrationOptions := []go_webauthn.RegistrationOption{
+		go_webauthn.WithAuthenticatorSelection(protocol.AuthenticatorSelection{
+			ResidentKey:        protocol.ResidentKeyRequirementRequired,
+			RequireResidentKey: func() *bool { b := true; return &b }(),
+			UserVerification:   protocol.VerificationRequired,
+		}),
+	}
+
+	credentialCreation, webAuthNSession, err := s.webAuthN.GetWebAuthN().BeginRegistration(webAuthNUser, registrationOptions...)
 	if err != nil {
 		log.Error().Err(err).Msg("BeginRegistration")
 		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_RegisterBegin_002)
