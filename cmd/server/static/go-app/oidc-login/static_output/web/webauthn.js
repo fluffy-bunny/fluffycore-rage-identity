@@ -221,6 +221,13 @@ async function LoginUser(returnFailedUrl, useConditionalUI = false, errorCallbac
     }
     
     const optionsJSON = await response.json();
+    
+    // DEBUG: Log what the server sent
+    console.log("🔍 LoginUser - Server response:", optionsJSON);
+    console.log("🔍 LoginUser - rpId:", optionsJSON.publicKey?.rpId || optionsJSON.rpId);
+    console.log("🔍 LoginUser - allowCredentials:", optionsJSON.publicKey?.allowCredentials || optionsJSON.allowCredentials);
+    console.log("🔍 LoginUser - Current hostname:", window.location.hostname);
+    console.log("🔍 LoginUser - Current origin:", window.location.origin);
 
     // Use parseRequestOptionsFromJSON if available (recommended by Google/W3C)
     // This handles base64url decoding automatically
@@ -229,6 +236,8 @@ async function LoginUser(returnFailedUrl, useConditionalUI = false, errorCallbac
       // parseRequestOptionsFromJSON expects the publicKey object directly, not wrapped
       const publicKeyOptions = optionsJSON.publicKey || optionsJSON;
       const parsedOptions = PublicKeyCredential.parseRequestOptionsFromJSON(publicKeyOptions);
+      
+      console.log("🔍 LoginUser - Parsed options:", parsedOptions);
       
       // parseRequestOptionsFromJSON returns the publicKey options, wrap it for navigator.credentials.get
       credentialRequestOptions = {
@@ -268,8 +277,13 @@ async function LoginUser(returnFailedUrl, useConditionalUI = false, errorCallbac
       }
     }
 
+    console.log("🔍 LoginUser - Final credentialRequestOptions being sent to navigator.credentials.get:", credentialRequestOptions);
+
     // Get credential
+    console.log("🔍 LoginUser - Calling navigator.credentials.get...");
     const credential = await navigator.credentials.get(credentialRequestOptions);
+    
+    console.log("🔍 LoginUser - Received credential:", credential);
     
     clearTimeout(timeoutId);
 

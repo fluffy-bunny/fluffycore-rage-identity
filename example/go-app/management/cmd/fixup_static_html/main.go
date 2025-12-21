@@ -110,9 +110,25 @@ func fixHTMLFile(filePath string) error {
 	wizardContainerRegex := regexp.MustCompile(`(?s)<div class="wizard-container">.*?</div>\s*(<aside)`)
 	contentStr = wizardContainerRegex.ReplaceAllString(contentStr, "$1")
 
+	// IMPORTANT: Inject webauthn.js script tag if it's missing
+	// Check if webauthn.js is already present
+	if !strings.Contains(contentStr, "webauthn.js") {
+		// Insert webauthn.js just before wasm_exec.js
+		wasmExecRegex := regexp.MustCompile(`(\s*)(<script\s+[^>]*src="wasm_exec\.js)`)
+		webauthnScript := `<script src="web/webauthn.js?v=VERSION_PLACEHOLDER"></script>`
+
+		// Replace VERSION_PLACEHOLDER with the actual version from the meta tag
+		versionRegex := regexp.MustCompile(`<meta\s+name="app-version"\s+content="([^"]+)"`)
+		if match := versionRegex.FindStringSubmatch(contentStr); len(match) > 1 {
+			webauthnScript = strings.ReplaceAll(webauthnScript, "VERSION_PLACEHOLDER", match[1])
+		}
+
+		contentStr = wasmExecRegex.ReplaceAllString(contentStr, "$1"+webauthnScript+"\n$1$2")
+	}
+
 	// Move webauthn.js script to load BEFORE wasm_exec.js and app.js (which have defer)
 	// Find webauthn.js script tag (with or without defer)
-	webauthnRegex := regexp.MustCompile(`(?m)^\s*<script\s+(?:defer\s+)?src="web/webauthn\.js[^"]*">\s*</script>\s*\n?`)
+	webauthnRegex := regexp.MustCompile(`(?m)^\s*<script\s+(?:defer\s+)?src="web/webauthn\.js[^"]*"[^>]*>\s*</script>\s*\n?`)
 	webauthnScript := webauthnRegex.FindString(contentStr)
 
 	if webauthnScript != "" {
@@ -121,7 +137,7 @@ func fixHTMLFile(filePath string) error {
 
 		// Insert it just before wasm_exec.js (ensure it loads/executes first)
 		// Pattern: find wasm_exec.js and insert webauthn.js before it
-		wasmExecRegex := regexp.MustCompile(`(\s*)(<script\s+defer\s+src="wasm_exec\.js)`)
+		wasmExecRegex := regexp.MustCompile(`(\s*)(<script\s+[^>]*src="wasm_exec\.js)`)
 
 		// Clean up the webauthn script tag and ensure no defer attribute
 		webauthnClean := strings.TrimSpace(webauthnScript)
