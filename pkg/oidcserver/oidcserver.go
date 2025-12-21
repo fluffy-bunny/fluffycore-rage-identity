@@ -20,15 +20,9 @@ import (
 	services_handlers_error "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/error"
 	services_handlers_externalidp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/externalidp"
 	services_handlers_externalidp_api "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/externalidp/api"
-	services_handlers_forgotpassword "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/forgotpassword"
 	services_handlers_healthz "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/healthz"
 	services_handlers_jwks_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/jwks_endpoint"
 	services_handlers_oauth2_callback "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oauth2/callback"
-	services_handlers_oidclogin "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidclogin"
-	services_handlers_oidcloginpasskey "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidcloginpasskey"
-	services_handlers_oidcloginpassword "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidcloginpassword"
-	services_handlers_oidclogintotp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidclogintotp"
-	services_handlers_passwordreset "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/passwordreset"
 	services_handlers_rest_api_OIDCFlowAppConfig "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_OIDCFlowAppConfig"
 	services_handlers_rest_api_appsettings "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_appsettings"
 	services_handlers_rest_api_isauthorized "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_isauthorized"
@@ -57,10 +51,8 @@ import (
 	services_handlers_webauthn_loginfinish "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_webauthn_login_finish"
 	services_handlers_webauthn_registrationbegin "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_webauthn_registration_begin"
 	services_handlers_webauthn_registrationfinish "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_webauthn_registration_finish"
-	services_handlers_signup "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/signup"
 	services_handlers_swagger "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/swagger"
 	services_handlers_token_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/token_endpoint"
-	services_handlers_verifycode "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/verifycode"
 	services_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/oidc_session"
 	pkg_types "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/types"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
@@ -201,10 +193,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 
 	// OIDC Handlers
 	//--------------------------------------------------------
-	services_handlers_signup.AddScopedIHandler(builder)
 	services_handlers_error.AddScopedIHandler(builder)
-	services_handlers_oidclogin.AddScopedIHandler(builder)
-	services_handlers_oidcloginpassword.AddScopedIHandler(builder)
 	services_handlers_rest_api_appsettings.AddScopedIHandler(builder, s.config.ApiAppSettings)
 	services_handlers_rest_api_manifest.AddScopedIHandler(builder)
 	services_handlers_rest_api_OIDCFlowAppConfig.AddScopedIHandler(builder)
@@ -222,7 +211,6 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_rest_api_isauthorized.AddScopedIHandler(builder)
 	services_handlers_rest_api_login_username_phase_one.AddScopedIHandler(builder)
 	services_handlers_rest_api_verify_password_strength.AddScopedIHandler(builder)
-	services_handlers_oidclogintotp.AddScopedIHandler(builder)
 	services_handlers_externalidp.AddScopedIHandler(builder)
 	services_handlers_externalidp_api.AddScopedIHandler(builder)
 	services_handlers_swagger.AddScopedIHandler(builder)
@@ -231,9 +219,6 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_authorization_endpoint.AddScopedIHandler(builder)
 	services_handlers_token_endpoint.AddScopedIHandler(builder)
 	services_handlers_oauth2_callback.AddScopedIHandler(builder, s.config.OIDCConfig.OAuth2CallbackPath)
-	services_handlers_forgotpassword.AddScopedIHandler(builder)
-	services_handlers_verifycode.AddScopedIHandler(builder)
-	services_handlers_passwordreset.AddScopedIHandler(builder)
 	services_handlers_api.AddScopedIHandler(builder)
 
 	/*
@@ -254,7 +239,6 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 			services_handlers_cache_busting_static_html.AddScopedIHandler(builder, s.config.OIDCUIConfig.CacheBustingConfig)
 	*/
 	if s.config.WebAuthNConfig != nil && s.config.WebAuthNConfig.Enabled {
-		services_handlers_oidcloginpasskey.AddScopedIHandler(builder)
 		services_handlers_rest_api_user_passkeys.AddScopedIHandler(builder)
 		services_handlers_rest_api_user_passkey_credential.AddScopedIHandler(builder)
 		services_handlers_rest_api_user_remove_passkey.AddScopedIHandler(builder)

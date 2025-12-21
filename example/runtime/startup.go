@@ -16,13 +16,11 @@ import (
 	services_AuthorizationCodeClaimsAugmentor "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/AuthorizationCodeClaimsAugmentor"
 	services_EmailTemplateData "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/EmailTemplateData"
 	services_EventSink "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/EventSink"
-	services_handlers_account_about "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/about"
 	services_handlers_account_api_api_linked_accounts "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/api/api_linked_accounts"
 	services_handlers_account_api_login "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/api/api_login"
 	services_handlers_account_api_api_user_profile "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/api/api_user_profile"
 	services_handlers_account_callback "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/callback"
 	services_handlers_account_home "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/home"
-	services_handlers_account_logout "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/logout"
 	services_handlers_account_passkey_management "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/passkey_management"
 	services_handlers_account_personal_information "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/personal_information"
 	services_handlers_account_profile "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/profile"
@@ -40,6 +38,7 @@ import (
 	rage_runtime "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/runtime"
 	services_ScopedMemoryCache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/ScopedMemoryCache"
 	services_handlers_cache_busting_static_html "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/cache_busting_static_html"
+	services_handler_oidclogin "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/oidclogin"
 	services_session_with_options "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/session_with_options"
 	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
@@ -155,18 +154,16 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	services_EmailTemplateData.AddSingletonIEmailTemplateData(builder)
 	// Account Handlers
 	//--------------------------------------------------------
-	services_handlers_account_about.AddScopedIHandler(builder)
 	services_handlers_account_callback.AddScopedIHandler(builder)
 	services_handlers_account_api_api_user_profile.AddScopedIHandler(builder)
 	services_handlers_account_api_api_linked_accounts.AddScopedIHandler(builder)
 	services_handlers_account_home.AddScopedIHandler(builder)
 	services_handlers_account_api_login.AddScopedIHandler(builder)
-	services_handlers_account_logout.AddScopedIHandler(builder)
 	services_handlers_account_personal_information.AddScopedIHandler(builder)
 	services_handlers_account_passkey_management.AddScopedIHandler(builder)
 	services_handlers_account_profile.AddScopedIHandler(builder)
 	services_handlers_account_totp_management.AddScopedIHandler(builder)
-
+	services_handler_oidclogin.AddScopedIHandler(builder)
 	// Sync WebAuthN config to app configs for frontend
 	if config.WebAuthNConfig != nil {
 		s.config.ManagementAppConfig.EnabledWebAuthN = config.WebAuthNConfig.Enabled
