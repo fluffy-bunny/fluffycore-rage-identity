@@ -88,6 +88,8 @@ generate-static: gen-images ## Build and generate static files
 	@echo "Cleaning static output directory..."
 	@rm -rf $(STATIC_OUTPUT_DIR) 2>/dev/null || powershell -Command "Remove-Item -Path $(STATIC_OUTPUT_DIR) -Recurse -Force -ErrorAction SilentlyContinue"
 	@mkdir -p $(STATIC_OUTPUT_DIR) || powershell -Command "New-Item -ItemType Directory -Path $(STATIC_OUTPUT_DIR) -Force | Out-Null"
+	@echo "Syncing shared webauthn.js from example/go-app/web/..."
+	@cp ../web/webauthn.js ./web/webauthn.js 2>/dev/null || powershell -Command "Copy-Item -Path ../web/webauthn.js -Destination ./web/webauthn.js -Force"
 	@$(MAKE) build-wasm build-static-generator build-fixup-static-html
 	@echo "Generating build_version.js in source web directory..."
 	@echo "// Build version information" > ./web/build_version.js
@@ -98,8 +100,6 @@ generate-static: gen-images ## Build and generate static files
 	@echo "  gitCommit: '$(GIT_COMMIT)'," >> ./web/build_version.js
 	@echo "  gitBranch: '$(GIT_BRANCH)'" >> ./web/build_version.js
 	@echo "};" >> ./web/build_version.js
-	@echo "Syncing shared webauthn.js from example/go-app/web/..."
-	@cp ../web/webauthn.js ./web/webauthn.js 2>/dev/null || powershell -Command "Copy-Item -Path ../web/webauthn.js -Destination ./web/webauthn.js -Force"
 	@echo "Generating static output..."
 	MSYS_NO_PATHCONV=1 ./$(STATIC_GENERATOR_BINARY) -title "$(APP_TITLE)" -output $(STATIC_OUTPUT_DIR) -base-href "/$(BASE_HREF)"
 	@echo "Copying web assets..."

@@ -82,7 +82,7 @@ func main() {
 			`<link rel="icon" type="image/png" sizes="16x16" href="web/favicon-16x16.png">`,
 			`<link rel="icon" type="image/png" sizes="32x32" href="web/favicon-32x32.png">`,
 			`<link rel="icon" type="image/png" sizes="64x64" href="web/favicon-64x64.png">`,
-			`<link rel="apple-touch-icon" sizes="180x180" href="web/apple-touch-icon.png">`,
+			`<link rel="icon" type="image/png" sizes="180x180" href="web/apple-touch-icon.png">`,
 			`<link rel="icon" type="image/png" sizes="192x192" href="web/android-chrome-192x192.png">`,
 			`<link rel="icon" type="image/png" sizes="512x512" href="web/android-chrome-512x512.png">`,
 			`<meta name="msapplication-TileImage" content="web/mstile-150x150.png">`,

@@ -60,7 +60,7 @@
   },
   "webAuthNConfig": {
     "enabled": false,
-    "rpDisplayName": "RAGE",
+    "rpDisplayName": "RAGE Identity (localhost:9044)",
     "rpID": "${RPID_DOMAIN}",
     "rpOrigins": [
       "http://${DOMAIN}"
