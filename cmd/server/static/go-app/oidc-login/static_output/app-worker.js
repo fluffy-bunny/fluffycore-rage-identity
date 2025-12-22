@@ -1,12 +1,12 @@
 // -----------------------------------------------------------------------------
 // PWA
 // -----------------------------------------------------------------------------
-const cacheName = "app-" + "1766279110";
-const resourcesToCache = ["web/webauthn.js?v=1766279110","web/styles.css?v=1766279110","web/m_logo.svg?v=1766279110","web/logging-helper.js?v=1766279110","web/common.js?v=1766279110","web/build_version.js?v=1766279110","web/app.wasm?v=1766279110","wasm_exec.js?v=1766279110","manifest.webmanifest?v=1766279110","app.js?v=1766279110","app.css?v=1766279110"];
+const cacheName = "app-" + "1766419487";
+const resourcesToCache = ["web/webauthn.js?v=1766419487","web/styles.css?v=1766419487","web/m_logo.svg?v=1766419487","web/logging-helper.js?v=1766419487","web/common.js?v=1766419487","web/build_version.js?v=1766419487","web/app.wasm?v=1766419487","wasm_exec.js?v=1766419487","manifest.webmanifest?v=1766419487","app.js?v=1766419487","app.css?v=1766419487"];
 
 self.addEventListener("install", async (event) => {
   try {
-    console.log("installing app worker 1766279110");
+    console.log("installing app worker 1766419487");
     await installWorker();
     await self.skipWaiting();
   } catch (error) {
@@ -23,7 +23,7 @@ self.addEventListener("activate", async (event) => {
   try {
     await deletePreviousCaches(); // Await cache cleanup
     await self.clients.claim(); // Ensure the service worker takes control of the clients
-    console.log("app worker 1766279110 is activated");
+    console.log("app worker 1766419487 is activated");
   } catch (error) {
     console.error("error during activation:", error);
   }

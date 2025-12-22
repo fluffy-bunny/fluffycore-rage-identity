@@ -146,7 +146,6 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	di.AddSingletonFromContainer[contracts_tokenservice.IAuthorizationCodeClaimsAugmentor](builder, rootContainer)
 	di.AddSingletonFromContainer[contracts_events.IEventSink](builder, rootContainer)
 	di.AddSingletonFromContainer[contracts_email.IEmailTemplateData](builder, rootContainer)
-
 	services_user_id_generator.AddSingletonIUserIdGenerator(builder)
 	services_oidcflowstore.AddSingletonAuthorizationRequestStateStoreServer(builder)
 	services_AuthorizationCodeClaimsAugmentor.AddSingletonIAuthorizationCodeClaimsAugmentor(builder)
@@ -177,6 +176,79 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	if example_version.Version() != "dev-build" {
 		guid = example_version.Version()
 	}
+	appJSHandler := func(c echo.Context, filePath string) (bool, error) {
+		// Read the file content
+		content, err := os.ReadFile(filePath)
+		if err != nil {
+			return false, err
+		}
+
+		// Replace {progress}% with the configured loading label
+		loadingLabel := s.config.WASMConfig.LoadingLabel
+		modifiedContent := strings.ReplaceAll(string(content), "{progress}%", loadingLabel)
+
+		// Set correct MIME type
+		c.Response().Header().Set("Content-Type", "application/javascript")
+
+		return true, c.String(http.StatusOK, modifiedContent)
+	}
+	appJSRoutePattern := &rage_contracts_config.RoutePattern{
+		Pattern: "/app.js",
+		Handler: appJSHandler,
+	}
+	appWASMPattern := &rage_contracts_config.RoutePattern{
+		Pattern: "/web/app.wasm",
+		Handler: func(c echo.Context, filePath string) (bool, error) {
+			// Get file info to set Content-Length
+			fileInfo, err := os.Stat(filePath)
+			if err != nil {
+				return false, err
+			}
+			// Set correct MIME type and Content-Length for WASM files
+			c.Response().Header().Set("Content-Type", "application/wasm")
+			c.Response().Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
+			return true, c.File(filePath)
+		},
+	}
+
+	managementWebAppJSONPattern := &rage_contracts_config.RoutePattern{
+		Pattern: "web/app.json",
+		Handler: func(c echo.Context, filePath string) (bool, error) {
+			jsonB, err := json.Marshal(s.config.ManagementAppConfig)
+			if err != nil {
+				return false, err
+			}
+
+			// Get version from query param
+			version := c.QueryParam("v")
+
+			// Replace {version} placeholder
+			modifiedContent := strings.ReplaceAll(string(jsonB), "{version}", version)
+
+			// Serve with appropriate content type
+			return true, c.JSONBlob(http.StatusOK, []byte(modifiedContent))
+		},
+	}
+
+	oidcLoginWebAppJSONPattern := &rage_contracts_config.RoutePattern{
+		Pattern: "web/app.json",
+		Handler: func(c echo.Context, filePath string) (bool, error) {
+			jsonB, err := json.Marshal(s.config.OIDCLoginAppConfig)
+			if err != nil {
+				return false, err
+			}
+
+			// Get version from query param
+			version := c.QueryParam("v")
+
+			// Replace {version} placeholder
+			modifiedContent := strings.ReplaceAll(string(jsonB), "{version}", version)
+
+			// Serve with appropriate content type
+			return true, c.JSONBlob(http.StatusOK, []byte(modifiedContent))
+		},
+	}
+
 	managementCacheBustingHTMLConfig := &rage_contracts_config.CacheBustingHTMLConfig{
 		Version:    guid,
 		FilePath:   "./static/go-app/management/static_output/index_template.html",
@@ -199,38 +271,9 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 		},
 
 		RoutePatterns: []*rage_contracts_config.RoutePattern{
-			{
-				Pattern: "/web/app.wasm",
-				Handler: func(c echo.Context, filePath string) (bool, error) {
-					// Get file info to set Content-Length
-					fileInfo, err := os.Stat(filePath)
-					if err != nil {
-						return false, err
-					}
-					// Set correct MIME type and Content-Length for WASM files
-					c.Response().Header().Set("Content-Type", "application/wasm")
-					c.Response().Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
-					return true, c.File(filePath)
-				},
-			},
-			{
-				Pattern: "web/app.json",
-				Handler: func(c echo.Context, filePath string) (bool, error) {
-					jsonB, err := json.Marshal(s.config.ManagementAppConfig)
-					if err != nil {
-						return false, err
-					}
-
-					// Get version from query param
-					version := c.QueryParam("v")
-
-					// Replace {version} placeholder
-					modifiedContent := strings.ReplaceAll(string(jsonB), "{version}", version)
-
-					// Serve with appropriate content type
-					return true, c.JSONBlob(http.StatusOK, []byte(modifiedContent))
-				},
-			},
+			appJSRoutePattern,
+			appWASMPattern,
+			managementWebAppJSONPattern,
 		},
 	}
 	services_handlers_cache_busting_static_html.AddScopedIHandler(builder, managementCacheBustingHTMLConfig)
@@ -257,38 +300,9 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 		},
 
 		RoutePatterns: []*rage_contracts_config.RoutePattern{
-			{
-				Pattern: "/web/app.wasm",
-				Handler: func(c echo.Context, filePath string) (bool, error) {
-					// Get file info to set Content-Length
-					fileInfo, err := os.Stat(filePath)
-					if err != nil {
-						return false, err
-					}
-					// Set correct MIME type and Content-Length for WASM files
-					c.Response().Header().Set("Content-Type", "application/wasm")
-					c.Response().Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
-					return true, c.File(filePath)
-				},
-			},
-			{
-				Pattern: "web/app.json",
-				Handler: func(c echo.Context, filePath string) (bool, error) {
-					jsonB, err := json.Marshal(s.config.OIDCLoginAppConfig)
-					if err != nil {
-						return false, err
-					}
-
-					// Get version from query param
-					version := c.QueryParam("v")
-
-					// Replace {version} placeholder
-					modifiedContent := strings.ReplaceAll(string(jsonB), "{version}", version)
-
-					// Serve with appropriate content type
-					return true, c.JSONBlob(http.StatusOK, []byte(modifiedContent))
-				},
-			},
+			appJSRoutePattern,
+			appWASMPattern,
+			oidcLoginWebAppJSONPattern,
 		},
 	}
 	services_handlers_cache_busting_static_html.AddScopedIHandler(builder, oidcloginCacheBustingHTMLConfig)

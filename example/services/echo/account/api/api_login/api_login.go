@@ -15,7 +15,7 @@ import (
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_session_with_options "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/session_with_options"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
-	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
+	login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -73,17 +73,13 @@ var (
 	callbackPath = wellknown_echo.AccountCallbackPath
 )
 
-type LoginRequest struct {
-	ReturnUrl string `param:"returnUrl" query:"returnUrl" form:"returnUrl" json:"returnUrl" xml:"returnUrl"`
-}
-
 // API Login godoc
 // @Summary Initiate OAuth2 login flow.
 // @Description Initiates an OAuth2/OIDC authentication flow by generating state and nonce, and returning the authorization URL.
 // @Tags authentication
 // @Accept json
 // @Produce json
-// @Param request body LoginRequest true "LoginRequest"
+// @Param request body login_models.LoginRequest true "LoginRequest"
 // @Success 200 {object} login_models.LoginResponse
 // @Failure 400 {object} wellknown_echo.RestErrorResponse
 // @Failure 500 {object} wellknown_echo.RestErrorResponse
@@ -96,15 +92,15 @@ func (s *service) Do(c echo.Context) error {
 	r := c.Request()
 
 	// Bind the LoginRequest
-	loginRequest := &LoginRequest{}
+	loginRequest := &login_models.LoginRequest{}
 	if err := c.Bind(loginRequest); err != nil {
 		log.Error().Err(err).Msg("Bind")
 		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 
 	// Validate LoginRequest
-	if loginRequest.ReturnUrl == "" {
-		log.Error().Msg("ReturnUrl is empty")
+	if loginRequest.ReturnURL == "" {
+		log.Error().Msg("ReturnURL is empty")
 		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: "returnUrl is required"}, "  ")
 	}
 
@@ -133,7 +129,7 @@ func (s *service) Do(c echo.Context) error {
 
 	// Store the LoginRequest in a cookie for the callback
 	err = s.wellknownCookies.SetInsecureCookie(c, contracts_cookies.LoginRequest, &models.LoginGetRequest{
-		ReturnUrl: loginRequest.ReturnUrl,
+		ReturnUrl: loginRequest.ReturnURL,
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("SetInsecureCookie LoginRequest")

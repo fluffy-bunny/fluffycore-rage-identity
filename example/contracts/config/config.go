@@ -18,6 +18,9 @@ type (
 	ConfigFiles struct {
 		MyAppPath string `json:"myAppPath"`
 	}
+	WASMConfig struct {
+		LoadingLabel string `json:"loadingLabel"`
+	}
 	Config struct {
 		fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
 
@@ -26,6 +29,7 @@ type (
 		JWTValidators       JWTValidators                           `json:"jwtValidators"`
 		ManagementAppConfig *management_contracts_config.AppConfig  `json:"managementAppConfig"`
 		OIDCLoginAppConfig  *oidc_login_contracts_config.AppConfig  `json:"oidcLoginAppConfig"`
+		WASMConfig          *WASMConfig                             `json:"wasmConfig"`
 	}
 )
 
@@ -88,6 +92,9 @@ var ConfigDefaultJSON = []byte(`
         "rageBaseUrl": "http://{environment}",
         "enabledWebAuthN": true,
         "enabledTotp": false
-    }
+    },
+    "wasmConfig": {
+        "loadingLabel": "{progress}%"
+    } 
 }
 `)
