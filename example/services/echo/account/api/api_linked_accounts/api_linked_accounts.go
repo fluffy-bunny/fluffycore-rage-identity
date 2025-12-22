@@ -10,6 +10,7 @@ import (
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	proto_external_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/models"
 	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
+	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
@@ -23,8 +24,9 @@ type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
 
-		wellknownCookies contracts_cookies.IWellknownCookies
-		userService      proto_external_user.IFluffyCoreUserServiceServer
+		wellknownCookies           contracts_cookies.IWellknownCookies
+		userService                proto_external_user.IFluffyCoreUserServiceServer
+		fluffyCoreIDPServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer
 	}
 )
 
@@ -53,12 +55,13 @@ func (s *service) Ctor(
 	config *rage_contracts_config.Config,
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	userService proto_external_user.IFluffyCoreUserServiceServer,
-
+	fluffyCoreIDPServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
 ) (*service, error) {
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
-		wellknownCookies: wellknownCookies,
-		userService:      userService,
+		BaseHandler:                services_echo_handlers_base.NewBaseHandler(container, config),
+		wellknownCookies:           wellknownCookies,
+		userService:                userService,
+		fluffyCoreIDPServiceServer: fluffyCoreIDPServiceServer,
 	}, nil
 }
 
@@ -241,10 +244,16 @@ func (s *service) DoGet(c echo.Context) error {
 		for _, identity := range user.RageUser.LinkedIdentities.Identities {
 			// Get provider name from IdpSlug
 			provider := identity.IdpSlug
-			if provider != "" {
-				// Capitalize first letter
-				if provider[0] >= 'a' && provider[0] <= 'z' {
-					provider = string(provider[0]-32) + provider[1:]
+			// Get provider name from IdpSlug
+			getIDPBySlugResponse, err := s.fluffyCoreIDPServiceServer.GetIDPBySlug(ctx,
+				&proto_oidc_idp.GetIDPBySlugRequest{
+					Slug: identity.IdpSlug,
+				})
+			if err != nil {
+				log.Error().Err(err).Str("idpSlug", identity.IdpSlug).Msg("GetIDPBySlug")
+			} else {
+				if fluffycore_utils.IsNotEmptyOrNil(getIDPBySlugResponse.Idp.Name) {
+					provider = getIDPBySlugResponse.Idp.Name
 				}
 			}
 
