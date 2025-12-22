@@ -65,8 +65,8 @@
       "id": "mapped-enterprise",
       "enabled": true,
       "slug": "mapped-enterprise",
-      "name": "Mapped.com",
-      "description": "Mapped.com",
+      "name": "MAPPED.com",
+      "description": "MAPPED.com",
       "protocol": {
         "oidc": {
           "authority": "https://login.microsoftonline.com/5905aed6-175d-4ef4-914d-3ee92a398d55/v2.0",
