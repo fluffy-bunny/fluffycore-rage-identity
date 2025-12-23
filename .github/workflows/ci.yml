@@ -12,8 +12,8 @@ on:
       - ".vscode/**"
       - ".github/dependabot.yml"
       - ".env"
-      - "docker-compose.yml"
       - "docker/**"
+      - "docker-compose.yml"
   pull_request:
     paths-ignore:
       - "**.md"
@@ -133,3 +133,4 @@ jobs:
 
       - name: Image digest docker_build
         run: echo ${{ steps.docker_build.outputs.digest }}
+
