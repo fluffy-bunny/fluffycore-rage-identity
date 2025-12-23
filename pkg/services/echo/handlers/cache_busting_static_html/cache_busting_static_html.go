@@ -90,11 +90,6 @@ func (s *service) Do(c echo.Context) error {
 
 	path := c.Request().URL.Path
 
-	// Set cache-control headers to prevent caching of HTML pages
-	c.Response().Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-	c.Response().Header().Set("Pragma", "no-cache")
-	c.Response().Header().Set("Expires", "0")
-
 	// Serve index.html for root path requests
 	if path == s.config.RootPath {
 		// Read and process template on each request (no caching)
@@ -111,6 +106,10 @@ func (s *service) Do(c echo.Context) error {
 			}
 			modifiedContent = strings.ReplaceAll(modifiedContent, kv.Key, kv.Value)
 		}
+		// Set cache-control headers to prevent caching of HTML pages
+		c.Response().Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		c.Response().Header().Set("Pragma", "no-cache")
+		c.Response().Header().Set("Expires", "0")
 		return c.HTML(http.StatusOK, modifiedContent)
 	}
 
@@ -187,6 +186,10 @@ func (s *service) Do(c echo.Context) error {
 			}
 			modifiedContent = strings.ReplaceAll(modifiedContent, kv.Key, kv.Value)
 		}
+		// Set cache-control headers to prevent caching of HTML pages
+		c.Response().Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		c.Response().Header().Set("Pragma", "no-cache")
+		c.Response().Header().Set("Expires", "0")
 		return c.HTML(http.StatusOK, modifiedContent)
 	}
 
