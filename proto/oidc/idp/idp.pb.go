@@ -9,7 +9,6 @@ package idp
 import (
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
-	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	_ "google.golang.org/protobuf/types/descriptorpb"
@@ -26,20 +25,11 @@ const (
 )
 
 type Filter struct {
-	state                     protoimpl.MessageState                 `protogen:"open.v1"`
-	Slug                      *types.StringFilterExpression          `protobuf:"bytes,1,opt,name=slug,proto3" json:"slug,omitempty"`
-	Name                      *types.StringFilterExpression          `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Description               *types.StringFilterExpression          `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Metadata                  *types.StringMapStringFilterExpression `protobuf:"bytes,4,opt,name=metadata,proto3" json:"metadata,omitempty"`
-	Enabled                   *types.BoolFilterExpression            `protobuf:"bytes,5,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	ClaimedDomain             *types.StringArrayFilterExpression     `protobuf:"bytes,6,opt,name=claimed_domain,json=claimedDomain,proto3" json:"claimed_domain,omitempty"`
-	Hidden                    *types.BoolFilterExpression            `protobuf:"bytes,7,opt,name=hidden,proto3" json:"hidden,omitempty"`
-	EmailVerificationRequired *types.BoolFilterExpression            `protobuf:"bytes,8,opt,name=email_verification_required,json=emailVerificationRequired,proto3" json:"email_verification_required,omitempty"`
-	AutoCreate                *types.BoolFilterExpression            `protobuf:"bytes,9,opt,name=auto_create,json=autoCreate,proto3" json:"auto_create,omitempty"`
-	// AST
-	And           []*Filter `protobuf:"bytes,100,rep,name=and,proto3" json:"and,omitempty"`
-	Or            []*Filter `protobuf:"bytes,101,rep,name=or,proto3" json:"or,omitempty"`
-	Not           []*Filter `protobuf:"bytes,102,rep,name=not,proto3" json:"not,omitempty"`
+	state         protoimpl.MessageState             `protogen:"open.v1"`
+	Slug          *types.StringFilterExpression      `protobuf:"bytes,1,opt,name=slug,proto3" json:"slug,omitempty"`
+	Enabled       *types.BoolFilterExpression        `protobuf:"bytes,2,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	ClaimedDomain *types.StringArrayFilterExpression `protobuf:"bytes,3,opt,name=claimed_domain,json=claimedDomain,proto3" json:"claimed_domain,omitempty"`
+	Hidden        *types.BoolFilterExpression        `protobuf:"bytes,4,opt,name=hidden,proto3" json:"hidden,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -81,27 +71,6 @@ func (x *Filter) GetSlug() *types.StringFilterExpression {
 	return nil
 }
 
-func (x *Filter) GetName() *types.StringFilterExpression {
-	if x != nil {
-		return x.Name
-	}
-	return nil
-}
-
-func (x *Filter) GetDescription() *types.StringFilterExpression {
-	if x != nil {
-		return x.Description
-	}
-	return nil
-}
-
-func (x *Filter) GetMetadata() *types.StringMapStringFilterExpression {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
-}
-
 func (x *Filter) GetEnabled() *types.BoolFilterExpression {
 	if x != nil {
 		return x.Enabled
@@ -123,486 +92,17 @@ func (x *Filter) GetHidden() *types.BoolFilterExpression {
 	return nil
 }
 
-func (x *Filter) GetEmailVerificationRequired() *types.BoolFilterExpression {
-	if x != nil {
-		return x.EmailVerificationRequired
-	}
-	return nil
-}
-
-func (x *Filter) GetAutoCreate() *types.BoolFilterExpression {
-	if x != nil {
-		return x.AutoCreate
-	}
-	return nil
-}
-
-func (x *Filter) GetAnd() []*Filter {
-	if x != nil {
-		return x.And
-	}
-	return nil
-}
-
-func (x *Filter) GetOr() []*Filter {
-	if x != nil {
-		return x.Or
-	}
-	return nil
-}
-
-func (x *Filter) GetNot() []*Filter {
-	if x != nil {
-		return x.Not
-	}
-	return nil
-}
-
-type CreateIDPRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Idp           *models.IDP            `protobuf:"bytes,1,opt,name=idp,proto3" json:"idp,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateIDPRequest) Reset() {
-	*x = CreateIDPRequest{}
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateIDPRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateIDPRequest) ProtoMessage() {}
-
-func (x *CreateIDPRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateIDPRequest.ProtoReflect.Descriptor instead.
-func (*CreateIDPRequest) Descriptor() ([]byte, []int) {
-	return file_proto_oidc_idp_idp_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *CreateIDPRequest) GetIdp() *models.IDP {
-	if x != nil {
-		return x.Idp
-	}
-	return nil
-}
-
-type CreateIDPResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Idp           *models.IDP            `protobuf:"bytes,1,opt,name=idp,proto3" json:"idp,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *CreateIDPResponse) Reset() {
-	*x = CreateIDPResponse{}
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *CreateIDPResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CreateIDPResponse) ProtoMessage() {}
-
-func (x *CreateIDPResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CreateIDPResponse.ProtoReflect.Descriptor instead.
-func (*CreateIDPResponse) Descriptor() ([]byte, []int) {
-	return file_proto_oidc_idp_idp_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *CreateIDPResponse) GetIdp() *models.IDP {
-	if x != nil {
-		return x.Idp
-	}
-	return nil
-}
-
-type GetIDPRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetIDPRequest) Reset() {
-	*x = GetIDPRequest{}
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetIDPRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetIDPRequest) ProtoMessage() {}
-
-func (x *GetIDPRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetIDPRequest.ProtoReflect.Descriptor instead.
-func (*GetIDPRequest) Descriptor() ([]byte, []int) {
-	return file_proto_oidc_idp_idp_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *GetIDPRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type GetIDPResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Idp           *models.IDP            `protobuf:"bytes,1,opt,name=idp,proto3" json:"idp,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetIDPResponse) Reset() {
-	*x = GetIDPResponse{}
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetIDPResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetIDPResponse) ProtoMessage() {}
-
-func (x *GetIDPResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetIDPResponse.ProtoReflect.Descriptor instead.
-func (*GetIDPResponse) Descriptor() ([]byte, []int) {
-	return file_proto_oidc_idp_idp_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *GetIDPResponse) GetIdp() *models.IDP {
-	if x != nil {
-		return x.Idp
-	}
-	return nil
-}
-
-type GetIDPBySlugRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Slug          string                 `protobuf:"bytes,1,opt,name=slug,proto3" json:"slug,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetIDPBySlugRequest) Reset() {
-	*x = GetIDPBySlugRequest{}
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetIDPBySlugRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetIDPBySlugRequest) ProtoMessage() {}
-
-func (x *GetIDPBySlugRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetIDPBySlugRequest.ProtoReflect.Descriptor instead.
-func (*GetIDPBySlugRequest) Descriptor() ([]byte, []int) {
-	return file_proto_oidc_idp_idp_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *GetIDPBySlugRequest) GetSlug() string {
-	if x != nil {
-		return x.Slug
-	}
-	return ""
-}
-
-type GetIDPBySlugResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Idp           *models.IDP            `protobuf:"bytes,1,opt,name=idp,proto3" json:"idp,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *GetIDPBySlugResponse) Reset() {
-	*x = GetIDPBySlugResponse{}
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *GetIDPBySlugResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetIDPBySlugResponse) ProtoMessage() {}
-
-func (x *GetIDPBySlugResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetIDPBySlugResponse.ProtoReflect.Descriptor instead.
-func (*GetIDPBySlugResponse) Descriptor() ([]byte, []int) {
-	return file_proto_oidc_idp_idp_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *GetIDPBySlugResponse) GetIdp() *models.IDP {
-	if x != nil {
-		return x.Idp
-	}
-	return nil
-}
-
-type DeleteIDPRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteIDPRequest) Reset() {
-	*x = DeleteIDPRequest{}
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteIDPRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteIDPRequest) ProtoMessage() {}
-
-func (x *DeleteIDPRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteIDPRequest.ProtoReflect.Descriptor instead.
-func (*DeleteIDPRequest) Descriptor() ([]byte, []int) {
-	return file_proto_oidc_idp_idp_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *DeleteIDPRequest) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-type DeleteIDPResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *DeleteIDPResponse) Reset() {
-	*x = DeleteIDPResponse{}
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[8]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *DeleteIDPResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteIDPResponse) ProtoMessage() {}
-
-func (x *DeleteIDPResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[8]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteIDPResponse.ProtoReflect.Descriptor instead.
-func (*DeleteIDPResponse) Descriptor() ([]byte, []int) {
-	return file_proto_oidc_idp_idp_proto_rawDescGZIP(), []int{8}
-}
-
-type UpdateIDPRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Idp           *models.IDPUpdate      `protobuf:"bytes,1,opt,name=idp,proto3" json:"idp,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateIDPRequest) Reset() {
-	*x = UpdateIDPRequest{}
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateIDPRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateIDPRequest) ProtoMessage() {}
-
-func (x *UpdateIDPRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateIDPRequest.ProtoReflect.Descriptor instead.
-func (*UpdateIDPRequest) Descriptor() ([]byte, []int) {
-	return file_proto_oidc_idp_idp_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *UpdateIDPRequest) GetIdp() *models.IDPUpdate {
-	if x != nil {
-		return x.Idp
-	}
-	return nil
-}
-
-type UpdateIDPResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Idp           *models.IDP            `protobuf:"bytes,1,opt,name=idp,proto3" json:"idp,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *UpdateIDPResponse) Reset() {
-	*x = UpdateIDPResponse{}
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[10]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *UpdateIDPResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*UpdateIDPResponse) ProtoMessage() {}
-
-func (x *UpdateIDPResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[10]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use UpdateIDPResponse.ProtoReflect.Descriptor instead.
-func (*UpdateIDPResponse) Descriptor() ([]byte, []int) {
-	return file_proto_oidc_idp_idp_proto_rawDescGZIP(), []int{10}
-}
-
-func (x *UpdateIDPResponse) GetIdp() *models.IDP {
-	if x != nil {
-		return x.Idp
-	}
-	return nil
-}
-
 type ListIDPRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Filter
-	Filter *Filter `protobuf:"bytes,1,opt,name=filter,proto3" json:"filter,omitempty"`
-	// Pagination
-	Pagination    *types.Pagination `protobuf:"bytes,100,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	Filter        *Filter `protobuf:"bytes,1,opt,name=filter,proto3" json:"filter,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListIDPRequest) Reset() {
 	*x = ListIDPRequest{}
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[11]
+	mi := &file_proto_oidc_idp_idp_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -614,7 +114,7 @@ func (x *ListIDPRequest) String() string {
 func (*ListIDPRequest) ProtoMessage() {}
 
 func (x *ListIDPRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[11]
+	mi := &file_proto_oidc_idp_idp_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -627,7 +127,7 @@ func (x *ListIDPRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListIDPRequest.ProtoReflect.Descriptor instead.
 func (*ListIDPRequest) Descriptor() ([]byte, []int) {
-	return file_proto_oidc_idp_idp_proto_rawDescGZIP(), []int{11}
+	return file_proto_oidc_idp_idp_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ListIDPRequest) GetFilter() *Filter {
@@ -637,25 +137,16 @@ func (x *ListIDPRequest) GetFilter() *Filter {
 	return nil
 }
 
-func (x *ListIDPRequest) GetPagination() *types.Pagination {
-	if x != nil {
-		return x.Pagination
-	}
-	return nil
-}
-
 type ListIDPResponse struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	Idps  []*models.IDP          `protobuf:"bytes,1,rep,name=idps,proto3" json:"idps,omitempty"`
-	// Pagination details
-	Pagination    *types.PaginationResponse `protobuf:"bytes,100,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	IDPs          []*models.IDP          `protobuf:"bytes,1,rep,name=i_d_ps,json=iDPs,proto3" json:"i_d_ps,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListIDPResponse) Reset() {
 	*x = ListIDPResponse{}
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[12]
+	mi := &file_proto_oidc_idp_idp_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -667,7 +158,7 @@ func (x *ListIDPResponse) String() string {
 func (*ListIDPResponse) ProtoMessage() {}
 
 func (x *ListIDPResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_idp_idp_proto_msgTypes[12]
+	mi := &file_proto_oidc_idp_idp_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -680,19 +171,12 @@ func (x *ListIDPResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListIDPResponse.ProtoReflect.Descriptor instead.
 func (*ListIDPResponse) Descriptor() ([]byte, []int) {
-	return file_proto_oidc_idp_idp_proto_rawDescGZIP(), []int{12}
+	return file_proto_oidc_idp_idp_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *ListIDPResponse) GetIdps() []*models.IDP {
+func (x *ListIDPResponse) GetIDPs() []*models.IDP {
 	if x != nil {
-		return x.Idps
-	}
-	return nil
-}
-
-func (x *ListIDPResponse) GetPagination() *types.PaginationResponse {
-	if x != nil {
-		return x.Pagination
+		return x.IDPs
 	}
 	return nil
 }
@@ -701,58 +185,18 @@ var File_proto_oidc_idp_idp_proto protoreflect.FileDescriptor
 
 const file_proto_oidc_idp_idp_proto_rawDesc = "" +
 	"\n" +
-	"\x18proto/oidc/idp/idp.proto\x12\x0eproto.oidc.idp\x1a google/protobuf/descriptor.proto\x1a\x18proto/types/filter.proto\x1a\x1cproto/types/pagination.proto\x1a\x1bproto/oidc/models/idp.proto\x1a\x1cgoogle/api/annotations.proto\"\xf7\x05\n" +
+	"\x18proto/oidc/idp/idp.proto\x12\x0eproto.oidc.idp\x1a google/protobuf/descriptor.proto\x1a\x18proto/types/filter.proto\x1a\x1bproto/oidc/models/idp.proto\"\x8a\x02\n" +
 	"\x06Filter\x127\n" +
-	"\x04slug\x18\x01 \x01(\v2#.proto.types.StringFilterExpressionR\x04slug\x127\n" +
-	"\x04name\x18\x02 \x01(\v2#.proto.types.StringFilterExpressionR\x04name\x12E\n" +
-	"\vdescription\x18\x03 \x01(\v2#.proto.types.StringFilterExpressionR\vdescription\x12H\n" +
-	"\bmetadata\x18\x04 \x01(\v2,.proto.types.StringMapStringFilterExpressionR\bmetadata\x12;\n" +
-	"\aenabled\x18\x05 \x01(\v2!.proto.types.BoolFilterExpressionR\aenabled\x12O\n" +
-	"\x0eclaimed_domain\x18\x06 \x01(\v2(.proto.types.StringArrayFilterExpressionR\rclaimedDomain\x129\n" +
-	"\x06hidden\x18\a \x01(\v2!.proto.types.BoolFilterExpressionR\x06hidden\x12a\n" +
-	"\x1bemail_verification_required\x18\b \x01(\v2!.proto.types.BoolFilterExpressionR\x19emailVerificationRequired\x12B\n" +
-	"\vauto_create\x18\t \x01(\v2!.proto.types.BoolFilterExpressionR\n" +
-	"autoCreate\x12(\n" +
-	"\x03and\x18d \x03(\v2\x16.proto.oidc.idp.FilterR\x03and\x12&\n" +
-	"\x02or\x18e \x03(\v2\x16.proto.oidc.idp.FilterR\x02or\x12(\n" +
-	"\x03not\x18f \x03(\v2\x16.proto.oidc.idp.FilterR\x03not\"<\n" +
-	"\x10CreateIDPRequest\x12(\n" +
-	"\x03idp\x18\x01 \x01(\v2\x16.proto.oidc.models.IDPR\x03idp\"=\n" +
-	"\x11CreateIDPResponse\x12(\n" +
-	"\x03idp\x18\x01 \x01(\v2\x16.proto.oidc.models.IDPR\x03idp\"\x1f\n" +
-	"\rGetIDPRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\":\n" +
-	"\x0eGetIDPResponse\x12(\n" +
-	"\x03idp\x18\x01 \x01(\v2\x16.proto.oidc.models.IDPR\x03idp\")\n" +
-	"\x13GetIDPBySlugRequest\x12\x12\n" +
-	"\x04slug\x18\x01 \x01(\tR\x04slug\"@\n" +
-	"\x14GetIDPBySlugResponse\x12(\n" +
-	"\x03idp\x18\x01 \x01(\v2\x16.proto.oidc.models.IDPR\x03idp\"\"\n" +
-	"\x10DeleteIDPRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\x13\n" +
-	"\x11DeleteIDPResponse\"B\n" +
-	"\x10UpdateIDPRequest\x12.\n" +
-	"\x03idp\x18\x01 \x01(\v2\x1c.proto.oidc.models.IDPUpdateR\x03idp\"=\n" +
-	"\x11UpdateIDPResponse\x12(\n" +
-	"\x03idp\x18\x01 \x01(\v2\x16.proto.oidc.models.IDPR\x03idp\"y\n" +
+	"\x04slug\x18\x01 \x01(\v2#.proto.types.StringFilterExpressionR\x04slug\x12;\n" +
+	"\aenabled\x18\x02 \x01(\v2!.proto.types.BoolFilterExpressionR\aenabled\x12O\n" +
+	"\x0eclaimed_domain\x18\x03 \x01(\v2(.proto.types.StringArrayFilterExpressionR\rclaimedDomain\x129\n" +
+	"\x06hidden\x18\x04 \x01(\v2!.proto.types.BoolFilterExpressionR\x06hidden\"@\n" +
 	"\x0eListIDPRequest\x12.\n" +
-	"\x06filter\x18\x01 \x01(\v2\x16.proto.oidc.idp.FilterR\x06filter\x127\n" +
-	"\n" +
-	"pagination\x18d \x01(\v2\x17.proto.types.PaginationR\n" +
-	"pagination\"~\n" +
-	"\x0fListIDPResponse\x12*\n" +
-	"\x04idps\x18\x01 \x03(\v2\x16.proto.oidc.models.IDPR\x04idps\x12?\n" +
-	"\n" +
-	"pagination\x18d \x01(\v2\x1f.proto.types.PaginationResponseR\n" +
-	"pagination2\xad\x05\n" +
-	"\n" +
-	"IDPService\x12p\n" +
-	"\tCreateIDP\x12 .proto.oidc.idp.CreateIDPRequest\x1a!.proto.oidc.idp.CreateIDPResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/api/v1/idp/_create\x12d\n" +
-	"\x06GetIDP\x12\x1d.proto.oidc.idp.GetIDPRequest\x1a\x1e.proto.oidc.idp.GetIDPResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/api/v1/idp/id/{id}\x12z\n" +
-	"\fGetIDPBySlug\x12#.proto.oidc.idp.GetIDPBySlugRequest\x1a$.proto.oidc.idp.GetIDPBySlugResponse\"\x1f\x82\xd3\xe4\x93\x02\x19\x12\x17/api/v1/idp/slug/{slug}\x12m\n" +
-	"\tDeleteIDP\x12 .proto.oidc.idp.DeleteIDPRequest\x1a!.proto.oidc.idp.DeleteIDPResponse\"\x1b\x82\xd3\xe4\x93\x02\x15*\x13/api/v1/idp/id/{id}\x12p\n" +
-	"\tUpdateIDP\x12 .proto.oidc.idp.UpdateIDPRequest\x1a!.proto.oidc.idp.UpdateIDPResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/api/v1/idp/_update\x12j\n" +
-	"\aListIDP\x12\x1e.proto.oidc.idp.ListIDPRequest\x1a\x1f.proto.oidc.idp.ListIDPResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/api/v1/idp/_searchB\x85\x01\n" +
+	"\x06filter\x18\x01 \x01(\v2\x16.proto.oidc.idp.FilterR\x06filter\"?\n" +
+	"\x0fListIDPResponse\x12,\n" +
+	"\x06i_d_ps\x18\x01 \x03(\v2\x16.proto.oidc.models.IDPR\x04iDPs2c\n" +
+	"\x13SingletonIDPService\x12L\n" +
+	"\aListIDP\x12\x1e.proto.oidc.idp.ListIDPRequest\x1a\x1f.proto.oidc.idp.ListIDPResponse\"\x00B\x85\x01\n" +
 	"\x1ccom.fluffybunny.rageoidc.idpP\x01ZCgithub.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp;idp\xaa\x02\x1dFluffyBunny.RageOidc.Oidc.IDPb\x06proto3"
 
 var (
@@ -767,70 +211,30 @@ func file_proto_oidc_idp_idp_proto_rawDescGZIP() []byte {
 	return file_proto_oidc_idp_idp_proto_rawDescData
 }
 
-var file_proto_oidc_idp_idp_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_proto_oidc_idp_idp_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_proto_oidc_idp_idp_proto_goTypes = []any{
-	(*Filter)(nil),                                // 0: proto.oidc.idp.Filter
-	(*CreateIDPRequest)(nil),                      // 1: proto.oidc.idp.CreateIDPRequest
-	(*CreateIDPResponse)(nil),                     // 2: proto.oidc.idp.CreateIDPResponse
-	(*GetIDPRequest)(nil),                         // 3: proto.oidc.idp.GetIDPRequest
-	(*GetIDPResponse)(nil),                        // 4: proto.oidc.idp.GetIDPResponse
-	(*GetIDPBySlugRequest)(nil),                   // 5: proto.oidc.idp.GetIDPBySlugRequest
-	(*GetIDPBySlugResponse)(nil),                  // 6: proto.oidc.idp.GetIDPBySlugResponse
-	(*DeleteIDPRequest)(nil),                      // 7: proto.oidc.idp.DeleteIDPRequest
-	(*DeleteIDPResponse)(nil),                     // 8: proto.oidc.idp.DeleteIDPResponse
-	(*UpdateIDPRequest)(nil),                      // 9: proto.oidc.idp.UpdateIDPRequest
-	(*UpdateIDPResponse)(nil),                     // 10: proto.oidc.idp.UpdateIDPResponse
-	(*ListIDPRequest)(nil),                        // 11: proto.oidc.idp.ListIDPRequest
-	(*ListIDPResponse)(nil),                       // 12: proto.oidc.idp.ListIDPResponse
-	(*types.StringFilterExpression)(nil),          // 13: proto.types.StringFilterExpression
-	(*types.StringMapStringFilterExpression)(nil), // 14: proto.types.StringMapStringFilterExpression
-	(*types.BoolFilterExpression)(nil),            // 15: proto.types.BoolFilterExpression
-	(*types.StringArrayFilterExpression)(nil),     // 16: proto.types.StringArrayFilterExpression
-	(*models.IDP)(nil),                            // 17: proto.oidc.models.IDP
-	(*models.IDPUpdate)(nil),                      // 18: proto.oidc.models.IDPUpdate
-	(*types.Pagination)(nil),                      // 19: proto.types.Pagination
-	(*types.PaginationResponse)(nil),              // 20: proto.types.PaginationResponse
+	(*Filter)(nil),                            // 0: proto.oidc.idp.Filter
+	(*ListIDPRequest)(nil),                    // 1: proto.oidc.idp.ListIDPRequest
+	(*ListIDPResponse)(nil),                   // 2: proto.oidc.idp.ListIDPResponse
+	(*types.StringFilterExpression)(nil),      // 3: proto.types.StringFilterExpression
+	(*types.BoolFilterExpression)(nil),        // 4: proto.types.BoolFilterExpression
+	(*types.StringArrayFilterExpression)(nil), // 5: proto.types.StringArrayFilterExpression
+	(*models.IDP)(nil),                        // 6: proto.oidc.models.IDP
 }
 var file_proto_oidc_idp_idp_proto_depIdxs = []int32{
-	13, // 0: proto.oidc.idp.Filter.slug:type_name -> proto.types.StringFilterExpression
-	13, // 1: proto.oidc.idp.Filter.name:type_name -> proto.types.StringFilterExpression
-	13, // 2: proto.oidc.idp.Filter.description:type_name -> proto.types.StringFilterExpression
-	14, // 3: proto.oidc.idp.Filter.metadata:type_name -> proto.types.StringMapStringFilterExpression
-	15, // 4: proto.oidc.idp.Filter.enabled:type_name -> proto.types.BoolFilterExpression
-	16, // 5: proto.oidc.idp.Filter.claimed_domain:type_name -> proto.types.StringArrayFilterExpression
-	15, // 6: proto.oidc.idp.Filter.hidden:type_name -> proto.types.BoolFilterExpression
-	15, // 7: proto.oidc.idp.Filter.email_verification_required:type_name -> proto.types.BoolFilterExpression
-	15, // 8: proto.oidc.idp.Filter.auto_create:type_name -> proto.types.BoolFilterExpression
-	0,  // 9: proto.oidc.idp.Filter.and:type_name -> proto.oidc.idp.Filter
-	0,  // 10: proto.oidc.idp.Filter.or:type_name -> proto.oidc.idp.Filter
-	0,  // 11: proto.oidc.idp.Filter.not:type_name -> proto.oidc.idp.Filter
-	17, // 12: proto.oidc.idp.CreateIDPRequest.idp:type_name -> proto.oidc.models.IDP
-	17, // 13: proto.oidc.idp.CreateIDPResponse.idp:type_name -> proto.oidc.models.IDP
-	17, // 14: proto.oidc.idp.GetIDPResponse.idp:type_name -> proto.oidc.models.IDP
-	17, // 15: proto.oidc.idp.GetIDPBySlugResponse.idp:type_name -> proto.oidc.models.IDP
-	18, // 16: proto.oidc.idp.UpdateIDPRequest.idp:type_name -> proto.oidc.models.IDPUpdate
-	17, // 17: proto.oidc.idp.UpdateIDPResponse.idp:type_name -> proto.oidc.models.IDP
-	0,  // 18: proto.oidc.idp.ListIDPRequest.filter:type_name -> proto.oidc.idp.Filter
-	19, // 19: proto.oidc.idp.ListIDPRequest.pagination:type_name -> proto.types.Pagination
-	17, // 20: proto.oidc.idp.ListIDPResponse.idps:type_name -> proto.oidc.models.IDP
-	20, // 21: proto.oidc.idp.ListIDPResponse.pagination:type_name -> proto.types.PaginationResponse
-	1,  // 22: proto.oidc.idp.IDPService.CreateIDP:input_type -> proto.oidc.idp.CreateIDPRequest
-	3,  // 23: proto.oidc.idp.IDPService.GetIDP:input_type -> proto.oidc.idp.GetIDPRequest
-	5,  // 24: proto.oidc.idp.IDPService.GetIDPBySlug:input_type -> proto.oidc.idp.GetIDPBySlugRequest
-	7,  // 25: proto.oidc.idp.IDPService.DeleteIDP:input_type -> proto.oidc.idp.DeleteIDPRequest
-	9,  // 26: proto.oidc.idp.IDPService.UpdateIDP:input_type -> proto.oidc.idp.UpdateIDPRequest
-	11, // 27: proto.oidc.idp.IDPService.ListIDP:input_type -> proto.oidc.idp.ListIDPRequest
-	2,  // 28: proto.oidc.idp.IDPService.CreateIDP:output_type -> proto.oidc.idp.CreateIDPResponse
-	4,  // 29: proto.oidc.idp.IDPService.GetIDP:output_type -> proto.oidc.idp.GetIDPResponse
-	6,  // 30: proto.oidc.idp.IDPService.GetIDPBySlug:output_type -> proto.oidc.idp.GetIDPBySlugResponse
-	8,  // 31: proto.oidc.idp.IDPService.DeleteIDP:output_type -> proto.oidc.idp.DeleteIDPResponse
-	10, // 32: proto.oidc.idp.IDPService.UpdateIDP:output_type -> proto.oidc.idp.UpdateIDPResponse
-	12, // 33: proto.oidc.idp.IDPService.ListIDP:output_type -> proto.oidc.idp.ListIDPResponse
-	28, // [28:34] is the sub-list for method output_type
-	22, // [22:28] is the sub-list for method input_type
-	22, // [22:22] is the sub-list for extension type_name
-	22, // [22:22] is the sub-list for extension extendee
-	0,  // [0:22] is the sub-list for field type_name
+	3, // 0: proto.oidc.idp.Filter.slug:type_name -> proto.types.StringFilterExpression
+	4, // 1: proto.oidc.idp.Filter.enabled:type_name -> proto.types.BoolFilterExpression
+	5, // 2: proto.oidc.idp.Filter.claimed_domain:type_name -> proto.types.StringArrayFilterExpression
+	4, // 3: proto.oidc.idp.Filter.hidden:type_name -> proto.types.BoolFilterExpression
+	0, // 4: proto.oidc.idp.ListIDPRequest.filter:type_name -> proto.oidc.idp.Filter
+	6, // 5: proto.oidc.idp.ListIDPResponse.i_d_ps:type_name -> proto.oidc.models.IDP
+	1, // 6: proto.oidc.idp.SingletonIDPService.ListIDP:input_type -> proto.oidc.idp.ListIDPRequest
+	2, // 7: proto.oidc.idp.SingletonIDPService.ListIDP:output_type -> proto.oidc.idp.ListIDPResponse
+	7, // [7:8] is the sub-list for method output_type
+	6, // [6:7] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_proto_oidc_idp_idp_proto_init() }
@@ -844,7 +248,7 @@ func file_proto_oidc_idp_idp_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_oidc_idp_idp_proto_rawDesc), len(file_proto_oidc_idp_idp_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

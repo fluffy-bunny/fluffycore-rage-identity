@@ -23,7 +23,7 @@ type (
 		tokenService                   contracts_tokenservice.ITokenService
 		claimsaugmentor                contracts_tokenservice.IAuthorizationCodeClaimsAugmentor
 		eventSink                      contracts_events.IEventSink
-		idpServiceServer               proto_oidc_idp.IFluffyCoreIDPServiceServer
+		idpServiceServer               proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer
 	}
 )
 
@@ -37,7 +37,7 @@ func (s *service) Ctor(
 	tokenService contracts_tokenservice.ITokenService,
 	claimsaugmentor contracts_tokenservice.IAuthorizationCodeClaimsAugmentor,
 	eventSink contracts_events.IEventSink,
-	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
+	idpServiceServer proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer,
 ) (*service, error) {
 	return &service{
 		scopedMemoryCache:              scopedMemoryCache,

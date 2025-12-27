@@ -142,11 +142,11 @@ func (s *service) Do(c echo.Context) error {
 	if err != nil {
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
-	if len(listIDPRequest.Idps) > 0 {
+	if len(listIDPRequest.IDPs) > 0 {
 		// this domain is claimed.
 		response.Directive = models_api_login_models.DIRECTIVE_StartExternalLogin
 		response.DirectiveStartExternalLogin = &models_api_login_models.DirectiveStartExternalLogin{
-			Slug: listIDPRequest.Idps[0].Slug,
+			Slug: listIDPRequest.IDPs[0].Slug,
 		}
 		return c.JSONPretty(http.StatusOK, response, "  ")
 	}

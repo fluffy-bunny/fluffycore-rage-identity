@@ -12,6 +12,7 @@ import (
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
+	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	fluffycore_services_claims "github.com/fluffy-bunny/fluffycore/services/claims"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	oauth2 "github.com/go-oauth2/oauth2/v4"
@@ -153,12 +154,21 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 		if len(emailParts) == 2 {
 			domainPart := strings.ToLower(emailParts[1])
 			// Check if this IDP has claimed this domain
-			getIDPResponse, err := s.idpServiceServer.GetIDPBySlug(ctx, &proto_oidc_idp.GetIDPBySlugRequest{
-				Slug: authorizationFinal.Identity.IdpSlug,
-			})
-			if err == nil && getIDPResponse.Idp != nil {
+			listIDPResponse, err := s.idpServiceServer.ListIDP(ctx,
+				&proto_oidc_idp.ListIDPRequest{
+					Filter: &proto_oidc_idp.Filter{
+						Enabled: &proto_types.BoolFilterExpression{
+							Eq: true,
+						},
+						Slug: &proto_types.StringFilterExpression{
+							Eq: authorizationFinal.Identity.IdpSlug,
+						},
+					},
+				})
+			if err == nil && listIDPResponse != nil && len(listIDPResponse.IDPs) > 0 {
+				idp := listIDPResponse.IDPs[0]
 				// Check if the domain is in the claimed domains list
-				for _, claimedDomain := range getIDPResponse.Idp.ClaimedDomains {
+				for _, claimedDomain := range idp.ClaimedDomains {
 					if strings.ToLower(claimedDomain) == domainPart {
 						acrClaims = append(acrClaims, models.ACRClaimedDomain)
 						break

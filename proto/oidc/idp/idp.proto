@@ -10,115 +10,29 @@ package proto.oidc.idp;
 
 import "google/protobuf/descriptor.proto";
 import "proto/types/filter.proto";
-import "proto/types/pagination.proto";
 import "proto/oidc/models/idp.proto";
-
-import "google/api/annotations.proto";
 
 message Filter {
     proto.types.StringFilterExpression              slug = 1;
-    proto.types.StringFilterExpression              name = 2;
-    proto.types.StringFilterExpression              description = 3;
-    proto.types.StringMapStringFilterExpression     metadata = 4;
-    proto.types.BoolFilterExpression                enabled = 5;
-    proto.types.StringArrayFilterExpression         claimed_domain =  6;
-    proto.types.BoolFilterExpression                hidden = 7;
-    proto.types.BoolFilterExpression                email_verification_required = 8;
-    proto.types.BoolFilterExpression                auto_create = 9;
-    
-
-    // AST
-    repeated Filter and = 100;
-    repeated Filter or = 101;
-    repeated Filter not = 102;
+    proto.types.BoolFilterExpression                enabled = 2;
+    proto.types.StringArrayFilterExpression         claimed_domain =  3;
+    proto.types.BoolFilterExpression                hidden = 4;
 }
 
-service IDPService {
-    // Create idp
-    rpc CreateIDP (CreateIDPRequest) returns (CreateIDPResponse) {
-        option (google.api.http) = {
-            post: "/api/v1/idp/_create"
-            body: "*"
-          };
-    }
-    // Get idp
-    rpc GetIDP (GetIDPRequest) returns (GetIDPResponse) {
-        option (google.api.http) = {
-            get: "/api/v1/idp/id/{id}"
-          };
-    }
-
-    // Get idp
-    rpc GetIDPBySlug (GetIDPBySlugRequest) returns (GetIDPBySlugResponse) {
-        option (google.api.http) = {
-            get: "/api/v1/idp/slug/{slug}"
-            };
-    }
-    // Delete idp
-    rpc DeleteIDP (DeleteIDPRequest) returns (DeleteIDPResponse) {
-        option (google.api.http) = {
-            delete: "/api/v1/idp/id/{id}"
-          };
-    }
-    // Update idp
-    rpc UpdateIDP (UpdateIDPRequest) returns (UpdateIDPResponse) {
-        option (google.api.http) = {
-            post: "/api/v1/idp/_update"
-            body: "*"
-          };
-    }
+// SingletonIDPService ...
+service SingletonIDPService {
+   
     // List idps
-    rpc ListIDP (ListIDPRequest) returns (ListIDPResponse) {
-        option (google.api.http) = {
-            post: "/api/v1/idp/_search"
-            body: "*"
-          };
-    }
+    rpc ListIDP (ListIDPRequest) returns (ListIDPResponse) {}
  } 
 
  
-message CreateIDPRequest {
-    proto.oidc.models.IDP idp = 1;
-}   
-message CreateIDPResponse {
-    proto.oidc.models.IDP idp = 1;
-}
-message GetIDPRequest {
-   string id = 1;
-}
-message GetIDPResponse {
-    proto.oidc.models.IDP idp = 1;
-}
-message GetIDPBySlugRequest {
-    string slug = 1; 
-}
-message GetIDPBySlugResponse {
-    proto.oidc.models.IDP idp = 1;
-}
-
-message DeleteIDPRequest {
-   string id = 1;
-}
-message DeleteIDPResponse {
-}
-message UpdateIDPRequest {
-    proto.oidc.models.IDPUpdate idp = 1;
-}
-message UpdateIDPResponse {
-    proto.oidc.models.IDP idp = 1;
-}
-
 message ListIDPRequest {
    // Filter
    Filter filter = 1;
 
-   // Pagination
-   proto.types.Pagination pagination = 100;
 }
 
 message ListIDPResponse {
-   repeated proto.oidc.models.IDP idps = 1;
-
-   // Pagination details
-   proto.types.PaginationResponse pagination = 100;
+   repeated proto.oidc.models.IDP i_d_ps = 1;
 }

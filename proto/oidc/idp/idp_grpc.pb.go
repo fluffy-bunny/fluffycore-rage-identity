@@ -19,303 +19,107 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	IDPService_CreateIDP_FullMethodName    = "/proto.oidc.idp.IDPService/CreateIDP"
-	IDPService_GetIDP_FullMethodName       = "/proto.oidc.idp.IDPService/GetIDP"
-	IDPService_GetIDPBySlug_FullMethodName = "/proto.oidc.idp.IDPService/GetIDPBySlug"
-	IDPService_DeleteIDP_FullMethodName    = "/proto.oidc.idp.IDPService/DeleteIDP"
-	IDPService_UpdateIDP_FullMethodName    = "/proto.oidc.idp.IDPService/UpdateIDP"
-	IDPService_ListIDP_FullMethodName      = "/proto.oidc.idp.IDPService/ListIDP"
+	SingletonIDPService_ListIDP_FullMethodName = "/proto.oidc.idp.SingletonIDPService/ListIDP"
 )
 
-// IDPServiceClient is the client API for IDPService service.
+// SingletonIDPServiceClient is the client API for SingletonIDPService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type IDPServiceClient interface {
-	// Create idp
-	CreateIDP(ctx context.Context, in *CreateIDPRequest, opts ...grpc.CallOption) (*CreateIDPResponse, error)
-	// Get idp
-	GetIDP(ctx context.Context, in *GetIDPRequest, opts ...grpc.CallOption) (*GetIDPResponse, error)
-	// Get idp
-	GetIDPBySlug(ctx context.Context, in *GetIDPBySlugRequest, opts ...grpc.CallOption) (*GetIDPBySlugResponse, error)
-	// Delete idp
-	DeleteIDP(ctx context.Context, in *DeleteIDPRequest, opts ...grpc.CallOption) (*DeleteIDPResponse, error)
-	// Update idp
-	UpdateIDP(ctx context.Context, in *UpdateIDPRequest, opts ...grpc.CallOption) (*UpdateIDPResponse, error)
+//
+// SingletonIDPService ...
+type SingletonIDPServiceClient interface {
 	// List idps
 	ListIDP(ctx context.Context, in *ListIDPRequest, opts ...grpc.CallOption) (*ListIDPResponse, error)
 }
 
-type iDPServiceClient struct {
+type singletonIDPServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewIDPServiceClient(cc grpc.ClientConnInterface) IDPServiceClient {
-	return &iDPServiceClient{cc}
+func NewSingletonIDPServiceClient(cc grpc.ClientConnInterface) SingletonIDPServiceClient {
+	return &singletonIDPServiceClient{cc}
 }
 
-func (c *iDPServiceClient) CreateIDP(ctx context.Context, in *CreateIDPRequest, opts ...grpc.CallOption) (*CreateIDPResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CreateIDPResponse)
-	err := c.cc.Invoke(ctx, IDPService_CreateIDP_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *iDPServiceClient) GetIDP(ctx context.Context, in *GetIDPRequest, opts ...grpc.CallOption) (*GetIDPResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetIDPResponse)
-	err := c.cc.Invoke(ctx, IDPService_GetIDP_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *iDPServiceClient) GetIDPBySlug(ctx context.Context, in *GetIDPBySlugRequest, opts ...grpc.CallOption) (*GetIDPBySlugResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetIDPBySlugResponse)
-	err := c.cc.Invoke(ctx, IDPService_GetIDPBySlug_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *iDPServiceClient) DeleteIDP(ctx context.Context, in *DeleteIDPRequest, opts ...grpc.CallOption) (*DeleteIDPResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(DeleteIDPResponse)
-	err := c.cc.Invoke(ctx, IDPService_DeleteIDP_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *iDPServiceClient) UpdateIDP(ctx context.Context, in *UpdateIDPRequest, opts ...grpc.CallOption) (*UpdateIDPResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(UpdateIDPResponse)
-	err := c.cc.Invoke(ctx, IDPService_UpdateIDP_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *iDPServiceClient) ListIDP(ctx context.Context, in *ListIDPRequest, opts ...grpc.CallOption) (*ListIDPResponse, error) {
+func (c *singletonIDPServiceClient) ListIDP(ctx context.Context, in *ListIDPRequest, opts ...grpc.CallOption) (*ListIDPResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ListIDPResponse)
-	err := c.cc.Invoke(ctx, IDPService_ListIDP_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, SingletonIDPService_ListIDP_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// IDPServiceServer is the server API for IDPService service.
-// All implementations must embed UnimplementedIDPServiceServer
+// SingletonIDPServiceServer is the server API for SingletonIDPService service.
+// All implementations must embed UnimplementedSingletonIDPServiceServer
 // for forward compatibility.
-type IDPServiceServer interface {
-	// Create idp
-	CreateIDP(context.Context, *CreateIDPRequest) (*CreateIDPResponse, error)
-	// Get idp
-	GetIDP(context.Context, *GetIDPRequest) (*GetIDPResponse, error)
-	// Get idp
-	GetIDPBySlug(context.Context, *GetIDPBySlugRequest) (*GetIDPBySlugResponse, error)
-	// Delete idp
-	DeleteIDP(context.Context, *DeleteIDPRequest) (*DeleteIDPResponse, error)
-	// Update idp
-	UpdateIDP(context.Context, *UpdateIDPRequest) (*UpdateIDPResponse, error)
+//
+// SingletonIDPService ...
+type SingletonIDPServiceServer interface {
 	// List idps
 	ListIDP(context.Context, *ListIDPRequest) (*ListIDPResponse, error)
-	mustEmbedUnimplementedIDPServiceServer()
+	mustEmbedUnimplementedSingletonIDPServiceServer()
 }
 
-// UnimplementedIDPServiceServer must be embedded to have
+// UnimplementedSingletonIDPServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedIDPServiceServer struct{}
+type UnimplementedSingletonIDPServiceServer struct{}
 
-func (UnimplementedIDPServiceServer) CreateIDP(context.Context, *CreateIDPRequest) (*CreateIDPResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateIDP not implemented")
-}
-func (UnimplementedIDPServiceServer) GetIDP(context.Context, *GetIDPRequest) (*GetIDPResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetIDP not implemented")
-}
-func (UnimplementedIDPServiceServer) GetIDPBySlug(context.Context, *GetIDPBySlugRequest) (*GetIDPBySlugResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetIDPBySlug not implemented")
-}
-func (UnimplementedIDPServiceServer) DeleteIDP(context.Context, *DeleteIDPRequest) (*DeleteIDPResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteIDP not implemented")
-}
-func (UnimplementedIDPServiceServer) UpdateIDP(context.Context, *UpdateIDPRequest) (*UpdateIDPResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateIDP not implemented")
-}
-func (UnimplementedIDPServiceServer) ListIDP(context.Context, *ListIDPRequest) (*ListIDPResponse, error) {
+func (UnimplementedSingletonIDPServiceServer) ListIDP(context.Context, *ListIDPRequest) (*ListIDPResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListIDP not implemented")
 }
-func (UnimplementedIDPServiceServer) mustEmbedUnimplementedIDPServiceServer() {}
-func (UnimplementedIDPServiceServer) testEmbeddedByValue()                    {}
+func (UnimplementedSingletonIDPServiceServer) mustEmbedUnimplementedSingletonIDPServiceServer() {}
+func (UnimplementedSingletonIDPServiceServer) testEmbeddedByValue()                             {}
 
-// UnsafeIDPServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to IDPServiceServer will
+// UnsafeSingletonIDPServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to SingletonIDPServiceServer will
 // result in compilation errors.
-type UnsafeIDPServiceServer interface {
-	mustEmbedUnimplementedIDPServiceServer()
+type UnsafeSingletonIDPServiceServer interface {
+	mustEmbedUnimplementedSingletonIDPServiceServer()
 }
 
-func RegisterIDPServiceServer(s grpc.ServiceRegistrar, srv IDPServiceServer) {
-	// If the following call pancis, it indicates UnimplementedIDPServiceServer was
+func RegisterSingletonIDPServiceServer(s grpc.ServiceRegistrar, srv SingletonIDPServiceServer) {
+	// If the following call pancis, it indicates UnimplementedSingletonIDPServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&IDPService_ServiceDesc, srv)
+	s.RegisterService(&SingletonIDPService_ServiceDesc, srv)
 }
 
-func _IDPService_CreateIDP_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CreateIDPRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IDPServiceServer).CreateIDP(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IDPService_CreateIDP_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IDPServiceServer).CreateIDP(ctx, req.(*CreateIDPRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IDPService_GetIDP_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetIDPRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IDPServiceServer).GetIDP(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IDPService_GetIDP_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IDPServiceServer).GetIDP(ctx, req.(*GetIDPRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IDPService_GetIDPBySlug_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetIDPBySlugRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IDPServiceServer).GetIDPBySlug(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IDPService_GetIDPBySlug_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IDPServiceServer).GetIDPBySlug(ctx, req.(*GetIDPBySlugRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IDPService_DeleteIDP_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteIDPRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IDPServiceServer).DeleteIDP(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IDPService_DeleteIDP_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IDPServiceServer).DeleteIDP(ctx, req.(*DeleteIDPRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IDPService_UpdateIDP_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateIDPRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(IDPServiceServer).UpdateIDP(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: IDPService_UpdateIDP_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IDPServiceServer).UpdateIDP(ctx, req.(*UpdateIDPRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _IDPService_ListIDP_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _SingletonIDPService_ListIDP_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ListIDPRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(IDPServiceServer).ListIDP(ctx, in)
+		return srv.(SingletonIDPServiceServer).ListIDP(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: IDPService_ListIDP_FullMethodName,
+		FullMethod: SingletonIDPService_ListIDP_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(IDPServiceServer).ListIDP(ctx, req.(*ListIDPRequest))
+		return srv.(SingletonIDPServiceServer).ListIDP(ctx, req.(*ListIDPRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// IDPService_ServiceDesc is the grpc.ServiceDesc for IDPService service.
+// SingletonIDPService_ServiceDesc is the grpc.ServiceDesc for SingletonIDPService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var IDPService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.oidc.idp.IDPService",
-	HandlerType: (*IDPServiceServer)(nil),
+var SingletonIDPService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "proto.oidc.idp.SingletonIDPService",
+	HandlerType: (*SingletonIDPServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "CreateIDP",
-			Handler:    _IDPService_CreateIDP_Handler,
-		},
-		{
-			MethodName: "GetIDP",
-			Handler:    _IDPService_GetIDP_Handler,
-		},
-		{
-			MethodName: "GetIDPBySlug",
-			Handler:    _IDPService_GetIDPBySlug_Handler,
-		},
-		{
-			MethodName: "DeleteIDP",
-			Handler:    _IDPService_DeleteIDP_Handler,
-		},
-		{
-			MethodName: "UpdateIDP",
-			Handler:    _IDPService_UpdateIDP_Handler,
-		},
-		{
 			MethodName: "ListIDP",
-			Handler:    _IDPService_ListIDP_Handler,
+			Handler:    _SingletonIDPService_ListIDP_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
