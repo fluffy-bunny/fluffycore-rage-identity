@@ -26,7 +26,7 @@
         "enabled": {
           "$ref": "#/definitions/typesBoolFilterExpression"
         },
-        "claimedDomain": {
+        "claimedDomains": {
           "$ref": "#/definitions/typesStringArrayFilterExpression"
         },
         "hidden": {

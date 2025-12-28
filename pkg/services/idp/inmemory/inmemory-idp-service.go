@@ -60,11 +60,11 @@ func (s *service) validateListIDPRequest(request *proto_oidc_idp.ListIDPRequest)
 				}
 			}
 		}
-		if request.Filter.ClaimedDomain != nil {
-			request.Filter.ClaimedDomain.Eq = strings.ToLower(request.Filter.ClaimedDomain.Eq)
-			if fluffycore_utils.IsNotEmptyOrNil(request.Filter.ClaimedDomain.In) {
-				for i, v := range request.Filter.ClaimedDomain.In {
-					request.Filter.ClaimedDomain.In[i] = strings.ToLower(v)
+		if request.Filter.ClaimedDomains != nil {
+			request.Filter.ClaimedDomains.Eq = strings.ToLower(request.Filter.ClaimedDomains.Eq)
+			if fluffycore_utils.IsNotEmptyOrNil(request.Filter.ClaimedDomains.In) {
+				for i, v := range request.Filter.ClaimedDomains.In {
+					request.Filter.ClaimedDomains.In[i] = strings.ToLower(v)
 				}
 			}
 		}
@@ -110,20 +110,20 @@ func (s *service) ListIDP(ctx context.Context, request *proto_oidc_idp.ListIDPRe
 					return false
 				}
 			}
-			if request.Filter.ClaimedDomain != nil {
+			if request.Filter.ClaimedDomains != nil {
 				claimedDomainsMap := make(map[string]bool)
 				for _, v := range c.ClaimedDomains {
 					claimedDomainsMap[v] = true
 				}
-				if fluffycore_utils.IsNotEmptyOrNil(request.Filter.ClaimedDomain.Eq) {
-					_, ok := claimedDomainsMap[request.Filter.ClaimedDomain.Eq]
+				if fluffycore_utils.IsNotEmptyOrNil(request.Filter.ClaimedDomains.Eq) {
+					_, ok := claimedDomainsMap[request.Filter.ClaimedDomains.Eq]
 					if !ok {
 						return false
 					}
 				}
-				if fluffycore_utils.IsNotEmptyOrNil(request.Filter.ClaimedDomain.In) {
+				if fluffycore_utils.IsNotEmptyOrNil(request.Filter.ClaimedDomains.In) {
 					gotHit := false
-					for _, v := range request.Filter.ClaimedDomain.In {
+					for _, v := range request.Filter.ClaimedDomains.In {
 						_, ok := claimedDomainsMap[v]
 						if ok {
 							gotHit = true

@@ -279,7 +279,7 @@ func (s *service) DoPost(c echo.Context) error {
 			Enabled: &proto_types.BoolFilterExpression{
 				Eq: true,
 			},
-			ClaimedDomain: &proto_types.StringArrayFilterExpression{
+			ClaimedDomains: &proto_types.StringArrayFilterExpression{
 				Eq: domainPart,
 			},
 		},

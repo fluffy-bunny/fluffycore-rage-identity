@@ -202,17 +202,14 @@ func (s *service) DoPost(c echo.Context) error {
 		switch v := idp.Protocol.Value.(type) {
 		case *proto_oidc_models.Protocol_Github:
 			{
-				codeChallenge, verifier := generateCodeChallenge()
+				// GitHub OAuth2 does NOT support PKCE, so we don't generate code_challenge
 				externalOAuth2State := &proto_oidc_models.ExternalOauth2State{
 					Request: &proto_oidc_models.ExternalOauth2Request{
-						IdpHint:               model.Slug,
-						ClientId:              v.Github.ClientId,
-						State:                 dd2.State,
-						CodeChallenge:         codeChallenge,
-						CodeChallengeMethod:   "S256",
-						CodeChallengeVerifier: verifier,
-						Directive:             model.Directive,
-						ParentState:           dd2.State,
+						IdpHint:     model.Slug,
+						ClientId:    v.Github.ClientId,
+						State:       dd2.State,
+						Directive:   model.Directive,
+						ParentState: dd2.State,
 					},
 				}
 				err = s.wellknownCookies.SetExternalOauth2Cookie(c, &contracts_cookies.SetExternalOauth2CookieRequest{
@@ -242,9 +239,8 @@ func (s *service) DoPost(c echo.Context) error {
 					return c.JSON(http.StatusBadRequest, response)
 				}
 				oauth2Config := getConfigResponse.Config
-				u := oauth2Config.AuthCodeURL(externalState,
-					oauth2.SetAuthURLParam("code_challenge", codeChallenge),
-					oauth2.SetAuthURLParam("code_challenge_method", "S256"))
+				// GitHub OAuth2 does NOT support PKCE
+				u := oauth2Config.AuthCodeURL(externalState)
 				return c.JSON(http.StatusOK, &external_idp.StartExternalIDPLoginResponse{
 					RedirectURI: u,
 				})

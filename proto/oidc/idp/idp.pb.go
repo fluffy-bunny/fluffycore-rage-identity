@@ -25,13 +25,13 @@ const (
 )
 
 type Filter struct {
-	state         protoimpl.MessageState             `protogen:"open.v1"`
-	Slug          *types.StringFilterExpression      `protobuf:"bytes,1,opt,name=slug,proto3" json:"slug,omitempty"`
-	Enabled       *types.BoolFilterExpression        `protobuf:"bytes,2,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	ClaimedDomain *types.StringArrayFilterExpression `protobuf:"bytes,3,opt,name=claimed_domain,json=claimedDomain,proto3" json:"claimed_domain,omitempty"`
-	Hidden        *types.BoolFilterExpression        `protobuf:"bytes,4,opt,name=hidden,proto3" json:"hidden,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState             `protogen:"open.v1"`
+	Slug           *types.StringFilterExpression      `protobuf:"bytes,1,opt,name=slug,proto3" json:"slug,omitempty"`
+	Enabled        *types.BoolFilterExpression        `protobuf:"bytes,2,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	ClaimedDomains *types.StringArrayFilterExpression `protobuf:"bytes,3,opt,name=claimed_domains,json=claimedDomains,proto3" json:"claimed_domains,omitempty"`
+	Hidden         *types.BoolFilterExpression        `protobuf:"bytes,4,opt,name=hidden,proto3" json:"hidden,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *Filter) Reset() {
@@ -78,9 +78,9 @@ func (x *Filter) GetEnabled() *types.BoolFilterExpression {
 	return nil
 }
 
-func (x *Filter) GetClaimedDomain() *types.StringArrayFilterExpression {
+func (x *Filter) GetClaimedDomains() *types.StringArrayFilterExpression {
 	if x != nil {
-		return x.ClaimedDomain
+		return x.ClaimedDomains
 	}
 	return nil
 }
@@ -185,11 +185,11 @@ var File_proto_oidc_idp_idp_proto protoreflect.FileDescriptor
 
 const file_proto_oidc_idp_idp_proto_rawDesc = "" +
 	"\n" +
-	"\x18proto/oidc/idp/idp.proto\x12\x0eproto.oidc.idp\x1a google/protobuf/descriptor.proto\x1a\x18proto/types/filter.proto\x1a\x1bproto/oidc/models/idp.proto\"\x8a\x02\n" +
+	"\x18proto/oidc/idp/idp.proto\x12\x0eproto.oidc.idp\x1a google/protobuf/descriptor.proto\x1a\x18proto/types/filter.proto\x1a\x1bproto/oidc/models/idp.proto\"\x8c\x02\n" +
 	"\x06Filter\x127\n" +
 	"\x04slug\x18\x01 \x01(\v2#.proto.types.StringFilterExpressionR\x04slug\x12;\n" +
-	"\aenabled\x18\x02 \x01(\v2!.proto.types.BoolFilterExpressionR\aenabled\x12O\n" +
-	"\x0eclaimed_domain\x18\x03 \x01(\v2(.proto.types.StringArrayFilterExpressionR\rclaimedDomain\x129\n" +
+	"\aenabled\x18\x02 \x01(\v2!.proto.types.BoolFilterExpressionR\aenabled\x12Q\n" +
+	"\x0fclaimed_domains\x18\x03 \x01(\v2(.proto.types.StringArrayFilterExpressionR\x0eclaimedDomains\x129\n" +
 	"\x06hidden\x18\x04 \x01(\v2!.proto.types.BoolFilterExpressionR\x06hidden\"@\n" +
 	"\x0eListIDPRequest\x12.\n" +
 	"\x06filter\x18\x01 \x01(\v2\x16.proto.oidc.idp.FilterR\x06filter\"?\n" +
@@ -224,7 +224,7 @@ var file_proto_oidc_idp_idp_proto_goTypes = []any{
 var file_proto_oidc_idp_idp_proto_depIdxs = []int32{
 	3, // 0: proto.oidc.idp.Filter.slug:type_name -> proto.types.StringFilterExpression
 	4, // 1: proto.oidc.idp.Filter.enabled:type_name -> proto.types.BoolFilterExpression
-	5, // 2: proto.oidc.idp.Filter.claimed_domain:type_name -> proto.types.StringArrayFilterExpression
+	5, // 2: proto.oidc.idp.Filter.claimed_domains:type_name -> proto.types.StringArrayFilterExpression
 	4, // 3: proto.oidc.idp.Filter.hidden:type_name -> proto.types.BoolFilterExpression
 	0, // 4: proto.oidc.idp.ListIDPRequest.filter:type_name -> proto.oidc.idp.Filter
 	6, // 5: proto.oidc.idp.ListIDPResponse.i_d_ps:type_name -> proto.oidc.models.IDP

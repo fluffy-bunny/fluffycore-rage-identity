@@ -15,7 +15,7 @@ import "proto/oidc/models/idp.proto";
 message Filter {
     proto.types.StringFilterExpression              slug = 1;
     proto.types.BoolFilterExpression                enabled = 2;
-    proto.types.StringArrayFilterExpression         claimed_domain =  3;
+    proto.types.StringArrayFilterExpression         claimed_domains =  3;
     proto.types.BoolFilterExpression                hidden = 4;
 }
 

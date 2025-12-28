@@ -134,7 +134,7 @@ func (s *service) Do(c echo.Context) error {
 	// first lets see if this domain has been claimed.
 	listIDPRequest, err := s.IdpServiceServer().ListIDP(ctx, &proto_oidc_idp.ListIDPRequest{
 		Filter: &proto_oidc_idp.Filter{
-			ClaimedDomain: &proto_types.StringArrayFilterExpression{
+			ClaimedDomains: &proto_types.StringArrayFilterExpression{
 				Eq: domainPart,
 			},
 		},
