@@ -7,11 +7,9 @@
 package models
 
 import (
-	types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	_ "google.golang.org/protobuf/types/descriptorpb"
-	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -318,50 +316,6 @@ func (*Protocol_Oauth2) isProtocol_Value() {}
 
 func (*Protocol_Github) isProtocol_Value() {}
 
-type ProtocolUpdate struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Value         *Protocol              `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ProtocolUpdate) Reset() {
-	*x = ProtocolUpdate{}
-	mi := &file_proto_oidc_models_idp_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ProtocolUpdate) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ProtocolUpdate) ProtoMessage() {}
-
-func (x *ProtocolUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_models_idp_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ProtocolUpdate.ProtoReflect.Descriptor instead.
-func (*ProtocolUpdate) Descriptor() ([]byte, []int) {
-	return file_proto_oidc_models_idp_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *ProtocolUpdate) GetValue() *Protocol {
-	if x != nil {
-		return x.Value
-	}
-	return nil
-}
-
 type IDP struct {
 	state                     protoimpl.MessageState `protogen:"open.v1"`
 	Id                        string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -382,7 +336,7 @@ type IDP struct {
 
 func (x *IDP) Reset() {
 	*x = IDP{}
-	mi := &file_proto_oidc_models_idp_proto_msgTypes[5]
+	mi := &file_proto_oidc_models_idp_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -394,7 +348,7 @@ func (x *IDP) String() string {
 func (*IDP) ProtoMessage() {}
 
 func (x *IDP) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_models_idp_proto_msgTypes[5]
+	mi := &file_proto_oidc_models_idp_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -407,7 +361,7 @@ func (x *IDP) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IDP.ProtoReflect.Descriptor instead.
 func (*IDP) Descriptor() ([]byte, []int) {
-	return file_proto_oidc_models_idp_proto_rawDescGZIP(), []int{5}
+	return file_proto_oidc_models_idp_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *IDP) GetId() string {
@@ -503,7 +457,7 @@ type IDPs struct {
 
 func (x *IDPs) Reset() {
 	*x = IDPs{}
-	mi := &file_proto_oidc_models_idp_proto_msgTypes[6]
+	mi := &file_proto_oidc_models_idp_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -515,7 +469,7 @@ func (x *IDPs) String() string {
 func (*IDPs) ProtoMessage() {}
 
 func (x *IDPs) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_models_idp_proto_msgTypes[6]
+	mi := &file_proto_oidc_models_idp_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -528,7 +482,7 @@ func (x *IDPs) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IDPs.ProtoReflect.Descriptor instead.
 func (*IDPs) Descriptor() ([]byte, []int) {
-	return file_proto_oidc_models_idp_proto_rawDescGZIP(), []int{6}
+	return file_proto_oidc_models_idp_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *IDPs) GetIdps() []*IDP {
@@ -538,135 +492,11 @@ func (x *IDPs) GetIdps() []*IDP {
 	return nil
 }
 
-type IDPUpdate struct {
-	state                     protoimpl.MessageState   `protogen:"open.v1"`
-	Id                        string                   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Enabled                   *wrapperspb.BoolValue    `protobuf:"bytes,2,opt,name=enabled,proto3" json:"enabled,omitempty"`
-	Slug                      *wrapperspb.StringValue  `protobuf:"bytes,3,opt,name=slug,proto3" json:"slug,omitempty"`
-	Name                      *wrapperspb.StringValue  `protobuf:"bytes,4,opt,name=name,proto3" json:"name,omitempty"`
-	Description               *wrapperspb.StringValue  `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
-	Protocol                  *ProtocolUpdate          `protobuf:"bytes,6,opt,name=protocol,proto3" json:"protocol,omitempty"`
-	Metadata                  *types.StringMapUpdate   `protobuf:"bytes,7,opt,name=metadata,proto3" json:"metadata,omitempty"`
-	ClaimedDomains            *types.StringArrayUpdate `protobuf:"bytes,8,opt,name=claimed_domains,json=claimedDomains,proto3" json:"claimed_domains,omitempty"`
-	Hidden                    *wrapperspb.BoolValue    `protobuf:"bytes,9,opt,name=hidden,proto3" json:"hidden,omitempty"`
-	EmailVerificationRequired *wrapperspb.BoolValue    `protobuf:"bytes,10,opt,name=email_verification_required,json=emailVerificationRequired,proto3" json:"email_verification_required,omitempty"`
-	AutoCreate                *wrapperspb.BoolValue    `protobuf:"bytes,11,opt,name=auto_create,json=autoCreate,proto3" json:"auto_create,omitempty"`
-	unknownFields             protoimpl.UnknownFields
-	sizeCache                 protoimpl.SizeCache
-}
-
-func (x *IDPUpdate) Reset() {
-	*x = IDPUpdate{}
-	mi := &file_proto_oidc_models_idp_proto_msgTypes[7]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *IDPUpdate) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*IDPUpdate) ProtoMessage() {}
-
-func (x *IDPUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_oidc_models_idp_proto_msgTypes[7]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use IDPUpdate.ProtoReflect.Descriptor instead.
-func (*IDPUpdate) Descriptor() ([]byte, []int) {
-	return file_proto_oidc_models_idp_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *IDPUpdate) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
-func (x *IDPUpdate) GetEnabled() *wrapperspb.BoolValue {
-	if x != nil {
-		return x.Enabled
-	}
-	return nil
-}
-
-func (x *IDPUpdate) GetSlug() *wrapperspb.StringValue {
-	if x != nil {
-		return x.Slug
-	}
-	return nil
-}
-
-func (x *IDPUpdate) GetName() *wrapperspb.StringValue {
-	if x != nil {
-		return x.Name
-	}
-	return nil
-}
-
-func (x *IDPUpdate) GetDescription() *wrapperspb.StringValue {
-	if x != nil {
-		return x.Description
-	}
-	return nil
-}
-
-func (x *IDPUpdate) GetProtocol() *ProtocolUpdate {
-	if x != nil {
-		return x.Protocol
-	}
-	return nil
-}
-
-func (x *IDPUpdate) GetMetadata() *types.StringMapUpdate {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
-}
-
-func (x *IDPUpdate) GetClaimedDomains() *types.StringArrayUpdate {
-	if x != nil {
-		return x.ClaimedDomains
-	}
-	return nil
-}
-
-func (x *IDPUpdate) GetHidden() *wrapperspb.BoolValue {
-	if x != nil {
-		return x.Hidden
-	}
-	return nil
-}
-
-func (x *IDPUpdate) GetEmailVerificationRequired() *wrapperspb.BoolValue {
-	if x != nil {
-		return x.EmailVerificationRequired
-	}
-	return nil
-}
-
-func (x *IDPUpdate) GetAutoCreate() *wrapperspb.BoolValue {
-	if x != nil {
-		return x.AutoCreate
-	}
-	return nil
-}
-
 var File_proto_oidc_models_idp_proto protoreflect.FileDescriptor
 
 const file_proto_oidc_models_idp_proto_rawDesc = "" +
 	"\n" +
-	"\x1bproto/oidc/models/idp.proto\x12\x11proto.oidc.models\x1a google/protobuf/descriptor.proto\x1a\x1egoogle/protobuf/wrappers.proto\x1a\x1cproto/types/primitives.proto\"\x84\x01\n" +
+	"\x1bproto/oidc/models/idp.proto\x12\x11proto.oidc.models\x1a google/protobuf/descriptor.proto\"\x84\x01\n" +
 	"\fOIDCProtocol\x12\x1c\n" +
 	"\tauthority\x18\x01 \x01(\tR\tauthority\x12\x1b\n" +
 	"\tclient_id\x18\x02 \x01(\tR\bclientId\x12#\n" +
@@ -685,9 +515,7 @@ const file_proto_oidc_models_idp_proto_rawDesc = "" +
 	"\x04oidc\x18\x01 \x01(\v2\x1f.proto.oidc.models.OIDCProtocolH\x00R\x04oidc\x12;\n" +
 	"\x06oauth2\x18\x02 \x01(\v2!.proto.oidc.models.OAuth2ProtocolH\x00R\x06oauth2\x12A\n" +
 	"\x06github\x18\x03 \x01(\v2'.proto.oidc.models.GithubOAuth2ProtocolH\x00R\x06githubB\a\n" +
-	"\x05value\"C\n" +
-	"\x0eProtocolUpdate\x121\n" +
-	"\x05value\x18\x01 \x01(\v2\x1b.proto.oidc.models.ProtocolR\x05value\"\x87\x04\n" +
+	"\x05value\"\x87\x04\n" +
 	"\x03IDP\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
 	"\aenabled\x18\x02 \x01(\bR\aenabled\x12\x12\n" +
@@ -707,21 +535,7 @@ const file_proto_oidc_models_idp_proto_rawDesc = "" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"2\n" +
 	"\x04IDPs\x12*\n" +
-	"\x04idps\x18\x01 \x03(\v2\x16.proto.oidc.models.IDPR\x04idps\"\x84\x05\n" +
-	"\tIDPUpdate\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x124\n" +
-	"\aenabled\x18\x02 \x01(\v2\x1a.google.protobuf.BoolValueR\aenabled\x120\n" +
-	"\x04slug\x18\x03 \x01(\v2\x1c.google.protobuf.StringValueR\x04slug\x120\n" +
-	"\x04name\x18\x04 \x01(\v2\x1c.google.protobuf.StringValueR\x04name\x12>\n" +
-	"\vdescription\x18\x05 \x01(\v2\x1c.google.protobuf.StringValueR\vdescription\x12=\n" +
-	"\bprotocol\x18\x06 \x01(\v2!.proto.oidc.models.ProtocolUpdateR\bprotocol\x128\n" +
-	"\bmetadata\x18\a \x01(\v2\x1c.proto.types.StringMapUpdateR\bmetadata\x12G\n" +
-	"\x0fclaimed_domains\x18\b \x01(\v2\x1e.proto.types.StringArrayUpdateR\x0eclaimedDomains\x122\n" +
-	"\x06hidden\x18\t \x01(\v2\x1a.google.protobuf.BoolValueR\x06hidden\x12Z\n" +
-	"\x1bemail_verification_required\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.BoolValueR\x19emailVerificationRequired\x12;\n" +
-	"\vauto_create\x18\v \x01(\v2\x1a.google.protobuf.BoolValueR\n" +
-	"autoCreateB\x91\x01\n" +
+	"\x04idps\x18\x01 \x03(\v2\x16.proto.oidc.models.IDPR\x04idpsB\x91\x01\n" +
 	"\x1fcom.fluffybunny.rageoidc.modelsP\x01ZIgithub.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models;models\xaa\x02 FluffyBunny.RageOidc.Oidc.Modelsb\x06proto3"
 
 var (
@@ -736,45 +550,28 @@ func file_proto_oidc_models_idp_proto_rawDescGZIP() []byte {
 	return file_proto_oidc_models_idp_proto_rawDescData
 }
 
-var file_proto_oidc_models_idp_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_proto_oidc_models_idp_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_proto_oidc_models_idp_proto_goTypes = []any{
-	(*OIDCProtocol)(nil),            // 0: proto.oidc.models.OIDCProtocol
-	(*GithubOAuth2Protocol)(nil),    // 1: proto.oidc.models.GithubOAuth2Protocol
-	(*OAuth2Protocol)(nil),          // 2: proto.oidc.models.OAuth2Protocol
-	(*Protocol)(nil),                // 3: proto.oidc.models.Protocol
-	(*ProtocolUpdate)(nil),          // 4: proto.oidc.models.ProtocolUpdate
-	(*IDP)(nil),                     // 5: proto.oidc.models.IDP
-	(*IDPs)(nil),                    // 6: proto.oidc.models.IDPs
-	(*IDPUpdate)(nil),               // 7: proto.oidc.models.IDPUpdate
-	nil,                             // 8: proto.oidc.models.IDP.MetadataEntry
-	(*wrapperspb.BoolValue)(nil),    // 9: google.protobuf.BoolValue
-	(*wrapperspb.StringValue)(nil),  // 10: google.protobuf.StringValue
-	(*types.StringMapUpdate)(nil),   // 11: proto.types.StringMapUpdate
-	(*types.StringArrayUpdate)(nil), // 12: proto.types.StringArrayUpdate
+	(*OIDCProtocol)(nil),         // 0: proto.oidc.models.OIDCProtocol
+	(*GithubOAuth2Protocol)(nil), // 1: proto.oidc.models.GithubOAuth2Protocol
+	(*OAuth2Protocol)(nil),       // 2: proto.oidc.models.OAuth2Protocol
+	(*Protocol)(nil),             // 3: proto.oidc.models.Protocol
+	(*IDP)(nil),                  // 4: proto.oidc.models.IDP
+	(*IDPs)(nil),                 // 5: proto.oidc.models.IDPs
+	nil,                          // 6: proto.oidc.models.IDP.MetadataEntry
 }
 var file_proto_oidc_models_idp_proto_depIdxs = []int32{
-	0,  // 0: proto.oidc.models.Protocol.oidc:type_name -> proto.oidc.models.OIDCProtocol
-	2,  // 1: proto.oidc.models.Protocol.oauth2:type_name -> proto.oidc.models.OAuth2Protocol
-	1,  // 2: proto.oidc.models.Protocol.github:type_name -> proto.oidc.models.GithubOAuth2Protocol
-	3,  // 3: proto.oidc.models.ProtocolUpdate.value:type_name -> proto.oidc.models.Protocol
-	3,  // 4: proto.oidc.models.IDP.protocol:type_name -> proto.oidc.models.Protocol
-	8,  // 5: proto.oidc.models.IDP.metadata:type_name -> proto.oidc.models.IDP.MetadataEntry
-	5,  // 6: proto.oidc.models.IDPs.idps:type_name -> proto.oidc.models.IDP
-	9,  // 7: proto.oidc.models.IDPUpdate.enabled:type_name -> google.protobuf.BoolValue
-	10, // 8: proto.oidc.models.IDPUpdate.slug:type_name -> google.protobuf.StringValue
-	10, // 9: proto.oidc.models.IDPUpdate.name:type_name -> google.protobuf.StringValue
-	10, // 10: proto.oidc.models.IDPUpdate.description:type_name -> google.protobuf.StringValue
-	4,  // 11: proto.oidc.models.IDPUpdate.protocol:type_name -> proto.oidc.models.ProtocolUpdate
-	11, // 12: proto.oidc.models.IDPUpdate.metadata:type_name -> proto.types.StringMapUpdate
-	12, // 13: proto.oidc.models.IDPUpdate.claimed_domains:type_name -> proto.types.StringArrayUpdate
-	9,  // 14: proto.oidc.models.IDPUpdate.hidden:type_name -> google.protobuf.BoolValue
-	9,  // 15: proto.oidc.models.IDPUpdate.email_verification_required:type_name -> google.protobuf.BoolValue
-	9,  // 16: proto.oidc.models.IDPUpdate.auto_create:type_name -> google.protobuf.BoolValue
-	17, // [17:17] is the sub-list for method output_type
-	17, // [17:17] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	0, // 0: proto.oidc.models.Protocol.oidc:type_name -> proto.oidc.models.OIDCProtocol
+	2, // 1: proto.oidc.models.Protocol.oauth2:type_name -> proto.oidc.models.OAuth2Protocol
+	1, // 2: proto.oidc.models.Protocol.github:type_name -> proto.oidc.models.GithubOAuth2Protocol
+	3, // 3: proto.oidc.models.IDP.protocol:type_name -> proto.oidc.models.Protocol
+	6, // 4: proto.oidc.models.IDP.metadata:type_name -> proto.oidc.models.IDP.MetadataEntry
+	4, // 5: proto.oidc.models.IDPs.idps:type_name -> proto.oidc.models.IDP
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_proto_oidc_models_idp_proto_init() }
@@ -793,7 +590,7 @@ func file_proto_oidc_models_idp_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_oidc_models_idp_proto_rawDesc), len(file_proto_oidc_models_idp_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

@@ -211,7 +211,7 @@ func (s *service) DoPost(c echo.Context) error {
 	// first lets see if this domain has been claimed.
 	listIDPRequest, err := s.IdpServiceServer().ListIDP(ctx, &proto_oidc_idp.ListIDPRequest{
 		Filter: &proto_oidc_idp.Filter{
-			ClaimedDomain: &proto_types.StringArrayFilterExpression{
+			ClaimedDomains: &proto_types.StringArrayFilterExpression{
 				Eq: domainPart,
 			},
 		},
@@ -221,7 +221,7 @@ func (s *service) DoPost(c echo.Context) error {
 		errors = append(errors, err.Error())
 		return doError(errors)
 	}
-	if len(listIDPRequest.Idps) > 0 {
+	if len(listIDPRequest.IDPs) > 0 {
 		// an idp has claimed this domain.
 		// post to the externalIDP
 		return s.RenderAutoPost(c, wellknown_echo.ExternalIDPPath,
@@ -229,7 +229,7 @@ func (s *service) DoPost(c echo.Context) error {
 
 				{
 					Name:  "idp_hint",
-					Value: listIDPRequest.Idps[0].Slug,
+					Value: listIDPRequest.IDPs[0].Slug,
 				},
 				{
 					Name:  "directive",

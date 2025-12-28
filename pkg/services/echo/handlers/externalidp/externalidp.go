@@ -18,6 +18,7 @@ import (
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
+	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
@@ -148,18 +149,29 @@ func (s *service) DoPost(c echo.Context) error {
 		return s.TeleportBackToLoginWithError(c, InternalError_ExternalIDP_004, InternalError_ExternalIDP_004)
 	}
 	dd2 := dd.(*proto_oidc_models.AuthorizationRequest)
-	getIDPBySlugResponse, err := s.IdpServiceServer().GetIDPBySlug(ctx,
-		&proto_oidc_idp.GetIDPBySlugRequest{
-			Slug: model.IDPHint,
+	listIDPResponse, err := s.IdpServiceServer().ListIDP(ctx,
+		&proto_oidc_idp.ListIDPRequest{
+			Filter: &proto_oidc_idp.Filter{
+				Enabled: &proto_types.BoolFilterExpression{
+					Eq: true,
+				},
+				Slug: &proto_types.StringFilterExpression{
+					Eq: model.IDPHint,
+				},
+			},
 		})
 	if err != nil {
-		log.Error().Err(err).Msg("GetIDPBySlug")
-		return s.TeleportBackToLoginWithError(c, InternalError_ExternalIDP_005, InternalError_ExternalIDP_005)
+		log.Error().Err(err).Msg("ListIDP")
+		return s.TeleportBackToLoginWithError(c, InternalError_ExternalIDP_001, InternalError_ExternalIDP_001)
 	}
-	idp := getIDPBySlugResponse.Idp
+	if listIDPResponse == nil || len(listIDPResponse.IDPs) == 0 {
+		return s.TeleportBackToLoginWithError(c, InternalError_ExternalIDP_002, InternalError_ExternalIDP_005)
+	}
+
+	idp := listIDPResponse.IDPs[0]
 	externalState := xid.New().String()
 	if idp.Protocol != nil {
-		log.Debug().Interface("getIDPBySlugResponse", getIDPBySlugResponse).Msg("getIDPBySlugResponse")
+		log.Debug().Interface("listIDPResponse", listIDPResponse).Msg("listIDPResponse")
 		switch v := idp.Protocol.Value.(type) {
 		case *proto_oidc_models.Protocol_Github:
 			{

@@ -22,6 +22,7 @@ import (
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
+	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
@@ -38,7 +39,7 @@ type (
 		wellknownCookies                     contracts_cookies.IWellknownCookies
 		authorizationRequestStateStoreServer proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer
 		clientServiceServer                  proto_oidc_client.IFluffyCoreClientServiceServer
-		idpServiceServer                     proto_oidc_idp.IFluffyCoreIDPServiceServer
+		idpServiceServer                     proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer
 		userService                          proto_oidc_user.IFluffyCoreRageUserServiceServer
 	}
 )
@@ -49,7 +50,7 @@ var _ contracts_handler.IHandler = stemService
 
 func (s *service) Ctor(
 	container di.Container,
-	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
+	idpServiceServer proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer,
 	userService proto_oidc_user.IFluffyCoreRageUserServiceServer,
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	scopedMemoryCache contracts_cache.IScopedMemoryCache,
@@ -188,15 +189,26 @@ func (s *service) Do(c echo.Context) error {
 
 		log.Debug().Str("idpHint", idpHint).Str("rootCandidate", candidateUserID).Msg("acrValues")
 		if fluffycore_utils.IsNotEmptyOrNil(idpHint) {
-			getIDPBySlugResponse, err := s.idpServiceServer.GetIDPBySlug(ctx, &proto_oidc_idp.GetIDPBySlugRequest{
-				Slug: idpHint,
-			})
-			if err != nil ||
-				getIDPBySlugResponse == nil ||
-				getIDPBySlugResponse.Idp == nil {
-				idpHint = ""
-				c.Redirect(http.StatusFound, "/error&error=invalid_idp_hint")
+			listIDPResponse, err := s.IdpServiceServer().ListIDP(ctx,
+				&proto_oidc_idp.ListIDPRequest{
+					Filter: &proto_oidc_idp.Filter{
+						Enabled: &proto_types.BoolFilterExpression{
+							Eq: true,
+						},
+						Slug: &proto_types.StringFilterExpression{
+							Eq: idpHint,
+						},
+					},
+				})
+			if err != nil {
+				log.Error().Err(err).Msg("ListIDP")
+				return c.Redirect(http.StatusFound, "/error&error=invalid_idp_hint")
 			}
+			if listIDPResponse == nil || len(listIDPResponse.IDPs) == 0 {
+				return c.Redirect(http.StatusFound, "/error&error=invalid_idp_hint")
+			}
+			model.IdpHint = idpHint
+
 			model.IdpHint = idpHint
 		}
 		if fluffycore_utils.IsNotEmptyOrNil(candidateUserID) {

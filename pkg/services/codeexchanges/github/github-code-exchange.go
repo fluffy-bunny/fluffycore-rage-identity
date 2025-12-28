@@ -18,7 +18,6 @@ import (
 	status "github.com/gogo/status"
 	req "github.com/imroc/req/v3"
 	zerolog "github.com/rs/zerolog"
-	oauth2 "golang.org/x/oauth2"
 	codes "google.golang.org/grpc/codes"
 )
 
@@ -76,9 +75,7 @@ func (s *service) validateExchangeCodeRequest(request *contracts_codeexchange.Ex
 	if fluffycore_utils.IsEmptyOrNil(request.Code) {
 		return status.Error(codes.InvalidArgument, "code is required")
 	}
-	if fluffycore_utils.IsEmptyOrNil(request.CodeVerifier) {
-		return status.Error(codes.InvalidArgument, "CodeVerifier is required")
-	}
+	// GitHub OAuth2 does not support PKCE, so CodeVerifier is not required
 	return nil
 }
 
@@ -99,7 +96,8 @@ func (s *service) ExchangeCode(ctx context.Context, request *contracts_codeexcha
 		return nil, err
 	}
 	config := getConfigResponse.Config
-	token, err := config.Exchange(context.Background(), request.Code, oauth2.SetAuthURLParam("code_verifier", request.CodeVerifier))
+	// GitHub OAuth2 does NOT support PKCE, so we don't send the code_verifier
+	token, err := config.Exchange(context.Background(), request.Code)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to exchange code")
 		return nil, err
