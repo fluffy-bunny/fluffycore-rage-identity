@@ -16,51 +16,51 @@ import (
 	sync "sync"
 )
 
-// IAppIDPServiceClientAccessor defines the grpc client
-type IAppIDPServiceClientAccessor interface {
-	GetClient() (IDPServiceClient, error)
+// IAppSingletonIDPServiceClientAccessor defines the grpc client
+type IAppSingletonIDPServiceClientAccessor interface {
+	GetClient() (SingletonIDPServiceClient, error)
 }
 
-// AppIDPServiceClientAccessorConfig defines the grpc client struct
-type AppIDPServiceClientAccessorConfig struct {
+// AppSingletonIDPServiceClientAccessorConfig defines the grpc client struct
+type AppSingletonIDPServiceClientAccessorConfig struct {
 	Url string
 }
 
-// AppIDPServiceClientAccessor defines the grpc client struct
-type AppIDPServiceClientAccessor struct {
+// AppSingletonIDPServiceClientAccessor defines the grpc client struct
+type AppSingletonIDPServiceClientAccessor struct {
 	rwLock            sync.RWMutex
-	config            *AppIDPServiceClientAccessorConfig
+	config            *AppSingletonIDPServiceClientAccessorConfig
 	appTokenSource    tokensource.IAppTokenSource
 	grpcClientFactory GRPCClientFactory.IGRPCClientFactory
-	client            IDPServiceClient
+	client            SingletonIDPServiceClient
 }
 
-var stemAppIDPServiceClientAccessor = (*AppIDPServiceClientAccessor)(nil)
-var _ IAppIDPServiceClientAccessor = stemAppIDPServiceClientAccessor
+var stemAppSingletonIDPServiceClientAccessor = (*AppSingletonIDPServiceClientAccessor)(nil)
+var _ IAppSingletonIDPServiceClientAccessor = stemAppSingletonIDPServiceClientAccessor
 
-func (s *AppIDPServiceClientAccessor) Ctor(
-	config *AppIDPServiceClientAccessorConfig,
+func (s *AppSingletonIDPServiceClientAccessor) Ctor(
+	config *AppSingletonIDPServiceClientAccessorConfig,
 	appTokenSource tokensource.IAppTokenSource,
 	grpcClientFactory GRPCClientFactory.IGRPCClientFactory,
-) (IAppIDPServiceClientAccessor, error) {
-	return &AppIDPServiceClientAccessor{
+) (IAppSingletonIDPServiceClientAccessor, error) {
+	return &AppSingletonIDPServiceClientAccessor{
 		config:            config,
 		appTokenSource:    appTokenSource,
 		grpcClientFactory: grpcClientFactory,
 	}, nil
 }
 
-// AddSingletonIAppIDPServiceClientAccessor ...
-func AddSingletonIAppIDPServiceClientAccessor(
+// AddSingletonIAppSingletonIDPServiceClientAccessor ...
+func AddSingletonIAppSingletonIDPServiceClientAccessor(
 	cb fluffy_dozm_di.ContainerBuilder,
-	config *AppIDPServiceClientAccessorConfig,
+	config *AppSingletonIDPServiceClientAccessorConfig,
 ) {
-	fluffy_dozm_di.AddInstance[*AppIDPServiceClientAccessorConfig](cb, config)
-	fluffy_dozm_di.AddSingleton[IAppIDPServiceClientAccessor](cb, stemAppIDPServiceClientAccessor.Ctor)
+	fluffy_dozm_di.AddInstance[*AppSingletonIDPServiceClientAccessorConfig](cb, config)
+	fluffy_dozm_di.AddSingleton[IAppSingletonIDPServiceClientAccessor](cb, stemAppSingletonIDPServiceClientAccessor.Ctor)
 }
 
-func (s *AppIDPServiceClientAccessor) GetClient() (IDPServiceClient, error) {
-	doGetClient := func() IDPServiceClient {
+func (s *AppSingletonIDPServiceClientAccessor) GetClient() (SingletonIDPServiceClient, error) {
+	doGetClient := func() SingletonIDPServiceClient {
 		s.rwLock.RLock()
 		defer s.rwLock.RUnlock()
 		if s.client != nil {
@@ -91,83 +91,48 @@ func (s *AppIDPServiceClientAccessor) GetClient() (IDPServiceClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	s.client = NewIDPServiceClient(grpcClient.GetConnection())
+	s.client = NewSingletonIDPServiceClient(grpcClient.GetConnection())
 	return s.client, nil
 }
 
-// IFluffyCoreIDPServiceServer defines the grpc server
-type IFluffyCoreIDPServiceServer interface {
-	IDPServiceServer
+// IFluffyCoreSingletonIDPServiceServer defines the grpc server
+type IFluffyCoreSingletonIDPServiceServer interface {
+	SingletonIDPServiceServer
 }
 
-type UnimplementedFluffyCoreIDPServiceServerEndpointRegistration struct {
+type UnimplementedFluffyCoreSingletonIDPServiceServerEndpointRegistration struct {
 }
 
-func (UnimplementedFluffyCoreIDPServiceServerEndpointRegistration) RegisterFluffyCoreHandler(gwmux *runtime.ServeMux, conn *grpc.ClientConn) {
+func (UnimplementedFluffyCoreSingletonIDPServiceServerEndpointRegistration) RegisterFluffyCoreHandler(gwmux *runtime.ServeMux, conn *grpc.ClientConn) {
 }
 
-// IDPServiceFluffyCoreServer defines the grpc server truct
-type IDPServiceFluffyCoreServer struct {
-	UnimplementedIDPServiceServer
-	UnimplementedFluffyCoreIDPServiceServerEndpointRegistration
+// SingletonIDPServiceFluffyCoreServer defines the grpc server truct
+type SingletonIDPServiceFluffyCoreServer struct {
+	UnimplementedSingletonIDPServiceServer
+	UnimplementedFluffyCoreSingletonIDPServiceServerEndpointRegistration
 }
 
 // RegisterFluffyCoreGRPCService the server with grpc
-func (srv *IDPServiceFluffyCoreServer) RegisterFluffyCoreGRPCService(s *grpc.Server) {
-	RegisterIDPServiceServer(s, srv)
+func (srv *SingletonIDPServiceFluffyCoreServer) RegisterFluffyCoreGRPCService(s *grpc.Server) {
+	RegisterSingletonIDPServiceServer(s, srv)
 }
 
-// AddIDPServiceServerWithExternalRegistration adds the fluffycore aware grpc server and external registration service.  Mainly used for grpc-gateway
-func AddIDPServiceServerWithExternalRegistration(cb fluffy_dozm_di.ContainerBuilder, ctor any, register func() endpoint.IEndpointRegistration) {
+// AddSingletonIDPServiceServerWithExternalRegistration adds the fluffycore aware grpc server and external registration service.  Mainly used for grpc-gateway
+func AddSingletonIDPServiceServerWithExternalRegistration(cb fluffy_dozm_di.ContainerBuilder, ctor any, register func() endpoint.IEndpointRegistration) {
 	fluffy_dozm_di.AddSingleton[endpoint.IEndpointRegistration](cb, register)
-	fluffy_dozm_di.AddScoped[IFluffyCoreIDPServiceServer](cb, ctor)
+	fluffy_dozm_di.AddScoped[IFluffyCoreSingletonIDPServiceServer](cb, ctor)
 }
 
-// AddIDPServiceServer adds the fluffycore aware grpc server
-func AddIDPServiceServer(cb fluffy_dozm_di.ContainerBuilder, ctor any) {
-	AddIDPServiceServerWithExternalRegistration(cb, ctor, func() endpoint.IEndpointRegistration {
-		return &IDPServiceFluffyCoreServer{}
+// AddSingletonIDPServiceServer adds the fluffycore aware grpc server
+func AddSingletonIDPServiceServer(cb fluffy_dozm_di.ContainerBuilder, ctor any) {
+	AddSingletonIDPServiceServerWithExternalRegistration(cb, ctor, func() endpoint.IEndpointRegistration {
+		return &SingletonIDPServiceFluffyCoreServer{}
 	})
 }
 
-// CreateIDP...
-func (s *IDPServiceFluffyCoreServer) CreateIDP(ctx context.Context, request *CreateIDPRequest) (*CreateIDPResponse, error) {
-	requestContainer := dicontext.GetRequestContainer(ctx)
-	downstreamService := fluffy_dozm_di.Get[IFluffyCoreIDPServiceServer](requestContainer)
-	return downstreamService.CreateIDP(ctx, request)
-}
-
-// GetIDP...
-func (s *IDPServiceFluffyCoreServer) GetIDP(ctx context.Context, request *GetIDPRequest) (*GetIDPResponse, error) {
-	requestContainer := dicontext.GetRequestContainer(ctx)
-	downstreamService := fluffy_dozm_di.Get[IFluffyCoreIDPServiceServer](requestContainer)
-	return downstreamService.GetIDP(ctx, request)
-}
-
-// GetIDPBySlug...
-func (s *IDPServiceFluffyCoreServer) GetIDPBySlug(ctx context.Context, request *GetIDPBySlugRequest) (*GetIDPBySlugResponse, error) {
-	requestContainer := dicontext.GetRequestContainer(ctx)
-	downstreamService := fluffy_dozm_di.Get[IFluffyCoreIDPServiceServer](requestContainer)
-	return downstreamService.GetIDPBySlug(ctx, request)
-}
-
-// DeleteIDP...
-func (s *IDPServiceFluffyCoreServer) DeleteIDP(ctx context.Context, request *DeleteIDPRequest) (*DeleteIDPResponse, error) {
-	requestContainer := dicontext.GetRequestContainer(ctx)
-	downstreamService := fluffy_dozm_di.Get[IFluffyCoreIDPServiceServer](requestContainer)
-	return downstreamService.DeleteIDP(ctx, request)
-}
-
-// UpdateIDP...
-func (s *IDPServiceFluffyCoreServer) UpdateIDP(ctx context.Context, request *UpdateIDPRequest) (*UpdateIDPResponse, error) {
-	requestContainer := dicontext.GetRequestContainer(ctx)
-	downstreamService := fluffy_dozm_di.Get[IFluffyCoreIDPServiceServer](requestContainer)
-	return downstreamService.UpdateIDP(ctx, request)
-}
-
 // ListIDP...
-func (s *IDPServiceFluffyCoreServer) ListIDP(ctx context.Context, request *ListIDPRequest) (*ListIDPResponse, error) {
+func (s *SingletonIDPServiceFluffyCoreServer) ListIDP(ctx context.Context, request *ListIDPRequest) (*ListIDPResponse, error) {
 	requestContainer := dicontext.GetRequestContainer(ctx)
-	downstreamService := fluffy_dozm_di.Get[IFluffyCoreIDPServiceServer](requestContainer)
+	downstreamService := fluffy_dozm_di.Get[IFluffyCoreSingletonIDPServiceServer](requestContainer)
 	return downstreamService.ListIDP(ctx, request)
 }

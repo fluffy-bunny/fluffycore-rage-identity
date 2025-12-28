@@ -12,6 +12,7 @@ import (
 	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
+	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
@@ -26,7 +27,7 @@ type (
 
 		wellknownCookies           contracts_cookies.IWellknownCookies
 		userService                proto_external_user.IFluffyCoreUserServiceServer
-		fluffyCoreIDPServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer
+		fluffyCoreIDPServiceServer proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer
 	}
 )
 
@@ -55,7 +56,7 @@ func (s *service) Ctor(
 	config *rage_contracts_config.Config,
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	userService proto_external_user.IFluffyCoreUserServiceServer,
-	fluffyCoreIDPServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer,
+	fluffyCoreIDPServiceServer proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer,
 ) (*service, error) {
 	return &service{
 		BaseHandler:                services_echo_handlers_base.NewBaseHandler(container, config),
@@ -244,16 +245,23 @@ func (s *service) DoGet(c echo.Context) error {
 		for _, identity := range user.RageUser.LinkedIdentities.Identities {
 			// Get provider name from IdpSlug
 			provider := identity.IdpSlug
-			// Get provider name from IdpSlug
-			getIDPBySlugResponse, err := s.fluffyCoreIDPServiceServer.GetIDPBySlug(ctx,
-				&proto_oidc_idp.GetIDPBySlugRequest{
-					Slug: identity.IdpSlug,
+			// Get provider name from IdpSlug using ListIDP
+			listIDPResponse, err := s.IdpServiceServer().ListIDP(ctx,
+				&proto_oidc_idp.ListIDPRequest{
+					Filter: &proto_oidc_idp.Filter{
+						Enabled: &proto_types.BoolFilterExpression{
+							Eq: true,
+						},
+						Slug: &proto_types.StringFilterExpression{
+							Eq: identity.IdpSlug,
+						},
+					},
 				})
 			if err != nil {
-				log.Error().Err(err).Str("idpSlug", identity.IdpSlug).Msg("GetIDPBySlug")
-			} else {
-				if fluffycore_utils.IsNotEmptyOrNil(getIDPBySlugResponse.Idp.Name) {
-					provider = getIDPBySlugResponse.Idp.Name
+				log.Error().Err(err).Str("idpSlug", identity.IdpSlug).Msg("ListIDP")
+			} else if listIDPResponse != nil && len(listIDPResponse.IDPs) > 0 {
+				if fluffycore_utils.IsNotEmptyOrNil(listIDPResponse.IDPs[0].Name) {
+					provider = listIDPResponse.IDPs[0].Name
 				}
 			}
 

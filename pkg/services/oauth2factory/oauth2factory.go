@@ -10,6 +10,7 @@ import (
 	contracts_oauth2factory "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oauth2factory"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
+	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	zerolog "github.com/rs/zerolog"
@@ -20,7 +21,7 @@ import (
 type (
 	service struct {
 		config                *contracts_config.Config
-		idpServiceServer      proto_oidc_idp.IFluffyCoreIDPServiceServer
+		idpServiceServer      proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer
 		oauth2Configs         map[string]*oauth2.Config
 		oauth2ProviderFactory contracts_oauth2factory.IOIDCProviderFactory
 		lock                  sync.Mutex
@@ -32,7 +33,7 @@ var _ contracts_oauth2factory.IOAuth2Factory = stemService
 
 func (s *service) Ctor(config *contracts_config.Config,
 	oauth2ProviderFactory contracts_oauth2factory.IOIDCProviderFactory,
-	idpServiceServer proto_oidc_idp.IFluffyCoreIDPServiceServer) (contracts_oauth2factory.IOAuth2Factory, error) {
+	idpServiceServer proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer) (contracts_oauth2factory.IOAuth2Factory, error) {
 	return &service{
 		config:                config,
 		idpServiceServer:      idpServiceServer,
@@ -74,17 +75,27 @@ func (s *service) GetConfig(ctx context.Context, request *contracts_oauth2factor
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	getIDPBySlugResponse, err := s.idpServiceServer.GetIDPBySlug(ctx,
-		&proto_oidc_idp.GetIDPBySlugRequest{
-			Slug: request.IDPHint,
+	listIDPResponse, err := s.idpServiceServer.ListIDP(ctx,
+		&proto_oidc_idp.ListIDPRequest{
+			Filter: &proto_oidc_idp.Filter{
+				Enabled: &proto_types.BoolFilterExpression{
+					Eq: true,
+				},
+				Slug: &proto_types.StringFilterExpression{
+					Eq: request.IDPHint,
+				},
+			},
 		})
 	if err != nil {
-		log.Error().Err(err).Msg("GetIDPBySlug")
+		log.Error().Err(err).Msg("ListIDP")
 		return nil, err
 	}
-	idp := getIDPBySlugResponse.Idp
+	if listIDPResponse == nil || len(listIDPResponse.IDPs) == 0 {
+		return nil, status.Errorf(codes.NotFound, "no idp found for IDPHint: %s", request.IDPHint)
+	}
+	idp := listIDPResponse.IDPs[0]
 	if idp.Protocol != nil {
-		log.Debug().Interface("getIDPBySlugResponse", getIDPBySlugResponse).Msg("getIDPBySlugResponse")
+		log.Debug().Interface("listIDPResponse", listIDPResponse).Msg("listIDPResponse")
 		switch v := idp.Protocol.Value.(type) {
 		case *proto_oidc_models.Protocol_Github:
 			oauth2Config, ok := s.oauth2Configs[request.IDPHint]

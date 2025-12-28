@@ -53,7 +53,7 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	// this has to be added FIRST as it sets up the default inmemory version of the IClient stores
 	// it addes an empty *stores_services_client_inmemory.Clients
 	services_client_inmemory.AddSingletonIFluffyCoreClientServiceServer(builder)
-	services_idp_inmemory.AddSingletonIFluffyCoreIDPServiceServer(builder)
+	services_idp_inmemory.AddSingletonIFluffyCoreSingletonIDPServiceServer(builder)
 	services_oauth2factory.AddSingletonIOAuth2Factory(builder)
 	services_tokenservice.AddSingletonITokenService(builder)
 	services_AuthorizationCodeClaimsAugmentor.AddSingletonIClaimsAugmentor(builder)

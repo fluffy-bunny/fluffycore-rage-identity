@@ -1,9 +1,14 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "proto/oidc/models/user.proto",
+    "title": "proto/oidc/idp/idp.proto",
     "version": "version not set"
   },
+  "tags": [
+    {
+      "name": "SingletonIDPService"
+    }
+  ],
   "consumes": [
     "application/json"
   ],
@@ -12,6 +17,144 @@
   ],
   "paths": {},
   "definitions": {
+    "idpFilter": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "$ref": "#/definitions/typesStringFilterExpression"
+        },
+        "enabled": {
+          "$ref": "#/definitions/typesBoolFilterExpression"
+        },
+        "claimedDomains": {
+          "$ref": "#/definitions/typesStringArrayFilterExpression"
+        },
+        "hidden": {
+          "$ref": "#/definitions/typesBoolFilterExpression"
+        }
+      }
+    },
+    "idpListIDPResponse": {
+      "type": "object",
+      "properties": {
+        "iDPs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/modelsIDP"
+          }
+        }
+      }
+    },
+    "modelsGithubOAuth2Protocol": {
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "clientSecret": {
+          "type": "string"
+        }
+      }
+    },
+    "modelsIDP": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "slug": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "protocol": {
+          "$ref": "#/definitions/modelsProtocol"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "claimedDomains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "emailVerificationRequired": {
+          "type": "boolean"
+        },
+        "autoCreate": {
+          "type": "boolean"
+        },
+        "multiFactorRequired": {
+          "type": "boolean"
+        }
+      }
+    },
+    "modelsOAuth2Protocol": {
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "clientSecret": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "authorizationEndpoint": {
+          "type": "string"
+        },
+        "tokenEndpoint": {
+          "type": "string"
+        }
+      }
+    },
+    "modelsOIDCProtocol": {
+      "type": "object",
+      "properties": {
+        "authority": {
+          "type": "string"
+        },
+        "clientId": {
+          "type": "string"
+        },
+        "clientSecret": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        }
+      }
+    },
+    "modelsProtocol": {
+      "type": "object",
+      "properties": {
+        "oidc": {
+          "$ref": "#/definitions/modelsOIDCProtocol"
+        },
+        "oauth2": {
+          "$ref": "#/definitions/modelsOAuth2Protocol"
+        },
+        "github": {
+          "$ref": "#/definitions/modelsGithubOAuth2Protocol"
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -37,6 +180,55 @@
             "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "typesBoolFilterExpression": {
+      "type": "object",
+      "properties": {
+        "eq": {
+          "type": "boolean"
+        },
+        "isDefined": {
+          "type": "boolean",
+          "title": "This is to distinguish explicitly defined value from its default value. The filter is not effective unless _is_defined == true"
+        }
+      }
+    },
+    "typesStringArrayFilterExpression": {
+      "type": "object",
+      "properties": {
+        "eq": {
+          "type": "string"
+        },
+        "in": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ne": {
+          "type": "string"
+        }
+      }
+    },
+    "typesStringFilterExpression": {
+      "type": "object",
+      "properties": {
+        "eq": {
+          "type": "string"
+        },
+        "contains": {
+          "type": "string"
+        },
+        "in": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ne": {
+          "type": "string"
         }
       }
     }

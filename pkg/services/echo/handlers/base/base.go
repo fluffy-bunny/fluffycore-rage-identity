@@ -33,7 +33,7 @@ type (
 		Localizer                      func() contracts_localizer.ILocalizer
 		ClaimsPrincipal                func() fluffycore_contracts_common.IClaimsPrincipal
 		EchoContextAccessor            func() fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor
-		IdpServiceServer               func() proto_oidc_idp.IFluffyCoreIDPServiceServer
+		IdpServiceServer               func() proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer
 		RageUserService                func() proto_oidc_user.IFluffyCoreRageUserServiceServer
 		AuthorizationRequestStateStore func() proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer
 		ScopedMemoryCache              func() contracts_cache.IScopedMemoryCache
@@ -44,7 +44,7 @@ type (
 		localizer                      contracts_localizer.ILocalizer
 		claimsPrincipal                fluffycore_contracts_common.IClaimsPrincipal
 		echoContextAccessor            fluffycore_echo_contracts_contextaccessor.IEchoContextAccessor
-		idpServiceServer               proto_oidc_idp.IFluffyCoreIDPServiceServer
+		idpServiceServer               proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer
 		rageUserService                proto_oidc_user.IFluffyCoreRageUserServiceServer
 		authorizationRequestStateStore proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer
 		scopedMemoryCache              contracts_cache.IScopedMemoryCache
@@ -180,9 +180,9 @@ func (b *BaseHandler) getEchoContextAccessor() fluffycore_echo_contracts_context
 	}
 	return b.echoContextAccessor
 }
-func (b *BaseHandler) getIdpServiceServer() proto_oidc_idp.IFluffyCoreIDPServiceServer {
+func (b *BaseHandler) getIdpServiceServer() proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer {
 	if b.idpServiceServer == nil {
-		b.idpServiceServer = di.Get[proto_oidc_idp.IFluffyCoreIDPServiceServer](b.Container)
+		b.idpServiceServer = di.Get[proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer](b.Container)
 	}
 	return b.idpServiceServer
 }
@@ -271,7 +271,7 @@ func (b *BaseHandler) GetIDPs(ctx context.Context) ([]*proto_oidc_models.IDP, er
 
 		return nil, err
 	}
-	return listIDPResponse.Idps, nil
+	return listIDPResponse.IDPs, nil
 }
 func (b *BaseHandler) TeleportBackToLoginWithError(c echo.Context, code, msg string) error {
 	formParams := []models.FormParam{

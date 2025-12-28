@@ -9,19 +9,19 @@ option csharp_namespace = "FluffyBunny.RageOidc.Oidc.Models";
 package proto.oidc.models;
 
 import "google/protobuf/descriptor.proto";
-import "google/protobuf/wrappers.proto";
-import "proto/types/primitives.proto";
-
+ 
 message OIDCProtocol {
     string authority = 1;
     string client_id = 2;
     string client_secret = 3;
     string scope = 4;
 }
+
 message GithubOAuth2Protocol {
     string client_id = 1;
     string client_secret = 2;
 }
+
 message OAuth2Protocol {
     string client_id = 1;
     string client_secret = 2;
@@ -29,6 +29,7 @@ message OAuth2Protocol {
     string authorization_endpoint = 4;
     string token_endpoint = 5;
 }
+
 message Protocol {
     oneof value {
         OIDCProtocol            oidc = 1;
@@ -36,9 +37,7 @@ message Protocol {
         GithubOAuth2Protocol    github = 3;
     }
 }
-message ProtocolUpdate {
-    Protocol value = 1;
-}
+ 
 
 message IDP {
     string                                  id = 1;
@@ -54,20 +53,7 @@ message IDP {
     bool                                    auto_create = 11;
     bool                                    multi_factor_required = 12;
  }
-message IDPs {
+ message IDPs {
     repeated IDP idps = 1;
 }
-message IDPUpdate {
-    string                                  id = 1;
-    google.protobuf.BoolValue               enabled = 2;
-    google.protobuf.StringValue             slug = 3;
-    google.protobuf.StringValue             name = 4;
-    google.protobuf.StringValue             description = 5;
-    ProtocolUpdate                          protocol = 6;
-    proto.types.StringMapUpdate             metadata = 7;
-    proto.types.StringArrayUpdate           claimed_domains = 8;
-    google.protobuf.BoolValue               hidden = 9;
-    google.protobuf.BoolValue               email_verification_required = 10;
-    google.protobuf.BoolValue               auto_create = 11;
  
-}

@@ -27,6 +27,7 @@ import (
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
+	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
@@ -244,19 +245,30 @@ func (s *service) Do(c echo.Context) error {
 	}
 	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 
-	getIDPBySlugResponse, err := s.IdpServiceServer().GetIDPBySlug(ctx,
-		&proto_oidc_idp.GetIDPBySlugRequest{
-			Slug: externalOauth2State.Request.IdpHint,
+	listIDPResponse, err := s.IdpServiceServer().ListIDP(ctx,
+		&proto_oidc_idp.ListIDPRequest{
+			Filter: &proto_oidc_idp.Filter{
+				Enabled: &proto_types.BoolFilterExpression{
+					Eq: true,
+				},
+				Slug: &proto_types.StringFilterExpression{
+					Eq: externalOauth2State.Request.IdpHint,
+				},
+			},
 		})
 	if err != nil {
-		log.Error().Err(err).Msg("GetIDPBySlug")
+		log.Error().Err(err).Msg("ListIDP")
+		return s.TeleportBackToLoginWithError(c, InternalError_Callback_008, InternalError_Callback_008)
+	}
+	if listIDPResponse == nil || len(listIDPResponse.IDPs) == 0 {
+		log.Error().Str("idpHint", externalOauth2State.Request.IdpHint).Msg("IDP not found")
 		return s.TeleportBackToLoginWithError(c, InternalError_Callback_008, InternalError_Callback_008)
 	}
 	var exchangeCodeResponse *contracts_codeexchange.ExchangeCodeResponse
-	idp = getIDPBySlugResponse.Idp
+	idp = listIDPResponse.IDPs[0]
 
 	if idp.Protocol != nil {
-		log.Debug().Interface("getIDPBySlugResponse", getIDPBySlugResponse).Msg("getIDPBySlugResponse")
+		log.Debug().Interface("listIDPResponse", listIDPResponse).Msg("listIDPResponse")
 		switch idp.Protocol.Value.(type) {
 		case *proto_oidc_models.Protocol_Github:
 			{
