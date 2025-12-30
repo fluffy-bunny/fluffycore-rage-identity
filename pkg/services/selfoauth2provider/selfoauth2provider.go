@@ -2,7 +2,6 @@ package selfoauth2provider
 
 import (
 	"context"
-	"sync"
 
 	oidc "github.com/coreos/go-oidc/v3/oidc"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
@@ -16,10 +15,7 @@ import (
 
 type (
 	service struct {
-		config       *contracts_config.SelfIDPConfig
-		oauth2Config *oauth2.Config
-		lock         sync.Mutex
-		verifier     *oidc.IDTokenVerifier
+		config *contracts_config.SelfIDPConfig
 	}
 )
 
@@ -41,15 +37,7 @@ func AddSingletonISelfOAuth2Provider(cb di.ContainerBuilder) {
 func (s *service) GetConfig(ctx context.Context) (*contracts_selfoauth2provider.GetConfigResponse, error) {
 	log := zerolog.Ctx(ctx).With().Logger()
 
-	s.lock.Lock()
-	defer s.lock.Unlock()
-
-	if s.oauth2Config != nil {
-		return &contracts_selfoauth2provider.GetConfigResponse{
-			Config:   s.oauth2Config,
-			Verifier: s.verifier,
-		}, nil
-	}
+	// Always create fresh provider and config - no caching
 	provider, err := oidc.NewProvider(ctx, s.config.Authority)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to query provider.")
@@ -66,15 +54,13 @@ func (s *service) GetConfig(ctx context.Context) (*contracts_selfoauth2provider.
 			TokenURL: provider.Endpoint().TokenURL,
 		},
 	}
-	s.oauth2Config = &oauth2Config
 	oidcConfig := &oidc.Config{
 		ClientID: s.config.ClientID,
 	}
 	verifier := provider.Verifier(oidcConfig)
-	s.verifier = verifier
 
 	return &contracts_selfoauth2provider.GetConfigResponse{
-		Config:   s.oauth2Config,
-		Verifier: s.verifier,
+		Config:   &oauth2Config,
+		Verifier: verifier,
 	}, nil
 }

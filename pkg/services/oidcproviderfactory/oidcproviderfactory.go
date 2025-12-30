@@ -2,7 +2,6 @@ package oidcproviderfactory
 
 import (
 	"context"
-	"sync"
 
 	oidc "github.com/coreos/go-oidc/v3/oidc"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
@@ -21,8 +20,6 @@ type (
 	service struct {
 		config           *contracts_config.Config
 		idpServiceServer proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer
-		oidcProviders    map[string]*oidc.Provider
-		lock             sync.Mutex
 	}
 )
 
@@ -33,7 +30,6 @@ func (s *service) Ctor(config *contracts_config.Config, idpServiceServer proto_o
 	return &service{
 		config:           config,
 		idpServiceServer: idpServiceServer,
-		oidcProviders:    make(map[string]*oidc.Provider),
 	}, nil
 }
 
@@ -56,9 +52,8 @@ func (s *service) GetOIDCProvider(ctx context.Context, request *contracts_oauth2
 	if err != nil {
 		return nil, err
 	}
-	s.lock.Lock()
-	defer s.lock.Unlock()
 
+	// Always fetch fresh IDP data from database - no caching
 	listIDPResponse, err := s.idpServiceServer.ListIDP(ctx,
 		&proto_oidc_idp.ListIDPRequest{
 			Filter: &proto_oidc_idp.Filter{
@@ -84,18 +79,14 @@ func (s *service) GetOIDCProvider(ctx context.Context, request *contracts_oauth2
 
 		case *proto_oidc_models.Protocol_Oidc:
 			{
-				oidcProvider, ok := s.oidcProviders[request.IDPHint]
-				if !ok {
-					provider, err := oidc.NewProvider(ctx, v.Oidc.Authority)
-					if err != nil {
-						log.Error().Err(err).Msg("oidc.NewProvider")
-						return nil, err
-					}
-					s.oidcProviders[request.IDPHint] = provider
-					oidcProvider = provider
+				// Always create fresh provider with current config
+				provider, err := oidc.NewProvider(ctx, v.Oidc.Authority)
+				if err != nil {
+					log.Error().Err(err).Msg("oidc.NewProvider")
+					return nil, err
 				}
 				return &contracts_oauth2factory.GetOIDCProviderResponse{
-					OIDCProvider: oidcProvider,
+					OIDCProvider: provider,
 				}, nil
 			}
 		}
