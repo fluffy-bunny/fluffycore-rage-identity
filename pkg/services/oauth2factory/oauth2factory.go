@@ -3,7 +3,6 @@ package oauth2factory
 import (
 	"context"
 	"strings"
-	"sync"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
@@ -22,9 +21,7 @@ type (
 	service struct {
 		config                *contracts_config.Config
 		idpServiceServer      proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer
-		oauth2Configs         map[string]*oauth2.Config
 		oauth2ProviderFactory contracts_oauth2factory.IOIDCProviderFactory
-		lock                  sync.Mutex
 	}
 )
 
@@ -38,7 +35,6 @@ func (s *service) Ctor(config *contracts_config.Config,
 		config:                config,
 		idpServiceServer:      idpServiceServer,
 		oauth2ProviderFactory: oauth2ProviderFactory,
-		oauth2Configs:         make(map[string]*oauth2.Config),
 	}, nil
 }
 
@@ -72,9 +68,8 @@ func (s *service) GetConfig(ctx context.Context, request *contracts_oauth2factor
 	if err != nil {
 		return nil, err
 	}
-	s.lock.Lock()
-	defer s.lock.Unlock()
 
+	// Always fetch fresh IDP data from database - no caching
 	listIDPResponse, err := s.idpServiceServer.ListIDP(ctx,
 		&proto_oidc_idp.ListIDPRequest{
 			Filter: &proto_oidc_idp.Filter{
@@ -98,23 +93,19 @@ func (s *service) GetConfig(ctx context.Context, request *contracts_oauth2factor
 		log.Debug().Interface("listIDPResponse", listIDPResponse).Msg("listIDPResponse")
 		switch v := idp.Protocol.Value.(type) {
 		case *proto_oidc_models.Protocol_Github:
-			oauth2Config, ok := s.oauth2Configs[request.IDPHint]
-			if !ok {
-				config := oauth2.Config{
-					ClientID:     v.Github.ClientId,
-					ClientSecret: v.Github.ClientSecret,
-					Scopes:       GithubScopes,
-					RedirectURL:  s.config.OIDCConfig.BaseUrl + s.config.OIDCConfig.OAuth2CallbackPath,
-					Endpoint: oauth2.Endpoint{
-						AuthURL:  GithubAuthURL,
-						TokenURL: GithubTokenURL,
-					},
-				}
-				s.oauth2Configs[request.IDPHint] = &config
-				oauth2Config = &config
+			// Always create fresh config with current credentials
+			config := oauth2.Config{
+				ClientID:     v.Github.ClientId,
+				ClientSecret: v.Github.ClientSecret,
+				Scopes:       GithubScopes,
+				RedirectURL:  s.config.OIDCConfig.BaseUrl + s.config.OIDCConfig.OAuth2CallbackPath,
+				Endpoint: oauth2.Endpoint{
+					AuthURL:  GithubAuthURL,
+					TokenURL: GithubTokenURL,
+				},
 			}
 			return &contracts_oauth2factory.GetConfigResponse{
-				Config: oauth2Config,
+				Config: &config,
 			}, nil
 
 		case *proto_oidc_models.Protocol_Oidc:
@@ -129,24 +120,20 @@ func (s *service) GetConfig(ctx context.Context, request *contracts_oauth2factor
 				}
 				oidcProvider := getOIDCProviderResponse.OIDCProvider
 
-				oauth2Config, ok := s.oauth2Configs[request.IDPHint]
-				if !ok {
-					scopes := strings.Split(v.Oidc.Scope, " ")
-					config := oauth2.Config{
-						ClientID:     v.Oidc.ClientId,
-						ClientSecret: v.Oidc.ClientSecret,
-						Scopes:       scopes,
-						RedirectURL:  s.config.OIDCConfig.BaseUrl + s.config.OIDCConfig.OAuth2CallbackPath,
-						Endpoint: oauth2.Endpoint{
-							AuthURL:  oidcProvider.Endpoint().AuthURL,
-							TokenURL: oidcProvider.Endpoint().TokenURL,
-						},
-					}
-					s.oauth2Configs[request.IDPHint] = &config
-					oauth2Config = &config
+				// Always create fresh config with current credentials
+				scopes := strings.Split(v.Oidc.Scope, " ")
+				config := oauth2.Config{
+					ClientID:     v.Oidc.ClientId,
+					ClientSecret: v.Oidc.ClientSecret,
+					Scopes:       scopes,
+					RedirectURL:  s.config.OIDCConfig.BaseUrl + s.config.OIDCConfig.OAuth2CallbackPath,
+					Endpoint: oauth2.Endpoint{
+						AuthURL:  oidcProvider.Endpoint().AuthURL,
+						TokenURL: oidcProvider.Endpoint().TokenURL,
+					},
 				}
 				return &contracts_oauth2factory.GetConfigResponse{
-					Config: oauth2Config,
+					Config: &config,
 				}, nil
 			}
 		}
