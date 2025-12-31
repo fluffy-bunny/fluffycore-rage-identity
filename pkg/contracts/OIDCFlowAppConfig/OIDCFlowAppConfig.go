@@ -5,12 +5,12 @@ type (
 		Slug string `json:"slug"`
 	}
 	OIDCFlowAppConfig struct {
-		SocialIdps                  []IDP `json:"social_idps"`
-		PasskeyEnabled              bool  `json:"passkey_enabled"`
+		SocialIdps                  []IDP `json:"socialIdps"`
+		PasskeyEnabled              bool  `json:"passkeyEnabled"`
 		EnabledWebAuthN             bool  `json:"enabledWebAuthN"`
 		EnabledTotp                 bool  `json:"enabledTotp"`
-		DevelopmentMode             bool  `json:"development_mode"`
-		DisableLocalAccountCreation bool  `json:"disable_local_account_creation"`
-		DisableSocialAccounts       bool  `json:"disable_social_accounts"`
+		DevelopmentMode             bool  `json:"developmentMode"`
+		DisableLocalAccountCreation bool  `json:"disableLocalAccountCreation"`
+		DisableSocialAccounts       bool  `json:"disableSocialAccounts"`
 	}
 )

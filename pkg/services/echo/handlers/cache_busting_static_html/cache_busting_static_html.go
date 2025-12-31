@@ -11,6 +11,7 @@ import (
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v4"
 	middleware "github.com/labstack/echo/v4/middleware"
+	zerolog "github.com/rs/zerolog"
 )
 
 type (
@@ -88,6 +89,10 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 
 func (s *service) Do(c echo.Context) error {
 
+	r := c.Request()
+	ctx := r.Context()
+	log := zerolog.Ctx(ctx).With().Logger()
+
 	path := c.Request().URL.Path
 
 	// Serve index.html for root path requests
@@ -95,6 +100,7 @@ func (s *service) Do(c echo.Context) error {
 		// Read and process template on each request (no caching)
 		indexContent, err := os.ReadFile(s.config.FilePath)
 		if err != nil {
+			log.Error().Err(err).Msg("ReadFile")
 			return err
 		}
 		modifiedContent := string(indexContent)
@@ -147,6 +153,7 @@ func (s *service) Do(c echo.Context) error {
 			// Call the custom handler
 			handled, err := routePattern.Handler(c, filePath)
 			if handled {
+				log.Error().Err(err).Msg("custom routePattern.Handler")
 				return err
 			}
 			// If not handled, continue to static file serving
@@ -175,6 +182,7 @@ func (s *service) Do(c echo.Context) error {
 		// Read and process template on each request (no caching)
 		indexContent, err := os.ReadFile(s.config.FilePath)
 		if err != nil {
+			log.Error().Err(err).Msg("ReadFile")
 			return err
 		}
 		modifiedContent := string(indexContent)
@@ -194,5 +202,6 @@ func (s *service) Do(c echo.Context) error {
 	}
 
 	// Other errors, return as-is
+	log.Error().Err(err).Msg("staticMiddleware")
 	return err
 }
