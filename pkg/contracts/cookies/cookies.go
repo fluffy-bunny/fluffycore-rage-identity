@@ -52,6 +52,15 @@ type (
 	GetPasswordResetCookieResponse struct {
 		PasswordReset *PasswordReset `json:"passwordReset"`
 	}
+	AuthCompleted struct {
+		Subject string `json:"subject"`
+	}
+	SetAuthCompletedCookieRequest struct {
+		AuthCompleted *AuthCompleted `json:"authCompleted"`
+	}
+	GetAuthCompletedCookieResponse struct {
+		AuthCompleted *AuthCompleted `json:"authCompleted"`
+	}
 	AccountStateCookie struct {
 		State string `json:"state"`
 		Nonce string `json:"nonce"`
@@ -72,6 +81,16 @@ type (
 	}
 	GetAuthCookieResponse struct {
 		AuthCookie *AuthCookie `json:"authCookie"`
+	}
+	SSOCookie struct {
+		Subject string `json:"subject"`
+		Email   string `json:"email"`
+	}
+	SetSSOCookieRequest struct {
+		SSOCookie *SSOCookie `json:"ssoCookie"`
+	}
+	GetSSOCookieResponse struct {
+		SSOCookie *SSOCookie `json:"ssoCookie"`
 	}
 	WebAuthNCookie struct {
 		Identity    *proto_oidc_models.Identity `json:"identity"`
@@ -120,6 +139,11 @@ type (
 		SetPasswordResetCookie(c echo.Context, request *SetPasswordResetCookieRequest) error
 		DeletePasswordResetCookie(c echo.Context)
 		GetPasswordResetCookie(c echo.Context) (*GetPasswordResetCookieResponse, error)
+		// Auth Completed Cookie
+		//---------------------------------------------------------------------
+		SetAuthCompletedCookie(c echo.Context, request *SetAuthCompletedCookieRequest) error
+		DeleteAuthCompletedCookie(c echo.Context)
+		GetAuthCompletedCookie(c echo.Context) (*GetAuthCompletedCookieResponse, error)
 		// Account State Cookie
 		//---------------------------------------------------------------------
 		SetAccountStateCookie(c echo.Context, request *SetAccountStateCookieRequest) error
@@ -130,6 +154,11 @@ type (
 		SetAuthCookie(c echo.Context, request *SetAuthCookieRequest) error
 		DeleteAuthCookie(c echo.Context)
 		GetAuthCookie(c echo.Context) (*GetAuthCookieResponse, error)
+		// SSO Cookie
+		//---------------------------------------------------------------------
+		SetSSOCookie(c echo.Context, request *SetSSOCookieRequest) error
+		DeleteSSOCookie(c echo.Context)
+		GetSSOCookie(c echo.Context) (*GetSSOCookieResponse, error)
 		// Insecure Cookies
 		//---------------------------------------------------------------------
 		SetInsecureCookie(c echo.Context, name string, value interface{}) error
@@ -156,13 +185,19 @@ type (
 )
 
 const (
-	CookieNameVerificationCode            = "_verificationCode"
-	CookieNamePasswordReset               = "_passwordReset"
-	CookieNameAccountState                = "_accountState"
-	CookieNameAuth                        = "_auth"
-	LoginRequest                          = "_loginRequest"
-	CookieNameExternalOauth2StateTemplate = "_externalOauth2State_{state}"
-	CookieNameWebAuthN                    = "_webAuthN"
-	CookieNameSigninUserName              = "_signinUserName"
-	CookieNameErrorName                   = "_error"
+	CookieNameVerificationCode            = "_rage_verificationCode"
+	CookieNamePasswordReset               = "_rage_passwordReset"
+	CookieNameAuthCompleted               = "_rage_authCompleted"
+	CookieNameAccountState                = "_rage_accountState"
+	CookieNameAuth                        = "_rage_auth"
+	CookieNameSSO                         = "_rage_sso"
+	LoginRequest                          = "_rage_loginRequest"
+	CookieNameExternalOauth2StateTemplate = "_rage_externalOauth2State_{state}"
+	CookieNameWebAuthN                    = "_rage_webAuthN"
+	CookieNameSigninUserName              = "_rage_signinUserName"
+	CookieNameErrorName                   = "_rage_error"
+	CookieNameCSRF                        = "_csrf" // keep this for now, I think it is hard coded in fluffycore
+	CookieNameAuthorizationState          = "_rage_authorization_state"
+	CookieNameAccountManagementSession    = "_rage_account_management_session"
+	CookieNameOIDCSession                 = "_rage_oidc_session"
 )

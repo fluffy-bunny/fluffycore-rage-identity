@@ -32,6 +32,7 @@ import (
 	services_oidcuser_inmemory "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/userstore/inmemory"
 	example_version "github.com/fluffy-bunny/fluffycore-rage-identity/example/version"
 	rage_contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
+	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_events "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/events"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
@@ -304,7 +305,7 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	fluffycore_echo_services_sessions_session_factory.AddScopedSessionFactory(builder)
 	services_session_with_options.AddScopedISessionWithOptions(builder,
 		&contracts_session_with_options.SessionWithOptions{
-			Name: "_rage_account_management_session",
+			Name: contracts_cookies.CookieNameAccountManagementSession,
 		})
 
 	services_ScopedMemoryCache.AddScopedIScopedMemoryCache(builder)

@@ -2,8 +2,8 @@ package oidc_session
 
 import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
-	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 )
 
@@ -29,7 +29,7 @@ func AddScopedIOIDCSession(cb di.ContainerBuilder) {
 	di.AddScoped[contracts_oidc_session.IOIDCSession](cb, stemService.Ctor)
 }
 func (s *service) GetSession() (contracts_sessions.ISession, error) {
-	session, err := s.factory.GetCookieSession(models.OIDCSessionName)
+	session, err := s.factory.GetCookieSession(contracts_cookies.CookieNameOIDCSession)
 	if err != nil {
 		return nil, err
 	}

@@ -107,7 +107,7 @@ func (s *service) checkAndDisplayErrorCookie(ctx app.Context) {
 
 	// Check for error cookie (e.g., from OAuth2 callback redirects)
 
-	errorCookie, err := utils.GetCookie[contracts_cookies.ErrorCookie]("_error")
+	errorCookie, err := utils.GetCookie[contracts_cookies.ErrorCookie](contracts_cookies.CookieNameErrorName)
 
 	log.Info().
 		Err(err).
@@ -140,7 +140,7 @@ func (s *service) checkAndDisplayErrorCookie(ctx app.Context) {
 			log.Info().Str("cookieDomain", cookieDomain).Msg("Using cookie domain from config")
 		}
 
-		utils.DeleteCookie("_error", utils.CookieOptions{
+		utils.DeleteCookie(contracts_cookies.CookieNameErrorName, utils.CookieOptions{
 			Path:   "/",
 			Domain: cookieDomain,
 		})

@@ -6,6 +6,7 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_go_app_ManagementApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/contracts/ManagementApiClient"
+	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	common "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/common"
 	contracts_go_app_RageApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/contracts/RageApiClient"
 	models_api_linked_identities "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_linked_identities"
@@ -43,7 +44,7 @@ func AddScopedIManagementApiClient(cb di.ContainerBuilder) {
 
 // getCSRFToken retrieves the CSRF token from the _csrf cookie
 func getCSRFToken() string {
-	csrfToken, err := fluffycore_go_app_cookies.GetCookie[string]("_csrf")
+	csrfToken, err := fluffycore_go_app_cookies.GetCookie[string](contracts_cookies.CookieNameCSRF)
 	if err != nil {
 		return ""
 	}

@@ -229,6 +229,10 @@ func (s *service) handleVerifyCodeSubmit(ctx app.Context, e app.Event) {
 				// Need to set/reset password
 				log.Info().Msg("Password reset required, navigating to password reset page")
 				ctx.Navigate(contracts_routes.GetFixedRoute(contracts_routes.WellknownRoute_ResetPassword))
+			case login_models.DIRECTIVE_KeepSignedIn_DisplayKeepSignedInPage:
+				// Navigate to keep-me-signed-in page
+				log.Info().Msg("Code verification successful, navigating to keep-signed-in page")
+				ctx.Navigate(contracts_routes.GetFixedRoute(contracts_routes.WellknownRoute_KeepSignedIn))
 			case login_models.DIRECTIVE_LoginPhaseOne_DisplayPhaseOnePage:
 				// Go back to home/login page
 				log.Info().Msg("Navigating back to home page")

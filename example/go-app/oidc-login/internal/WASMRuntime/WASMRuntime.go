@@ -14,6 +14,7 @@ import (
 	services_composers_CreateAccount "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/composers/CreateAccount"
 	services_composers_ForgotPassword "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/composers/ForgotPassword"
 	services_composers_Home "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/composers/Home"
+	services_composers_KeepSignedIn "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/composers/KeepSignedIn"
 	services_composers_Password "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/composers/Password"
 	services_composers_ResetPassword "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/composers/ResetPassword"
 	services_composers_VerifyCode "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/composers/VerifyCode"
@@ -41,6 +42,7 @@ func RegisterServices(ctx context.Context, cb di.ContainerBuilder) {
 	services_composers_ForgotPassword.AddScopedIForgotPasswordComposer(cb)
 	services_composers_ResetPassword.AddScopedIResetPasswordComposer(cb)
 	services_composers_VerifyCode.AddScopedIVerifyCodeComposer(cb)
+	services_composers_KeepSignedIn.AddScopedIKeepSignedInComposer(cb)
 	services_go_app_RageApiClient.AddScopedIRageApiClient(cb)
 
 	var appContext contracts_App.AppContext = ctx
@@ -139,6 +141,12 @@ func NewWASMApp(ctx context.Context, generateStaticMode bool) {
 		app.Route(route, func() app.Composer {
 			log.Info().Msg("Routing to " + route)
 			return newScopedWizardApp(contracts_routes.WellknownRoute_VerifyCode)
+		})
+
+		route = fixupRoute(contracts_routes.WellknownRoute_KeepSignedIn)
+		app.Route(route, func() app.Composer {
+			log.Info().Msg("Routing to " + route)
+			return newScopedWizardApp(contracts_routes.WellknownRoute_KeepSignedIn)
 		})
 
 	}

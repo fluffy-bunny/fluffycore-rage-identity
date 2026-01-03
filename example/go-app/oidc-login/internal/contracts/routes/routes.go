@@ -16,6 +16,7 @@ var (
 	WellknownRoute_ForgotPassword WellknownRoute = "/forgot-password"
 	WellknownRoute_ResetPassword  WellknownRoute = "/reset-password"
 	WellknownRoute_VerifyCode     WellknownRoute = "/verify-code"
+	WellknownRoute_KeepSignedIn   WellknownRoute = "/keep-signed-in"
 )
 
 func GetFixedRoute(route WellknownRoute) string {

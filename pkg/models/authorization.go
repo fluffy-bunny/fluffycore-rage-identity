@@ -42,10 +42,6 @@ const (
 	URLRootCandidate string = "urn:rage:root_candidate:{user_id}"
 )
 
-const (
-	OIDCSessionName = "_oidc_session"
-)
-
 type (
 	FormParam struct {
 		Name  string `json:"name"`

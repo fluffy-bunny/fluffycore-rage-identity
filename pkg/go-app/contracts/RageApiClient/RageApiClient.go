@@ -37,6 +37,7 @@ type (
 		PasswordResetFinish(ctx context.Context, request *models_api_login_models.PasswordResetFinishRequest) (*common.WrappedResonseT[models_api_login_models.PasswordResetFinishResponse], error)
 		VerifyCodeBegin(ctx context.Context) (*common.WrappedResonseT[models_api_verify_code.VerifyCodeBeginResponse], error)
 		VerifyCode(ctx context.Context, request *models_api_login_models.VerifyCodeRequest) (*common.WrappedResonseT[models_api_login_models.VerifyCodeResponse], error)
+		KeepSignedIn(ctx context.Context, request *models_api_login_models.KeepSignedInRequest) (*common.WrappedResonseT[models_api_login_models.KeepSignedInResponse], error)
 
 		// TOTP/Authenticator APIs
 		GetTOTPStatus(ctx context.Context) ([]byte, error)

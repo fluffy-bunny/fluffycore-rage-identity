@@ -12,6 +12,7 @@ const (
 	DIRECTIVE_VerifyCode_DisplayVerifyCodePage       = "displayVerifyCodePage"
 	DIRECTIVE_LoginPhaseOne_DisplayPhaseOnePage      = "displayLoginPhaseOnePage"
 	DIRECTIVE_PasswordReset_DisplayPasswordResetPage = "displayPasswordResetPage"
+	DIRECTIVE_KeepSignedIn_DisplayKeepSignedInPage   = "displayKeepSignedInPage"
 )
 
 type SignupErrorReason int

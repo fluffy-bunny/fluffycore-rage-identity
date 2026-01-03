@@ -97,6 +97,9 @@ type (
 		DeveloperMode bool   `json:"developerMode"`
 		Domain        string `json:"domain"`
 	}
+	SSOConfig struct {
+		MaxDurationMinutes int `json:"maxDurationMinutes"`
+	}
 	InitialConfig struct {
 		ConfigFiles ConfigFiles `json:"configFiles"`
 	}
@@ -164,6 +167,7 @@ type (
 		SelfIDPConfig                  *SelfIDPConfig                                 `json:"selfIDPConfig"`
 		CookieConfig                   *CookieConfig                                  `json:"cookieConfig"`
 		SystemConfig                   *SystemConfig                                  `json:"systemConfig"`
+		SSOConfig                      *SSOConfig                                     `json:"ssoConfig"`
 		SessionConfig                  *contracts_sessions.SessionConfig              `json:"sessionConfig"`
 		WebAuthNConfig                 *contracts_webauthn.WebAuthNConfig             `json:"webAuthNConfig"`
 		PasswordConfig                 *PasswordConfig                                `json:"passwordConfig"`
@@ -405,6 +409,9 @@ const configDefaultJSONTemplate = `
 		"development_mode": false,
 		"disable_local_account_creation": false,
 		"disable_social_accounts": false
+	},
+	"ssoConfig": {
+		"maxDurationMinutes": 5
 	}
 }
 `

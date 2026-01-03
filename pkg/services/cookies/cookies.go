@@ -23,6 +23,7 @@ type (
 		secureCookies   fluffycore_contracts_cookies.ICookies
 		config          *contracts_config.EchoConfig
 		cookieConfig    *contracts_config.CookieConfig
+		mainConfig      *contracts_config.Config
 	}
 )
 
@@ -34,6 +35,7 @@ func (s *service) Ctor(
 	secureCookies fluffycore_contracts_cookies.ISecureCookies,
 	config *contracts_config.EchoConfig,
 	cookieConfig *contracts_config.CookieConfig,
+	mainConfig *contracts_config.Config,
 ) (contracts_cookies.IWellknownCookies, error) {
 
 	var secureCookesService fluffycore_contracts_cookies.ICookies
@@ -48,6 +50,7 @@ func (s *service) Ctor(
 		secureCookies:    secureCookesService,
 		config:           config,
 		cookieConfig:     cookieConfig,
+		mainConfig:       mainConfig,
 	}, nil
 }
 
@@ -136,6 +139,50 @@ func (s *service) GetPasswordResetCookie(c echo.Context) (*contracts_cookies.Get
 		PasswordReset: &value,
 	}, nil
 }
+
+// Auth Completed Cookie
+// ---------------------------------------------------------------------
+func (s *service) validateSetAuthCompletedCookieRequest(request *contracts_cookies.SetAuthCompletedCookieRequest) error {
+	if request == nil {
+		return status.Error(codes.InvalidArgument, "request is nil")
+	}
+	if request.AuthCompleted == nil {
+		return status.Error(codes.InvalidArgument, "request.AuthCompleted is nil")
+	}
+	if fluffycore_utils.IsEmptyOrNil(request.AuthCompleted.Subject) {
+		return status.Error(codes.InvalidArgument, "Subject is empty")
+	}
+	return nil
+}
+
+func (s *service) SetAuthCompletedCookie(c echo.Context, request *contracts_cookies.SetAuthCompletedCookieRequest) error {
+	err := s.validateSetAuthCompletedCookieRequest(request)
+	if err != nil {
+		return err
+	}
+	return SetCookie(c, s.cookieConfig, s.secureCookies, contracts_cookies.CookieNameAuthCompleted, request.AuthCompleted)
+}
+
+func (s *service) DeleteAuthCompletedCookie(c echo.Context) {
+	s.secureCookies.DeleteCookie(c,
+		&fluffycore_contracts_cookies.DeleteCookieRequest{
+			Name:   contracts_cookies.CookieNameAuthCompleted,
+			Path:   "/",
+			Domain: s.cookieConfig.Domain,
+		})
+}
+
+func (s *service) GetAuthCompletedCookie(c echo.Context) (*contracts_cookies.GetAuthCompletedCookieResponse, error) {
+	var value contracts_cookies.AuthCompleted
+	err := GetCookie(c, s.secureCookies, contracts_cookies.CookieNameAuthCompleted, &value)
+	if err != nil {
+		return nil, err
+	}
+	return &contracts_cookies.GetAuthCompletedCookieResponse{
+		AuthCompleted: &value,
+	}, nil
+}
+
 func (s *service) validateSetAccountStateCookieRequest(request *contracts_cookies.SetAccountStateCookieRequest) error {
 	if request == nil {
 		return status.Error(codes.InvalidArgument, "request is nil")
@@ -238,6 +285,63 @@ func (s *service) GetAuthCookie(c echo.Context) (*contracts_cookies.GetAuthCooki
 		AuthCookie: &value,
 	}, nil
 }
+
+// SSO Cookie
+func (s *service) validateSetSSOCookieRequest(request *contracts_cookies.SetSSOCookieRequest) error {
+	if request == nil {
+		return status.Error(codes.InvalidArgument, "request is nil")
+	}
+	if request.SSOCookie == nil {
+		return status.Error(codes.InvalidArgument, "request.SSOCookie is nil")
+	}
+	if request.SSOCookie.Subject == "" {
+		return status.Error(codes.InvalidArgument, "request.SSOCookie.Subject is empty")
+	}
+	return nil
+}
+
+func (s *service) SetSSOCookie(c echo.Context, request *contracts_cookies.SetSSOCookieRequest) error {
+	err := s.validateSetSSOCookieRequest(request)
+	if err != nil {
+		return err
+	}
+	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
+		Name: contracts_cookies.CookieNameSSO,
+	}
+	// Set expiration based on SSO config (convert minutes to seconds)
+	if s.mainConfig.SSOConfig != nil && s.mainConfig.SSOConfig.MaxDurationMinutes > 0 {
+		maxAgeSeconds := s.mainConfig.SSOConfig.MaxDurationMinutes * 60
+		setCookieRequest.MaxAge = maxAgeSeconds
+	}
+	if s.config.DisableSecureCookies {
+		setCookieRequest.HttpOnly = true
+		setCookieRequest.SameSite = 0
+		setCookieRequest.Secure = tPtr(false)
+	}
+	return SetCookieByRequest(c, s.cookieConfig, s.secureCookies, setCookieRequest,
+		request.SSOCookie)
+}
+
+func (s *service) DeleteSSOCookie(c echo.Context) {
+	s.secureCookies.DeleteCookie(c,
+		&fluffycore_contracts_cookies.DeleteCookieRequest{
+			Name:   contracts_cookies.CookieNameSSO,
+			Path:   "/",
+			Domain: s.cookieConfig.Domain,
+		})
+}
+
+func (s *service) GetSSOCookie(c echo.Context) (*contracts_cookies.GetSSOCookieResponse, error) {
+	var value contracts_cookies.SSOCookie
+	err := GetCookie(c, s.secureCookies, contracts_cookies.CookieNameSSO, &value)
+	if err != nil {
+		return nil, err
+	}
+	return &contracts_cookies.GetSSOCookieResponse{
+		SSOCookie: &value,
+	}, nil
+}
+
 func (s *service) SetInsecureCookie(c echo.Context, name string, value interface{}) error {
 
 	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{

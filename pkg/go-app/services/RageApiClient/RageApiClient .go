@@ -168,6 +168,16 @@ func (s *service) VerifyCode(ctx context.Context, request *models_api_login_mode
 		})
 }
 
+func (s *service) KeepSignedIn(ctx context.Context, request *models_api_login_models.KeepSignedInRequest) (*common.WrappedResonseT[models_api_login_models.KeepSignedInResponse], error) {
+	return common.HTTPFetchWrappedResponseT[models_api_login_models.KeepSignedInResponse](ctx,
+		&common.CallInput{
+			Method:        "POST",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_KeepSignedIn),
+			Data:          request,
+			CustomHeaders: common.BuildCustomHeaders(),
+		})
+}
+
 func (s *service) StartExternalLogin(ctx context.Context, request *models_api_external_idp.StartExternalIDPLoginRequest) (*common.WrappedResonseT[models_api_external_idp.StartExternalIDPLoginResponse], error) {
 	return common.HTTPFetchWrappedResponseT[models_api_external_idp.StartExternalIDPLoginResponse](ctx,
 		&common.CallInput{

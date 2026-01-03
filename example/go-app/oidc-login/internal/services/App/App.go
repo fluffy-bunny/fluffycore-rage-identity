@@ -25,6 +25,7 @@ type (
 		forgotPasswordComposer contracts_App.IForgotPasswordComposer
 		resetPasswordComposer  contracts_App.IResetPasswordComposer
 		verifyCodeComposer     contracts_App.IVerifyCodeComposer
+		keepSignedInComposer   contracts_App.IKeepSignedInComposer
 
 		currentPage      contracts_routes.WellknownRoute
 		showCookieBanner bool
@@ -49,6 +50,7 @@ func (s *service) Ctor(
 	forgotPasswordComposer contracts_App.IForgotPasswordComposer,
 	resetPasswordComposer contracts_App.IResetPasswordComposer,
 	verifyCodeComposer contracts_App.IVerifyCodeComposer,
+	keepSignedInComposer contracts_App.IKeepSignedInComposer,
 ) (contracts_App.IApp, error) {
 
 	return &service{
@@ -65,6 +67,7 @@ func (s *service) Ctor(
 		forgotPasswordComposer: forgotPasswordComposer,
 		verifyCodeComposer:     verifyCodeComposer,
 		resetPasswordComposer:  resetPasswordComposer,
+		keepSignedInComposer:   keepSignedInComposer,
 	}, nil
 }
 

@@ -11,6 +11,7 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/contracts/config"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/utils"
 	contracts_OIDCFlowAppConfig "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/OIDCFlowAppConfig"
+	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	fluffycore_go_app_fetch "github.com/fluffy-bunny/fluffycore/go-app/fetch"
 	fluffycore_go_app_js_loader "github.com/fluffy-bunny/fluffycore/go-app/js_loader"
@@ -124,7 +125,7 @@ func (s *service) GetOIDCFlowAppConfig(ctx context.Context) (*contracts_OIDCFlow
 
 // GetAuthorizationStateCookie reads the _authorization_state cookie and extracts the state value
 func (s *service) GetAuthorizationStateCookie(ctx context.Context) (*contracts_config.AuthorizationStateCookie, error) {
-	cookie, err := utils.GetCookie[contracts_config.AuthorizationStateCookie]("_authorization_state")
+	cookie, err := utils.GetCookie[contracts_config.AuthorizationStateCookie](contracts_cookies.CookieNameAuthorizationState)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "authorization state cookie not found")
 	}
@@ -139,7 +140,7 @@ func (s *service) SetAuthorizationStateCookie(ctx context.Context, authStateCook
 		MaxAge:   3600,
 		SameSite: "Lax",
 	}
-	err := utils.SetCookie("_authorization_state", *authStateCookie, opts)
+	err := utils.SetCookie(contracts_cookies.CookieNameAuthorizationState, *authStateCookie, opts)
 	if err != nil {
 		return fmt.Errorf("failed to set authorization state cookie: %w", err)
 	}
