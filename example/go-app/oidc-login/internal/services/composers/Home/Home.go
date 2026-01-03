@@ -5,6 +5,7 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/common"
+	oidc_login_contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/contracts/config"
 	contracts_App "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/contracts/App"
 	contracts_Localizer "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/contracts/Localizer"
 	contracts_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/contracts/LocalizerBundle"
@@ -37,6 +38,7 @@ type (
 		rageApiCliient    contracts_go_app_RageApiClient.IRageApiClient
 		appConfigAccessor contracts_config.IAppConfigAccessor
 		oidcFlowConfig    *contracts_OIDCFlowAppConfig.OIDCFlowAppConfig
+		appConfig         *oidc_login_contracts_config.AppConfig
 	}
 )
 
@@ -131,7 +133,17 @@ func (s *service) checkAndDisplayErrorCookie(ctx app.Context) {
 		s.showErrorMessage(ctx, msg)
 
 		// Delete the error cookie after reading it
-		utils.DeleteCookie("_error", utils.CookieOptions{Path: "/"})
+		// Use the cookie domain from the OIDC config if available
+		cookieDomain := ""
+		if s.appConfig != nil && s.appConfig.CookieDomain != "" {
+			cookieDomain = s.appConfig.CookieDomain
+			log.Info().Str("cookieDomain", cookieDomain).Msg("Using cookie domain from config")
+		}
+
+		utils.DeleteCookie("_error", utils.CookieOptions{
+			Path:   "/",
+			Domain: cookieDomain,
+		})
 	}
 }
 

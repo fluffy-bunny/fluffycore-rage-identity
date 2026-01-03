@@ -283,6 +283,88 @@ func (b *BaseHandler) GetIDPs(ctx context.Context) ([]*proto_oidc_models.IDP, er
 	}
 	return listIDPResponse.IDPs, nil
 }
+
+type ProcessFinalAuthenticationStateRequest struct {
+	AuthorizationRequest *proto_oidc_models.AuthorizationRequest
+	Identity             *proto_oidc_models.OIDCIdentity
+	RootPath             string
+}
+
+type ProcessFinalAuthenticationStateResponse struct {
+	RedirectURI string
+}
+
+// ProcessFinalAuthenticationState handles the final state after successful authentication
+func (b *BaseHandler) ProcessFinalAuthenticationState(
+	ctx context.Context,
+	c echo.Context,
+	request *ProcessFinalAuthenticationStateRequest,
+) (*ProcessFinalAuthenticationStateResponse, error) {
+	// Set the auth cookie
+	err := b.WellknownCookies().SetAuthCookie(c,
+		&contracts_cookies.SetAuthCookieRequest{
+			AuthCookie: &contracts_cookies.AuthCookie{
+				Identity: &proto_oidc_models.Identity{
+					Subject:       request.Identity.Subject,
+					Email:         request.Identity.Email,
+					EmailVerified: request.Identity.EmailVerified,
+				},
+			},
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	// Get the authorization request state
+	getAuthorizationRequestStateResponse, err := b.AuthorizationRequestStateStore().
+		GetAuthorizationRequestState(ctx,
+			&proto_oidc_flows.GetAuthorizationRequestStateRequest{
+				State: request.AuthorizationRequest.State,
+			})
+	if err != nil {
+		return nil, err
+	}
+
+	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
+	authorizationFinal.Identity = request.Identity
+
+	// Store the authorization request state with the code
+	_, err = b.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx,
+		&proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+			State:                     authorizationFinal.Request.Code,
+			AuthorizationRequestState: authorizationFinal,
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	// Delete the old state
+	b.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx,
+		&proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
+			State: request.AuthorizationRequest.State,
+		})
+
+	// Store with the state key
+	_, err = b.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx,
+		&proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+			State:                     request.AuthorizationRequest.State,
+			AuthorizationRequestState: authorizationFinal,
+		})
+	if err != nil {
+		return nil, err
+	}
+
+	// Build the redirect URI
+	redirectUri := authorizationFinal.Request.RedirectUri +
+		"?code=" + authorizationFinal.Request.Code +
+		"&state=" + authorizationFinal.Request.State +
+		"&iss=" + request.RootPath
+
+	return &ProcessFinalAuthenticationStateResponse{
+		RedirectURI: redirectUri,
+	}, nil
+}
+
 func (b *BaseHandler) TeleportBackToLoginWithError(c echo.Context, code, msg string) error {
 	formParams := []models.FormParam{
 		{

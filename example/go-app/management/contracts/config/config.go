@@ -14,5 +14,6 @@ type (
 		BannerBranding           BannerBranding `json:"bannerBranding,omitempty"`
 		EnabledWebAuthN          bool           `json:"enabledWebAuthN,omitempty"`
 		EnabledTotp              bool           `json:"enabledTotp,omitempty"`
+		CookieDomain             string         `json:"cookieDomain,omitempty"`
 	}
 )

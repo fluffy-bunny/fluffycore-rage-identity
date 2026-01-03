@@ -15,7 +15,6 @@ import (
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
-	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -264,55 +263,6 @@ func (s *service) Do(c echo.Context) error {
 		}
 		return c.JSONPretty(http.StatusOK, response, "  ")
 	}
-	// we can process the final state now
-	err = s.WellknownCookies().SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
-		AuthCookie: &contracts_cookies.AuthCookie{
-			Identity: &proto_oidc_models.Identity{
-				Subject:       user.RootIdentity.Subject,
-				Email:         user.RootIdentity.Email,
-				EmailVerified: user.RootIdentity.EmailVerified,
-			},
-		},
-	})
-	if err != nil {
-		log.Error().Err(err).Msg("SetAuthCookie")
-		response := &login_models.LoginPasswordErrorResponse{
-			Email:  model.Email,
-			Reason: InternalError_LoginPassword_005,
-		}
-		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
-	}
-	getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().
-		GetAuthorizationRequestState(ctx,
-			&proto_oidc_flows.GetAuthorizationRequestStateRequest{
-				State: authorizationRequest.State,
-			})
-	if err != nil {
-		log.Error().Err(err).Msg("GetAuthorizationRequestState")
-		response := &login_models.LoginPasswordErrorResponse{
-			Email:  model.Email,
-			Reason: InternalError_LoginPassword_006,
-		}
-		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
-	}
-	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
-	authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
-		Subject: user.RootIdentity.Subject,
-		Email:   user.RootIdentity.Email,
-		IdpSlug: models.RootIdp,
-		Acr: []string{
-			models.ACRPassword,
-			models.ACRIdpRoot,
-		},
-		Amr: []string{
-			models.AMRPassword,
-			// always true, as we are the root idp
-			models.AMRIdp,
-		},
-	}
-	// "urn:rage:idp:google", "urn:rage:idp:spacex", "urn:rage:idp:github-enterprise", etc.
-	// "urn:rage:password", "urn:rage:2fa", "urn:rage:email", etc.
-
 	// Update root identity LastUsedOn timestamp
 	_, err = s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
 		User: &proto_oidc_models.RageUserUpdate{
@@ -327,46 +277,41 @@ func (s *service) Do(c echo.Context) error {
 		// Don't fail login, just log the error
 	}
 
-	// we are done with the state now.  Lets map it to the code so it can be looked up by the client.
-	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx,
-		&proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-			State:                     authorizationFinal.Request.Code,
-			AuthorizationRequestState: authorizationFinal,
+	// Process the final authentication state
+	finalStateResponse, err := s.ProcessFinalAuthenticationState(ctx, c,
+		&services_echo_handlers_base.ProcessFinalAuthenticationStateRequest{
+			AuthorizationRequest: authorizationRequest,
+			Identity: &proto_oidc_models.OIDCIdentity{
+				Subject:       user.RootIdentity.Subject,
+				Email:         user.RootIdentity.Email,
+				EmailVerified: user.RootIdentity.EmailVerified,
+				IdpSlug:       models.RootIdp,
+				Acr: []string{
+					models.ACRPassword,
+					models.ACRIdpRoot,
+				},
+				Amr: []string{
+					models.AMRPassword,
+					// always true, as we are the root idp
+					models.AMRIdp,
+				},
+			},
+			RootPath: rootPath,
 		})
 	if err != nil {
-		log.Warn().Err(err).Msg("StoreAuthorizationRequestState")
+		log.Error().Err(err).Msg("ProcessFinalAuthenticationState")
 		response := &login_models.LoginPasswordErrorResponse{
 			Email:  model.Email,
-			Reason: InternalError_LoginPassword_007,
+			Reason: InternalError_LoginPassword_005,
 		}
 		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
 	}
-	s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
-		State: authorizationRequest.State,
-	})
-	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-		State:                     authorizationRequest.State,
-		AuthorizationRequestState: authorizationFinal,
-	})
-	if err != nil {
-		// redirect to error page
-		log.Error().Err(err).Msg("StoreAuthorizationRequestState")
-		response := &login_models.LoginPasswordErrorResponse{
-			Email:  model.Email,
-			Reason: InternalError_LoginPassword_008,
-		}
-		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
-	}
-	// redirect to the client with the code.
-	redirectUri := authorizationFinal.Request.RedirectUri +
-		"?code=" + authorizationFinal.Request.Code +
-		"&state=" + authorizationFinal.Request.State +
-		"&iss=" + rootPath
+
 	response := &login_models.LoginPasswordResponse{
 		Email:     model.Email,
 		Directive: login_models.DIRECTIVE_Redirect,
 		DirectiveRedirect: &login_models.DirectiveRedirect{
-			RedirectURI: redirectUri,
+			RedirectURI: finalStateResponse.RedirectURI,
 		},
 	}
 

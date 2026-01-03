@@ -35,4 +35,7 @@ type (
 	IVerifyCodeComposer interface {
 		contracts_GoApp.IBaseComposer
 	}
+	IKeepSignedInComposer interface {
+		contracts_GoApp.IBaseComposer
+	}
 )
