@@ -31,10 +31,9 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
-		config           *contracts_config.Config
-		wellknownCookies contracts_cookies.IWellknownCookies
-		passwordHasher   contracts_identity.IPasswordHasher
-		oidcSession      contracts_oidc_session.IOIDCSession
+		config         *contracts_config.Config
+		passwordHasher contracts_identity.IPasswordHasher
+		oidcSession    contracts_oidc_session.IOIDCSession
 	}
 )
 
@@ -45,16 +44,14 @@ var _ contracts_handler.IHandler = stemService
 func (s *service) Ctor(
 	config *contracts_config.Config,
 	container di.Container,
-	wellknownCookies contracts_cookies.IWellknownCookies,
 	passwordHasher contracts_identity.IPasswordHasher,
 	oidcSession contracts_oidc_session.IOIDCSession,
 ) (*service, error) {
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
-		config:           config,
-		passwordHasher:   passwordHasher,
-		wellknownCookies: wellknownCookies,
-		oidcSession:      oidcSession,
+		BaseHandler:    services_echo_handlers_base.NewBaseHandler(container, config),
+		config:         config,
+		passwordHasher: passwordHasher,
+		oidcSession:    oidcSession,
 	}, nil
 }
 
@@ -192,7 +189,7 @@ func (s *service) Do(c echo.Context) error {
 		if s.config.SystemConfig.DeveloperMode {
 			plainCode = codeResult.PlainCode
 		}
-		err = s.wellknownCookies.SetVerificationCodeCookie(c,
+		err = s.WellknownCookies().SetVerificationCodeCookie(c,
 			&contracts_cookies.SetVerificationCodeCookieRequest{
 				VerificationCode: &contracts_cookies.VerificationCode{
 					Email:             model.Email,
@@ -268,7 +265,7 @@ func (s *service) Do(c echo.Context) error {
 		return c.JSONPretty(http.StatusOK, response, "  ")
 	}
 	// we can process the final state now
-	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
+	err = s.WellknownCookies().SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
 		AuthCookie: &contracts_cookies.AuthCookie{
 			Identity: &proto_oidc_models.Identity{
 				Subject:       user.RootIdentity.Subject,
