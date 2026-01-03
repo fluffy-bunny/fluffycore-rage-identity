@@ -40,6 +40,7 @@ import (
 	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/tokenservice"
 	rage_runtime "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/runtime"
 	services_ScopedMemoryCache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/ScopedMemoryCache"
+	services_cookies_WellknownCookieNames "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/cookies/WellknownCookieNames"
 	services_handlers_cache_busting_static_html "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/cache_busting_static_html"
 	services_session_with_options "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/session_with_options"
 	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
@@ -105,6 +106,7 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 	}
 	log.Info().Interface("config", dst).Msg("config")
 	config := s.configOptions.Destination.(*contracts_config.Config)
+
 	config.DDProfilerConfig.ApplicationEnvironment = config.ApplicationEnvironment
 	config.DDProfilerConfig.ServiceName = config.ApplicationName
 	config.DDProfilerConfig.Version = example_version.Version()
@@ -135,6 +137,14 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	// it allows you to swap out external services like the user store
 	rootContainer := s.RootContainer
 	log.Info().Msg("MyConfigServices")
+
+	sb := di.Builder()
+	services_cookies_WellknownCookieNames.AddSingletonIWellknownCookieNames(sb,
+		&contracts_cookies.WellknownCookieNamesConfig{
+			CookiePrefix: config.Echo.CookiePrefix,
+		})
+	scnt := sb.Build()
+	wellknownCookieNames := di.Get[contracts_cookies.IWellknownCookieNames](scnt)
 
 	di.AddInstance[*rage_contracts_config.Config](builder, config)
 
@@ -175,6 +185,14 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	} else {
 		s.config.ManagementAppConfig.EnabledWebAuthN = false
 		s.config.OIDCLoginAppConfig.EnabledWebAuthN = false
+	}
+
+	// Set WellknownCookieNamesConfig for both app configs
+	s.config.ManagementAppConfig.WellknownCookieNamesConfig = &contracts_cookies.WellknownCookieNamesConfig{
+		CookiePrefix: config.Echo.CookiePrefix,
+	}
+	s.config.OIDCLoginAppConfig.WellknownCookieNamesConfig = &contracts_cookies.WellknownCookieNamesConfig{
+		CookiePrefix: config.Echo.CookiePrefix,
 	}
 
 	guid := xid.New().String()
@@ -305,7 +323,7 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	fluffycore_echo_services_sessions_session_factory.AddScopedSessionFactory(builder)
 	services_session_with_options.AddScopedISessionWithOptions(builder,
 		&contracts_session_with_options.SessionWithOptions{
-			Name: contracts_cookies.CookieNameAccountManagementSession,
+			Name: wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_AccountManagementSession),
 		})
 
 	services_ScopedMemoryCache.AddScopedIScopedMemoryCache(builder)

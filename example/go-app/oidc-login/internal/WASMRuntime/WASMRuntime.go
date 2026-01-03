@@ -22,6 +22,7 @@ import (
 	services_i18n_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/i18n/LocalizerBundle"
 	services_logging "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/logging"
 	services_go_app_RageApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/services/RageApiClient"
+	services_WellknownCookieNames "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/services/WellknownCookieNames"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
 	zerolog "github.com/rs/zerolog"
 )
@@ -44,6 +45,7 @@ func RegisterServices(ctx context.Context, cb di.ContainerBuilder) {
 	services_composers_VerifyCode.AddScopedIVerifyCodeComposer(cb)
 	services_composers_KeepSignedIn.AddScopedIKeepSignedInComposer(cb)
 	services_go_app_RageApiClient.AddScopedIRageApiClient(cb)
+	services_WellknownCookieNames.AddSingletonIWellknownCookieNames(cb)
 
 	var appContext contracts_App.AppContext = ctx
 	di.AddInstance[contracts_App.AppContext](cb, appContext)

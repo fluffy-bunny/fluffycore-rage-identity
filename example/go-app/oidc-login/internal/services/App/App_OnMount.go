@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	contracts_routes "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/contracts/routes"
+	services_WellknownCookieNames "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/services/WellknownCookieNames"
 	models_api_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
 	zerolog "github.com/rs/zerolog"
@@ -20,6 +21,10 @@ func (s *service) OnMount(ctx app.Context) {
 
 	s.fetchOIDCFlowAppConfig(ctx)
 	s.fetchManifest(ctx)
+
+	appConfig := s.appConfigAccessor.GetAppConfig(s.AppContext)
+	services_WellknownCookieNames.WellknownCookieNamesConfig = appConfig.WellknownCookieNamesConfig
+
 }
 
 func (s *service) fetchOIDCFlowAppConfig(ctx app.Context) {

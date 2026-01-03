@@ -89,7 +89,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 func (s *service) newSession() (contracts_sessions.ISession, error) {
 	session, err := s.SessionFactory().
-		GetCookieSession(contracts_cookies.CookieNameOIDCSession)
+		GetCookieSession(s.WellknownCookieNames().GetCookieName(contracts_cookies.CookieName_OIDCSession))
 	if err != nil {
 		return nil, err
 	}
@@ -230,7 +230,8 @@ func (s *service) Do(c echo.Context) error {
 		State string `json:"state"`
 	}
 	// we let the client know the state so that it can use it to store semi static data against it.
-	err = s.wellknownCookies.SetInsecureCookie(c, contracts_cookies.CookieNameAuthorizationState,
+	err = s.wellknownCookies.SetInsecureCookie(c,
+		s.WellknownCookieNames().GetCookieName(contracts_cookies.CookieName_AuthorizationState),
 		&authorizationStateContainer{
 			State: model.State,
 		})

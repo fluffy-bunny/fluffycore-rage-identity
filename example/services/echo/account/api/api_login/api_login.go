@@ -15,7 +15,7 @@ import (
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_session_with_options "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/session_with_options"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
-	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
+	login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -29,7 +29,8 @@ type (
 		*services_echo_handlers_base.BaseHandler
 		config           *contracts_config.Config
 		wellknownCookies contracts_cookies.IWellknownCookies
-		session          contracts_session_with_options.ISessionWithOptions
+
+		session contracts_session_with_options.ISessionWithOptions
 	}
 )
 
@@ -132,9 +133,11 @@ func (s *service) Do(c echo.Context) error {
 	}
 
 	// Store the LoginRequest in a cookie for the callback
-	err = s.wellknownCookies.SetInsecureCookie(c, contracts_cookies.LoginRequest, &models.LoginGetRequest{
-		ReturnUrl: loginRequest.ReturnUrl,
-	})
+	err = s.wellknownCookies.SetInsecureCookie(c,
+		s.WellknownCookieNames().GetCookieName(contracts_cookies.CookieName_LoginRequest),
+		&models.LoginGetRequest{
+			ReturnUrl: loginRequest.ReturnUrl,
+		})
 	if err != nil {
 		log.Error().Err(err).Msg("SetInsecureCookie LoginRequest")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")

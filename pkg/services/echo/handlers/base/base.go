@@ -42,6 +42,7 @@ type (
 		SessionFactory                 func() contracts_sessions.ISessionFactory
 		OIDCSession                    func() contracts_oidc_session.IOIDCSession
 		WellknownCookies               func() contracts_cookies.IWellknownCookies
+		WellknownCookieNames           func() contracts_cookies.IWellknownCookieNames
 
 		localizer                      contracts_localizer.ILocalizer
 		claimsPrincipal                fluffycore_contracts_common.IClaimsPrincipal
@@ -54,6 +55,7 @@ type (
 		sessionFactory                 contracts_sessions.ISessionFactory
 		oidcSession                    contracts_oidc_session.IOIDCSession
 		wellknownCookies               contracts_cookies.IWellknownCookies
+		wellknownCookieNames           contracts_cookies.IWellknownCookieNames
 
 		config *contracts_config.Config
 	}
@@ -73,6 +75,8 @@ func NewBaseHandler(container di.Container, config *contracts_config.Config) *Ba
 	obj.SessionFactory = obj.getSessionFactory
 	obj.OIDCSession = obj.getOIDCSession
 	obj.WellknownCookies = obj.getWellknownCookies
+	obj.WellknownCookieNames = obj.getWellknownCookieNames
+
 	return obj
 
 }
@@ -139,6 +143,12 @@ func (b *BaseHandler) getWellknownCookies() contracts_cookies.IWellknownCookies 
 		b.wellknownCookies = di.Get[contracts_cookies.IWellknownCookies](b.Container)
 	}
 	return b.wellknownCookies
+}
+func (b *BaseHandler) getWellknownCookieNames() contracts_cookies.IWellknownCookieNames {
+	if b.wellknownCookieNames == nil {
+		b.wellknownCookieNames = di.Get[contracts_cookies.IWellknownCookieNames](b.Container)
+	}
+	return b.wellknownCookieNames
 }
 func (b *BaseHandler) getSession() (contracts_sessions.ISession, error) {
 	session, err := b.getOIDCSession().GetSession()

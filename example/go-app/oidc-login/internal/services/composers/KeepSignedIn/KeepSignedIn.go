@@ -80,7 +80,7 @@ func (s *service) Render() app.UI {
 						OnChange(func(ctx app.Context, e app.Event) {
 							s.keepSignedIn = ctx.JSSrc().Get("checked").Bool()
 						}),
-					app.Span().Text(s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyKeepMeSignedInCheckbox)),
+					app.Span().Text(" "+s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyKeepMeSignedInCheckbox)),
 				),
 			),
 

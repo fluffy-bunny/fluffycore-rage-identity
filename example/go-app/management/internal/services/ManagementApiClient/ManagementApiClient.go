@@ -21,6 +21,7 @@ type (
 	service struct {
 		managementClientConfigAccessor contracts_go_app_ManagementApiClient.IManagementClientConfigAccessor
 		rageApiClient                  contracts_go_app_RageApiClient.IRageApiClient
+		wellknownCookieNames           contracts_cookies.IWellknownCookieNames
 	}
 )
 
@@ -31,10 +32,12 @@ var _ contracts_go_app_ManagementApiClient.IManagementApiClient = stemService
 func (s *service) Ctor(
 	managementClientConfigAccessor contracts_go_app_ManagementApiClient.IManagementClientConfigAccessor,
 	rageApiClient contracts_go_app_RageApiClient.IRageApiClient,
+	wellknownCookieNames contracts_cookies.IWellknownCookieNames,
 ) (contracts_go_app_ManagementApiClient.IManagementApiClient, error) {
 	return &service{
 		managementClientConfigAccessor: managementClientConfigAccessor,
 		rageApiClient:                  rageApiClient,
+		wellknownCookieNames:           wellknownCookieNames,
 	}, nil
 }
 
@@ -43,8 +46,10 @@ func AddScopedIManagementApiClient(cb di.ContainerBuilder) {
 }
 
 // getCSRFToken retrieves the CSRF token from the _csrf cookie
-func getCSRFToken() string {
-	csrfToken, err := fluffycore_go_app_cookies.GetCookie[string](contracts_cookies.CookieNameCSRF)
+func (s *service) getCSRFToken() string {
+
+	ccCSRF := s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_CSRF)
+	csrfToken, err := fluffycore_go_app_cookies.GetCookie[string](ccCSRF)
 	if err != nil {
 		return ""
 	}
@@ -52,8 +57,8 @@ func getCSRFToken() string {
 }
 
 // buildCustomHeaders creates custom headers map with CSRF token if it exists
-func buildCustomHeaders() map[string]string {
-	csrfToken := getCSRFToken()
+func (s *service) buildCustomHeaders() map[string]string {
+	csrfToken := s.getCSRFToken()
 	if csrfToken != "" {
 		return map[string]string{
 			"X-Csrf-Token": csrfToken,
@@ -76,7 +81,7 @@ func (s *service) Login(ctx context.Context, request *models_api_login_models.Lo
 			Method:        "POST",
 			Url:           s.fixupApiPath(ctx, wellknown_echo.API_Login),
 			Data:          request,
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: s.buildCustomHeaders(),
 		})
 }
 
@@ -86,7 +91,7 @@ func (s *service) Logout(ctx context.Context, request *models_api_login_models.L
 			Method:        "POST",
 			Url:           s.fixupApiPath(ctx, wellknown_echo.API_Logout),
 			Data:          request,
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: s.buildCustomHeaders(),
 		})
 }
 
@@ -96,7 +101,7 @@ func (s *service) PasswordResetStart(ctx context.Context, request *models_api_lo
 			Method:        "POST",
 			Url:           s.fixupApiPath(ctx, wellknown_echo.API_PasswordResetStart),
 			Data:          request,
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: s.buildCustomHeaders(),
 		})
 }
 
@@ -106,7 +111,7 @@ func (s *service) PasswordResetFinish(ctx context.Context, request *models_api_l
 			Method:        "POST",
 			Url:           s.fixupApiPath(ctx, wellknown_echo.API_PasswordResetFinish),
 			Data:          request,
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: s.buildCustomHeaders(),
 		})
 }
 
@@ -116,7 +121,7 @@ func (s *service) VerifyCode(ctx context.Context, request *models_api_login_mode
 			Method:        "POST",
 			Url:           s.fixupApiPath(ctx, wellknown_echo.API_VerifyCode),
 			Data:          request,
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: s.buildCustomHeaders(),
 		})
 }
 
@@ -126,7 +131,7 @@ func (s *service) GetUserProfile(ctx context.Context) (*common.WrappedResonseT[m
 		&common.CallInput{
 			Method:        "GET",
 			Url:           s.fixupApiPath(ctx, wellknown_echo.API_UserProfilePath),
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: s.buildCustomHeaders(),
 		})
 }
 
@@ -137,7 +142,7 @@ func (s *service) UpdateUserProfile(ctx context.Context, profile *models_api_pro
 			Method:        "POST",
 			Url:           s.fixupApiPath(ctx, wellknown_echo.API_UserProfilePath),
 			Data:          profile,
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: s.buildCustomHeaders(),
 		})
 }
 
@@ -147,7 +152,7 @@ func (s *service) GetUserLinkedAccounts(ctx context.Context) (*common.WrappedRes
 		&common.CallInput{
 			Method:        "GET",
 			Url:           s.fixupApiPath(ctx, "/api/linked-accounts"),
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: s.buildCustomHeaders(),
 		})
 }
 
@@ -157,7 +162,7 @@ func (s *service) DeleteUserLinkedAccount(ctx context.Context, identity string) 
 		&common.CallInput{
 			Method:        "DELETE",
 			Url:           s.fixupApiPath(ctx, "/api/linked-accounts") + "?identity=" + identity,
-			CustomHeaders: buildCustomHeaders(),
+			CustomHeaders: s.buildCustomHeaders(),
 		})
 }
 

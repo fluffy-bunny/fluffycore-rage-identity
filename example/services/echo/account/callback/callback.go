@@ -81,7 +81,8 @@ func (s *service) Do(c echo.Context) error {
 	}
 	log.Debug().Interface("model", model).Msg("model")
 
-	mm, err := s.wellknownCookies.GetInsecureCookie(c, contracts_cookies.LoginRequest)
+	mm, err := s.wellknownCookies.GetInsecureCookie(c,
+		s.WellknownCookieNames().GetCookieName(contracts_cookies.CookieName_LoginRequest))
 	if err != nil {
 		log.Error().Err(err).Msg("LoginRequest cookie not found")
 		return c.Redirect(http.StatusFound, "/error")

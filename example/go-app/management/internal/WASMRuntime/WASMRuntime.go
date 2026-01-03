@@ -22,6 +22,7 @@ import (
 	services_i18n_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/i18n/LocalizerBundle"
 	services_logging "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/logging"
 	services_go_app_RageApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/services/RageApiClient"
+	services_WellknownCookieNames "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/services/WellknownCookieNames"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
 	zerolog "github.com/rs/zerolog"
 )
@@ -49,6 +50,8 @@ func RegisterServices(ctx context.Context, cb di.ContainerBuilder) {
 	services_go_app_ManagementApiClient.AddScopedIManagementApiClient(cb)
 	var appContext contracts_App.AppContext = ctx
 	di.AddInstance[contracts_App.AppContext](cb, appContext)
+	// when we load the wasm make sure we set the WellknownCookieNamesConfig as a global
+	services_WellknownCookieNames.AddSingletonIWellknownCookieNames(cb)
 }
 
 var diContainer di.Container

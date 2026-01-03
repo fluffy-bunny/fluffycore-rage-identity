@@ -9,7 +9,8 @@ import (
 
 type (
 	service struct {
-		factory contracts_sessions.ISessionFactory
+		factory              contracts_sessions.ISessionFactory
+		wellknownCookieNames contracts_cookies.IWellknownCookieNames
 	}
 )
 
@@ -19,9 +20,11 @@ var _ contracts_oidc_session.IOIDCSession = stemService
 
 func (s *service) Ctor(
 	factory contracts_sessions.ISessionFactory,
+	wellknownCookieNames contracts_cookies.IWellknownCookieNames,
 ) (contracts_oidc_session.IOIDCSession, error) {
 	return &service{
-		factory: factory,
+		factory:              factory,
+		wellknownCookieNames: wellknownCookieNames,
 	}, nil
 }
 
@@ -29,7 +32,7 @@ func AddScopedIOIDCSession(cb di.ContainerBuilder) {
 	di.AddScoped[contracts_oidc_session.IOIDCSession](cb, stemService.Ctor)
 }
 func (s *service) GetSession() (contracts_sessions.ISession, error) {
-	session, err := s.factory.GetCookieSession(contracts_cookies.CookieNameOIDCSession)
+	session, err := s.factory.GetCookieSession(s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_OIDCSession))
 	if err != nil {
 		return nil, err
 	}

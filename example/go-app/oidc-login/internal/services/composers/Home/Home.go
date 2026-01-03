@@ -32,13 +32,14 @@ type (
 
 		isLoading bool
 
-		currentPage       string
-		errorMessage      string
-		showError         bool
-		rageApiCliient    contracts_go_app_RageApiClient.IRageApiClient
-		appConfigAccessor contracts_config.IAppConfigAccessor
-		oidcFlowConfig    *contracts_OIDCFlowAppConfig.OIDCFlowAppConfig
-		appConfig         *oidc_login_contracts_config.AppConfig
+		currentPage          string
+		errorMessage         string
+		showError            bool
+		rageApiCliient       contracts_go_app_RageApiClient.IRageApiClient
+		appConfigAccessor    contracts_config.IAppConfigAccessor
+		oidcFlowConfig       *contracts_OIDCFlowAppConfig.OIDCFlowAppConfig
+		appConfig            *oidc_login_contracts_config.AppConfig
+		wellknownCookieNames contracts_cookies.IWellknownCookieNames
 	}
 )
 
@@ -52,6 +53,7 @@ func (s *service) Ctor(
 	localizer contracts_Localizer.ILocalizer,
 	appConfigAccessor contracts_config.IAppConfigAccessor,
 	rageApiCliient contracts_go_app_RageApiClient.IRageApiClient,
+	wellknownCookieNames contracts_cookies.IWellknownCookieNames,
 
 ) (contracts_App.IHomeComposer, error) {
 
@@ -63,11 +65,12 @@ func (s *service) Ctor(
 			AppContext: appContext,
 			Localizer:  localizer,
 		},
-		email:        "",
-		emailError:   "",
-		currentPage:  "",
-		errorMessage: "",
-		showError:    false,
+		email:                "",
+		emailError:           "",
+		currentPage:          "",
+		errorMessage:         "",
+		showError:            false,
+		wellknownCookieNames: wellknownCookieNames,
 	}, nil
 }
 
@@ -106,8 +109,8 @@ func (s *service) checkAndDisplayErrorCookie(ctx app.Context) {
 	log := zerolog.Ctx(s.AppContext).With().Str("component", "HomeComposer").Logger()
 
 	// Check for error cookie (e.g., from OAuth2 callback redirects)
-
-	errorCookie, err := utils.GetCookie[contracts_cookies.ErrorCookie](contracts_cookies.CookieNameErrorName)
+	ccError := s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_Error)
+	errorCookie, err := utils.GetCookie[contracts_cookies.ErrorCookie](ccError)
 
 	log.Info().
 		Err(err).
@@ -139,11 +142,12 @@ func (s *service) checkAndDisplayErrorCookie(ctx app.Context) {
 			cookieDomain = s.appConfig.CookieDomain
 			log.Info().Str("cookieDomain", cookieDomain).Msg("Using cookie domain from config")
 		}
-
-		utils.DeleteCookie(contracts_cookies.CookieNameErrorName, utils.CookieOptions{
-			Path:   "/",
-			Domain: cookieDomain,
-		})
+		ccErrorName := s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_Error)
+		utils.DeleteCookie(ccErrorName,
+			utils.CookieOptions{
+				Path:   "/",
+				Domain: cookieDomain,
+			})
 	}
 }
 

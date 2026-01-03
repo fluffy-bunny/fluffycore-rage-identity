@@ -14,6 +14,26 @@ const (
 	VerifyCode_Challenge
 )
 
+type CookieName int
+
+const (
+	CookieName_VerificationCode CookieName = iota + 1
+	CookieName_PasswordReset
+	CookieName_AuthCompleted
+	CookieName_AccountState
+	CookieName_Auth
+	CookieName_SSO
+	CookieName_LoginRequest
+	CookieName_ExternalOauth2StateTemplate
+	CookieName_WebAuthN
+	CookieName_SigninUserName
+	CookieName_Error
+	CookieName_CSRF
+	CookieName_AuthorizationState
+	CookieName_AccountManagementSession
+	CookieName_OIDCSession
+)
+
 type (
 	SetExternalOauth2CookieRequest struct {
 		State               string                                 `json:"state"`
@@ -123,7 +143,17 @@ type (
 	GetErrorCookieResponse struct {
 		Value *ErrorCookie `json:"errorCookie"`
 	}
+	WellknownCookieNamesConfig struct {
+		CookiePrefix string `json:"cookiePrefix"`
+	}
+
+	IWellknownCookieNames interface {
+		// Cookie Name
+		//---------------------------------------------------------------------
+		GetCookieName(cookieName CookieName) string
+	}
 	IWellknownCookies interface {
+
 		// External OAuth2 Cookie
 		//---------------------------------------------------------------------
 		SetExternalOauth2Cookie(c echo.Context, request *SetExternalOauth2CookieRequest) error
@@ -181,9 +211,11 @@ type (
 		SetErrorCookie(c echo.Context, request *SetErrorCookieRequest) error
 		DeleteErrorCookie(c echo.Context)
 		GetErrorCookie(c echo.Context) (*GetErrorCookieResponse, error)
+		// Legacy string constants - deprecated, use CookieName enum with GetCookieName() instead
 	}
 )
 
+/*
 const (
 	CookieNameVerificationCode            = "_rage_verificationCode"
 	CookieNamePasswordReset               = "_rage_passwordReset"
@@ -201,3 +233,4 @@ const (
 	CookieNameAccountManagementSession    = "_rage_account_management_session"
 	CookieNameOIDCSession                 = "_rage_oidc_session"
 )
+*/

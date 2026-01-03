@@ -10,6 +10,7 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_OIDCFlowAppConfig "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/OIDCFlowAppConfig"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
+	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/eko_gocache"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
@@ -142,7 +143,10 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	services_emailrenderer.AddSingletonIEmailRenderer(builder)
 	fluffycore_echo_services_cookies_insecure.AddCookies(builder)
 	fluffycore_echo_services_cookies_secure.AddSecureCookies(builder, config.Echo.SecureCookies)
-	services_cookies.AddSingletonIWellknownCookies(builder)
+	services_cookies.AddSingletonIWellknownCookies(builder,
+		&cookies.WellknownCookieNamesConfig{
+			CookiePrefix: config.Echo.CookiePrefix,
+		})
 
 	services_selfoauth2provider.AddSingletonISelfOAuth2Provider(builder)
 	services_webauthn.AddSingletonIWebAuthN(builder)

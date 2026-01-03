@@ -65,6 +65,7 @@ type (
 		Port                 int                                                    `json:"port"`
 		SecureCookies        *fluffycore_echo_contracts_cookies.SecureCookiesConfig `json:"secureCookies"`
 		DisableSecureCookies bool                                                   `json:"disableSecureCookies"`
+		CookiePrefix         string                                                 `json:"cookiePrefix"`
 	}
 	PasswordConfig struct {
 		MinEntropyBits float64 `json:"minEntropyBits"`
@@ -335,7 +336,8 @@ const configDefaultJSONTemplate = `
         "secureCookies": {
             "hashKey": "7f6a8b9c0d1e2f3a4b5c6d7e8f9a0b1c",
             "blockKey": "1234567890abcdef1234567890abcdef"
-        }
+        },
+		"cookiePrefix": "_fbrid"
     },
     "echoOIDCUI": {
         "port": 0,
