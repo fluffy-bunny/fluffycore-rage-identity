@@ -91,48 +91,23 @@ func (s *service) doGet(c echo.Context) error {
 		log.Error().Msg("rootIdentity is nil")
 		return c.Redirect(http.StatusFound, "/error")
 	}
-
-	// Try to get auth from SSO cookie first, then fall back to Auth cookie
-	var subject string
-	getSSOCookieResponse, err := s.WellknownCookies().GetSSOCookie(c)
-	if err == nil && getSSOCookieResponse.SSOCookie != nil {
-		subject = rootIdentity.Subject
-	} else {
-		// Fall back to Auth cookie
-		getAuthCookieResponse, err := s.WellknownCookies().GetAuthCookie(c)
-		if err != nil {
-			log.Error().Err(err).Msg("GetAuthCookie")
-			return c.JSON(http.StatusInternalServerError, map[string]string{
-				"error": "Failed to get authentication",
-			})
-		}
-
-		if getAuthCookieResponse.AuthCookie == nil || getAuthCookieResponse.AuthCookie.Identity == nil {
-			log.Error().Msg("No auth cookie or identity found")
-			return c.JSON(http.StatusUnauthorized, map[string]string{
-				"error": "Not authenticated",
-			})
-		}
-
-		subject = getAuthCookieResponse.AuthCookie.Identity.Subject
-	}
-
-	// Check if preference cookie exists
-	getKeepSigninPreferencesCookieResponse, err := s.WellknownCookies().GetKeepSigninPreferencesCookie(c, &contracts_cookies.GetKeepSigninPreferencesCookieRequest{
-		Subject: subject,
-	})
-	if err != nil {
-		log.Error().Err(err).Msg("GetKeepSigninPreferencesCookie")
-		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "Failed to check preference",
-		})
-	}
-
-	hasPreference := getKeepSigninPreferencesCookieResponse != nil &&
-		getKeepSigninPreferencesCookieResponse.KeepSigninPreferencesCookie != nil
+	subject := rootIdentity.Subject
 
 	response := &models_api_preferences.GetKeepSignedInPreferenceResponse{
-		HasPreference: hasPreference,
+		DoNotShowAgain: false,
+		KeepSignedIn:   false,
+	}
+	// Check if preference cookie exists
+	getKeepSigninPreferencesCookieResponse, err := s.WellknownCookies().
+		GetKeepSigninPreferencesCookie(c,
+			&contracts_cookies.GetKeepSigninPreferencesCookieRequest{
+				Subject: subject,
+			})
+	if err == nil {
+		if getKeepSigninPreferencesCookieResponse != nil {
+			response.DoNotShowAgain = getKeepSigninPreferencesCookieResponse.KeepSigninPreferencesCookie.DoNotAskAgain
+			response.KeepSignedIn = getKeepSigninPreferencesCookieResponse.KeepSigninPreferencesCookie.KeepSignedIn
+		}
 	}
 
 	return c.JSON(http.StatusOK, response)
@@ -204,25 +179,20 @@ func (s *service) doPost(c echo.Context) error {
 		subject = getAuthCookieResponse.AuthCookie.Identity.Subject
 	}
 
-	// Set or delete preference cookie based on request
-	if model.SkipKeepSignedInPage {
-		// Set the preference cookie to skip the keep signed in page
-		err = s.WellknownCookies().SetKeepSigninPreferencesCookie(c,
-			&contracts_cookies.SetKeepSigninPreferencesCookieRequest{
-				Subject: subject,
-			})
-		if err != nil {
-			log.Error().Err(err).Msg("SetKeepSigninPreferencesCookie")
-			return c.JSON(http.StatusInternalServerError, map[string]string{
-				"error": "Failed to set preference",
-			})
-		}
-	} else {
-		// Delete the preference cookie to show the keep signed in page
-		s.WellknownCookies().DeleteKeepSigninPreferencesCookie(c,
-			&contracts_cookies.DeleteKeepSigninPreferencesCookieRequest{
-				Subject: subject,
-			})
+	// Set the preference cookie to skip the keep signed in page
+	err = s.WellknownCookies().SetKeepSigninPreferencesCookie(c,
+		&contracts_cookies.SetKeepSigninPreferencesCookieRequest{
+			Subject: subject,
+			KeepSigninPreferencesCookie: &contracts_cookies.KeepSigninPreferencesCookie{
+				DoNotAskAgain: model.DoNotShowAgain,
+				KeepSignedIn:  model.KeepSignedIn,
+			},
+		})
+	if err != nil {
+		log.Error().Err(err).Msg("SetKeepSigninPreferencesCookie")
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to set preference",
+		})
 	}
 
 	response := &models_api_preferences.UpdateKeepSignedInPreferenceResponse{

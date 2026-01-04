@@ -2,11 +2,13 @@ package api_preferences
 
 type (
 	GetKeepSignedInPreferenceResponse struct {
-		HasPreference bool `json:"hasPreference"`
+		DoNotShowAgain bool `json:"doNotShowAgain"`
+		KeepSignedIn   bool `json:"keepSignedIn"`
 	}
 
 	UpdateKeepSignedInPreferenceRequest struct {
-		SkipKeepSignedInPage bool `json:"skipKeepSignedInPage"`
+		DoNotShowAgain bool `json:"doNotShowAgain"`
+		KeepSignedIn   bool `json:"keepSignedIn"`
 	}
 
 	UpdateKeepSignedInPreferenceResponse struct {

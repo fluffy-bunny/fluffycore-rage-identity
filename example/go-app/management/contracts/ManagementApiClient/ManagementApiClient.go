@@ -7,7 +7,6 @@ import (
 	contracts_go_app_RageApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/contracts/RageApiClient"
 	models_api_linked_identities "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_linked_identities"
 	models_api_passkey "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_passkey"
-	models_api_preferences "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_preferences"
 	models_api_profile "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_profile"
 	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 )
@@ -35,11 +34,6 @@ type (
 		DeletePasskeyHTTP(ctx context.Context, request *models_api_passkey.PasskeyDeleteRequest) (*common.WrappedResonseT[models_api_passkey.PasskeyDeleteResponse], error)
 		RenamePasskeyHTTP(ctx context.Context, request *models_api_passkey.PasskeyRenameRequest) (*common.WrappedResonseT[models_api_passkey.PasskeyRenameResponse], error)
 
-		// Preferences
-		GetKeepSignedInPreference(ctx context.Context) (*common.WrappedResonseT[models_api_preferences.GetKeepSignedInPreferenceResponse], error)
-		UpdateKeepSignedInPreference(ctx context.Context, skipKeepSignedInPage bool) (*common.WrappedResonseT[models_api_preferences.UpdateKeepSignedInPreferenceResponse], error)
-
-		// Access to core RageApiClient for TOTP and other core APIs
 		GetRageApiClient() contracts_go_app_RageApiClient.IRageApiClient
 	}
 )

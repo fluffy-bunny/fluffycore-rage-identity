@@ -52,6 +52,8 @@ type (
 		RenamePasskeyHTTP(ctx context.Context, request *models_api_passkey.PasskeyRenameRequest) (*common.WrappedResonseT[*models_api_passkey.PasskeyRenameResponse], error)
 
 		// Preferences APIs
+		GetKeepSignedInPreference(ctx context.Context) (*common.WrappedResonseT[models_api_preferences.GetKeepSignedInPreferenceResponse], error)
+		UpdateKeepSignedInPreference(ctx context.Context, request *models_api_preferences.UpdateKeepSignedInPreferenceRequest) (*common.WrappedResonseT[models_api_preferences.UpdateKeepSignedInPreferenceResponse], error)
 		ClearSSOCookie(ctx context.Context) (*common.WrappedResonseT[models_api_preferences.ClearSSOResponse], error)
 	}
 )

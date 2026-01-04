@@ -7,6 +7,7 @@ import (
 	contracts_Localizer "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/Localizer"
 	contracts_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/LocalizerBundle"
 	services_ComposerBase "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/ComposerBase"
+	models_api_preferences "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_preferences"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
 	zerolog "github.com/rs/zerolog"
 )
@@ -15,15 +16,16 @@ type (
 	service struct {
 		services_ComposerBase.ComposerBase
 
-		managementApiClient    contracts_go_app_ManagementApiClient.IManagementApiClient
-		keepSignedInPreference bool
-		errorMessage           string
-		showError              string
-		successMessage         string
-		showSuccess            bool
-		isLoading              bool
-		isSavingPreference     bool
-		isClearingSSO          bool
+		managementApiClient contracts_go_app_ManagementApiClient.IManagementApiClient
+		keepSignedIn        bool
+		doNotShowAgain      bool
+		errorMessage        string
+		showError           string
+		successMessage      string
+		showSuccess         bool
+		isLoading           bool
+		isSavingPreference  bool
+		isClearingSSO       bool
 	}
 )
 
@@ -98,17 +100,35 @@ func (s *service) renderKeepSignedInCard() app.UI {
 
 		app.Div().Class("card-body").Body(
 			app.Div().Class("info-rows").Body(
+				// First toggle: Keep me signed in
 				app.Div().Class("preference-row").Body(
 					app.Div().Class("preference-info").Body(
-						app.Span().Class("info-label").Text("Skip 'Keep me signed in' page"),
-						app.Span().Class("info-description").Text("When enabled, you'll stay signed in automatically without seeing the prompt"),
+						app.Span().Class("info-label").Text("Keep me signed in"),
+						app.Span().Class("info-description").Text("Stay signed in across sessions"),
 					),
 					app.Div().Class("preference-control").Body(
 						app.Label().Class("toggle-switch").Body(
 							app.Input().
 								Type("checkbox").
-								Checked(s.keepSignedInPreference).
+								Checked(s.keepSignedIn).
 								OnChange(s.handleKeepSignedInToggle).
+								Disabled(s.isSavingPreference),
+							app.Span().Class("toggle-slider"),
+						),
+					),
+				),
+				// Second toggle: Do not show dialog
+				app.Div().Class("preference-row").Body(
+					app.Div().Class("preference-info").Body(
+						app.Span().Class("info-label").Text("Do not show 'Keep me signed in' dialog"),
+						app.Span().Class("info-description").Text("Skip the prompt and use your preference automatically"),
+					),
+					app.Div().Class("preference-control").Body(
+						app.Label().Class("toggle-switch").Body(
+							app.Input().
+								Type("checkbox").
+								Checked(s.doNotShowAgain).
+								OnChange(s.handleDoNotShowAgainToggle).
 								Disabled(s.isSavingPreference),
 							app.Span().Class("toggle-slider"),
 						),
@@ -201,7 +221,7 @@ func (s *service) handleKeepSignedInToggle(ctx app.Context, e app.Event) {
 	checked := e.JSValue().Get("target").Get("checked").Bool()
 
 	log.Info().
-		Bool("keepSignedInPreference", checked).
+		Bool("keepSignedIn", checked).
 		Msg("Toggling keep signed in preference")
 
 	s.isSavingPreference = true
@@ -210,8 +230,13 @@ func (s *service) handleKeepSignedInToggle(ctx app.Context, e app.Event) {
 	ctx.Update()
 
 	ctx.Async(func() {
-		// Call API to update preference
-		response, err := s.managementApiClient.UpdateKeepSignedInPreference(s.AppContext, checked)
+		// Call API to update preference, preserve doNotShowAgain value
+		rageClient := s.managementApiClient.GetRageApiClient()
+		response, err := rageClient.UpdateKeepSignedInPreference(s.AppContext,
+			&models_api_preferences.UpdateKeepSignedInPreferenceRequest{
+				DoNotShowAgain: s.doNotShowAgain,
+				KeepSignedIn:   checked,
+			})
 
 		ctx.Dispatch(func(ctx app.Context) {
 			s.isSavingPreference = false
@@ -220,21 +245,74 @@ func (s *service) handleKeepSignedInToggle(ctx app.Context, e app.Event) {
 				log.Error().Err(err).Msg("Failed to update keep signed in preference")
 				s.showError = "Failed to save preference. Please try again."
 				// Revert the toggle
-				s.keepSignedInPreference = !checked
+				s.keepSignedIn = !checked
 				ctx.Update()
 				return
 			}
 
 			if response != nil && response.Code == 200 {
 				log.Info().Msg("Keep signed in preference updated successfully")
-				s.keepSignedInPreference = checked
+				s.keepSignedIn = checked
 				s.successMessage = "Preference saved successfully"
 				s.showSuccess = true
 			} else {
 				log.Error().Int("code", response.Code).Msg("Unexpected response code")
 				s.showError = "Failed to save preference. Please try again."
 				// Revert the toggle
-				s.keepSignedInPreference = !checked
+				s.keepSignedIn = !checked
+			}
+
+			ctx.Update()
+		})
+	})
+}
+
+func (s *service) handleDoNotShowAgainToggle(ctx app.Context, e app.Event) {
+	log := zerolog.Ctx(s.AppContext).With().Str("component", "PreferencesComposer").Logger()
+
+	// Get the new value from the checkbox
+	checked := e.JSValue().Get("target").Get("checked").Bool()
+
+	log.Info().
+		Bool("doNotShowAgain", checked).
+		Msg("Toggling do not show again preference")
+
+	s.isSavingPreference = true
+	s.showError = ""
+	s.showSuccess = false
+	ctx.Update()
+
+	ctx.Async(func() {
+		// Call API to update preference, preserve keepSignedIn value
+		rageClient := s.managementApiClient.GetRageApiClient()
+		response, err := rageClient.UpdateKeepSignedInPreference(s.AppContext,
+			&models_api_preferences.UpdateKeepSignedInPreferenceRequest{
+				DoNotShowAgain: checked,
+				KeepSignedIn:   s.keepSignedIn,
+			})
+
+		ctx.Dispatch(func(ctx app.Context) {
+			s.isSavingPreference = false
+
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to update do not show again preference")
+				s.showError = "Failed to save preference. Please try again."
+				// Revert the toggle
+				s.doNotShowAgain = !checked
+				ctx.Update()
+				return
+			}
+
+			if response != nil && response.Code == 200 {
+				log.Info().Msg("Do not show again preference updated successfully")
+				s.doNotShowAgain = checked
+				s.successMessage = "Preference saved successfully"
+				s.showSuccess = true
+			} else {
+				log.Error().Int("code", response.Code).Msg("Unexpected response code")
+				s.showError = "Failed to save preference. Please try again."
+				// Revert the toggle
+				s.doNotShowAgain = !checked
 			}
 
 			ctx.Update()
@@ -296,14 +374,16 @@ func (s *service) OnMount(ctx app.Context) {
 
 	// Load preference data
 	ctx.Async(func() {
-		response, err := s.managementApiClient.GetKeepSignedInPreference(s.AppContext)
+		rageClient := s.managementApiClient.GetRageApiClient()
+		response, err := rageClient.GetKeepSignedInPreference(s.AppContext)
 
 		ctx.Dispatch(func(ctx app.Context) {
 			s.isLoading = false
 
 			if err == nil && response != nil && response.Code == 200 {
 				log.Info().Msg("Preferences loaded successfully")
-				s.keepSignedInPreference = response.Response.HasPreference
+				s.keepSignedIn = response.Response.KeepSignedIn
+				s.doNotShowAgain = response.Response.DoNotShowAgain
 			} else {
 				// Show error instead of redirecting - App's OnMount already handled auth
 				log.Error().
@@ -330,14 +410,16 @@ func (s *service) OnNav(ctx app.Context) {
 
 	// Load preference data
 	ctx.Async(func() {
-		response, err := s.managementApiClient.GetKeepSignedInPreference(s.AppContext)
+		rageClient := s.managementApiClient.GetRageApiClient()
+		response, err := rageClient.GetKeepSignedInPreference(s.AppContext)
 
 		ctx.Dispatch(func(ctx app.Context) {
 			s.isLoading = false
 
 			if err == nil && response != nil && response.Code == 200 {
 				log.Info().Msg("Preferences loaded successfully")
-				s.keepSignedInPreference = response.Response.HasPreference
+				s.keepSignedIn = response.Response.KeepSignedIn
+				s.doNotShowAgain = response.Response.DoNotShowAgain
 			} else {
 				// Show error instead of redirecting - App's OnMount already handled auth
 				log.Error().

@@ -250,12 +250,14 @@ func (s *service) DoPost(c echo.Context) error {
 		// Get the auth cookie to retrieve the subject
 		getAuthCookieResponse, err := s.wellknownCookies.GetAuthCookie(c)
 		if err == nil && getAuthCookieResponse.AuthCookie != nil {
-			getPreferencesCookieResponse, err := s.wellknownCookies.GetKeepSigninPreferencesCookie(c,
-				&contracts_cookies.GetKeepSigninPreferencesCookieRequest{
-					Subject: getAuthCookieResponse.AuthCookie.Identity.Subject,
-				})
-			if err == nil && getPreferencesCookieResponse.KeepSigninPreferencesCookie != nil && getPreferencesCookieResponse.KeepSigninPreferencesCookie.PreferenceValue {
-				log.Info().Msg("Skipping keep-signed-in page due to KeepSigninPreferences cookie")
+			getPreferencesCookieResponse, err := s.wellknownCookies.
+				GetKeepSigninPreferencesCookie(c,
+					&contracts_cookies.GetKeepSigninPreferencesCookieRequest{
+						Subject: getAuthCookieResponse.AuthCookie.Identity.Subject,
+					})
+			if err == nil &&
+				getPreferencesCookieResponse.KeepSigninPreferencesCookie != nil &&
+				getPreferencesCookieResponse.KeepSigninPreferencesCookie.KeepSignedIn {
 
 				// Set SSO cookie since we're auto-keeping them signed in - copy all auth context
 				err = s.wellknownCookies.SetSSOCookie(c,

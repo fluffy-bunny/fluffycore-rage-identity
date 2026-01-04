@@ -115,7 +115,8 @@ type (
 		SSOCookie *SSOCookie `json:"ssoCookie"`
 	}
 	KeepSigninPreferencesCookie struct {
-		PreferenceValue bool `json:"preferenceValue"`
+		DoNotAskAgain bool `json:"doNotAskAgain"`
+		KeepSignedIn  bool `json:"keepSignedIn"`
 	}
 	SetKeepSigninPreferencesCookieRequest struct {
 		Subject                     string                       `json:"subject"`

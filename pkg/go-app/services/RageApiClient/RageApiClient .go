@@ -295,3 +295,24 @@ func (s *service) ClearSSOCookie(ctx context.Context) (*common.WrappedResonseT[m
 		})
 	return resp, err
 }
+
+func (s *service) GetKeepSignedInPreference(ctx context.Context) (*common.WrappedResonseT[models_api_preferences.GetKeepSignedInPreferenceResponse], error) {
+	resp, err := common.HTTPFetchWrappedResponseT[models_api_preferences.GetKeepSignedInPreferenceResponse](ctx,
+		&common.CallInput{
+			Method:        "GET",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_KeepSignedInPreference),
+			CustomHeaders: common.BuildCustomHeaders(),
+		})
+	return resp, err
+}
+
+func (s *service) UpdateKeepSignedInPreference(ctx context.Context, request *models_api_preferences.UpdateKeepSignedInPreferenceRequest) (*common.WrappedResonseT[models_api_preferences.UpdateKeepSignedInPreferenceResponse], error) {
+	resp, err := common.HTTPFetchWrappedResponseT[models_api_preferences.UpdateKeepSignedInPreferenceResponse](ctx,
+		&common.CallInput{
+			Method:        "POST",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_KeepSignedInPreference),
+			Data:          request,
+			CustomHeaders: common.BuildCustomHeaders(),
+		})
+	return resp, err
+}

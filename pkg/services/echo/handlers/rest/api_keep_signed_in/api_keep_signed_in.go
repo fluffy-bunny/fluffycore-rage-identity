@@ -169,7 +169,8 @@ func (s *service) Do(c echo.Context) error {
 			&contracts_cookies.SetKeepSigninPreferencesCookieRequest{
 				Subject: authCookie.Identity.Subject,
 				KeepSigninPreferencesCookie: &contracts_cookies.KeepSigninPreferencesCookie{
-					PreferenceValue: true,
+					DoNotAskAgain: model.DoNotShowAgain,
+					KeepSignedIn:  model.KeepSignedIn,
 				},
 			})
 		if err != nil {
