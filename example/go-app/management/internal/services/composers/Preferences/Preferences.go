@@ -6,9 +6,7 @@ import (
 	contracts_App "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/App"
 	contracts_Localizer "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/Localizer"
 	contracts_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/LocalizerBundle"
-	contracts_routes "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/contracts/routes"
 	services_ComposerBase "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/ComposerBase"
-	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
 	zerolog "github.com/rs/zerolog"
 )
@@ -178,15 +176,21 @@ func (s *service) renderErrorBanner() app.UI {
 }
 
 func (s *service) renderSuccessBanner() app.UI {
-	return app.Div().Class("success-banner").Body(
-		app.Div().Class("success-content").Body(
-			app.Span().Class("success-icon").Text("✓"),
-			app.Span().Class("success-message").Text(s.successMessage),
+	return app.Div().Class("success-notification").Body(
+		app.Div().Class("success-notification-icon").Body(
+			app.Raw(`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+				<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+			</svg>`),
 		),
+		app.Div().Class("success-notification-text").Text(s.successMessage),
 		app.Button().
-			Class("success-close").
+			Class("success-notification-close").
 			OnClick(s.handleCloseSuccess).
-			Text("×"),
+			Body(
+				app.Raw(`<svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+					<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+				</svg>`),
+			),
 	)
 }
 
@@ -249,12 +253,8 @@ func (s *service) handleClearSSO(ctx app.Context, e app.Event) {
 	ctx.Update()
 
 	ctx.Async(func() {
-		// Call logout API with clearSSOCookie flag
-		response, err := s.managementApiClient.Logout(s.AppContext,
-			&models_api_login_models.LogoutRequest{
-				ClearSSOCookie:                     true,
-				ClearKeepSignedInPreferencesCookie: false,
-			})
+		rageClient := s.managementApiClient.GetRageApiClient()
+		response, err := rageClient.ClearSSOCookie(s.AppContext)
 
 		ctx.Dispatch(func(ctx app.Context) {
 			s.isClearingSSO = false
@@ -314,41 +314,6 @@ func (s *service) OnMount(ctx app.Context) {
 			}
 
 			ctx.Update()
-		})
-	})
-}
-
-func (s *service) handleLoginWithReturnURL(ctx app.Context) {
-	log := zerolog.Ctx(s.AppContext).With().Str("component", "PreferencesComposer").Logger()
-	returnURL := contracts_routes.GetFixedRoute(contracts_routes.WellknownRoute_Preferences)
-	log.Info().Str("returnURL", returnURL).Msg("Initiating login with return URL")
-
-	ctx.Async(func() {
-		// Call login API with return URL
-		response, err := s.managementApiClient.Login(s.AppContext,
-			&models_api_login_models.LoginRequest{
-				ReturnURL: returnURL,
-			})
-		ctx.Dispatch(func(ctx app.Context) {
-			if err != nil {
-				log.Error().Err(err).Msg("login failed")
-				return
-			}
-
-			if response != nil {
-				switch response.Code {
-				case 404:
-					log.Error().Msg("login returned 404")
-					return
-				}
-
-				// Check if we got a redirect URL in the response
-				if response.Response != nil && response.Response.RedirectURL != "" {
-					log.Info().Str("redirectURL", response.Response.RedirectURL).Msg("Redirecting to login URL")
-					app.Window().Get("location").Set("href", response.Response.RedirectURL)
-					return
-				}
-			}
 		})
 	})
 }

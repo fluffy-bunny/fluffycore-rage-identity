@@ -339,8 +339,20 @@ func (s *service) Do(c echo.Context) error {
 		err = s.WellknownCookies().SetSSOCookie(c,
 			&contracts_cookies.SetSSOCookieRequest{
 				SSOCookie: &contracts_cookies.SSOCookie{
-					Subject: user.RootIdentity.Subject,
-					Email:   user.RootIdentity.Email,
+					Identity: &proto_oidc_models.Identity{
+						Subject:       user.RootIdentity.Subject,
+						Email:         user.RootIdentity.Email,
+						EmailVerified: user.RootIdentity.EmailVerified,
+						IdpSlug:       models.RootIdp,
+					},
+					Acr: []string{
+						models.ACRPassword,
+						models.ACRIdpRoot,
+					},
+					Amr: []string{
+						models.AMRPassword,
+						models.AMRIdp,
+					},
 				},
 			})
 		if err != nil {

@@ -104,8 +104,9 @@ type (
 		AuthCookie *AuthCookie `json:"authCookie"`
 	}
 	SSOCookie struct {
-		Subject string `json:"subject"`
-		Email   string `json:"email"`
+		Identity *proto_oidc_models.Identity `json:"identity"`
+		Acr      []string                    `json:"acr,omitempty"`
+		Amr      []string                    `json:"amr,omitempty"`
 	}
 	SetSSOCookieRequest struct {
 		SSOCookie *SSOCookie `json:"ssoCookie"`

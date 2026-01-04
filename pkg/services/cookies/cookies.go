@@ -303,8 +303,11 @@ func (s *service) validateSetSSOCookieRequest(request *contracts_cookies.SetSSOC
 	if request.SSOCookie == nil {
 		return status.Error(codes.InvalidArgument, "request.SSOCookie is nil")
 	}
-	if request.SSOCookie.Subject == "" {
-		return status.Error(codes.InvalidArgument, "request.SSOCookie.Subject is empty")
+	if request.SSOCookie.Identity == nil {
+		return status.Error(codes.InvalidArgument, "request.SSOCookie.Identity is nil")
+	}
+	if request.SSOCookie.Identity.Subject == "" {
+		return status.Error(codes.InvalidArgument, "request.SSOCookie.Identity.Subject is empty")
 	}
 	return nil
 }

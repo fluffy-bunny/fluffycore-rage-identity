@@ -257,12 +257,13 @@ func (s *service) DoPost(c echo.Context) error {
 			if err == nil && getPreferencesCookieResponse.KeepSigninPreferencesCookie != nil && getPreferencesCookieResponse.KeepSigninPreferencesCookie.PreferenceValue {
 				log.Info().Msg("Skipping keep-signed-in page due to KeepSigninPreferences cookie")
 
-				// Set SSO cookie since we're auto-keeping them signed in
+				// Set SSO cookie since we're auto-keeping them signed in - copy all auth context
 				err = s.wellknownCookies.SetSSOCookie(c,
 					&contracts_cookies.SetSSOCookieRequest{
 						SSOCookie: &contracts_cookies.SSOCookie{
-							Subject: getAuthCookieResponse.AuthCookie.Identity.Subject,
-							Email:   getAuthCookieResponse.AuthCookie.Identity.Email,
+							Identity: getAuthCookieResponse.AuthCookie.Identity,
+							Acr:      getAuthCookieResponse.AuthCookie.Acr,
+							Amr:      getAuthCookieResponse.AuthCookie.Amr,
 						},
 					})
 				if err != nil {

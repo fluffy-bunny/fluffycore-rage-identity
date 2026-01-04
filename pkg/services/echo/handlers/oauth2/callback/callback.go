@@ -510,8 +510,18 @@ func (s *service) Do(c echo.Context) error {
 				err = s.wellknownCookies.SetSSOCookie(c,
 					&contracts_cookies.SetSSOCookieRequest{
 						SSOCookie: &contracts_cookies.SSOCookie{
-							Subject: user.RootIdentity.Subject,
-							Email:   user.RootIdentity.Email,
+							Identity: &proto_oidc_models.Identity{
+								Subject:       user.RootIdentity.Subject,
+								Email:         user.RootIdentity.Email,
+								EmailVerified: user.RootIdentity.EmailVerified,
+								IdpSlug:       externalOauth2State.Request.IdpHint,
+							},
+							Acr: []string{
+								fmt.Sprintf("urn:rage:idp:%s", externalOauth2State.Request.IdpHint),
+							},
+							Amr: []string{
+								models.AMRIdp,
+							},
 						},
 					})
 				if err != nil {

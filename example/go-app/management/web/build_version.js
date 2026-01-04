@@ -1,8 +1,8 @@
 // Build version information
 // This file is auto-generated during the build process
 window.BUILD_VERSION = window.BUILD_VERSION || {
-  version: '1767546188',
-  buildTime: '2026-01-04_17:03:08',
-  gitCommit: '4fb7d89',
+  version: '1767549996',
+  buildTime: '2026-01-04_18:06:36',
+  gitCommit: '8afeeb4',
   gitBranch: 'implement_sso'
 };

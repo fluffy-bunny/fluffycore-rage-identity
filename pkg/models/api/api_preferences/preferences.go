@@ -12,4 +12,13 @@ type (
 	UpdateKeepSignedInPreferenceResponse struct {
 		Success bool `json:"success"`
 	}
+
+	ClearSSOResponse struct {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+
+	ErrorResponse struct {
+		Error string `json:"error"`
+	}
 )

@@ -9,6 +9,7 @@ import (
 	common "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/common"
 	contracts_go_app_RageApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/contracts/RageApiClient"
 	models_api_passkey "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_passkey"
+	models_api_preferences "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_preferences"
 	models_api_external_idp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/external_idp"
 	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	models_api_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
@@ -281,6 +282,16 @@ func (s *service) RenamePasskeyHTTP(ctx context.Context, request *models_api_pas
 			Url:           url,
 			CustomHeaders: common.BuildCustomHeaders(),
 			Data:          requestBody,
+		})
+	return resp, err
+}
+
+func (s *service) ClearSSOCookie(ctx context.Context) (*common.WrappedResonseT[models_api_preferences.ClearSSOResponse], error) {
+	resp, err := common.HTTPFetchWrappedResponseT[models_api_preferences.ClearSSOResponse](ctx,
+		&common.CallInput{
+			Method:        "POST",
+			Url:           s.fixUpRageApi(ctx, wellknown_echo.API_ClearSSO),
+			CustomHeaders: common.BuildCustomHeaders(),
 		})
 	return resp, err
 }

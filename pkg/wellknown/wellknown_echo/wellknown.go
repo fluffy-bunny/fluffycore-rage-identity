@@ -71,6 +71,7 @@ var (
 	API_VerifyCodeBegin        = "/api/verify-code-begin"
 	API_KeepSignedInPreference = "/api/keep-signed-in-preference"
 	API_KeepSignedIn           = "/api/keep-signed-in"
+	API_ClearSSO               = "/api/clear-sso"
 	API_Signup                 = "/api/signup"
 	API_PasswordResetStart     = "/api/password-reset-start"
 	API_PasswordResetFinish    = "/api/password-reset-finish"

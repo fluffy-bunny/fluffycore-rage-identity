@@ -140,12 +140,13 @@ func (s *service) Do(c echo.Context) error {
 
 	// Handle SSO cookie based on keepSignedIn flag
 	if model.KeepSignedIn {
-		// Set SSO cookie with configured duration
+		// Set SSO cookie with configured duration - copy all auth context
 		err = s.WellknownCookies().SetSSOCookie(c,
 			&contracts_cookies.SetSSOCookieRequest{
 				SSOCookie: &contracts_cookies.SSOCookie{
-					Subject: authCookie.Identity.Subject,
-					Email:   authCookie.Identity.Email,
+					Identity: authCookie.Identity,
+					Acr:      authCookie.Acr,
+					Amr:      authCookie.Amr,
 				},
 			})
 		if err != nil {

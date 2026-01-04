@@ -35,6 +35,7 @@ func CSRFSkipperPaths() map[string]bool {
 			wellknown_echo.API_UserProfilePath:             true,
 			wellknown_echo.OIDCLoginUIStaticPath:           true,
 			wellknown_echo.API_KeepSignedInPreference:      true,
+			wellknown_echo.API_ClearSSO:                    true,
 		}
 	}
 	return csrfSkipperPaths

@@ -108,7 +108,7 @@ func (s *service) Do(c echo.Context) error {
 
 	s.WellknownCookies().DeleteAuthCompletedCookie(c)
 	s.WellknownCookies().DeleteAuthCookie(c)
-	s.WellknownCookies().DeleteSSOCookie(c)
+	//s.WellknownCookies().DeleteSSOCookie(c)
 
 	ss, err := s.session.GetSession()
 	if err != nil {
