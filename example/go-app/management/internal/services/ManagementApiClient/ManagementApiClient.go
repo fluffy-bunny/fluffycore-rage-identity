@@ -11,6 +11,7 @@ import (
 	contracts_go_app_RageApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/contracts/RageApiClient"
 	models_api_linked_identities "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_linked_identities"
 	models_api_passkey "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_passkey"
+	models_api_preferences "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_preferences"
 	models_api_profile "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_profile"
 	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
@@ -242,4 +243,25 @@ func (s *service) DeletePasskeyHTTP(ctx context.Context, request *models_api_pas
 		Code:     wrappedResp.Code,
 		Response: &deleteResp,
 	}, nil
+}
+
+func (s *service) GetKeepSignedInPreference(ctx context.Context) (*common.WrappedResonseT[models_api_preferences.GetKeepSignedInPreferenceResponse], error) {
+	return common.HTTPFetchWrappedResponseT[models_api_preferences.GetKeepSignedInPreferenceResponse](ctx,
+		&common.CallInput{
+			Method:        "GET",
+			Url:           s.fixupApiPath(ctx, wellknown_echo.API_KeepSignedInPreference),
+			CustomHeaders: s.buildCustomHeaders(),
+		})
+}
+
+func (s *service) UpdateKeepSignedInPreference(ctx context.Context, skipKeepSignedInPage bool) (*common.WrappedResonseT[models_api_preferences.UpdateKeepSignedInPreferenceResponse], error) {
+	return common.HTTPFetchWrappedResponseT[models_api_preferences.UpdateKeepSignedInPreferenceResponse](ctx,
+		&common.CallInput{
+			Method: "POST",
+			Url:    s.fixupApiPath(ctx, wellknown_echo.API_KeepSignedInPreference),
+			Data: &models_api_preferences.UpdateKeepSignedInPreferenceRequest{
+				SkipKeepSignedInPage: skipKeepSignedInPage,
+			},
+			CustomHeaders: s.buildCustomHeaders(),
+		})
 }

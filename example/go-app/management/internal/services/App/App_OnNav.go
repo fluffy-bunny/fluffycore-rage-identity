@@ -49,6 +49,8 @@ func (s *service) OnNav(ctx app.Context) {
 		s.currentPage = contracts_routes.WellknownRoute_PasskeyManager
 	case contracts_routes.WellknownRoute_LinkedAccounts:
 		s.currentPage = contracts_routes.WellknownRoute_LinkedAccounts
+	case contracts_routes.WellknownRoute_Preferences:
+		s.currentPage = contracts_routes.WellknownRoute_Preferences
 	default:
 		s.currentPage = contracts_routes.WellknownRoute_Home
 	}

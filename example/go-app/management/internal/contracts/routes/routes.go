@@ -14,6 +14,7 @@ var (
 	WellknownRoute_PasswordManager WellknownRoute = "/password-manager"
 	WellknownRoute_PasskeyManager  WellknownRoute = "/passkey-manager"
 	WellknownRoute_LinkedAccounts  WellknownRoute = "/linked-accounts"
+	WellknownRoute_Preferences     WellknownRoute = "/preferences"
 )
 
 func GetFixedRoute(route WellknownRoute) string {

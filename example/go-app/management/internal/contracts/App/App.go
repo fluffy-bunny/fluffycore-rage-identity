@@ -45,4 +45,7 @@ type (
 	IPasskeyManagerComposer interface {
 		contracts_GoApp.IBaseComposer
 	}
+	IPreferencesComposer interface {
+		contracts_GoApp.IBaseComposer
+	}
 )

@@ -17,6 +17,7 @@ import (
 	services_composers_LinkedAccounts "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/composers/LinkedAccounts"
 	services_composers_PasskeyManager "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/composers/PasskeyManager"
 	services_composers_PasswordManager "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/composers/PasswordManager"
+	services_composers_Preferences "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/composers/Preferences"
 	services_composers_Profile "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/composers/Profile"
 	servies_i18n_Localizer "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/i18n/Localizer"
 	services_i18n_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/i18n/LocalizerBundle"
@@ -39,6 +40,7 @@ func RegisterServices(ctx context.Context, cb di.ContainerBuilder) {
 	services_i18n_LocalizerBundle.AddScopedILocalizerBundle(cb)
 	services_composers_Home.AddScopedIHomeComposer(cb)
 	services_composers_Profile.AddScopedIProfileComposer(cb)
+	services_composers_Preferences.AddScopedIPreferencesComposer(cb)
 	services_composers_PasswordManager.AddScopedIPasswordManagerComposer(cb)
 	services_composers_PasskeyManager.AddScopedIPasskeyManagerComposer(cb)
 	services_composers_LinkedAccounts.AddScopedILinkedAccountsComposer(cb)
@@ -142,6 +144,13 @@ func NewWASMApp(ctx context.Context, generateStaticMode bool) {
 		app.Route(routeLinkedAccounts, func() app.Composer {
 			log.Info().Msg("Routing to " + routeLinkedAccounts)
 			return newScopedWizardApp(contracts_routes.WellknownRoute_LinkedAccounts)
+		})
+
+		// Register Preferences route
+		routePreferences := fixupRoute(contracts_routes.WellknownRoute_Preferences)
+		app.Route(routePreferences, func() app.Composer {
+			log.Info().Msg("Routing to " + routePreferences)
+			return newScopedWizardApp(contracts_routes.WellknownRoute_Preferences)
 		})
 	}
 

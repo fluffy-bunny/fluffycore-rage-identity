@@ -33,6 +33,7 @@ import (
 	services_handlers_rest_api_appsettings "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_appsettings"
 	services_handlers_rest_api_isauthorized "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_isauthorized"
 	services_handlers_rest_api_keep_signed_in "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_keep_signed_in"
+	services_handlers_rest_api_keep_signed_in_preference "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_keep_signed_in_preference"
 	services_handlers_rest_api_login_password "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_login_password"
 	services_handlers_rest_api_login_username_phase_one "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_login_username_phase_one"
 	services_handlers_rest_api_logout "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/rest/api_logout"
@@ -213,6 +214,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_rest_api_verify_code.AddScopedIHandler(builder)
 	services_handlers_rest_api_verify_code_begin.AddScopedIHandler(builder)
 	services_handlers_rest_api_keep_signed_in.AddScopedIHandler(builder)
+	services_handlers_rest_api_keep_signed_in_preference.AddScopedIHandler(builder)
 	services_handlers_rest_api_signup.AddScopedIHandler(builder)
 	services_handlers_rest_api_logout.AddScopedIHandler(builder)
 	services_handlers_rest_api_user_identity_info.AddScopedIHandler(builder)
