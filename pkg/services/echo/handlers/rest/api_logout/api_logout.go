@@ -95,7 +95,18 @@ func (s *service) Do(c echo.Context) error {
 		log.Error().Err(err).Msg("validateLogoutRequest")
 		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
+
+	// Delete all authentication-related cookies
 	s.wellknownCookies.DeleteAuthCookie(c)
+	s.wellknownCookies.DeleteAuthCompletedCookie(c)
+	s.wellknownCookies.DeleteSSOCookie(c)
+
+	// Clear the landing page from session
+	session, err := s.oidcSession.GetSession()
+	if err == nil {
+		session.Set("landingPage", nil)
+		session.Save()
+	}
 
 	response := &models_api_login_models.LogoutResponse{}
 

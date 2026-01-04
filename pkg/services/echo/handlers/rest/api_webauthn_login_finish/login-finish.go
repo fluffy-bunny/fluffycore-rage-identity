@@ -9,9 +9,9 @@ import (
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
+	login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	services_handlers_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn"
-	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
@@ -97,13 +97,12 @@ func (s *service) getSession() (contracts_sessions.ISession, error) {
 }
 
 type SucessResonseJson struct {
-	RedirectUrl string                  `json:"redirectUrl"`
-	Credential  *go_webauthn.Credential `json:"credential"`
+	Directive  string                  `json:"directive"`
+	Credential *go_webauthn.Credential `json:"credential"`
 }
 
 func (s *service) Do(c echo.Context) error {
 	r := c.Request()
-	rootPath := echo_utils.GetMyRootPath(c)
 
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
@@ -287,27 +286,6 @@ func (s *service) Do(c echo.Context) error {
 			models.AMRIdp,
 		},
 	}
-	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-		State:                     authorizationFinal.Request.Code,
-		AuthorizationRequestState: authorizationFinal,
-	})
-	if err != nil {
-		log.Error().Err(err).Msg("StoreAuthorizationRequestState")
-		// redirect to error page
-		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_008)
-	}
-	s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
-		State: authorizationRequest.State,
-	})
-	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-		State:                     authorizationRequest.State,
-		AuthorizationRequestState: authorizationFinal,
-	})
-	if err != nil {
-		// redirect to error page
-		log.Error().Err(err).Msg("StoreAuthorizationRequestState")
-		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_009)
-	}
 
 	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
 		AuthCookie: &contracts_cookies.AuthCookie{
@@ -316,20 +294,30 @@ func (s *service) Do(c echo.Context) error {
 				Email:         user.RootIdentity.Email,
 				EmailVerified: user.RootIdentity.EmailVerified,
 			},
+			Acr: authorizationFinal.Identity.Acr,
+			Amr: authorizationFinal.Identity.Amr,
 		},
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("SetAuthCookie")
 		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_005)
 	}
-	// redirect to the client with the code.
-	redirectUrl := authorizationFinal.Request.RedirectUri +
-		"?code=" + authorizationFinal.Request.Code +
-		"&state=" + authorizationFinal.Request.State +
-		"&iss=" + rootPath
+
+	// Set AuthCompleted cookie to track that authentication is complete
+	err = s.wellknownCookies.SetAuthCompletedCookie(c, &contracts_cookies.SetAuthCompletedCookieRequest{
+		AuthCompleted: &contracts_cookies.AuthCompleted{
+			Subject: user.RootIdentity.Subject,
+		},
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("SetAuthCompletedCookie")
+		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_010)
+	}
+
+	// Return directive to display keep-signed-in page
 	successResponse := &SucessResonseJson{
-		RedirectUrl: redirectUrl,
-		Credential:  credential,
+		Directive:  login_models.DIRECTIVE_KeepSignedIn_DisplayKeepSignedInPage,
+		Credential: credential,
 	}
 	return c.JSON(http.StatusOK, successResponse)
 }

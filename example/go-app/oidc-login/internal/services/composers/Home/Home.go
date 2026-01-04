@@ -545,9 +545,39 @@ func (s *service) handlePasskeyLogin(ctx app.Context, e app.Event) {
 		return nil
 	})
 
+	// Create success callback that will be called from JavaScript with the response data
+	successCallback := app.FuncOf(func(this app.Value, args []app.Value) interface{} {
+		if len(args) > 0 {
+			responseData := args[0]
+			if !responseData.IsUndefined() && !responseData.IsNull() {
+				// Check if there's a directive in the response
+				directive := responseData.Get("directive")
+				if !directive.IsUndefined() && !directive.IsNull() {
+					directiveStr := directive.String()
+					log.Info().Str("directive", directiveStr).Msg("Received directive from passkey login")
+
+					// Handle the directive (e.g., navigate to keep-signed-in page)
+					ctx.Dispatch(func(ctx app.Context) {
+						switch directiveStr {
+						case "displayKeepSignedInPage":
+							log.Info().Msg("Navigating to keep-signed-in page")
+							ctx.Navigate("/keep-signed-in")
+						default:
+							log.Warn().Str("directive", directiveStr).Msg("Unknown directive received")
+						}
+					})
+					return nil
+				}
+			}
+		}
+		// If no directive, JavaScript will handle the redirect
+		return nil
+	})
+
 	// Call the WebAuthn JavaScript function directly
 	// This will trigger the browser's passkey selection UI
-	result := app.Window().Call("LoginUser", "", false, errorCallback)
+	// Pass both success and error callbacks
+	result := app.Window().Call("LoginUser", "", false, errorCallback, successCallback)
 
 	if !result.Truthy() {
 		log.Error().Msg("Failed to initiate passkey login")

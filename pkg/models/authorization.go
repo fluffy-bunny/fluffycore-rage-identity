@@ -26,6 +26,7 @@ const (
 	PasswordResetDirective   string = "password-reset"
 	VerifyEmailDirective     string = "verify-email"
 	MFA_VerifyEmailDirective string = "mfa-verify-email"
+	KeepSignedInDirective    string = "keep-signed-in"
 
 	CancelDirective string = "cancel"
 )

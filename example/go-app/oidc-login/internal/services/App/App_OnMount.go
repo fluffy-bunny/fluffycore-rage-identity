@@ -87,6 +87,9 @@ func (s *service) fetchManifest(ctx app.Context) {
 							case models_api_manifest.PageVerifyCode:
 								log.Info().Msg("Navigating to VerifyCode page from manifest")
 								ctx.Navigate(contracts_routes.GetFixedRoute(contracts_routes.WellknownRoute_VerifyCode))
+							case models_api_manifest.PageKeepSignedIn:
+								log.Info().Msg("Navigating to KeepSignedIn page from manifest")
+								ctx.Navigate(contracts_routes.GetFixedRoute(contracts_routes.WellknownRoute_KeepSignedIn))
 							default:
 								// Default login page
 								ctx.Navigate(contracts_routes.GetFixedRoute(contracts_routes.WellknownRoute_Home))

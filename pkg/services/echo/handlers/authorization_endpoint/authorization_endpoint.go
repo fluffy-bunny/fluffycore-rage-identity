@@ -148,10 +148,20 @@ func (s *service) Do(c echo.Context) error {
 		return err
 	}
 	log.Debug().Interface("echoModel", echoModel).Msg("AuthorizationRequest")
+
+	// Initiating a new login is a destructive act - clear all authentication state
+	// This ensures we start fresh even if cookies/sessions from previous login exist
+	s.wellknownCookies.DeleteAuthCookie(c)
+	s.wellknownCookies.DeleteAuthCompletedCookie(c)
+	s.wellknownCookies.DeleteSSOCookie(c)
+
 	session, err := s.newSession()
 	if err != nil {
 		return err
 	}
+
+	// Clear any existing landing page from previous sessions
+	session.Set("landingPage", nil)
 
 	model := &proto_oidc_models.AuthorizationRequest{}
 	fluffycore_utils.ConvertStructToProto[*AuthorizationRequest](echoModel, model)

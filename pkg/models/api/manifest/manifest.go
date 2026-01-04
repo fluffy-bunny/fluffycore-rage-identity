@@ -12,6 +12,7 @@ const (
 	PageCreateAccount Page = "CreateAccount"
 	PagePasswordEntry Page = "PasswordEntry"
 	PageUsernameEntry Page = "UsernameEntry"
+	PageKeepSignedIn  Page = "KeepSignedIn"
 )
 
 type (
