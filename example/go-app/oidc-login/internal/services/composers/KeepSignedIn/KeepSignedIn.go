@@ -73,7 +73,7 @@ func (s *service) Render() app.UI {
 
 		app.Form().OnSubmit(s.handleSubmit).Body(
 			app.Div().Class("form-group").Body(
-				app.Label().Class("checkbox-label").Body(
+				app.Label().Class("toggle-switch").Body(
 					app.Input().
 						Type("checkbox").
 						ID("keep-signed-in").
@@ -81,12 +81,13 @@ func (s *service) Render() app.UI {
 						OnChange(func(ctx app.Context, e app.Event) {
 							s.keepSignedIn = ctx.JSSrc().Get("checked").Bool()
 						}),
-					app.Span().Text(" "+s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyKeepMeSignedInCheckbox)),
+					app.Span().Class("toggle-slider"),
 				),
+				app.Span().Class("toggle-label").Text(s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyKeepMeSignedInCheckbox)),
 			),
 
 			app.Div().Class("form-group").Body(
-				app.Label().Class("checkbox-label").Body(
+				app.Label().Class("toggle-switch").Body(
 					app.Input().
 						Type("checkbox").
 						ID("do-not-show-again").
@@ -94,8 +95,9 @@ func (s *service) Render() app.UI {
 						OnChange(func(ctx app.Context, e app.Event) {
 							s.doNotShowAgain = ctx.JSSrc().Get("checked").Bool()
 						}),
-					app.Span().Text(" Don't show this again"),
+					app.Span().Class("toggle-slider"),
 				),
+				app.Span().Class("toggle-label").Text("Don't show this again"),
 			),
 
 			app.Div().Class("button-group").Body(
