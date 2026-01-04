@@ -27,8 +27,7 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
-		config           *contracts_config.Config
-		wellknownCookies contracts_cookies.IWellknownCookies
+		config *contracts_config.Config
 
 		session contracts_session_with_options.ISessionWithOptions
 	}
@@ -41,14 +40,12 @@ var _ contracts_handler.IHandler = stemService
 func (s *service) Ctor(
 	config *contracts_config.Config,
 	container di.Container,
-	wellknownCookies contracts_cookies.IWellknownCookies,
 	session contracts_session_with_options.ISessionWithOptions,
 ) (*service, error) {
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
-		config:           config,
-		wellknownCookies: wellknownCookies,
-		session:          session,
+		BaseHandler: services_echo_handlers_base.NewBaseHandler(container, config),
+		config:      config,
+		session:     session,
 	}, nil
 }
 
@@ -109,7 +106,9 @@ func (s *service) Do(c echo.Context) error {
 		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: "returnUrl is required"}, "  ")
 	}
 
-	s.wellknownCookies.DeleteAuthCookie(c)
+	s.WellknownCookies().DeleteAuthCompletedCookie(c)
+	s.WellknownCookies().DeleteAuthCookie(c)
+	s.WellknownCookies().DeleteSSOCookie(c)
 
 	ss, err := s.session.GetSession()
 	if err != nil {
@@ -133,7 +132,7 @@ func (s *service) Do(c echo.Context) error {
 	}
 
 	// Store the LoginRequest in a cookie for the callback
-	err = s.wellknownCookies.SetInsecureCookie(c,
+	err = s.WellknownCookies().SetInsecureCookie(c,
 		s.WellknownCookieNames().GetCookieName(contracts_cookies.CookieName_LoginRequest),
 		&models.LoginGetRequest{
 			ReturnUrl: loginRequest.ReturnUrl,
@@ -144,7 +143,7 @@ func (s *service) Do(c echo.Context) error {
 	}
 
 	// Store state and nonce in AccountStateCookie
-	err = s.wellknownCookies.SetAccountStateCookie(c, &contracts_cookies.SetAccountStateCookieRequest{
+	err = s.WellknownCookies().SetAccountStateCookie(c, &contracts_cookies.SetAccountStateCookieRequest{
 		AccountStateCookie: &contracts_cookies.AccountStateCookie{
 			State: state,
 			Nonce: nonce,

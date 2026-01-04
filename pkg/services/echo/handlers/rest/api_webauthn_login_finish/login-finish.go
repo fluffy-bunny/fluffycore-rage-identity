@@ -12,6 +12,7 @@ import (
 	login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	services_handlers_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn"
+	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
@@ -97,8 +98,9 @@ func (s *service) getSession() (contracts_sessions.ISession, error) {
 }
 
 type SucessResonseJson struct {
-	Directive  string                  `json:"directive"`
-	Credential *go_webauthn.Credential `json:"credential"`
+	Directive         string                          `json:"directive"`
+	DirectiveRedirect *login_models.DirectiveRedirect `json:"directiveRedirect,omitempty"`
+	Credential        *go_webauthn.Credential         `json:"credential"`
 }
 
 func (s *service) Do(c echo.Context) error {
@@ -312,6 +314,70 @@ func (s *service) Do(c echo.Context) error {
 	if err != nil {
 		log.Error().Err(err).Msg("SetAuthCompletedCookie")
 		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_010)
+	}
+
+	// Check if user has keep-signed-in preferences set
+	getKeepSigninPreferencesCookieResponse, err := s.wellknownCookies.GetKeepSigninPreferencesCookie(c, &contracts_cookies.GetKeepSigninPreferencesCookieRequest{
+		Subject: user.RootIdentity.Subject,
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("GetKeepSigninPreferencesCookie")
+		// If we can't read the cookie, continue with default flow
+	}
+
+	// If user has opted to skip keep-signed-in page, complete OAuth flow directly
+	if getKeepSigninPreferencesCookieResponse != nil && getKeepSigninPreferencesCookieResponse.KeepSigninPreferencesCookie != nil {
+		log.Info().
+			Str("subject", user.RootIdentity.Subject).
+			Msg("Skipping keep-signed-in page due to KeepSigninPreferences cookie in passkey login")
+
+		// Set SSO cookie since we're auto-keeping them signed in
+		err = s.wellknownCookies.SetSSOCookie(c,
+			&contracts_cookies.SetSSOCookieRequest{
+				SSOCookie: &contracts_cookies.SSOCookie{
+					Subject: user.RootIdentity.Subject,
+					Email:   user.RootIdentity.Email,
+				},
+			})
+		if err != nil {
+			log.Error().Err(err).Msg("SetSSOCookie during passkey login auto-skip")
+			return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_010)
+		}
+		log.Info().
+			Str("subject", user.RootIdentity.Subject).
+			Msg("Set SSO cookie during passkey login auto-skip")
+
+		// Delete the AuthCompleted cookie (one-time use)
+		s.wellknownCookies.DeleteAuthCompletedCookie(c)
+
+		// Process the final authentication state
+		rootPath := echo_utils.GetMyRootPath(c)
+		finalStateResponse, err := s.ProcessFinalAuthenticationState(ctx, c,
+			&services_echo_handlers_base.ProcessFinalAuthenticationStateRequest{
+				AuthorizationRequest: authorizationRequest,
+				Identity: &proto_oidc_models.OIDCIdentity{
+					Subject:       user.RootIdentity.Subject,
+					Email:         user.RootIdentity.Email,
+					EmailVerified: user.RootIdentity.EmailVerified,
+					IdpSlug:       models.RootIdp,
+					Acr:           authorizationFinal.Identity.Acr,
+					Amr:           authorizationFinal.Identity.Amr,
+				},
+				RootPath: rootPath,
+			})
+		if err != nil {
+			log.Error().Err(err).Msg("ProcessFinalAuthenticationState during passkey login auto-skip")
+			return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_010)
+		}
+
+		successResponse := &SucessResonseJson{
+			Directive: login_models.DIRECTIVE_Redirect,
+			DirectiveRedirect: &login_models.DirectiveRedirect{
+				RedirectURI: finalStateResponse.RedirectURI,
+			},
+			Credential: credential,
+		}
+		return c.JSON(http.StatusOK, successResponse)
 	}
 
 	// Return directive to display keep-signed-in page

@@ -245,6 +245,41 @@ func (s *service) DoPost(c echo.Context) error {
 		return s.DoGet(c)
 	}
 	if doKeepSignedIn {
+
+		// Check if user has KeepSigninPreferences cookie ("don't show again" preference)
+		// Get the auth cookie to retrieve the subject
+		getAuthCookieResponse, err := s.wellknownCookies.GetAuthCookie(c)
+		if err == nil && getAuthCookieResponse.AuthCookie != nil {
+			getPreferencesCookieResponse, err := s.wellknownCookies.GetKeepSigninPreferencesCookie(c,
+				&contracts_cookies.GetKeepSigninPreferencesCookieRequest{
+					Subject: getAuthCookieResponse.AuthCookie.Identity.Subject,
+				})
+			if err == nil && getPreferencesCookieResponse.KeepSigninPreferencesCookie != nil && getPreferencesCookieResponse.KeepSigninPreferencesCookie.PreferenceValue {
+				log.Info().Msg("Skipping keep-signed-in page due to KeepSigninPreferences cookie")
+
+				// Set SSO cookie since we're auto-keeping them signed in
+				err = s.wellknownCookies.SetSSOCookie(c,
+					&contracts_cookies.SetSSOCookieRequest{
+						SSOCookie: &contracts_cookies.SSOCookie{
+							Subject: getAuthCookieResponse.AuthCookie.Identity.Subject,
+							Email:   getAuthCookieResponse.AuthCookie.Identity.Email,
+						},
+					})
+				if err != nil {
+					log.Error().Err(err).Msg("SetSSOCookie failed when auto-skipping keep-signed-in")
+				} else {
+					log.Info().Str("subject", getAuthCookieResponse.AuthCookie.Identity.Subject).Msg("SSO cookie set for auto keep signed in")
+				}
+
+				// Delete the AuthCompleted cookie (one-time use)
+				s.wellknownCookies.DeleteAuthCompletedCookie(c)
+
+				// Go directly to handleIdentityFound to complete the OAuth flow
+				authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
+				return s.handleIdentityFound(c, authorizationRequest.State)
+			}
+		}
+
 		landingPage := &models_api_manifest.LandingPage{
 			Page: models_api_manifest.PageKeepSignedIn,
 		}

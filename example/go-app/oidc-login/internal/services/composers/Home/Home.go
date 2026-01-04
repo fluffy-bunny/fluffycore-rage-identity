@@ -561,7 +561,18 @@ func (s *service) handlePasskeyLogin(ctx app.Context, e app.Event) {
 						switch directiveStr {
 						case "displayKeepSignedInPage":
 							log.Info().Msg("Navigating to keep-signed-in page")
-							ctx.Navigate("/keep-signed-in")
+							ctx.Navigate(string(contracts_routes.WellknownRoute_KeepSignedIn))
+						case "redirect":
+							// Get redirect URI from response
+							directiveRedirect := responseData.Get("directiveRedirect")
+							if !directiveRedirect.IsUndefined() && !directiveRedirect.IsNull() {
+								redirectURI := directiveRedirect.Get("redirectUri")
+								if !redirectURI.IsUndefined() && !redirectURI.IsNull() {
+									redirectURIStr := redirectURI.String()
+									log.Info().Str("redirectURI", redirectURIStr).Msg("Redirecting to client application")
+									app.Window().Get("location").Call("assign", redirectURIStr)
+								}
+							}
 						default:
 							log.Warn().Str("directive", directiveStr).Msg("Unknown directive received")
 						}

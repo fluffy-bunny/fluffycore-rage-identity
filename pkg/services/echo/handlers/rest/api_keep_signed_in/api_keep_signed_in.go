@@ -7,7 +7,6 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
-	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
@@ -163,6 +162,27 @@ func (s *service) Do(c echo.Context) error {
 		log.Info().Str("subject", authCookie.Identity.Subject).Msg("SSO cookie deleted")
 	}
 
+	// Handle DoNotShowAgain preference
+	if model.DoNotShowAgain {
+		err = s.WellknownCookies().SetKeepSigninPreferencesCookie(c,
+			&contracts_cookies.SetKeepSigninPreferencesCookieRequest{
+				Subject: authCookie.Identity.Subject,
+				KeepSigninPreferencesCookie: &contracts_cookies.KeepSigninPreferencesCookie{
+					PreferenceValue: true,
+				},
+			})
+		if err != nil {
+			log.Error().Err(err).Msg("SetKeepSigninPreferencesCookie")
+		}
+		log.Info().Str("subject", authCookie.Identity.Subject).Msg("KeepSigninPreferences cookie set")
+	} else {
+		// Delete the cookie if user wants to see the page again
+		s.WellknownCookies().DeleteKeepSigninPreferencesCookie(c,
+			&contracts_cookies.DeleteKeepSigninPreferencesCookieRequest{
+				Subject: authCookie.Identity.Subject,
+			})
+	}
+
 	// Get session and authorization request
 	session, err := s.getSession()
 	if err != nil {
@@ -193,7 +213,7 @@ func (s *service) Do(c echo.Context) error {
 				Subject:       authCookie.Identity.Subject,
 				Email:         authCookie.Identity.Email,
 				EmailVerified: authCookie.Identity.EmailVerified,
-				IdpSlug:       models.RootIdp,
+				IdpSlug:       authCookie.Identity.IdpSlug,
 				Acr:           authCookie.Acr,
 				Amr:           authCookie.Amr,
 			},

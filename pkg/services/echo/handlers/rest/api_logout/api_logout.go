@@ -97,9 +97,31 @@ func (s *service) Do(c echo.Context) error {
 	}
 
 	// Delete all authentication-related cookies
+	// Get auth cookie first to get subject for deleting preferences cookie
+	getAuthCookieResponse, err := s.wellknownCookies.GetAuthCookie(c)
+	subject := ""
+	if err == nil && getAuthCookieResponse.AuthCookie != nil {
+		subject = getAuthCookieResponse.AuthCookie.Identity.Subject
+
+		// Clear keep signed in preferences cookie if requested
+		if model.ClearKeepSignedInPreferencesCookie {
+			s.wellknownCookies.DeleteKeepSigninPreferencesCookie(c,
+				&contracts_cookies.DeleteKeepSigninPreferencesCookieRequest{
+					Subject: subject,
+				})
+			log.Info().Str("subject", subject).Msg("KeepSigninPreferences cookie cleared")
+		}
+	}
+
+	// Always delete auth cookies
 	s.wellknownCookies.DeleteAuthCookie(c)
 	s.wellknownCookies.DeleteAuthCompletedCookie(c)
-	s.wellknownCookies.DeleteSSOCookie(c)
+
+	// Clear SSO cookie if requested
+	if model.ClearSSOCookie {
+		s.wellknownCookies.DeleteSSOCookie(c)
+		log.Info().Str("subject", subject).Msg("SSO cookie cleared")
+	}
 
 	// Clear the landing page from session
 	session, err := s.oidcSession.GetSession()

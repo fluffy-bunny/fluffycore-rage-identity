@@ -156,20 +156,6 @@ func (s *service) Do(c echo.Context) error {
 			State: model.State,
 		})
 
-	doLoginBounceBack := func() error {
-		formParams := []models.FormParam{
-			{
-				Name:  "state",
-				Value: parentState,
-			},
-			{
-				Name:  "directive",
-				Value: models.IdentityFound,
-			},
-		}
-		return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
-
-	}
 	doEmailVerification := func(user *proto_oidc_models.RageUser, directive string, purpose contracts_cookies.VerifyCodePurpose) error {
 
 		codeResult, err := echo_utils.GenerateHashedVerificationCode(ctx, s.passwordHasher, 6)
@@ -415,6 +401,21 @@ func (s *service) Do(c echo.Context) error {
 			}
 			return createUserResponse.User, nil
 		}
+		/*
+			doLoginBounceBack := func() error {
+				formParams := []models.FormParam{
+					{
+						Name:  "state",
+						Value: parentState,
+					},
+					{
+						Name:  "directive",
+						Value: models.IdentityFound,
+					},
+				}
+				return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
+			}
+		*/
 		loginLinkedUser := func(user *proto_oidc_models.RageUser, directive string) error {
 			// Update LastUsedOn for both external identity and root identity
 			log.Debug().
@@ -456,29 +457,114 @@ func (s *service) Do(c echo.Context) error {
 				}
 				return doEmailVerification(user, directive, contracts_cookies.VerifyCode_EmailVerification)
 			}
-			authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
-				Subject: user.RootIdentity.Subject,
-				Email:   user.RootIdentity.Email,
-				IdpSlug: externalOauth2State.Request.IdpHint,
-				Acr: []string{
-					fmt.Sprintf("urn:rage:idp:%s", externalOauth2State.Request.IdpHint),
-				},
-				Amr: []string{
-					models.AMRIdp,
-				},
-			}
 
-			_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx,
-				&proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-					State:                     parentState,
-					AuthorizationRequestState: authorizationFinal,
-				})
+			// Set Auth cookie with identity, ACR, and AMR from external IDP
+			err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
+				AuthCookie: &contracts_cookies.AuthCookie{
+					Identity: &proto_oidc_models.Identity{
+						Subject:       user.RootIdentity.Subject,
+						Email:         user.RootIdentity.Email,
+						EmailVerified: user.RootIdentity.EmailVerified,
+						IdpSlug:       externalOauth2State.Request.IdpHint,
+					},
+					Acr: []string{
+						fmt.Sprintf("urn:rage:idp:%s", externalOauth2State.Request.IdpHint),
+					},
+					Amr: []string{
+						models.AMRIdp,
+					},
+				},
+			})
 			if err != nil {
-				log.Error().Err(err).Msg("StoreAuthorizationRequestState")
+				log.Error().Err(err).Msg("SetAuthCookie")
 				return s.TeleportBackToLoginWithError(c, InternalError_Callback_002, InternalError_Callback_002)
 			}
-			// redirect back
-			return doLoginBounceBack()
+
+			// Set AuthCompleted cookie to mark successful authentication
+			err = s.wellknownCookies.SetAuthCompletedCookie(c, &contracts_cookies.SetAuthCompletedCookieRequest{
+				AuthCompleted: &contracts_cookies.AuthCompleted{
+					Subject: user.RootIdentity.Subject,
+				},
+			})
+			if err != nil {
+				log.Error().Err(err).Msg("SetAuthCompletedCookie")
+				return s.TeleportBackToLoginWithError(c, InternalError_Callback_002, InternalError_Callback_002)
+			}
+
+			// Check if user has keep-signed-in preferences set
+			getKeepSigninPreferencesCookieResponse, err := s.wellknownCookies.GetKeepSigninPreferencesCookie(c, &contracts_cookies.GetKeepSigninPreferencesCookieRequest{
+				Subject: user.RootIdentity.Subject,
+			})
+			if err != nil {
+				log.Error().Err(err).Msg("GetKeepSigninPreferencesCookie")
+				// If we can't read the cookie, continue with default flow
+			}
+
+			// If user has opted to skip keep-signed-in page, complete OAuth flow directly
+			if getKeepSigninPreferencesCookieResponse != nil && getKeepSigninPreferencesCookieResponse.KeepSigninPreferencesCookie != nil {
+				log.Info().
+					Str("subject", user.RootIdentity.Subject).
+					Msg("Skipping keep-signed-in page due to KeepSigninPreferences cookie in callback")
+
+				// Set SSO cookie since we're auto-keeping them signed in
+				err = s.wellknownCookies.SetSSOCookie(c,
+					&contracts_cookies.SetSSOCookieRequest{
+						SSOCookie: &contracts_cookies.SSOCookie{
+							Subject: user.RootIdentity.Subject,
+							Email:   user.RootIdentity.Email,
+						},
+					})
+				if err != nil {
+					log.Error().Err(err).Msg("SetSSOCookie during callback auto-skip")
+					return s.TeleportBackToLoginWithError(c, InternalError_Callback_002, InternalError_Callback_002)
+				}
+				log.Info().
+					Str("subject", user.RootIdentity.Subject).
+					Msg("Set SSO cookie during callback auto-skip")
+
+				// Delete the AuthCompleted cookie (one-time use)
+				s.wellknownCookies.DeleteAuthCompletedCookie(c)
+
+				// Complete the OAuth flow directly
+				rootPath := echo_utils.GetMyRootPath(c)
+				finalStateResponse, err := s.ProcessFinalAuthenticationState(ctx, c,
+					&services_echo_handlers_base.ProcessFinalAuthenticationStateRequest{
+						AuthorizationRequest: authorizationFinal.Request,
+						Identity: &proto_oidc_models.OIDCIdentity{
+							Subject:       user.RootIdentity.Subject,
+							Email:         user.RootIdentity.Email,
+							EmailVerified: user.RootIdentity.EmailVerified,
+							IdpSlug:       externalOauth2State.Request.IdpHint,
+							Acr: []string{
+								fmt.Sprintf("urn:rage:idp:%s", externalOauth2State.Request.IdpHint),
+							},
+							Amr: []string{
+								models.AMRIdp,
+							},
+						},
+						RootPath: rootPath,
+					})
+				if err != nil {
+					log.Error().Err(err).Msg("ProcessFinalAuthenticationState during callback auto-skip")
+					return s.TeleportBackToLoginWithError(c, InternalError_Callback_002, InternalError_Callback_002)
+				}
+
+				// Redirect to the client application
+				return c.Redirect(http.StatusFound, finalStateResponse.RedirectURI)
+			}
+
+			// Post to OIDCLoginPath with keep-signed-in directive
+			formParams := []models.FormParam{
+				{
+					Name:  "state",
+					Value: parentState,
+				},
+				{
+					Name:  "directive",
+					Value: models.KeepSignedInDirective,
+				},
+			}
+			return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
 		}
 		linkUser := func(candidateUserID string, externalIdentity *proto_oidc_models.OIDCIdentity) (*proto_oidc_models.RageUser, error) {
 			getUserResponse, err := s.RageUserService().GetRageUser(ctx,

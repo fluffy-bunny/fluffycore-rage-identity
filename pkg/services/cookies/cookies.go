@@ -1,6 +1,8 @@
 package cookies
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"strings"
 	"time"
@@ -346,6 +348,60 @@ func (s *service) GetSSOCookie(c echo.Context) (*contracts_cookies.GetSSOCookieR
 	}
 	return &contracts_cookies.GetSSOCookieResponse{
 		SSOCookie: &value,
+	}, nil
+}
+
+// hashSubject creates a SHA256 hash of the subject for cookie naming
+func (s *service) hashSubject(subject string) string {
+	hash := sha256.Sum256([]byte(subject))
+	return hex.EncodeToString(hash[:8]) // Use first 8 bytes (16 hex chars) for shorter cookie name
+}
+
+// getKeepSigninPreferencesCookieName generates the dynamic cookie name for a subject
+func (s *service) getKeepSigninPreferencesCookieName(subject string) string {
+	prefix := s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_SkipKeepSignedIn)
+	subjectHash := s.hashSubject(subject)
+	return prefix + "_" + subjectHash + "_keepSigninPreferences"
+}
+
+func (s *service) SetKeepSigninPreferencesCookie(c echo.Context, request *contracts_cookies.SetKeepSigninPreferencesCookieRequest) error {
+	cookieName := s.getKeepSigninPreferencesCookieName(request.Subject)
+	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
+		Name:   cookieName,
+		Path:   "/",
+		Domain: s.cookieConfig.Domain,
+		// max age is permanent (1 year)
+		MaxAge: 365 * 24 * 60 * 60,
+	}
+
+	if s.config.DisableSecureCookies {
+		setCookieRequest.HttpOnly = true
+		setCookieRequest.SameSite = 0
+		setCookieRequest.Secure = tPtr(false)
+	}
+	return SetCookieByRequest(c, s.cookieConfig, s.secureCookies, setCookieRequest,
+		request.KeepSigninPreferencesCookie)
+}
+
+func (s *service) DeleteKeepSigninPreferencesCookie(c echo.Context, request *contracts_cookies.DeleteKeepSigninPreferencesCookieRequest) {
+	cookieName := s.getKeepSigninPreferencesCookieName(request.Subject)
+	s.secureCookies.DeleteCookie(c,
+		&fluffycore_contracts_cookies.DeleteCookieRequest{
+			Name:   cookieName,
+			Path:   "/",
+			Domain: s.cookieConfig.Domain,
+		})
+}
+
+func (s *service) GetKeepSigninPreferencesCookie(c echo.Context, request *contracts_cookies.GetKeepSigninPreferencesCookieRequest) (*contracts_cookies.GetKeepSigninPreferencesCookieResponse, error) {
+	cookieName := s.getKeepSigninPreferencesCookieName(request.Subject)
+	var value contracts_cookies.KeepSigninPreferencesCookie
+	err := GetCookie(c, s.secureCookies, cookieName, &value)
+	if err != nil {
+		return nil, err
+	}
+	return &contracts_cookies.GetKeepSigninPreferencesCookieResponse{
+		KeepSigninPreferencesCookie: &value,
 	}, nil
 }
 

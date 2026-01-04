@@ -277,29 +277,27 @@ func (s *service) Do(c echo.Context) error {
 		// Don't fail login, just log the error
 	}
 
-	// Process the final authentication state
-	finalStateResponse, err := s.ProcessFinalAuthenticationState(ctx, c,
-		&services_echo_handlers_base.ProcessFinalAuthenticationStateRequest{
-			AuthorizationRequest: authorizationRequest,
-			Identity: &proto_oidc_models.OIDCIdentity{
+	// Set Auth cookie with identity, ACR, and AMR
+	err = s.WellknownCookies().SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
+		AuthCookie: &contracts_cookies.AuthCookie{
+			Identity: &proto_oidc_models.Identity{
 				Subject:       user.RootIdentity.Subject,
 				Email:         user.RootIdentity.Email,
 				EmailVerified: user.RootIdentity.EmailVerified,
 				IdpSlug:       models.RootIdp,
-				Acr: []string{
-					models.ACRPassword,
-					models.ACRIdpRoot,
-				},
-				Amr: []string{
-					models.AMRPassword,
-					// always true, as we are the root idp
-					models.AMRIdp,
-				},
 			},
-			RootPath: rootPath,
-		})
+			Acr: []string{
+				models.ACRPassword,
+				models.ACRIdpRoot,
+			},
+			Amr: []string{
+				models.AMRPassword,
+				models.AMRIdp,
+			},
+		},
+	})
 	if err != nil {
-		log.Error().Err(err).Msg("ProcessFinalAuthenticationState")
+		log.Error().Err(err).Msg("SetAuthCookie")
 		response := &login_models.LoginPasswordErrorResponse{
 			Email:  model.Email,
 			Reason: InternalError_LoginPassword_005,
@@ -307,14 +305,103 @@ func (s *service) Do(c echo.Context) error {
 		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
 	}
 
-	response := &login_models.LoginPasswordResponse{
-		Email:     model.Email,
-		Directive: login_models.DIRECTIVE_Redirect,
-		DirectiveRedirect: &login_models.DirectiveRedirect{
-			RedirectURI: finalStateResponse.RedirectURI,
+	// Set AuthCompleted cookie to mark successful authentication
+	err = s.WellknownCookies().SetAuthCompletedCookie(c, &contracts_cookies.SetAuthCompletedCookieRequest{
+		AuthCompleted: &contracts_cookies.AuthCompleted{
+			Subject: user.RootIdentity.Subject,
 		},
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("SetAuthCompletedCookie")
+		response := &login_models.LoginPasswordErrorResponse{
+			Email:  model.Email,
+			Reason: InternalError_LoginPassword_006,
+		}
+		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
 	}
 
+	// Check if user has keep-signed-in preferences set
+	getKeepSigninPreferencesCookieResponse, err := s.WellknownCookies().GetKeepSigninPreferencesCookie(c, &contracts_cookies.GetKeepSigninPreferencesCookieRequest{
+		Subject: user.RootIdentity.Subject,
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("GetKeepSigninPreferencesCookie")
+		// If we can't read the cookie, continue with default flow
+	}
+
+	// If user has opted to skip keep-signed-in page, complete OAuth flow directly
+	if getKeepSigninPreferencesCookieResponse != nil && getKeepSigninPreferencesCookieResponse.KeepSigninPreferencesCookie != nil {
+		log.Info().
+			Str("subject", user.RootIdentity.Subject).
+			Msg("Skipping keep-signed-in page due to KeepSigninPreferences cookie in password login")
+
+		// Set SSO cookie since we're auto-keeping them signed in
+		err = s.WellknownCookies().SetSSOCookie(c,
+			&contracts_cookies.SetSSOCookieRequest{
+				SSOCookie: &contracts_cookies.SSOCookie{
+					Subject: user.RootIdentity.Subject,
+					Email:   user.RootIdentity.Email,
+				},
+			})
+		if err != nil {
+			log.Error().Err(err).Msg("SetSSOCookie during password login auto-skip")
+			response := &login_models.LoginPasswordErrorResponse{
+				Email:  model.Email,
+				Reason: InternalError_LoginPassword_007,
+			}
+			return c.JSONPretty(http.StatusInternalServerError, response, "  ")
+		}
+		log.Info().
+			Str("subject", user.RootIdentity.Subject).
+			Msg("Set SSO cookie during password login auto-skip")
+
+		// Delete the AuthCompleted cookie (one-time use)
+		s.WellknownCookies().DeleteAuthCompletedCookie(c)
+
+		// Process the final authentication state
+		finalStateResponse, err := s.ProcessFinalAuthenticationState(ctx, c,
+			&services_echo_handlers_base.ProcessFinalAuthenticationStateRequest{
+				AuthorizationRequest: authorizationRequest,
+				Identity: &proto_oidc_models.OIDCIdentity{
+					Subject:       user.RootIdentity.Subject,
+					Email:         user.RootIdentity.Email,
+					EmailVerified: user.RootIdentity.EmailVerified,
+					IdpSlug:       models.RootIdp,
+					Acr: []string{
+						models.ACRPassword,
+						models.ACRIdpRoot,
+					},
+					Amr: []string{
+						models.AMRPassword,
+						models.AMRIdp,
+					},
+				},
+				RootPath: rootPath,
+			})
+		if err != nil {
+			log.Error().Err(err).Msg("ProcessFinalAuthenticationState during password login auto-skip")
+			response := &login_models.LoginPasswordErrorResponse{
+				Email:  model.Email,
+				Reason: InternalError_LoginPassword_008,
+			}
+			return c.JSONPretty(http.StatusInternalServerError, response, "  ")
+		}
+
+		response := &login_models.LoginPasswordResponse{
+			Email:     model.Email,
+			Directive: login_models.DIRECTIVE_Redirect,
+			DirectiveRedirect: &login_models.DirectiveRedirect{
+				RedirectURI: finalStateResponse.RedirectURI,
+			},
+		}
+		return c.JSONPretty(http.StatusOK, response, "  ")
+	}
+
+	// Show keep-signed-in page
+	response := &login_models.LoginPasswordResponse{
+		Email:     model.Email,
+		Directive: login_models.DIRECTIVE_KeepSignedIn_DisplayKeepSignedInPage,
+	}
 	return c.JSONPretty(http.StatusOK, response, "  ")
 }
 func (s *service) getSession() (contracts_sessions.ISession, error) {

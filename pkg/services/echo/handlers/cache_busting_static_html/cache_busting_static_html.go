@@ -153,7 +153,9 @@ func (s *service) Do(c echo.Context) error {
 			// Call the custom handler
 			handled, err := routePattern.Handler(c, filePath)
 			if handled {
-				log.Error().Err(err).Msg("custom routePattern.Handler")
+				if err != nil {
+					log.Error().Err(err).Msg("custom routePattern.Handler")
+				}
 				return err
 			}
 			// If not handled, continue to static file serving

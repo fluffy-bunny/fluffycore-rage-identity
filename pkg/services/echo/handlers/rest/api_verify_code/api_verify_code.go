@@ -216,6 +216,92 @@ func (s *service) Do(c echo.Context) error {
 			log.Error().Err(err).Msg("SetAuthCompletedCookie")
 			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
+
+		// Check if user has keep-signed-in preferences set
+		getKeepSigninPreferencesCookieResponse, err := s.wellknownCookies.GetKeepSigninPreferencesCookie(c, &contracts_cookies.GetKeepSigninPreferencesCookieRequest{
+			Subject: verificationCode.Subject,
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("GetKeepSigninPreferencesCookie")
+			// If we can't read the cookie, continue with default flow
+		}
+
+		// If user has opted to skip keep-signed-in page, complete OAuth flow directly
+		if getKeepSigninPreferencesCookieResponse != nil && getKeepSigninPreferencesCookieResponse.KeepSigninPreferencesCookie != nil {
+			log.Info().
+				Str("subject", verificationCode.Subject).
+				Msg("Skipping keep-signed-in page due to KeepSigninPreferences cookie in verify code")
+
+			// Set SSO cookie since we're auto-keeping them signed in
+			err = s.wellknownCookies.SetSSOCookie(c,
+				&contracts_cookies.SetSSOCookieRequest{
+					SSOCookie: &contracts_cookies.SSOCookie{
+						Subject: rageUser.RootIdentity.Subject,
+						Email:   rageUser.RootIdentity.Email,
+					},
+				})
+			if err != nil {
+				log.Error().Err(err).Msg("SetSSOCookie during verify code auto-skip")
+				return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+			}
+			log.Info().
+				Str("subject", verificationCode.Subject).
+				Msg("Set SSO cookie during verify code auto-skip")
+
+			// Delete the AuthCompleted cookie (one-time use)
+			s.wellknownCookies.DeleteAuthCompletedCookie(c)
+
+			// Get session and authorization request
+			session, err := s.oidcSession.GetSession()
+			if err != nil {
+				log.Error().Err(err).Msg("GetSession during verify code auto-skip")
+				return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+			}
+
+			sessionRequest, err := session.Get("request")
+			if err != nil {
+				log.Error().Err(err).Msg("session.Get during verify code auto-skip")
+				return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+			}
+			authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
+
+			rootPath := echo_utils.GetMyRootPath(c)
+
+			// Complete the OAuth flow directly
+			finalStateResponse, err := s.ProcessFinalAuthenticationState(ctx, c,
+				&services_echo_handlers_base.ProcessFinalAuthenticationStateRequest{
+					AuthorizationRequest: authorizationRequest,
+					Identity: &proto_oidc_models.OIDCIdentity{
+						Subject:       rageUser.RootIdentity.Subject,
+						Email:         rageUser.RootIdentity.Email,
+						EmailVerified: rageUser.RootIdentity.EmailVerified,
+						Acr: []string{
+							models.ACRPassword,
+							models.ACRIdpRoot,
+						},
+						Amr: []string{
+							models.AMRPassword,
+							models.AMRIdp,
+							models.AMRMFA,
+							models.AMREmailCode,
+						},
+					},
+					RootPath: rootPath,
+				})
+			if err != nil {
+				log.Error().Err(err).Msg("ProcessFinalAuthenticationState during verify code auto-skip")
+				return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+			}
+
+			response := &login_models.VerifyCodeResponse{
+				Directive: login_models.DIRECTIVE_Redirect,
+				DirectiveRedirect: &login_models.DirectiveRedirect{
+					RedirectURI: finalStateResponse.RedirectURI,
+				},
+			}
+			return c.JSONPretty(http.StatusOK, response, "  ")
+		}
+
 		response := &login_models.VerifyCodeResponse{
 			Directive: login_models.DIRECTIVE_KeepSignedIn_DisplayKeepSignedInPage,
 		}

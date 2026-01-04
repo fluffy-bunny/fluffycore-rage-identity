@@ -19,9 +19,10 @@ type (
 
 		rageApiClient contracts_go_app_RageApiClient.IRageApiClient
 
-		keepSignedIn bool
-		isLoading    bool
-		errorMessage string
+		keepSignedIn   bool
+		doNotShowAgain bool
+		isLoading      bool
+		errorMessage   string
 	}
 )
 
@@ -84,6 +85,19 @@ func (s *service) Render() app.UI {
 				),
 			),
 
+			app.Div().Class("form-group").Body(
+				app.Label().Class("checkbox-label").Body(
+					app.Input().
+						Type("checkbox").
+						ID("do-not-show-again").
+						Checked(s.doNotShowAgain).
+						OnChange(func(ctx app.Context, e app.Event) {
+							s.doNotShowAgain = ctx.JSSrc().Get("checked").Bool()
+						}),
+					app.Span().Text(" Don't show this again"),
+				),
+			),
+
 			app.Div().Class("button-group").Body(
 				app.Button().
 					Type("button").
@@ -103,7 +117,7 @@ func (s *service) Render() app.UI {
 func (s *service) handleSubmit(ctx app.Context, e app.Event) {
 	e.PreventDefault()
 	log := zerolog.Ctx(s.AppContext).With().Str("component", "KeepSignedInComposer").Logger()
-	log.Info().Bool("keepSignedIn", s.keepSignedIn).Msg("Keep signed in form submitted")
+	log.Info().Bool("keepSignedIn", s.keepSignedIn).Bool("doNotShowAgain", s.doNotShowAgain).Msg("Keep signed in form submitted")
 
 	s.isLoading = true
 	s.errorMessage = ""
@@ -112,7 +126,8 @@ func (s *service) handleSubmit(ctx app.Context, e app.Event) {
 		// Call the keep-signed-in API
 		response, err := s.rageApiClient.KeepSignedIn(s.AppContext,
 			&login_models.KeepSignedInRequest{
-				KeepSignedIn: s.keepSignedIn,
+				KeepSignedIn:   s.keepSignedIn,
+				DoNotShowAgain: s.doNotShowAgain,
 			})
 
 		ctx.Dispatch(func(ctx app.Context) {

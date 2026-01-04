@@ -1,7 +1,8 @@
 package login_models
 
 type KeepSignedInRequest struct {
-	KeepSignedIn bool `json:"keepSignedIn"`
+	KeepSignedIn   bool `json:"keepSignedIn"`
+	DoNotShowAgain bool `json:"doNotShowAgain"`
 }
 
 type KeepSignedInResponse struct {

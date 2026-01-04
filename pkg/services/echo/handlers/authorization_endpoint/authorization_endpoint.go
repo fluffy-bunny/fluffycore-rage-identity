@@ -34,9 +34,7 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
-
 		scopedMemoryCache                    contracts_cache.IScopedMemoryCache
-		wellknownCookies                     contracts_cookies.IWellknownCookies
 		authorizationRequestStateStoreServer proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer
 		clientServiceServer                  proto_oidc_client.IFluffyCoreClientServiceServer
 		idpServiceServer                     proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer
@@ -52,7 +50,6 @@ func (s *service) Ctor(
 	container di.Container,
 	idpServiceServer proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer,
 	userService proto_oidc_user.IFluffyCoreRageUserServiceServer,
-	wellknownCookies contracts_cookies.IWellknownCookies,
 	scopedMemoryCache contracts_cache.IScopedMemoryCache,
 	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
 	authorizationRequestStateStoreServer proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer,
@@ -66,7 +63,6 @@ func (s *service) Ctor(
 		clientServiceServer:                  clientServiceServer,
 		idpServiceServer:                     idpServiceServer,
 		userService:                          userService,
-		wellknownCookies:                     wellknownCookies,
 	}, nil
 }
 
@@ -148,23 +144,16 @@ func (s *service) Do(c echo.Context) error {
 		return err
 	}
 	log.Debug().Interface("echoModel", echoModel).Msg("AuthorizationRequest")
-
-	// Initiating a new login is a destructive act - clear all authentication state
-	// This ensures we start fresh even if cookies/sessions from previous login exist
-	s.wellknownCookies.DeleteAuthCookie(c)
-	s.wellknownCookies.DeleteAuthCompletedCookie(c)
-	s.wellknownCookies.DeleteSSOCookie(c)
-
 	session, err := s.newSession()
 	if err != nil {
 		return err
 	}
-
-	// Clear any existing landing page from previous sessions
-	session.Set("landingPage", nil)
+	// clean out left overs.
+	s.WellknownCookies().DeleteAuthCompletedCookie(c)
+	s.WellknownCookies().DeleteAuthCookie(c)
 
 	model := &proto_oidc_models.AuthorizationRequest{}
-	fluffycore_utils.ConvertStructToProto[*AuthorizationRequest](echoModel, model)
+	fluffycore_utils.ConvertStructToProto(echoModel, model)
 	// TODO: validate the request
 	// does the client have the permissions to do this?
 	code := xid.New().String()
@@ -240,7 +229,7 @@ func (s *service) Do(c echo.Context) error {
 		State string `json:"state"`
 	}
 	// we let the client know the state so that it can use it to store semi static data against it.
-	err = s.wellknownCookies.SetInsecureCookie(c,
+	err = s.WellknownCookies().SetInsecureCookie(c,
 		s.WellknownCookieNames().GetCookieName(contracts_cookies.CookieName_AuthorizationState),
 		&authorizationStateContainer{
 			State: model.State,
@@ -320,7 +309,7 @@ func (s *service) Do(c echo.Context) error {
 
 	}
 	// clear out any error cookies
-	s.wellknownCookies.DeleteErrorCookie(c)
+	s.WellknownCookies().DeleteErrorCookie(c)
 
 	return s.RenderAutoPost(c, wellknown_echo.ExternalIDPPath,
 		[]models.FormParam{

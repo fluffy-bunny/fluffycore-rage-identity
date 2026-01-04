@@ -23,6 +23,7 @@ const (
 	CookieName_AccountState
 	CookieName_Auth
 	CookieName_SSO
+	CookieName_SkipKeepSignedIn
 	CookieName_LoginRequest
 	CookieName_ExternalOauth2StateTemplate
 	CookieName_WebAuthN
@@ -112,6 +113,22 @@ type (
 	GetSSOCookieResponse struct {
 		SSOCookie *SSOCookie `json:"ssoCookie"`
 	}
+	KeepSigninPreferencesCookie struct {
+		PreferenceValue bool `json:"preferenceValue"`
+	}
+	SetKeepSigninPreferencesCookieRequest struct {
+		Subject                     string                       `json:"subject"`
+		KeepSigninPreferencesCookie *KeepSigninPreferencesCookie `json:"keepSigninPreferencesCookie"`
+	}
+	GetKeepSigninPreferencesCookieRequest struct {
+		Subject string `json:"subject"`
+	}
+	GetKeepSigninPreferencesCookieResponse struct {
+		KeepSigninPreferencesCookie *KeepSigninPreferencesCookie `json:"keepSigninPreferencesCookie"`
+	}
+	DeleteKeepSigninPreferencesCookieRequest struct {
+		Subject string `json:"subject"`
+	}
 	WebAuthNCookie struct {
 		Identity    *proto_oidc_models.Identity `json:"identity"`
 		SessionData *go_webauthn.SessionData    `json:"sessionData"`
@@ -189,6 +206,11 @@ type (
 		SetSSOCookie(c echo.Context, request *SetSSOCookieRequest) error
 		DeleteSSOCookie(c echo.Context)
 		GetSSOCookie(c echo.Context) (*GetSSOCookieResponse, error)
+		// KeepSigninPreferences Cookie
+		//---------------------------------------------------------------------
+		SetKeepSigninPreferencesCookie(c echo.Context, request *SetKeepSigninPreferencesCookieRequest) error
+		DeleteKeepSigninPreferencesCookie(c echo.Context, request *DeleteKeepSigninPreferencesCookieRequest)
+		GetKeepSigninPreferencesCookie(c echo.Context, request *GetKeepSigninPreferencesCookieRequest) (*GetKeepSigninPreferencesCookieResponse, error)
 		// Insecure Cookies
 		//---------------------------------------------------------------------
 		SetInsecureCookie(c echo.Context, name string, value interface{}) error
