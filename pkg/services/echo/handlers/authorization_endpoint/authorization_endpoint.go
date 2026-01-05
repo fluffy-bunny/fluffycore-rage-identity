@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_cache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cache"
@@ -148,114 +147,40 @@ func (s *service) Do(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	// Check if user has valid SSO cookie - if so, skip login and complete authorization
-	getSSOCookieResponse, err := s.WellknownCookies().GetSSOCookie(c)
-	if err == nil && getSSOCookieResponse.SSOCookie != nil && getSSOCookieResponse.SSOCookie.Identity != nil {
-		subject := getSSOCookieResponse.SSOCookie.Identity.Subject
-		log.Info().Str("subject", subject).Msg("Found valid SSO cookie, verifying user exists")
 
-		// Verify the user still exists before auto-completing authorization
-		getUserResponse, err := s.userService.GetRageUser(ctx,
-			&proto_oidc_user.GetRageUserRequest{
-				By: &proto_oidc_user.GetRageUserRequest_Subject{
-					Subject: subject,
-				},
-			})
-
-		if err == nil && getUserResponse != nil && getUserResponse.User != nil {
-			log.Info().Str("subject", subject).Msg("SSO user verified, completing OAuth flow directly")
-
-			// Build the authorization request from the incoming request
-			model := &proto_oidc_models.AuthorizationRequest{}
-			fluffycore_utils.ConvertStructToProto(echoModel, model)
-			code := xid.New().String()
-			model.Code = code
-
-			// Build the OIDCIdentity from SSO cookie
-			oidcIdentity := &proto_oidc_models.OIDCIdentity{
-				Subject:       getSSOCookieResponse.SSOCookie.Identity.Subject,
-				Email:         getSSOCookieResponse.SSOCookie.Identity.Email,
-				EmailVerified: getSSOCookieResponse.SSOCookie.Identity.EmailVerified,
-				IdpSlug:       getSSOCookieResponse.SSOCookie.Identity.IdpSlug,
-				Acr:           getSSOCookieResponse.SSOCookie.Acr,
-				Amr:           getSSOCookieResponse.SSOCookie.Amr,
-			}
-
-			// Store the authorization request state before processing
-			authorizationFinal := &proto_oidc_models.AuthorizationRequestState{
-				Request:  model,
-				Identity: oidcIdentity,
-			}
-			_, err = s.authorizationRequestStateStoreServer.StoreAuthorizationRequestState(ctx,
-				&proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-					AuthorizationRequestState: authorizationFinal,
-					State:                     model.State,
-				})
-			if err != nil {
-				log.Error().Err(err).Msg("Failed to store authorization request state for SSO")
-				// Fall through to normal login flow
-			} else {
-				// Complete the OAuth flow directly and redirect back to client
-				rootPath := c.Scheme() + "://" + c.Request().Host
-				finalStateResponse, err := s.ProcessFinalAuthenticationState(ctx, c,
-					&services_echo_handlers_base.ProcessFinalAuthenticationStateRequest{
-						AuthorizationRequest: model,
-						Identity:             oidcIdentity,
-						RootPath:             rootPath,
-					})
-				if err != nil {
-					log.Error().Err(err).Msg("Failed to complete OAuth flow from SSO")
-					// Fall through to normal login flow
-				} else {
-					log.Info().Str("redirectURI", finalStateResponse.RedirectURI).Msg("SSO auto-authentication complete, redirecting to client")
-					return c.Redirect(http.StatusFound, finalStateResponse.RedirectURI)
-				}
-			}
-		} else {
-			log.Warn().Str("subject", subject).Msg("SSO user no longer exists, clearing SSO cookie and proceeding to login")
-			s.WellknownCookies().DeleteSSOCookie(c)
-		}
-	}
-
-	// clean out left overs.
-	s.WellknownCookies().DeleteAuthCompletedCookie(c)
-	s.WellknownCookies().DeleteAuthCookie(c)
-
+	// VALIDATE ACR VALUES FIRST - before checking SSO cookie
+	// This ensures invalid requests (like bad root_candidate or idp_hint) are caught early
 	model := &proto_oidc_models.AuthorizationRequest{}
 	fluffycore_utils.ConvertStructToProto(echoModel, model)
-	// TODO: validate the request
-	// does the client have the permissions to do this?
-	code := xid.New().String()
-	model.Code = code
 
-	// store the model in the cache.  Redis in production.
-	authorizationFinal := &proto_oidc_models.AuthorizationRequestState{
-		Request: model,
-	}
-
+	// Check for ACR values and validate them
+	shouldSkipSSO := false
 	if fluffycore_utils.IsNotEmptyOrNil(model.AcrValues) {
-		acrValues := strings.Split(model.AcrValues, " ")
+		acrValues := model.AcrValues // Already a string, no need to split here yet
 
+		// Extract idpHint and candidateUserID from ACR values
 		idpHint := ""
 		candidateUserID := ""
-		for _, acrValue := range acrValues {
+
+		// Parse ACR values for both idp_hint and root_candidate
+		for _, acrValue := range regexp.MustCompile(`\s+`).Split(acrValues, -1) {
 			d, err := extractIdpSlug(acrValue)
 			if err == nil {
-				v, ok := d["idp_hint"]
-				if ok {
+				if v, ok := d["idp_hint"]; ok {
 					idpHint = v
 				}
 			}
 			d, err = extractRootCandidate(acrValue)
 			if err == nil {
-				v, ok := d["user_id"]
-				if ok {
+				if v, ok := d["user_id"]; ok {
 					candidateUserID = v
 				}
 			}
 		}
 
-		log.Debug().Str("idpHint", idpHint).Str("rootCandidate", candidateUserID).Msg("acrValues")
+		log.Debug().Str("idpHint", idpHint).Str("rootCandidate", candidateUserID).Msg("Validating ACR values")
+
+		// Validate idpHint if provided
 		if fluffycore_utils.IsNotEmptyOrNil(idpHint) {
 			listIDPResponse, err := s.IdpServiceServer().ListIDP(ctx,
 				&proto_oidc_idp.ListIDPRequest{
@@ -269,16 +194,18 @@ func (s *service) Do(c echo.Context) error {
 					},
 				})
 			if err != nil {
-				log.Error().Err(err).Msg("ListIDP")
-				return c.Redirect(http.StatusFound, "/error&error=invalid_idp_hint")
+				log.Error().Err(err).Str("idpHint", idpHint).Msg("Invalid IDP hint - IDP lookup failed")
+				return c.Redirect(http.StatusFound, "/error?error=invalid_idp_hint")
 			}
 			if listIDPResponse == nil || len(listIDPResponse.IDPs) == 0 {
-				return c.Redirect(http.StatusFound, "/error&error=invalid_idp_hint")
+				log.Error().Str("idpHint", idpHint).Msg("Invalid IDP hint - IDP not found or disabled")
+				return c.Redirect(http.StatusFound, "/error?error=invalid_idp_hint")
 			}
 			model.IdpHint = idpHint
-
-			model.IdpHint = idpHint
+			shouldSkipSSO = true // If specific IDP requested, skip SSO
 		}
+
+		// Validate root_candidate if provided
 		if fluffycore_utils.IsNotEmptyOrNil(candidateUserID) {
 			getUserResponse, err := s.userService.GetRageUser(ctx,
 				&proto_oidc_user.GetRageUserRequest{
@@ -287,13 +214,96 @@ func (s *service) Do(c echo.Context) error {
 					},
 				})
 			if err != nil || getUserResponse == nil || getUserResponse.User == nil {
-				candidateUserID = ""
-				c.Redirect(http.StatusFound, "/error&error=invalid_root_candidate")
+				log.Error().Err(err).Str("candidateUserID", candidateUserID).Msg("Invalid root candidate - user not found")
+				return c.Redirect(http.StatusFound, "/error?error=invalid_root_candidate")
 			}
 			model.CandidateUserId = candidateUserID
+			shouldSkipSSO = true // If specific user candidate requested, skip SSO
 		}
-
 	}
+
+	// Check if user has valid SSO cookie - but ONLY if no specific IDP/candidate was requested
+	if !shouldSkipSSO {
+		getSSOCookieResponse, err := s.WellknownCookies().GetSSOCookie(c)
+		if err == nil && getSSOCookieResponse.SSOCookie != nil && getSSOCookieResponse.SSOCookie.Identity != nil {
+			subject := getSSOCookieResponse.SSOCookie.Identity.Subject
+			log.Info().Str("subject", subject).Msg("Found valid SSO cookie, verifying user exists")
+
+			// Verify the user still exists before auto-completing authorization
+			getUserResponse, err := s.userService.GetRageUser(ctx,
+				&proto_oidc_user.GetRageUserRequest{
+					By: &proto_oidc_user.GetRageUserRequest_Subject{
+						Subject: subject,
+					},
+				})
+
+			if err == nil && getUserResponse != nil && getUserResponse.User != nil {
+				log.Info().Str("subject", subject).Msg("SSO user verified, completing OAuth flow directly")
+
+				// Update model with code
+				code := xid.New().String()
+				model.Code = code
+
+				// Build the OIDCIdentity from SSO cookie
+				oidcIdentity := &proto_oidc_models.OIDCIdentity{
+					Subject:       getSSOCookieResponse.SSOCookie.Identity.Subject,
+					Email:         getSSOCookieResponse.SSOCookie.Identity.Email,
+					EmailVerified: getSSOCookieResponse.SSOCookie.Identity.EmailVerified,
+					IdpSlug:       getSSOCookieResponse.SSOCookie.Identity.IdpSlug,
+					Acr:           getSSOCookieResponse.SSOCookie.Acr,
+					Amr:           getSSOCookieResponse.SSOCookie.Amr,
+				}
+
+				// Store the authorization request state before processing
+				authorizationFinal := &proto_oidc_models.AuthorizationRequestState{
+					Request:  model,
+					Identity: oidcIdentity,
+				}
+				_, err = s.authorizationRequestStateStoreServer.StoreAuthorizationRequestState(ctx,
+					&proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+						AuthorizationRequestState: authorizationFinal,
+						State:                     model.State,
+					})
+				if err != nil {
+					log.Error().Err(err).Msg("Failed to store authorization request state for SSO")
+					// Fall through to normal login flow
+				} else {
+					// Complete the OAuth flow directly and redirect back to client
+					rootPath := c.Scheme() + "://" + c.Request().Host
+					finalStateResponse, err := s.ProcessFinalAuthenticationState(ctx, c,
+						&services_echo_handlers_base.ProcessFinalAuthenticationStateRequest{
+							AuthorizationRequest: model,
+							Identity:             oidcIdentity,
+							RootPath:             rootPath,
+						})
+					if err != nil {
+						log.Error().Err(err).Msg("Failed to complete OAuth flow from SSO")
+						// Fall through to normal login flow
+					} else {
+						log.Info().Str("redirectURI", finalStateResponse.RedirectURI).Msg("SSO auto-authentication complete, redirecting to client")
+						return c.Redirect(http.StatusFound, finalStateResponse.RedirectURI)
+					}
+				}
+			} else {
+				log.Warn().Str("subject", subject).Msg("SSO user no longer exists, clearing SSO cookie and proceeding to login")
+				s.WellknownCookies().DeleteSSOCookie(c)
+			}
+		}
+	}
+
+	// clean out left overs.
+	s.WellknownCookies().DeleteAuthCompletedCookie(c)
+	s.WellknownCookies().DeleteAuthCookie(c)
+
+	// Continue with normal flow setup
+	code := xid.New().String()
+	model.Code = code
+
+	// store the model in the cache.  Redis in production.
+	authorizationFinal := &proto_oidc_models.AuthorizationRequestState{
+		Request: model,
+	}
+
 	type authorizationStateContainer struct {
 		State string `json:"state"`
 	}
@@ -314,7 +324,7 @@ func (s *service) Do(c echo.Context) error {
 		})
 	if err != nil {
 		// redirect to error page
-		return c.Redirect(http.StatusFound, "/error")
+		return c.Redirect(http.StatusFound, "/error?error=store_failed")
 	}
 	// set the code and state in the session
 	// --~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-//
@@ -362,7 +372,7 @@ func (s *service) Do(c echo.Context) error {
 	})
 	if err != nil {
 		// redirect to error page
-		return c.Redirect(http.StatusFound, "/error")
+		return c.Redirect(http.StatusFound, "/error?error=state_not_found")
 	}
 	log.Debug().Interface("mm", mm).Msg("mm")
 	// redirect to the server Auth login pages.
