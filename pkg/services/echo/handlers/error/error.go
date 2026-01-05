@@ -49,8 +49,31 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Tags root
 // @Accept */*
 // @Produce json
+// @Param error query string false "Error code"
 // @Success 200 {object} string
 // @Router /error [get]
 func (s *service) Do(c echo.Context) error {
-	return s.Render(c, http.StatusOK, "oidc/error/index", map[string]interface{}{})
+	errorCode := c.QueryParam("error")
+	errorMessage := "An error occurred"
+
+	// Map error codes to user-friendly messages
+	switch errorCode {
+	case "invalid_idp_hint":
+		errorMessage = "Invalid identity provider specified. The requested IDP does not exist or is not enabled."
+	case "invalid_root_candidate":
+		errorMessage = "Invalid user candidate specified. The requested user does not exist."
+	case "store_failed":
+		errorMessage = "Failed to store authorization request. Please try again."
+	case "state_not_found":
+		errorMessage = "Authorization state not found. Please try again."
+	default:
+		if errorCode != "" {
+			errorMessage = "Error: " + errorCode
+		}
+	}
+
+	return s.Render(c, http.StatusOK, "oidc/error/index", map[string]interface{}{
+		"error":   errorCode,
+		"message": errorMessage,
+	})
 }
