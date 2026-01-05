@@ -266,6 +266,8 @@ go build .
 
 .\oidc-client.exe serve --acr_values "urn:rage:idp:google-social"   --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
 
+.\oidc-client.exe serve --acr_values "urn:rage:idp:mapped-enterprise"   --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
+
 .\oidc-client.exe serve --acr_values "urn:rage:idp:mapped-enterprise" --acr_values "urn:rage:root_candidate:cnf07331og1ecp4r680g"  --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
 
 .\oidc-client.exe serve --acr_values "urn:rage:idp:mapped-enterprise"  --authority http://localhost:9044 --client_id go-client --client_secret secret --port 5556
