@@ -77,6 +77,8 @@
 
                 "oidcLoginAppConfig__rageBaseUrl": "http://localhost:9044",
                 "oidcLoginAppConfig__bannerBranding__showBannerVersion": "true",
+                "oidcLoginAppConfig__cookieDomain": "localhost",
+                "managementAppConfig__cookieDomain": "localhost",
 
             },
             "args": [ "serve" ]        

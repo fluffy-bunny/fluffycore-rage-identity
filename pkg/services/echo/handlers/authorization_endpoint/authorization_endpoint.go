@@ -34,9 +34,7 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
-
 		scopedMemoryCache                    contracts_cache.IScopedMemoryCache
-		wellknownCookies                     contracts_cookies.IWellknownCookies
 		authorizationRequestStateStoreServer proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer
 		clientServiceServer                  proto_oidc_client.IFluffyCoreClientServiceServer
 		idpServiceServer                     proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer
@@ -52,7 +50,6 @@ func (s *service) Ctor(
 	container di.Container,
 	idpServiceServer proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer,
 	userService proto_oidc_user.IFluffyCoreRageUserServiceServer,
-	wellknownCookies contracts_cookies.IWellknownCookies,
 	scopedMemoryCache contracts_cache.IScopedMemoryCache,
 	clientServiceServer proto_oidc_client.IFluffyCoreClientServiceServer,
 	authorizationRequestStateStoreServer proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer,
@@ -66,7 +63,6 @@ func (s *service) Ctor(
 		clientServiceServer:                  clientServiceServer,
 		idpServiceServer:                     idpServiceServer,
 		userService:                          userService,
-		wellknownCookies:                     wellknownCookies,
 	}, nil
 }
 
@@ -89,7 +85,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 func (s *service) newSession() (contracts_sessions.ISession, error) {
 	session, err := s.SessionFactory().
-		GetCookieSession(models.OIDCSessionName)
+		GetCookieSession(s.WellknownCookieNames().GetCookieName(contracts_cookies.CookieName_OIDCSession))
 	if err != nil {
 		return nil, err
 	}
@@ -152,9 +148,81 @@ func (s *service) Do(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	// Check if user has valid SSO cookie - if so, skip login and complete authorization
+	getSSOCookieResponse, err := s.WellknownCookies().GetSSOCookie(c)
+	if err == nil && getSSOCookieResponse.SSOCookie != nil && getSSOCookieResponse.SSOCookie.Identity != nil {
+		subject := getSSOCookieResponse.SSOCookie.Identity.Subject
+		log.Info().Str("subject", subject).Msg("Found valid SSO cookie, verifying user exists")
+
+		// Verify the user still exists before auto-completing authorization
+		getUserResponse, err := s.userService.GetRageUser(ctx,
+			&proto_oidc_user.GetRageUserRequest{
+				By: &proto_oidc_user.GetRageUserRequest_Subject{
+					Subject: subject,
+				},
+			})
+
+		if err == nil && getUserResponse != nil && getUserResponse.User != nil {
+			log.Info().Str("subject", subject).Msg("SSO user verified, completing OAuth flow directly")
+
+			// Build the authorization request from the incoming request
+			model := &proto_oidc_models.AuthorizationRequest{}
+			fluffycore_utils.ConvertStructToProto(echoModel, model)
+			code := xid.New().String()
+			model.Code = code
+
+			// Build the OIDCIdentity from SSO cookie
+			oidcIdentity := &proto_oidc_models.OIDCIdentity{
+				Subject:       getSSOCookieResponse.SSOCookie.Identity.Subject,
+				Email:         getSSOCookieResponse.SSOCookie.Identity.Email,
+				EmailVerified: getSSOCookieResponse.SSOCookie.Identity.EmailVerified,
+				IdpSlug:       getSSOCookieResponse.SSOCookie.Identity.IdpSlug,
+				Acr:           getSSOCookieResponse.SSOCookie.Acr,
+				Amr:           getSSOCookieResponse.SSOCookie.Amr,
+			}
+
+			// Store the authorization request state before processing
+			authorizationFinal := &proto_oidc_models.AuthorizationRequestState{
+				Request:  model,
+				Identity: oidcIdentity,
+			}
+			_, err = s.authorizationRequestStateStoreServer.StoreAuthorizationRequestState(ctx,
+				&proto_oidc_flows.StoreAuthorizationRequestStateRequest{
+					AuthorizationRequestState: authorizationFinal,
+					State:                     model.State,
+				})
+			if err != nil {
+				log.Error().Err(err).Msg("Failed to store authorization request state for SSO")
+				// Fall through to normal login flow
+			} else {
+				// Complete the OAuth flow directly and redirect back to client
+				rootPath := c.Scheme() + "://" + c.Request().Host
+				finalStateResponse, err := s.ProcessFinalAuthenticationState(ctx, c,
+					&services_echo_handlers_base.ProcessFinalAuthenticationStateRequest{
+						AuthorizationRequest: model,
+						Identity:             oidcIdentity,
+						RootPath:             rootPath,
+					})
+				if err != nil {
+					log.Error().Err(err).Msg("Failed to complete OAuth flow from SSO")
+					// Fall through to normal login flow
+				} else {
+					log.Info().Str("redirectURI", finalStateResponse.RedirectURI).Msg("SSO auto-authentication complete, redirecting to client")
+					return c.Redirect(http.StatusFound, finalStateResponse.RedirectURI)
+				}
+			}
+		} else {
+			log.Warn().Str("subject", subject).Msg("SSO user no longer exists, clearing SSO cookie and proceeding to login")
+			s.WellknownCookies().DeleteSSOCookie(c)
+		}
+	}
+
+	// clean out left overs.
+	s.WellknownCookies().DeleteAuthCompletedCookie(c)
+	s.WellknownCookies().DeleteAuthCookie(c)
 
 	model := &proto_oidc_models.AuthorizationRequest{}
-	fluffycore_utils.ConvertStructToProto[*AuthorizationRequest](echoModel, model)
+	fluffycore_utils.ConvertStructToProto(echoModel, model)
 	// TODO: validate the request
 	// does the client have the permissions to do this?
 	code := xid.New().String()
@@ -230,7 +298,8 @@ func (s *service) Do(c echo.Context) error {
 		State string `json:"state"`
 	}
 	// we let the client know the state so that it can use it to store semi static data against it.
-	err = s.wellknownCookies.SetInsecureCookie(c, "_authorization_state",
+	err = s.WellknownCookies().SetInsecureCookie(c,
+		s.WellknownCookieNames().GetCookieName(contracts_cookies.CookieName_AuthorizationState),
 		&authorizationStateContainer{
 			State: model.State,
 		})
@@ -309,7 +378,7 @@ func (s *service) Do(c echo.Context) error {
 
 	}
 	// clear out any error cookies
-	s.wellknownCookies.DeleteErrorCookie(c)
+	s.WellknownCookies().DeleteErrorCookie(c)
 
 	return s.RenderAutoPost(c, wellknown_echo.ExternalIDPPath,
 		[]models.FormParam{

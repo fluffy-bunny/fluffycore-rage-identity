@@ -24,6 +24,8 @@ func (s *service) renderCurrentPage() app.UI {
 		return s.renderResetPasswordPage()
 	case contracts_routes.WellknownRoute_VerifyCode:
 		return s.renderVerifyCodePage()
+	case contracts_routes.WellknownRoute_KeepSignedIn:
+		return s.renderKeepSignedInPage()
 	case contracts_routes.WellknownRoute_ForgotPassword:
 		return s.renderForgotPasswordPage()
 	default:
@@ -65,4 +67,10 @@ func (s *service) renderVerifyCodePage() app.UI {
 	log := zerolog.Ctx(s.AppContext).With().Str("component", "App").Logger()
 	log.Info().Msg("Rendering Verify Code Page")
 	return s.verifyCodeComposer
+}
+
+func (s *service) renderKeepSignedInPage() app.UI {
+	log := zerolog.Ctx(s.AppContext).With().Str("component", "App").Logger()
+	log.Info().Msg("Rendering Keep Signed In Page")
+	return s.keepSignedInComposer
 }

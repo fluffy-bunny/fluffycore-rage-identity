@@ -1,5 +1,9 @@
 package config
 
+import (
+	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
+)
+
 type (
 	BannerBranding struct {
 		Title             string `json:"title,omitempty"`
@@ -7,12 +11,14 @@ type (
 		ShowBannerVersion bool   `json:"showBannerVersion,omitempty"`
 	}
 	AppConfig struct {
-		BaseHREF                 string         `json:"basehref,omitempty"`
-		ReturnURL                string         `json:"returnUrl,omitempty"`
-		RageBaseURL              string         `json:"rageBaseUrl,omitempty"`
-		AccountManagementBaseURL string         `json:"accountManagementBaseUrl,omitempty"`
-		BannerBranding           BannerBranding `json:"bannerBranding,omitempty"`
-		EnabledWebAuthN          bool           `json:"enabledWebAuthN,omitempty"`
-		EnabledTotp              bool           `json:"enabledTotp,omitempty"`
+		BaseHREF                   string                                        `json:"basehref,omitempty"`
+		ReturnURL                  string                                        `json:"returnUrl,omitempty"`
+		RageBaseURL                string                                        `json:"rageBaseUrl,omitempty"`
+		AccountManagementBaseURL   string                                        `json:"accountManagementBaseUrl,omitempty"`
+		BannerBranding             BannerBranding                                `json:"bannerBranding,omitempty"`
+		EnabledWebAuthN            bool                                          `json:"enabledWebAuthN,omitempty"`
+		EnabledTotp                bool                                          `json:"enabledTotp,omitempty"`
+		CookieDomain               string                                        `json:"cookieDomain,omitempty"`
+		WellknownCookieNamesConfig *contracts_cookies.WellknownCookieNamesConfig `json:"wellknownCookieNamesConfig,omitempty"`
 	}
 )

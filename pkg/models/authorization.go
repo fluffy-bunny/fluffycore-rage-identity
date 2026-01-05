@@ -26,6 +26,7 @@ const (
 	PasswordResetDirective   string = "password-reset"
 	VerifyEmailDirective     string = "verify-email"
 	MFA_VerifyEmailDirective string = "mfa-verify-email"
+	KeepSignedInDirective    string = "keep-signed-in"
 
 	CancelDirective string = "cancel"
 )
@@ -40,10 +41,6 @@ const (
 const (
 	URNIdpPrefix     string = "urn:rage:idp:{idp_hint}"
 	URLRootCandidate string = "urn:rage:root_candidate:{user_id}"
-)
-
-const (
-	OIDCSessionName = "_oidc_session"
 )
 
 type (

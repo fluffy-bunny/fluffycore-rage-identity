@@ -65,6 +65,7 @@ type (
 		Port                 int                                                    `json:"port"`
 		SecureCookies        *fluffycore_echo_contracts_cookies.SecureCookiesConfig `json:"secureCookies"`
 		DisableSecureCookies bool                                                   `json:"disableSecureCookies"`
+		CookiePrefix         string                                                 `json:"cookiePrefix"`
 	}
 	PasswordConfig struct {
 		MinEntropyBits float64 `json:"minEntropyBits"`
@@ -96,6 +97,9 @@ type (
 	SystemConfig struct {
 		DeveloperMode bool   `json:"developerMode"`
 		Domain        string `json:"domain"`
+	}
+	SSOConfig struct {
+		MaxDurationMinutes int `json:"maxDurationMinutes"`
 	}
 	InitialConfig struct {
 		ConfigFiles ConfigFiles `json:"configFiles"`
@@ -164,6 +168,7 @@ type (
 		SelfIDPConfig                  *SelfIDPConfig                                 `json:"selfIDPConfig"`
 		CookieConfig                   *CookieConfig                                  `json:"cookieConfig"`
 		SystemConfig                   *SystemConfig                                  `json:"systemConfig"`
+		SSOConfig                      *SSOConfig                                     `json:"ssoConfig"`
 		SessionConfig                  *contracts_sessions.SessionConfig              `json:"sessionConfig"`
 		WebAuthNConfig                 *contracts_webauthn.WebAuthNConfig             `json:"webAuthNConfig"`
 		PasswordConfig                 *PasswordConfig                                `json:"passwordConfig"`
@@ -331,7 +336,8 @@ const configDefaultJSONTemplate = `
         "secureCookies": {
             "hashKey": "7f6a8b9c0d1e2f3a4b5c6d7e8f9a0b1c",
             "blockKey": "1234567890abcdef1234567890abcdef"
-        }
+        },
+		"cookiePrefix": "_fbrid"
     },
     "echoOIDCUI": {
         "port": 0,
@@ -405,6 +411,9 @@ const configDefaultJSONTemplate = `
 		"development_mode": false,
 		"disable_local_account_creation": false,
 		"disable_social_accounts": false
+	},
+	"ssoConfig": {
+		"maxDurationMinutes": 5
 	}
 }
 `

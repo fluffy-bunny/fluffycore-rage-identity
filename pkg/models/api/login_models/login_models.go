@@ -12,6 +12,7 @@ const (
 	DIRECTIVE_VerifyCode_DisplayVerifyCodePage       = "displayVerifyCodePage"
 	DIRECTIVE_LoginPhaseOne_DisplayPhaseOnePage      = "displayLoginPhaseOnePage"
 	DIRECTIVE_PasswordReset_DisplayPasswordResetPage = "displayPasswordResetPage"
+	DIRECTIVE_KeepSignedIn_DisplayKeepSignedInPage   = "displayKeepSignedInPage"
 )
 
 type SignupErrorReason int
@@ -95,7 +96,10 @@ type (
 		Message                     string                       `json:"message,omitempty"`
 		ErrorReason                 SignupErrorReason            `json:"errorReason,omitempty"`
 	}
-	LogoutRequest  struct{}
+	LogoutRequest struct {
+		ClearSSOCookie                     bool `json:"clearSSOCookie"`
+		ClearKeepSignedInPreferencesCookie bool `json:"clearKeepSignedInPreferencesCookie"`
+	}
 	LogoutResponse struct {
 		Directive   string `json:"directive" validate:"required"`
 		RedirectURL string `json:"redirectURL,omitempty"`

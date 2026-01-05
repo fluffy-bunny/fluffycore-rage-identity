@@ -34,7 +34,6 @@ type (
 		DeletePasskeyHTTP(ctx context.Context, request *models_api_passkey.PasskeyDeleteRequest) (*common.WrappedResonseT[models_api_passkey.PasskeyDeleteResponse], error)
 		RenamePasskeyHTTP(ctx context.Context, request *models_api_passkey.PasskeyRenameRequest) (*common.WrappedResonseT[models_api_passkey.PasskeyRenameResponse], error)
 
-		// Access to core RageApiClient for TOTP and other core APIs
 		GetRageApiClient() contracts_go_app_RageApiClient.IRageApiClient
 	}
 )

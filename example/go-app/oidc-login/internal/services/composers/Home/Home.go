@@ -5,6 +5,7 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/common"
+	oidc_login_contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/contracts/config"
 	contracts_App "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/contracts/App"
 	contracts_Localizer "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/contracts/Localizer"
 	contracts_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/contracts/LocalizerBundle"
@@ -31,12 +32,14 @@ type (
 
 		isLoading bool
 
-		currentPage       string
-		errorMessage      string
-		showError         bool
-		rageApiCliient    contracts_go_app_RageApiClient.IRageApiClient
-		appConfigAccessor contracts_config.IAppConfigAccessor
-		oidcFlowConfig    *contracts_OIDCFlowAppConfig.OIDCFlowAppConfig
+		currentPage          string
+		errorMessage         string
+		showError            bool
+		rageApiCliient       contracts_go_app_RageApiClient.IRageApiClient
+		appConfigAccessor    contracts_config.IAppConfigAccessor
+		oidcFlowConfig       *contracts_OIDCFlowAppConfig.OIDCFlowAppConfig
+		appConfig            *oidc_login_contracts_config.AppConfig
+		wellknownCookieNames contracts_cookies.IWellknownCookieNames
 	}
 )
 
@@ -50,6 +53,7 @@ func (s *service) Ctor(
 	localizer contracts_Localizer.ILocalizer,
 	appConfigAccessor contracts_config.IAppConfigAccessor,
 	rageApiCliient contracts_go_app_RageApiClient.IRageApiClient,
+	wellknownCookieNames contracts_cookies.IWellknownCookieNames,
 
 ) (contracts_App.IHomeComposer, error) {
 
@@ -61,11 +65,12 @@ func (s *service) Ctor(
 			AppContext: appContext,
 			Localizer:  localizer,
 		},
-		email:        "",
-		emailError:   "",
-		currentPage:  "",
-		errorMessage: "",
-		showError:    false,
+		email:                "",
+		emailError:           "",
+		currentPage:          "",
+		errorMessage:         "",
+		showError:            false,
+		wellknownCookieNames: wellknownCookieNames,
 	}, nil
 }
 
@@ -104,8 +109,8 @@ func (s *service) checkAndDisplayErrorCookie(ctx app.Context) {
 	log := zerolog.Ctx(s.AppContext).With().Str("component", "HomeComposer").Logger()
 
 	// Check for error cookie (e.g., from OAuth2 callback redirects)
-
-	errorCookie, err := utils.GetCookie[contracts_cookies.ErrorCookie]("_error")
+	ccError := s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_Error)
+	errorCookie, err := utils.GetCookie[contracts_cookies.ErrorCookie](ccError)
 
 	log.Info().
 		Err(err).
@@ -131,7 +136,18 @@ func (s *service) checkAndDisplayErrorCookie(ctx app.Context) {
 		s.showErrorMessage(ctx, msg)
 
 		// Delete the error cookie after reading it
-		utils.DeleteCookie("_error", utils.CookieOptions{Path: "/"})
+		// Use the cookie domain from the OIDC config if available
+		cookieDomain := ""
+		if s.appConfig != nil && s.appConfig.CookieDomain != "" {
+			cookieDomain = s.appConfig.CookieDomain
+			log.Info().Str("cookieDomain", cookieDomain).Msg("Using cookie domain from config")
+		}
+		ccErrorName := s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_Error)
+		utils.DeleteCookie(ccErrorName,
+			utils.CookieOptions{
+				Path:   "/",
+				Domain: cookieDomain,
+			})
 	}
 }
 
@@ -529,9 +545,50 @@ func (s *service) handlePasskeyLogin(ctx app.Context, e app.Event) {
 		return nil
 	})
 
+	// Create success callback that will be called from JavaScript with the response data
+	successCallback := app.FuncOf(func(this app.Value, args []app.Value) interface{} {
+		if len(args) > 0 {
+			responseData := args[0]
+			if !responseData.IsUndefined() && !responseData.IsNull() {
+				// Check if there's a directive in the response
+				directive := responseData.Get("directive")
+				if !directive.IsUndefined() && !directive.IsNull() {
+					directiveStr := directive.String()
+					log.Info().Str("directive", directiveStr).Msg("Received directive from passkey login")
+
+					// Handle the directive (e.g., navigate to keep-signed-in page)
+					ctx.Dispatch(func(ctx app.Context) {
+						switch directiveStr {
+						case "displayKeepSignedInPage":
+							log.Info().Msg("Navigating to keep-signed-in page")
+							ctx.Navigate(string(contracts_routes.WellknownRoute_KeepSignedIn))
+						case "redirect":
+							// Get redirect URI from response
+							directiveRedirect := responseData.Get("directiveRedirect")
+							if !directiveRedirect.IsUndefined() && !directiveRedirect.IsNull() {
+								redirectURI := directiveRedirect.Get("redirectUri")
+								if !redirectURI.IsUndefined() && !redirectURI.IsNull() {
+									redirectURIStr := redirectURI.String()
+									log.Info().Str("redirectURI", redirectURIStr).Msg("Redirecting to client application")
+									app.Window().Get("location").Call("assign", redirectURIStr)
+								}
+							}
+						default:
+							log.Warn().Str("directive", directiveStr).Msg("Unknown directive received")
+						}
+					})
+					return nil
+				}
+			}
+		}
+		// If no directive, JavaScript will handle the redirect
+		return nil
+	})
+
 	// Call the WebAuthn JavaScript function directly
 	// This will trigger the browser's passkey selection UI
-	result := app.Window().Call("LoginUser", "", false, errorCallback)
+	// Pass both success and error callbacks
+	result := app.Window().Call("LoginUser", "", false, errorCallback, successCallback)
 
 	if !result.Truthy() {
 		log.Error().Msg("Failed to initiate passkey login")

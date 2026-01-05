@@ -14,6 +14,7 @@ import (
 	services_composers_CreateAccount "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/composers/CreateAccount"
 	services_composers_ForgotPassword "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/composers/ForgotPassword"
 	services_composers_Home "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/composers/Home"
+	services_composers_KeepSignedIn "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/composers/KeepSignedIn"
 	services_composers_Password "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/composers/Password"
 	services_composers_ResetPassword "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/composers/ResetPassword"
 	services_composers_VerifyCode "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/composers/VerifyCode"
@@ -21,6 +22,7 @@ import (
 	services_i18n_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/i18n/LocalizerBundle"
 	services_logging "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/services/logging"
 	services_go_app_RageApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/services/RageApiClient"
+	services_WellknownCookieNames "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/services/WellknownCookieNames"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
 	zerolog "github.com/rs/zerolog"
 )
@@ -41,7 +43,9 @@ func RegisterServices(ctx context.Context, cb di.ContainerBuilder) {
 	services_composers_ForgotPassword.AddScopedIForgotPasswordComposer(cb)
 	services_composers_ResetPassword.AddScopedIResetPasswordComposer(cb)
 	services_composers_VerifyCode.AddScopedIVerifyCodeComposer(cb)
+	services_composers_KeepSignedIn.AddScopedIKeepSignedInComposer(cb)
 	services_go_app_RageApiClient.AddScopedIRageApiClient(cb)
+	services_WellknownCookieNames.AddSingletonIWellknownCookieNames(cb)
 
 	var appContext contracts_App.AppContext = ctx
 	di.AddInstance[contracts_App.AppContext](cb, appContext)
@@ -139,6 +143,12 @@ func NewWASMApp(ctx context.Context, generateStaticMode bool) {
 		app.Route(route, func() app.Composer {
 			log.Info().Msg("Routing to " + route)
 			return newScopedWizardApp(contracts_routes.WellknownRoute_VerifyCode)
+		})
+
+		route = fixupRoute(contracts_routes.WellknownRoute_KeepSignedIn)
+		app.Route(route, func() app.Composer {
+			log.Info().Msg("Routing to " + route)
+			return newScopedWizardApp(contracts_routes.WellknownRoute_KeepSignedIn)
 		})
 
 	}

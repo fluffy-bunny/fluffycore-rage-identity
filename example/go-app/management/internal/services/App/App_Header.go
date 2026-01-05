@@ -217,6 +217,11 @@ func (s *service) renderAuthenticatedSidebar() app.UI {
 			s.Localizer.GetLocalizedString(contracts_LocalizerBundle.LocaleKeyLinkedAccounts),
 			go_app_common.LinkIconSmallSVG,
 		),
+		s.renderSidebarLink(
+			contracts_routes.WellknownRoute_Preferences,
+			"Preferences",
+			go_app_common.SettingsIconSmallSVG,
+		),
 	)
 }
 

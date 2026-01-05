@@ -29,14 +29,10 @@ func (s *service) OnMount(ctx app.Context) {
 	ctx.Async(func() {
 		response, err := s.managementApiClient.GetUserProfile(s.AppContext)
 		ctx.Dispatch(func(ctx app.Context) {
-			if err != nil {
-				log.Debug().Err(err).Msg("GetUserInfo failed - user not authenticated")
-				s.isAuthenticated = false
-				ctx.Update()
-				return
-			}
+			// Check if user is authenticated
+			isAuthenticated := err == nil && response != nil && response.Code == 200 && response.Response != nil
 
-			if response != nil && response.Code == 200 && response.Response != nil {
+			if isAuthenticated {
 				// User is authenticated
 				log.Info().
 					Interface("response", response.Response).
@@ -53,8 +49,12 @@ func (s *service) OnMount(ctx app.Context) {
 					Bool("isClaimedDomain", s.isClaimedDomain).
 					Msg("User authenticated, staying on current route")
 			} else {
-				// Not authorized
-				log.Debug().Int("code", response.Code).Msg("GetUserInfo returned non-200 - user not authenticated")
+				// Not authenticated - handle error or non-200 response
+				if err != nil {
+					log.Debug().Err(err).Msg("GetUserInfo failed - user not authenticated")
+				} else {
+					log.Debug().Int("code", response.Code).Msg("GetUserInfo returned non-200 - user not authenticated")
+				}
 				s.isAuthenticated = false
 
 				// Get current path to determine action
@@ -67,7 +67,7 @@ func (s *service) OnMount(ctx app.Context) {
 					return
 				}
 
-				// Check if current path is a protected route - redirect regardless of response code
+				// Check if current path is a protected route - redirect if so
 				parts := strings.Split(strings.TrimPrefix(currentPath, "/"), "/")
 				var normalizedPath string
 				if len(parts) > 1 {
@@ -81,7 +81,8 @@ func (s *service) OnMount(ctx app.Context) {
 				case contracts_routes.WellknownRoute_Profile,
 					contracts_routes.WellknownRoute_PasswordManager,
 					contracts_routes.WellknownRoute_PasskeyManager,
-					contracts_routes.WellknownRoute_LinkedAccounts:
+					contracts_routes.WellknownRoute_LinkedAccounts,
+					contracts_routes.WellknownRoute_Preferences:
 					log.Info().Str("currentPath", currentPath).Msg("User not authenticated on protected route, redirecting to home")
 					appConfig := s.appConfigAccessor.GetAppConfig(s.AppContext)
 					baseURL := app.Window().Get("location").Get("origin").String() + "/" + appConfig.BaseHREF + "/"
