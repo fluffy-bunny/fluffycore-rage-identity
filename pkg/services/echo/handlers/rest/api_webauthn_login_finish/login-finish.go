@@ -9,6 +9,7 @@ import (
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
+	login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	services_handlers_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/webauthn"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
@@ -97,13 +98,13 @@ func (s *service) getSession() (contracts_sessions.ISession, error) {
 }
 
 type SucessResonseJson struct {
-	RedirectUrl string                  `json:"redirectUrl"`
-	Credential  *go_webauthn.Credential `json:"credential"`
+	Directive         string                          `json:"directive"`
+	DirectiveRedirect *login_models.DirectiveRedirect `json:"directiveRedirect,omitempty"`
+	Credential        *go_webauthn.Credential         `json:"credential"`
 }
 
 func (s *service) Do(c echo.Context) error {
 	r := c.Request()
-	rootPath := echo_utils.GetMyRootPath(c)
 
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
@@ -287,27 +288,6 @@ func (s *service) Do(c echo.Context) error {
 			models.AMRIdp,
 		},
 	}
-	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-		State:                     authorizationFinal.Request.Code,
-		AuthorizationRequestState: authorizationFinal,
-	})
-	if err != nil {
-		log.Error().Err(err).Msg("StoreAuthorizationRequestState")
-		// redirect to error page
-		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_008)
-	}
-	s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
-		State: authorizationRequest.State,
-	})
-	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-		State:                     authorizationRequest.State,
-		AuthorizationRequestState: authorizationFinal,
-	})
-	if err != nil {
-		// redirect to error page
-		log.Error().Err(err).Msg("StoreAuthorizationRequestState")
-		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_009)
-	}
 
 	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
 		AuthCookie: &contracts_cookies.AuthCookie{
@@ -316,20 +296,106 @@ func (s *service) Do(c echo.Context) error {
 				Email:         user.RootIdentity.Email,
 				EmailVerified: user.RootIdentity.EmailVerified,
 			},
+			Acr: authorizationFinal.Identity.Acr,
+			Amr: authorizationFinal.Identity.Amr,
 		},
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("SetAuthCookie")
 		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_005)
 	}
-	// redirect to the client with the code.
-	redirectUrl := authorizationFinal.Request.RedirectUri +
-		"?code=" + authorizationFinal.Request.Code +
-		"&state=" + authorizationFinal.Request.State +
-		"&iss=" + rootPath
+
+	// Set AuthCompleted cookie to track that authentication is complete
+	err = s.wellknownCookies.SetAuthCompletedCookie(c, &contracts_cookies.SetAuthCompletedCookieRequest{
+		AuthCompleted: &contracts_cookies.AuthCompleted{
+			Subject: user.RootIdentity.Subject,
+		},
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("SetAuthCompletedCookie")
+		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_010)
+	}
+
+	// Check if user has keep-signed-in preferences set
+	getKeepSigninPreferencesCookieResponse, err := s.wellknownCookies.GetKeepSigninPreferencesCookie(c, &contracts_cookies.GetKeepSigninPreferencesCookieRequest{
+		Subject: user.RootIdentity.Subject,
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("GetKeepSigninPreferencesCookie")
+		// If we can't read the cookie, continue with default flow
+	}
+
+	// If user has opted to skip keep-signed-in page, complete OAuth flow directly
+	if getKeepSigninPreferencesCookieResponse != nil && getKeepSigninPreferencesCookieResponse.KeepSigninPreferencesCookie != nil {
+		log.Info().
+			Str("subject", user.RootIdentity.Subject).
+			Msg("Skipping keep-signed-in page due to KeepSigninPreferences cookie in passkey login")
+
+		// Set SSO cookie since we're auto-keeping them signed in
+		err = s.wellknownCookies.SetSSOCookie(c,
+			&contracts_cookies.SetSSOCookieRequest{
+				SSOCookie: &contracts_cookies.SSOCookie{
+					Identity: &proto_oidc_models.Identity{
+						Subject:       user.RootIdentity.Subject,
+						Email:         user.RootIdentity.Email,
+						EmailVerified: user.RootIdentity.EmailVerified,
+						IdpSlug:       models.RootIdp,
+					},
+					Acr: []string{
+						models.ACRPasskey,
+						models.ACRIdpRoot,
+					},
+					Amr: []string{
+						models.AMRPasskey,
+						models.AMRIdp,
+					},
+				},
+			})
+		if err != nil {
+			log.Error().Err(err).Msg("SetSSOCookie during passkey login auto-skip")
+			return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_010)
+		}
+		log.Info().
+			Str("subject", user.RootIdentity.Subject).
+			Msg("Set SSO cookie during passkey login auto-skip")
+
+		// Delete the AuthCompleted cookie (one-time use)
+		s.wellknownCookies.DeleteAuthCompletedCookie(c)
+
+		// Process the final authentication state
+		rootPath := echo_utils.GetMyRootPath(c)
+		finalStateResponse, err := s.ProcessFinalAuthenticationState(ctx, c,
+			&services_echo_handlers_base.ProcessFinalAuthenticationStateRequest{
+				AuthorizationRequest: authorizationRequest,
+				Identity: &proto_oidc_models.OIDCIdentity{
+					Subject:       user.RootIdentity.Subject,
+					Email:         user.RootIdentity.Email,
+					EmailVerified: user.RootIdentity.EmailVerified,
+					IdpSlug:       models.RootIdp,
+					Acr:           authorizationFinal.Identity.Acr,
+					Amr:           authorizationFinal.Identity.Amr,
+				},
+				RootPath: rootPath,
+			})
+		if err != nil {
+			log.Error().Err(err).Msg("ProcessFinalAuthenticationState during passkey login auto-skip")
+			return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_LoginFinish_010)
+		}
+
+		successResponse := &SucessResonseJson{
+			Directive: login_models.DIRECTIVE_Redirect,
+			DirectiveRedirect: &login_models.DirectiveRedirect{
+				RedirectURI: finalStateResponse.RedirectURI,
+			},
+			Credential: credential,
+		}
+		return c.JSON(http.StatusOK, successResponse)
+	}
+
+	// Return directive to display keep-signed-in page
 	successResponse := &SucessResonseJson{
-		RedirectUrl: redirectUrl,
-		Credential:  credential,
+		Directive:  login_models.DIRECTIVE_KeepSignedIn_DisplayKeepSignedInPage,
+		Credential: credential,
 	}
 	return c.JSON(http.StatusOK, successResponse)
 }

@@ -38,6 +38,8 @@ func (s *service) OnNav(ctx app.Context) {
 		s.currentPage = contracts_routes.WellknownRoute_ResetPassword
 	case string(contracts_routes.WellknownRoute_VerifyCode):
 		s.currentPage = contracts_routes.WellknownRoute_VerifyCode
+	case string(contracts_routes.WellknownRoute_KeepSignedIn):
+		s.currentPage = contracts_routes.WellknownRoute_KeepSignedIn
 	default:
 		s.currentPage = contracts_routes.WellknownRoute_Home
 	}

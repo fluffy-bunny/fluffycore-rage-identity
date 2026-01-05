@@ -13,11 +13,9 @@ import (
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
-	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
-	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
@@ -145,7 +143,7 @@ func (s *service) Do(c echo.Context) error {
 	_, err = userService.UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
 		User: &proto_oidc_models.RageUserUpdate{
 			RootIdentity: &proto_oidc_models.IdentityUpdate{
-				Subject: verificationCode.Subject,
+				Subject: rageUser.RootIdentity.Subject,
 				EmailVerified: &wrapperspb.BoolValue{
 					Value: true,
 				},
@@ -181,107 +179,149 @@ func (s *service) Do(c echo.Context) error {
 		}
 		return c.JSONPretty(http.StatusOK, response, "  ")
 	case contracts_cookies.VerifyCode_Challenge:
-		response := &login_models.VerifyCodeResponse{
-			Directive: login_models.DIRECTIVE_Redirect,
-		}
-		err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
-			AuthCookie: &contracts_cookies.AuthCookie{
-				Identity: &proto_oidc_models.Identity{
-					Subject:       rageUser.RootIdentity.Subject,
-					Email:         rageUser.RootIdentity.Email,
-					EmailVerified: rageUser.RootIdentity.EmailVerified,
+		// Set auth cookie with user identity
+		err = s.wellknownCookies.SetAuthCookie(c,
+			&contracts_cookies.SetAuthCookieRequest{
+				AuthCookie: &contracts_cookies.AuthCookie{
+					Identity: &proto_oidc_models.Identity{
+						Subject:       rageUser.RootIdentity.Subject,
+						Email:         rageUser.RootIdentity.Email,
+						EmailVerified: rageUser.RootIdentity.EmailVerified,
+					},
+					Acr: []string{
+						models.ACRPassword,
+						models.ACRIdpRoot,
+					},
+					Amr: []string{
+						models.AMRPassword,
+						models.AMRIdp,
+						models.AMRMFA,
+						models.AMREmailCode,
+					},
 				},
-			},
-		})
+			})
 		if err != nil {
 			log.Error().Err(err).Msg("SetAuthCookie")
-			// redirect to error page
 			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
-		session, err := s.getSession()
-		if err != nil {
-			log.Error().Err(err).Msg("getSession")
-			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
-		}
-		sessionRequest, err := session.Get("request")
-		if err != nil {
-			log.Error().Err(err).Msg("Get")
-			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
-		}
-		authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
 
-		getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().
-			GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
-				State: authorizationRequest.State,
+		// Set auth completed cookie to track that authentication was successful
+		err = s.wellknownCookies.SetAuthCompletedCookie(c,
+			&contracts_cookies.SetAuthCompletedCookieRequest{
+				AuthCompleted: &contracts_cookies.AuthCompleted{
+					Subject: verificationCode.Subject,
+				},
 			})
 		if err != nil {
-			log.Error().Err(err).Msg("GetAuthorizationRequestState")
+			log.Error().Err(err).Msg("SetAuthCompletedCookie")
 			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 		}
-		authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
-		authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
-			Subject: rageUser.RootIdentity.Subject,
-			Email:   rageUser.RootIdentity.Email,
-			IdpSlug: models.RootIdp,
-			Acr: []string{
-				models.ACRPassword,
-				models.ACRIdpRoot,
-			},
-			Amr: []string{
-				models.AMRPassword,
-				// always true, as we are the root idp
-				models.AMRIdp,
-				// this is a multifactor
-				models.AMRMFA,
-				models.AMREmailCode,
-			},
-		}
-		// "urn:rage:idp:google", "urn:rage:idp:spacex", "urn:rage:idp:github-enterprise", etc.
-		// "urn:rage:password", "urn:rage:2fa", "urn:rage:email", etc.
-		// we are done with the state now.  Lets map it to the code so it can be looked up by the client.
-		_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx,
-			&proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-				State:                     authorizationFinal.Request.Code,
-				AuthorizationRequestState: authorizationFinal,
-			})
-		if err != nil {
-			log.Error().Err(err).Msg("StoreAuthorizationRequestState")
-			// redirect to error page
-			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
-		}
-		s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
-			State: authorizationRequest.State,
-		})
-		_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-			State:                     authorizationRequest.State,
-			AuthorizationRequestState: authorizationFinal,
-		})
-		if err != nil {
-			// redirect to error page
-			log.Error().Err(err).Msg("StoreAuthorizationRequestState")
-			return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
-		}
-		rootPath := echo_utils.GetMyRootPath(c)
 
-		// redirect to the client with the code.
-		redirectUri := authorizationFinal.Request.RedirectUri +
-			"?code=" + authorizationFinal.Request.Code +
-			"&state=" + authorizationFinal.Request.State +
-			"&iss=" + rootPath
-		response.DirectiveRedirect = &login_models.DirectiveRedirect{
-			RedirectURI: redirectUri,
+		// Check if user has keep-signed-in preferences set
+		getKeepSigninPreferencesCookieResponse, err := s.wellknownCookies.GetKeepSigninPreferencesCookie(c, &contracts_cookies.GetKeepSigninPreferencesCookieRequest{
+			Subject: verificationCode.Subject,
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("GetKeepSigninPreferencesCookie")
+			// If we can't read the cookie, continue with default flow
+		}
+
+		// If user has opted to skip keep-signed-in page, complete OAuth flow directly
+		if getKeepSigninPreferencesCookieResponse != nil && getKeepSigninPreferencesCookieResponse.KeepSigninPreferencesCookie != nil {
+			log.Info().
+				Str("subject", verificationCode.Subject).
+				Msg("Skipping keep-signed-in page due to KeepSigninPreferences cookie in verify code")
+
+			// Set SSO cookie since we're auto-keeping them signed in
+			err = s.wellknownCookies.SetSSOCookie(c,
+				&contracts_cookies.SetSSOCookieRequest{
+					SSOCookie: &contracts_cookies.SSOCookie{
+						Identity: &proto_oidc_models.Identity{
+							Subject:       rageUser.RootIdentity.Subject,
+							Email:         rageUser.RootIdentity.Email,
+							EmailVerified: rageUser.RootIdentity.EmailVerified,
+							IdpSlug:       models.RootIdp,
+						},
+						Acr: []string{
+							models.ACRPassword,
+							models.ACRIdpRoot,
+						},
+						Amr: []string{
+							models.AMRPassword,
+							models.AMRIdp,
+							models.AMRMFA,
+							models.AMREmailCode,
+						},
+					},
+				})
+			if err != nil {
+				log.Error().Err(err).Msg("SetSSOCookie during verify code auto-skip")
+				return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+			}
+			log.Info().
+				Str("subject", verificationCode.Subject).
+				Msg("Set SSO cookie during verify code auto-skip")
+
+			// Delete the AuthCompleted cookie (one-time use)
+			s.wellknownCookies.DeleteAuthCompletedCookie(c)
+
+			// Get session and authorization request
+			session, err := s.oidcSession.GetSession()
+			if err != nil {
+				log.Error().Err(err).Msg("GetSession during verify code auto-skip")
+				return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+			}
+
+			sessionRequest, err := session.Get("request")
+			if err != nil {
+				log.Error().Err(err).Msg("session.Get during verify code auto-skip")
+				return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+			}
+			authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
+
+			rootPath := echo_utils.GetMyRootPath(c)
+
+			// Complete the OAuth flow directly
+			finalStateResponse, err := s.ProcessFinalAuthenticationState(ctx, c,
+				&services_echo_handlers_base.ProcessFinalAuthenticationStateRequest{
+					AuthorizationRequest: authorizationRequest,
+					Identity: &proto_oidc_models.OIDCIdentity{
+						Subject:       rageUser.RootIdentity.Subject,
+						Email:         rageUser.RootIdentity.Email,
+						EmailVerified: rageUser.RootIdentity.EmailVerified,
+						Acr: []string{
+							models.ACRPassword,
+							models.ACRIdpRoot,
+						},
+						Amr: []string{
+							models.AMRPassword,
+							models.AMRIdp,
+							models.AMRMFA,
+							models.AMREmailCode,
+						},
+					},
+					RootPath: rootPath,
+				})
+			if err != nil {
+				log.Error().Err(err).Msg("ProcessFinalAuthenticationState during verify code auto-skip")
+				return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+			}
+
+			response := &login_models.VerifyCodeResponse{
+				Directive: login_models.DIRECTIVE_Redirect,
+				DirectiveRedirect: &login_models.DirectiveRedirect{
+					RedirectURI: finalStateResponse.RedirectURI,
+				},
+			}
+			return c.JSONPretty(http.StatusOK, response, "  ")
+		}
+
+		response := &login_models.VerifyCodeResponse{
+			Directive: login_models.DIRECTIVE_KeepSignedIn_DisplayKeepSignedInPage,
 		}
 		return c.JSONPretty(http.StatusOK, response, "  ")
 
 	}
 	return c.JSONPretty(http.StatusInternalServerError, "Unknown VerifyCodePurpose", "  ")
 
-}
-func (s *service) getSession() (contracts_sessions.ISession, error) {
-	session, err := s.oidcSession.GetSession()
-
-	if err != nil {
-		return nil, err
-	}
-	return session, nil
 }

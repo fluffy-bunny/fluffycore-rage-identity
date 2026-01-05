@@ -3,33 +3,32 @@
   <head>
     <base href="/{basehref}/">
     
-    <meta name="app-version" content="1766279110">
-    <meta name="app-build-time" content="2025-12-21_01:05:10">
-    <meta name="app-git-commit" content="f90a9c2">
-    <meta name="app-git-branch" content="bitwarden_webauthn">
+    <meta name="app-version" content="1767558049">
+    <meta name="app-build-time" content="2026-01-04_20:20:49">
+    <meta name="app-git-commit" content="28e51da">
+    <meta name="app-git-branch" content="implement_sso">
     <meta charset="UTF-8">
     <meta name="author">
     <meta name="description" content="MyApp">
     <meta name="theme-color" content="#2d2c2c">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta content="https:///{basehref}" property="og:url">
+    <meta property="og:url" content="https:///{basehref}">
     <meta property="og:title">
     <meta content="MyApp" property="og:description">
     <meta property="og:type" content="website">
     <meta property="og:image" content="https://">
     <title>{title}</title>
-    <link rel="icon" href="web/m_logo.svg?v=1766279110">
-    <link rel="apple-touch-icon" href="web/m_logo.svg?v=1766279110">
-    <link rel="manifest" href="manifest.webmanifest?v=1766279110">
-    <link href="app.css?v=1766279110" type="text/css" rel="stylesheet">
-    <link href="web/styles.css?v=1766279110" type="text/css" rel="stylesheet">    <script src="web/webauthn.js?v=1766279110"></script>
-
-    <script defer src="wasm_exec.js?v=1766279110"></script>
-    <script defer src="app.js?v=1766279110"></script>
-    <script src="web/build_version.js?v=1766279110"></script>
-    <script src="web/common.js?v=1766279110"></script>
-    <script src="web/logging-helper.js?v=1766279110"></script>
+    <link rel="icon" href="web/m_logo.svg?v=1767558049">
+    <link rel="apple-touch-icon" href="web/m_logo.svg?v=1767558049">
+    <link rel="manifest" href="manifest.webmanifest?v=1767558049">
+    <link href="app.css?v=1767558049" type="text/css" rel="stylesheet">
+    <link href="web/styles.css?v=1767558049" type="text/css" rel="stylesheet">
+    <script src="wasm_exec.js?v=1767558049" defer></script>
+    <script defer src="app.js?v=1767558049"></script>
+    <script src="web/build_version.js?v=1767558049"></script>
+    <script src="web/common.js?v=1767558049"></script>
+    <script src="web/logging-helper.js?v=1767558049"></script>
 <link rel="icon" type="image/svg+xml" href="web/m_logo.svg">
     <link rel="icon" type="image/png" sizes="16x16" href="web/favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="web/favicon-32x32.png">
@@ -41,8 +40,8 @@
   </head>
   <body>
     <div></div>
-    <aside class="goapp-app-info" id="app-wasm-loader">
-      <img id="app-wasm-loader-icon" class="goapp-logo goapp-spin" alt="wasm loader icon" src="web/m_logo.svg?v=1766279110">
+    <aside id="app-wasm-loader" class="goapp-app-info">
+      <img alt="wasm loader icon" src="web/m_logo.svg?v=1767558049" id="app-wasm-loader-icon" class="goapp-logo goapp-spin">
       <p id="app-wasm-loader-label" class="goapp-label">0%</p>
     </aside>
   </body>

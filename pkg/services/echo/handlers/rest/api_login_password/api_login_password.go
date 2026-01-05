@@ -15,7 +15,6 @@ import (
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
-	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -31,10 +30,9 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
-		config           *contracts_config.Config
-		wellknownCookies contracts_cookies.IWellknownCookies
-		passwordHasher   contracts_identity.IPasswordHasher
-		oidcSession      contracts_oidc_session.IOIDCSession
+		config         *contracts_config.Config
+		passwordHasher contracts_identity.IPasswordHasher
+		oidcSession    contracts_oidc_session.IOIDCSession
 	}
 )
 
@@ -45,16 +43,14 @@ var _ contracts_handler.IHandler = stemService
 func (s *service) Ctor(
 	config *contracts_config.Config,
 	container di.Container,
-	wellknownCookies contracts_cookies.IWellknownCookies,
 	passwordHasher contracts_identity.IPasswordHasher,
 	oidcSession contracts_oidc_session.IOIDCSession,
 ) (*service, error) {
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
-		config:           config,
-		passwordHasher:   passwordHasher,
-		wellknownCookies: wellknownCookies,
-		oidcSession:      oidcSession,
+		BaseHandler:    services_echo_handlers_base.NewBaseHandler(container, config),
+		config:         config,
+		passwordHasher: passwordHasher,
+		oidcSession:    oidcSession,
 	}, nil
 }
 
@@ -192,7 +188,7 @@ func (s *service) Do(c echo.Context) error {
 		if s.config.SystemConfig.DeveloperMode {
 			plainCode = codeResult.PlainCode
 		}
-		err = s.wellknownCookies.SetVerificationCodeCookie(c,
+		err = s.WellknownCookies().SetVerificationCodeCookie(c,
 			&contracts_cookies.SetVerificationCodeCookieRequest{
 				VerificationCode: &contracts_cookies.VerificationCode{
 					Email:             model.Email,
@@ -267,55 +263,6 @@ func (s *service) Do(c echo.Context) error {
 		}
 		return c.JSONPretty(http.StatusOK, response, "  ")
 	}
-	// we can process the final state now
-	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
-		AuthCookie: &contracts_cookies.AuthCookie{
-			Identity: &proto_oidc_models.Identity{
-				Subject:       user.RootIdentity.Subject,
-				Email:         user.RootIdentity.Email,
-				EmailVerified: user.RootIdentity.EmailVerified,
-			},
-		},
-	})
-	if err != nil {
-		log.Error().Err(err).Msg("SetAuthCookie")
-		response := &login_models.LoginPasswordErrorResponse{
-			Email:  model.Email,
-			Reason: InternalError_LoginPassword_005,
-		}
-		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
-	}
-	getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().
-		GetAuthorizationRequestState(ctx,
-			&proto_oidc_flows.GetAuthorizationRequestStateRequest{
-				State: authorizationRequest.State,
-			})
-	if err != nil {
-		log.Error().Err(err).Msg("GetAuthorizationRequestState")
-		response := &login_models.LoginPasswordErrorResponse{
-			Email:  model.Email,
-			Reason: InternalError_LoginPassword_006,
-		}
-		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
-	}
-	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
-	authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
-		Subject: user.RootIdentity.Subject,
-		Email:   user.RootIdentity.Email,
-		IdpSlug: models.RootIdp,
-		Acr: []string{
-			models.ACRPassword,
-			models.ACRIdpRoot,
-		},
-		Amr: []string{
-			models.AMRPassword,
-			// always true, as we are the root idp
-			models.AMRIdp,
-		},
-	}
-	// "urn:rage:idp:google", "urn:rage:idp:spacex", "urn:rage:idp:github-enterprise", etc.
-	// "urn:rage:password", "urn:rage:2fa", "urn:rage:email", etc.
-
 	// Update root identity LastUsedOn timestamp
 	_, err = s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
 		User: &proto_oidc_models.RageUserUpdate{
@@ -330,49 +277,143 @@ func (s *service) Do(c echo.Context) error {
 		// Don't fail login, just log the error
 	}
 
-	// we are done with the state now.  Lets map it to the code so it can be looked up by the client.
-	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx,
-		&proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-			State:                     authorizationFinal.Request.Code,
-			AuthorizationRequestState: authorizationFinal,
-		})
-	if err != nil {
-		log.Warn().Err(err).Msg("StoreAuthorizationRequestState")
-		response := &login_models.LoginPasswordErrorResponse{
-			Email:  model.Email,
-			Reason: InternalError_LoginPassword_007,
-		}
-		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
-	}
-	s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
-		State: authorizationRequest.State,
-	})
-	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-		State:                     authorizationRequest.State,
-		AuthorizationRequestState: authorizationFinal,
-	})
-	if err != nil {
-		// redirect to error page
-		log.Error().Err(err).Msg("StoreAuthorizationRequestState")
-		response := &login_models.LoginPasswordErrorResponse{
-			Email:  model.Email,
-			Reason: InternalError_LoginPassword_008,
-		}
-		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
-	}
-	// redirect to the client with the code.
-	redirectUri := authorizationFinal.Request.RedirectUri +
-		"?code=" + authorizationFinal.Request.Code +
-		"&state=" + authorizationFinal.Request.State +
-		"&iss=" + rootPath
-	response := &login_models.LoginPasswordResponse{
-		Email:     model.Email,
-		Directive: login_models.DIRECTIVE_Redirect,
-		DirectiveRedirect: &login_models.DirectiveRedirect{
-			RedirectURI: redirectUri,
+	// Set Auth cookie with identity, ACR, and AMR
+	err = s.WellknownCookies().SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
+		AuthCookie: &contracts_cookies.AuthCookie{
+			Identity: &proto_oidc_models.Identity{
+				Subject:       user.RootIdentity.Subject,
+				Email:         user.RootIdentity.Email,
+				EmailVerified: user.RootIdentity.EmailVerified,
+				IdpSlug:       models.RootIdp,
+			},
+			Acr: []string{
+				models.ACRPassword,
+				models.ACRIdpRoot,
+			},
+			Amr: []string{
+				models.AMRPassword,
+				models.AMRIdp,
+			},
 		},
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("SetAuthCookie")
+		response := &login_models.LoginPasswordErrorResponse{
+			Email:  model.Email,
+			Reason: InternalError_LoginPassword_005,
+		}
+		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
 	}
 
+	// Set AuthCompleted cookie to mark successful authentication
+	err = s.WellknownCookies().SetAuthCompletedCookie(c, &contracts_cookies.SetAuthCompletedCookieRequest{
+		AuthCompleted: &contracts_cookies.AuthCompleted{
+			Subject: user.RootIdentity.Subject,
+		},
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("SetAuthCompletedCookie")
+		response := &login_models.LoginPasswordErrorResponse{
+			Email:  model.Email,
+			Reason: InternalError_LoginPassword_006,
+		}
+		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
+	}
+
+	// Check if user has keep-signed-in preferences set
+	getKeepSigninPreferencesCookieResponse, err := s.WellknownCookies().GetKeepSigninPreferencesCookie(c, &contracts_cookies.GetKeepSigninPreferencesCookieRequest{
+		Subject: user.RootIdentity.Subject,
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("GetKeepSigninPreferencesCookie")
+		// If we can't read the cookie, continue with default flow
+	}
+
+	// If user has opted to skip keep-signed-in page, complete OAuth flow directly
+	if getKeepSigninPreferencesCookieResponse != nil && getKeepSigninPreferencesCookieResponse.KeepSigninPreferencesCookie != nil {
+		log.Info().
+			Str("subject", user.RootIdentity.Subject).
+			Msg("Skipping keep-signed-in page due to KeepSigninPreferences cookie in password login")
+
+		// Set SSO cookie since we're auto-keeping them signed in
+		err = s.WellknownCookies().SetSSOCookie(c,
+			&contracts_cookies.SetSSOCookieRequest{
+				SSOCookie: &contracts_cookies.SSOCookie{
+					Identity: &proto_oidc_models.Identity{
+						Subject:       user.RootIdentity.Subject,
+						Email:         user.RootIdentity.Email,
+						EmailVerified: user.RootIdentity.EmailVerified,
+						IdpSlug:       models.RootIdp,
+					},
+					Acr: []string{
+						models.ACRPassword,
+						models.ACRIdpRoot,
+					},
+					Amr: []string{
+						models.AMRPassword,
+						models.AMRIdp,
+					},
+				},
+			})
+		if err != nil {
+			log.Error().Err(err).Msg("SetSSOCookie during password login auto-skip")
+			response := &login_models.LoginPasswordErrorResponse{
+				Email:  model.Email,
+				Reason: InternalError_LoginPassword_007,
+			}
+			return c.JSONPretty(http.StatusInternalServerError, response, "  ")
+		}
+		log.Info().
+			Str("subject", user.RootIdentity.Subject).
+			Msg("Set SSO cookie during password login auto-skip")
+
+		// Delete the AuthCompleted cookie (one-time use)
+		s.WellknownCookies().DeleteAuthCompletedCookie(c)
+
+		// Process the final authentication state
+		finalStateResponse, err := s.ProcessFinalAuthenticationState(ctx, c,
+			&services_echo_handlers_base.ProcessFinalAuthenticationStateRequest{
+				AuthorizationRequest: authorizationRequest,
+				Identity: &proto_oidc_models.OIDCIdentity{
+					Subject:       user.RootIdentity.Subject,
+					Email:         user.RootIdentity.Email,
+					EmailVerified: user.RootIdentity.EmailVerified,
+					IdpSlug:       models.RootIdp,
+					Acr: []string{
+						models.ACRPassword,
+						models.ACRIdpRoot,
+					},
+					Amr: []string{
+						models.AMRPassword,
+						models.AMRIdp,
+					},
+				},
+				RootPath: rootPath,
+			})
+		if err != nil {
+			log.Error().Err(err).Msg("ProcessFinalAuthenticationState during password login auto-skip")
+			response := &login_models.LoginPasswordErrorResponse{
+				Email:  model.Email,
+				Reason: InternalError_LoginPassword_008,
+			}
+			return c.JSONPretty(http.StatusInternalServerError, response, "  ")
+		}
+
+		response := &login_models.LoginPasswordResponse{
+			Email:     model.Email,
+			Directive: login_models.DIRECTIVE_Redirect,
+			DirectiveRedirect: &login_models.DirectiveRedirect{
+				RedirectURI: finalStateResponse.RedirectURI,
+			},
+		}
+		return c.JSONPretty(http.StatusOK, response, "  ")
+	}
+
+	// Show keep-signed-in page
+	response := &login_models.LoginPasswordResponse{
+		Email:     model.Email,
+		Directive: login_models.DIRECTIVE_KeepSignedIn_DisplayKeepSignedInPage,
+	}
 	return c.JSONPretty(http.StatusOK, response, "  ")
 }
 func (s *service) getSession() (contracts_sessions.ISession, error) {

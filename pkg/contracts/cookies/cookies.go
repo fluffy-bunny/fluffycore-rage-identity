@@ -14,6 +14,27 @@ const (
 	VerifyCode_Challenge
 )
 
+type CookieName int
+
+const (
+	CookieName_VerificationCode CookieName = iota + 1
+	CookieName_PasswordReset
+	CookieName_AuthCompleted
+	CookieName_AccountState
+	CookieName_Auth
+	CookieName_SSO
+	CookieName_SkipKeepSignedIn
+	CookieName_LoginRequest
+	CookieName_ExternalOauth2StateTemplate
+	CookieName_WebAuthN
+	CookieName_SigninUserName
+	CookieName_Error
+	CookieName_CSRF
+	CookieName_AuthorizationState
+	CookieName_AccountManagementSession
+	CookieName_OIDCSession
+)
+
 type (
 	SetExternalOauth2CookieRequest struct {
 		State               string                                 `json:"state"`
@@ -52,6 +73,15 @@ type (
 	GetPasswordResetCookieResponse struct {
 		PasswordReset *PasswordReset `json:"passwordReset"`
 	}
+	AuthCompleted struct {
+		Subject string `json:"subject"`
+	}
+	SetAuthCompletedCookieRequest struct {
+		AuthCompleted *AuthCompleted `json:"authCompleted"`
+	}
+	GetAuthCompletedCookieResponse struct {
+		AuthCompleted *AuthCompleted `json:"authCompleted"`
+	}
 	AccountStateCookie struct {
 		State string `json:"state"`
 		Nonce string `json:"nonce"`
@@ -72,6 +102,34 @@ type (
 	}
 	GetAuthCookieResponse struct {
 		AuthCookie *AuthCookie `json:"authCookie"`
+	}
+	SSOCookie struct {
+		Identity *proto_oidc_models.Identity `json:"identity"`
+		Acr      []string                    `json:"acr,omitempty"`
+		Amr      []string                    `json:"amr,omitempty"`
+	}
+	SetSSOCookieRequest struct {
+		SSOCookie *SSOCookie `json:"ssoCookie"`
+	}
+	GetSSOCookieResponse struct {
+		SSOCookie *SSOCookie `json:"ssoCookie"`
+	}
+	KeepSigninPreferencesCookie struct {
+		DoNotAskAgain bool `json:"doNotAskAgain"`
+		KeepSignedIn  bool `json:"keepSignedIn"`
+	}
+	SetKeepSigninPreferencesCookieRequest struct {
+		Subject                     string                       `json:"subject"`
+		KeepSigninPreferencesCookie *KeepSigninPreferencesCookie `json:"keepSigninPreferencesCookie"`
+	}
+	GetKeepSigninPreferencesCookieRequest struct {
+		Subject string `json:"subject"`
+	}
+	GetKeepSigninPreferencesCookieResponse struct {
+		KeepSigninPreferencesCookie *KeepSigninPreferencesCookie `json:"keepSigninPreferencesCookie"`
+	}
+	DeleteKeepSigninPreferencesCookieRequest struct {
+		Subject string `json:"subject"`
 	}
 	WebAuthNCookie struct {
 		Identity    *proto_oidc_models.Identity `json:"identity"`
@@ -104,7 +162,17 @@ type (
 	GetErrorCookieResponse struct {
 		Value *ErrorCookie `json:"errorCookie"`
 	}
+	WellknownCookieNamesConfig struct {
+		CookiePrefix string `json:"cookiePrefix"`
+	}
+
+	IWellknownCookieNames interface {
+		// Cookie Name
+		//---------------------------------------------------------------------
+		GetCookieName(cookieName CookieName) string
+	}
 	IWellknownCookies interface {
+
 		// External OAuth2 Cookie
 		//---------------------------------------------------------------------
 		SetExternalOauth2Cookie(c echo.Context, request *SetExternalOauth2CookieRequest) error
@@ -120,6 +188,11 @@ type (
 		SetPasswordResetCookie(c echo.Context, request *SetPasswordResetCookieRequest) error
 		DeletePasswordResetCookie(c echo.Context)
 		GetPasswordResetCookie(c echo.Context) (*GetPasswordResetCookieResponse, error)
+		// Auth Completed Cookie
+		//---------------------------------------------------------------------
+		SetAuthCompletedCookie(c echo.Context, request *SetAuthCompletedCookieRequest) error
+		DeleteAuthCompletedCookie(c echo.Context)
+		GetAuthCompletedCookie(c echo.Context) (*GetAuthCompletedCookieResponse, error)
 		// Account State Cookie
 		//---------------------------------------------------------------------
 		SetAccountStateCookie(c echo.Context, request *SetAccountStateCookieRequest) error
@@ -130,6 +203,16 @@ type (
 		SetAuthCookie(c echo.Context, request *SetAuthCookieRequest) error
 		DeleteAuthCookie(c echo.Context)
 		GetAuthCookie(c echo.Context) (*GetAuthCookieResponse, error)
+		// SSO Cookie
+		//---------------------------------------------------------------------
+		SetSSOCookie(c echo.Context, request *SetSSOCookieRequest) error
+		DeleteSSOCookie(c echo.Context)
+		GetSSOCookie(c echo.Context) (*GetSSOCookieResponse, error)
+		// KeepSigninPreferences Cookie
+		//---------------------------------------------------------------------
+		SetKeepSigninPreferencesCookie(c echo.Context, request *SetKeepSigninPreferencesCookieRequest) error
+		DeleteKeepSigninPreferencesCookie(c echo.Context, request *DeleteKeepSigninPreferencesCookieRequest)
+		GetKeepSigninPreferencesCookie(c echo.Context, request *GetKeepSigninPreferencesCookieRequest) (*GetKeepSigninPreferencesCookieResponse, error)
 		// Insecure Cookies
 		//---------------------------------------------------------------------
 		SetInsecureCookie(c echo.Context, name string, value interface{}) error
@@ -152,17 +235,26 @@ type (
 		SetErrorCookie(c echo.Context, request *SetErrorCookieRequest) error
 		DeleteErrorCookie(c echo.Context)
 		GetErrorCookie(c echo.Context) (*GetErrorCookieResponse, error)
+		// Legacy string constants - deprecated, use CookieName enum with GetCookieName() instead
 	}
 )
 
+/*
 const (
-	CookieNameVerificationCode            = "_verificationCode"
-	CookieNamePasswordReset               = "_passwordReset"
-	CookieNameAccountState                = "_accountState"
-	CookieNameAuth                        = "_auth"
-	LoginRequest                          = "_loginRequest"
-	CookieNameExternalOauth2StateTemplate = "_externalOauth2State_{state}"
-	CookieNameWebAuthN                    = "_webAuthN"
-	CookieNameSigninUserName              = "_signinUserName"
-	CookieNameErrorName                   = "_error"
+	CookieNameVerificationCode            = "_rage_verificationCode"
+	CookieNamePasswordReset               = "_rage_passwordReset"
+	CookieNameAuthCompleted               = "_rage_authCompleted"
+	CookieNameAccountState                = "_rage_accountState"
+	CookieNameAuth                        = "_rage_auth"
+	CookieNameSSO                         = "_rage_sso"
+	LoginRequest                          = "_rage_loginRequest"
+	CookieNameExternalOauth2StateTemplate = "_rage_externalOauth2State_{state}"
+	CookieNameWebAuthN                    = "_rage_webAuthN"
+	CookieNameSigninUserName              = "_rage_signinUserName"
+	CookieNameErrorName                   = "_rage_error"
+	CookieNameCSRF                        = "_csrf" // keep this for now, I think it is hard coded in fluffycore
+	CookieNameAuthorizationState          = "_rage_authorization_state"
+	CookieNameAccountManagementSession    = "_rage_account_management_session"
+	CookieNameOIDCSession                 = "_rage_oidc_session"
 )
+*/

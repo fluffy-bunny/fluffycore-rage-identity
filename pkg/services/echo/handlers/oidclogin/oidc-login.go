@@ -220,8 +220,9 @@ func (s *service) DoPost(c echo.Context) error {
 	log.Debug().Interface("model", model).Msg("model")
 
 	doVerifyCode := model.Directive == models.MFA_VerifyEmailDirective || model.Directive == models.VerifyEmailDirective
+	doKeepSignedIn := model.Directive == models.KeepSignedInDirective
 
-	if !doVerifyCode && fluffycore_utils.IsEmptyOrNil(model.UserName) {
+	if !doVerifyCode && !doKeepSignedIn && fluffycore_utils.IsEmptyOrNil(model.UserName) {
 		return s.DoGet(c)
 	}
 
@@ -238,6 +239,52 @@ func (s *service) DoPost(c echo.Context) error {
 	if doVerifyCode {
 		landingPage := &models_api_manifest.LandingPage{
 			Page: models_api_manifest.PageVerifyCode,
+		}
+		session.Set("landingPage", landingPage)
+		session.Save()
+		return s.DoGet(c)
+	}
+	if doKeepSignedIn {
+
+		// Check if user has KeepSigninPreferences cookie ("don't show again" preference)
+		// Get the auth cookie to retrieve the subject
+		getAuthCookieResponse, err := s.wellknownCookies.GetAuthCookie(c)
+		if err == nil && getAuthCookieResponse.AuthCookie != nil {
+			getPreferencesCookieResponse, err := s.wellknownCookies.
+				GetKeepSigninPreferencesCookie(c,
+					&contracts_cookies.GetKeepSigninPreferencesCookieRequest{
+						Subject: getAuthCookieResponse.AuthCookie.Identity.Subject,
+					})
+			if err == nil &&
+				getPreferencesCookieResponse.KeepSigninPreferencesCookie != nil &&
+				getPreferencesCookieResponse.KeepSigninPreferencesCookie.KeepSignedIn {
+
+				// Set SSO cookie since we're auto-keeping them signed in - copy all auth context
+				err = s.wellknownCookies.SetSSOCookie(c,
+					&contracts_cookies.SetSSOCookieRequest{
+						SSOCookie: &contracts_cookies.SSOCookie{
+							Identity: getAuthCookieResponse.AuthCookie.Identity,
+							Acr:      getAuthCookieResponse.AuthCookie.Acr,
+							Amr:      getAuthCookieResponse.AuthCookie.Amr,
+						},
+					})
+				if err != nil {
+					log.Error().Err(err).Msg("SetSSOCookie failed when auto-skipping keep-signed-in")
+				} else {
+					log.Info().Str("subject", getAuthCookieResponse.AuthCookie.Identity.Subject).Msg("SSO cookie set for auto keep signed in")
+				}
+
+				// Delete the AuthCompleted cookie (one-time use)
+				s.wellknownCookies.DeleteAuthCompletedCookie(c)
+
+				// Go directly to handleIdentityFound to complete the OAuth flow
+				authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
+				return s.handleIdentityFound(c, authorizationRequest.State)
+			}
+		}
+
+		landingPage := &models_api_manifest.LandingPage{
+			Page: models_api_manifest.PageKeepSignedIn,
 		}
 		session.Set("landingPage", landingPage)
 		session.Save()
@@ -477,7 +524,6 @@ func (s *service) Do(c echo.Context) error {
 func (s *service) handleIdentityFound(c echo.Context, state string) error {
 	r := c.Request()
 	// is the request get or post?
-	rootPath := s.config.OIDCConfig.BaseUrl
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 	getAuthorizationRequestStateResponse, err := s.AuthorizationRequestStateStore().GetAuthorizationRequestState(ctx, &proto_oidc_flows.GetAuthorizationRequestStateRequest{
@@ -512,24 +558,30 @@ func (s *service) handleIdentityFound(c echo.Context, state string) error {
 		// redirect to error page
 		return s.TeleportBackToLoginWithError(c, InternalError_OIDCLogin_002, InternalError_OIDCLogin_002)
 	}
-	_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
-		State:                     authorizationFinal.Request.Code,
-		AuthorizationRequestState: authorizationFinal,
-	})
+
+	// Set AuthCompleted cookie to mark successful authentication
+	err = s.wellknownCookies.SetAuthCompletedCookie(c,
+		&contracts_cookies.SetAuthCompletedCookieRequest{
+			AuthCompleted: &contracts_cookies.AuthCompleted{
+				Subject: authorizationFinal.Identity.Subject,
+			},
+		})
 	if err != nil {
-		log.Warn().Err(err).Msg("StoreAuthorizationRequestState")
-		// redirect to error page
+		log.Error().Err(err).Msg("SetAuthCompletedCookie")
 		return s.TeleportBackToLoginWithError(c, InternalError_OIDCLogin_003, InternalError_OIDCLogin_003)
 	}
-	s.AuthorizationRequestStateStore().DeleteAuthorizationRequestState(ctx, &proto_oidc_flows.DeleteAuthorizationRequestStateRequest{
-		State: state,
-	})
 
-	// redirect to the client with the code.
-	redirectUri := authorizationFinal.Request.RedirectUri +
-		"?code=" + authorizationFinal.Request.Code +
-		"&state=" + authorizationFinal.Request.State +
-		"&iss=" + rootPath
-	return c.Redirect(http.StatusFound, redirectUri)
+	// Return directive to navigate to keep-signed-in page instead of redirecting to client
+	formParams := []models.FormParam{
+		{
+			Name:  "state",
+			Value: state,
+		},
+		{
+			Name:  "directive",
+			Value: models.KeepSignedInDirective,
+		},
+	}
+	return s.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
 
 }

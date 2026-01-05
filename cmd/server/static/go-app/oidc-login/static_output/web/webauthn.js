@@ -205,10 +205,11 @@ async function registerUser(returnUrl, friendlyName) {
   }
 }
 
-async function LoginUser(returnFailedUrl, useConditionalUI = false, errorCallback = null) {
+async function LoginUser(returnFailedUrl, useConditionalUI = false, errorCallback = null, successCallback = null) {
   let abortController = null;
   
   console.log("LoginUser called with errorCallback:", errorCallback, "type:", typeof errorCallback);
+  console.log("LoginUser called with successCallback:", successCallback, "type:", typeof successCallback);
   
   try {
     // Fetch authentication options from server
@@ -345,6 +346,16 @@ async function LoginUser(returnFailedUrl, useConditionalUI = false, errorCallbac
     }
 
     const data = await finishResponse.json();
+    
+    // Check if response has a directive (for keep-signed-in flow)
+    if (data.directive) {
+      console.log("Received directive:", data.directive);
+      // Call success callback if provided (from WASM)
+      if (successCallback && typeof successCallback === 'function') {
+        successCallback(data);
+        return; // Don't redirect, let WASM handle navigation
+      }
+    }
     
     // Redirect on success (check both redirectUrl and redirectUri for compatibility)
     const redirectUrl = data.redirectUrl || data.redirectUri || returnFailedUrl;

@@ -34,6 +34,8 @@ func CSRFSkipperPaths() map[string]bool {
 			wellknown_echo.API_UserIdentityInfo:            true,
 			wellknown_echo.API_UserProfilePath:             true,
 			wellknown_echo.OIDCLoginUIStaticPath:           true,
+			wellknown_echo.API_KeepSignedInPreference:      true,
+			wellknown_echo.API_ClearSSO:                    true,
 		}
 	}
 	return csrfSkipperPaths
@@ -84,6 +86,7 @@ func RequiresNoAuth() map[string]bool {
 			wellknown_echo.API_Logout:                 true,
 			wellknown_echo.API_PasswordResetStart:     true,
 			wellknown_echo.API_PasswordResetFinish:    true,
+			wellknown_echo.API_KeepSignedIn:           true,
 
 			wellknown_echo.OIDCLoginPasskeyPath:            true,
 			wellknown_echo.OIDCLoginPasswordPath:           true,

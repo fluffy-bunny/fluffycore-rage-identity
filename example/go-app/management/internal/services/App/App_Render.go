@@ -22,8 +22,24 @@ func (s *service) Render() app.UI {
 }
 
 func (s *service) renderCurrentPage() app.UI {
+	// Protected routes - require authentication
 	switch s.currentPage {
+	case contracts_routes.WellknownRoute_Profile,
+		contracts_routes.WellknownRoute_PasswordManager,
+		contracts_routes.WellknownRoute_PasskeyManager,
+		contracts_routes.WellknownRoute_LinkedAccounts,
+		contracts_routes.WellknownRoute_Preferences:
+		// Check if user is authenticated before rendering protected content
+		if !s.isAuthenticated {
+			// Show loading or blank state while auth check is in progress
+			return app.Div().Class("loading-container").Body(
+				app.Div().Class("loading-spinner"),
+			)
+		}
+	}
 
+	// Render the appropriate page
+	switch s.currentPage {
 	case contracts_routes.WellknownRoute_Profile:
 		return s.profileComposer
 	case contracts_routes.WellknownRoute_PasswordManager:
@@ -32,6 +48,8 @@ func (s *service) renderCurrentPage() app.UI {
 		return s.passkeyManagerComposer
 	case contracts_routes.WellknownRoute_LinkedAccounts:
 		return s.linkedAccountsComposer
+	case contracts_routes.WellknownRoute_Preferences:
+		return s.preferencesComposer
 	default:
 		return s.renderHomePage()
 	}

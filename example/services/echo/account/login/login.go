@@ -66,7 +66,9 @@ func (s *service) Do(c echo.Context) error {
 		return err
 	}
 
-	err := s.wellknownCookies.SetInsecureCookie(c, contracts_cookies.LoginRequest, model)
+	err := s.wellknownCookies.SetInsecureCookie(c,
+		s.WellknownCookieNames().GetCookieName(contracts_cookies.CookieName_LoginRequest),
+		model)
 	if err != nil {
 		return c.Redirect(http.StatusFound, "/error")
 	}

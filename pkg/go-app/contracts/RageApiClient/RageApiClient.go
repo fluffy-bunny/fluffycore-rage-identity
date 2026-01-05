@@ -6,6 +6,7 @@ import (
 	contracts_OIDCFlowAppConfig "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/OIDCFlowAppConfig"
 	common "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/common"
 	models_api_passkey "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_passkey"
+	models_api_preferences "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_preferences"
 	models_api_external_idp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/external_idp"
 	models_api_login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
 	models_api_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
@@ -37,6 +38,7 @@ type (
 		PasswordResetFinish(ctx context.Context, request *models_api_login_models.PasswordResetFinishRequest) (*common.WrappedResonseT[models_api_login_models.PasswordResetFinishResponse], error)
 		VerifyCodeBegin(ctx context.Context) (*common.WrappedResonseT[models_api_verify_code.VerifyCodeBeginResponse], error)
 		VerifyCode(ctx context.Context, request *models_api_login_models.VerifyCodeRequest) (*common.WrappedResonseT[models_api_login_models.VerifyCodeResponse], error)
+		KeepSignedIn(ctx context.Context, request *models_api_login_models.KeepSignedInRequest) (*common.WrappedResonseT[models_api_login_models.KeepSignedInResponse], error)
 
 		// TOTP/Authenticator APIs
 		GetTOTPStatus(ctx context.Context) ([]byte, error)
@@ -48,5 +50,10 @@ type (
 		GetPasskeysHTTP(ctx context.Context) (*common.WrappedResonseT[*models_api_passkey.PasskeysResponse], error)
 		DeletePasskeyHTTP(ctx context.Context, request *models_api_passkey.PasskeyDeleteRequest) (*common.WrappedResonseT[*models_api_passkey.PasskeyDeleteResponse], error)
 		RenamePasskeyHTTP(ctx context.Context, request *models_api_passkey.PasskeyRenameRequest) (*common.WrappedResonseT[*models_api_passkey.PasskeyRenameResponse], error)
+
+		// Preferences APIs
+		GetKeepSignedInPreference(ctx context.Context) (*common.WrappedResonseT[models_api_preferences.GetKeepSignedInPreferenceResponse], error)
+		UpdateKeepSignedInPreference(ctx context.Context, request *models_api_preferences.UpdateKeepSignedInPreferenceRequest) (*common.WrappedResonseT[models_api_preferences.UpdateKeepSignedInPreferenceResponse], error)
+		ClearSSOCookie(ctx context.Context) (*common.WrappedResonseT[models_api_preferences.ClearSSOResponse], error)
 	}
 )

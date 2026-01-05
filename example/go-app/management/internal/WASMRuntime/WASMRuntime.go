@@ -17,11 +17,13 @@ import (
 	services_composers_LinkedAccounts "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/composers/LinkedAccounts"
 	services_composers_PasskeyManager "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/composers/PasskeyManager"
 	services_composers_PasswordManager "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/composers/PasswordManager"
+	services_composers_Preferences "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/composers/Preferences"
 	services_composers_Profile "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/composers/Profile"
 	servies_i18n_Localizer "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/i18n/Localizer"
 	services_i18n_LocalizerBundle "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/i18n/LocalizerBundle"
 	services_logging "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/internal/services/logging"
 	services_go_app_RageApiClient "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/services/RageApiClient"
+	services_WellknownCookieNames "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/go-app/services/WellknownCookieNames"
 	app "github.com/maxence-charriere/go-app/v10/pkg/app"
 	zerolog "github.com/rs/zerolog"
 )
@@ -38,6 +40,7 @@ func RegisterServices(ctx context.Context, cb di.ContainerBuilder) {
 	services_i18n_LocalizerBundle.AddScopedILocalizerBundle(cb)
 	services_composers_Home.AddScopedIHomeComposer(cb)
 	services_composers_Profile.AddScopedIProfileComposer(cb)
+	services_composers_Preferences.AddScopedIPreferencesComposer(cb)
 	services_composers_PasswordManager.AddScopedIPasswordManagerComposer(cb)
 	services_composers_PasskeyManager.AddScopedIPasskeyManagerComposer(cb)
 	services_composers_LinkedAccounts.AddScopedILinkedAccountsComposer(cb)
@@ -49,6 +52,8 @@ func RegisterServices(ctx context.Context, cb di.ContainerBuilder) {
 	services_go_app_ManagementApiClient.AddScopedIManagementApiClient(cb)
 	var appContext contracts_App.AppContext = ctx
 	di.AddInstance[contracts_App.AppContext](cb, appContext)
+	// when we load the wasm make sure we set the WellknownCookieNamesConfig as a global
+	services_WellknownCookieNames.AddSingletonIWellknownCookieNames(cb)
 }
 
 var diContainer di.Container
@@ -139,6 +144,13 @@ func NewWASMApp(ctx context.Context, generateStaticMode bool) {
 		app.Route(routeLinkedAccounts, func() app.Composer {
 			log.Info().Msg("Routing to " + routeLinkedAccounts)
 			return newScopedWizardApp(contracts_routes.WellknownRoute_LinkedAccounts)
+		})
+
+		// Register Preferences route
+		routePreferences := fixupRoute(contracts_routes.WellknownRoute_Preferences)
+		app.Route(routePreferences, func() app.Composer {
+			log.Info().Msg("Routing to " + routePreferences)
+			return newScopedWizardApp(contracts_routes.WellknownRoute_Preferences)
 		})
 	}
 

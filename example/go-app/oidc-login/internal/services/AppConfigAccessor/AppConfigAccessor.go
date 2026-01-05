@@ -11,6 +11,7 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/contracts/config"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/utils"
 	contracts_OIDCFlowAppConfig "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/OIDCFlowAppConfig"
+	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	fluffycore_go_app_fetch "github.com/fluffy-bunny/fluffycore/go-app/fetch"
 	fluffycore_go_app_js_loader "github.com/fluffy-bunny/fluffycore/go-app/js_loader"
@@ -23,8 +24,9 @@ import (
 
 type (
 	service struct {
-		appConfig         *oidc_login_contracts_config.AppConfig
-		oidcFlowAppConfig *contracts_OIDCFlowAppConfig.OIDCFlowAppConfig
+		appConfig            *oidc_login_contracts_config.AppConfig
+		oidcFlowAppConfig    *contracts_OIDCFlowAppConfig.OIDCFlowAppConfig
+		wellknownCookieNames contracts_cookies.IWellknownCookieNames
 	}
 )
 
@@ -32,7 +34,7 @@ var stemService = (*service)(nil)
 
 var _ contracts_config.IAppConfigAccessor = stemService
 
-func (s *service) Ctor() (contracts_config.IAppConfigAccessor, error) {
+func (s *service) Ctor(wellknownCookieNames contracts_cookies.IWellknownCookieNames) (contracts_config.IAppConfigAccessor, error) {
 	config, err := fluffycore_go_app_js_loader.LoadConfigFromJS[oidc_login_contracts_config.AppConfig](
 		&fluffycore_go_app_js_loader.LoadConfigOptions{
 			IsReadyFuncName:   "isAppConfigReady",
@@ -43,7 +45,8 @@ func (s *service) Ctor() (contracts_config.IAppConfigAccessor, error) {
 		return nil, err
 	}
 	return &service{
-		appConfig: config,
+		appConfig:            config,
+		wellknownCookieNames: wellknownCookieNames,
 	}, nil
 }
 
@@ -124,7 +127,8 @@ func (s *service) GetOIDCFlowAppConfig(ctx context.Context) (*contracts_OIDCFlow
 
 // GetAuthorizationStateCookie reads the _authorization_state cookie and extracts the state value
 func (s *service) GetAuthorizationStateCookie(ctx context.Context) (*contracts_config.AuthorizationStateCookie, error) {
-	cookie, err := utils.GetCookie[contracts_config.AuthorizationStateCookie]("_authorization_state")
+	ccName := s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_AuthorizationState)
+	cookie, err := utils.GetCookie[contracts_config.AuthorizationStateCookie](ccName)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "authorization state cookie not found")
 	}
@@ -139,7 +143,8 @@ func (s *service) SetAuthorizationStateCookie(ctx context.Context, authStateCook
 		MaxAge:   3600,
 		SameSite: "Lax",
 	}
-	err := utils.SetCookie("_authorization_state", *authStateCookie, opts)
+	ccName := s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_AuthorizationState)
+	err := utils.SetCookie(ccName, *authStateCookie, opts)
 	if err != nil {
 		return fmt.Errorf("failed to set authorization state cookie: %w", err)
 	}
