@@ -147,6 +147,10 @@ type (
 		CacheBustingConfig *CacheBustingHTMLConfig                    `json:"cacheBustingConfig"`
 		URIEntryPath       string                                     `json:"uriEntryPath"`
 	}
+	RequiresNoAuthConfig struct {
+		Remove []string `json:"remove"`
+		Add    []string `json:"add"`
+	}
 	Config struct {
 		fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
 
@@ -182,6 +186,7 @@ type (
 		AccountAppSettings             *models_api_appsettings.AccountAppSettings     `json:"accountAppSettings"`
 		ApiAppSettings                 *models_api_appsettings.ApiAppSettings         `json:"apiAppSettings"`
 		OIDCFlowAppConfig              *contracts_OIDCFlowAppConfig.OIDCFlowAppConfig `json:"oidcFlowAppConfig"`
+		RequiresNoAuthConfig           *RequiresNoAuthConfig                          `json:"requiresNoAuthConfig"`
 	}
 )
 
@@ -414,6 +419,10 @@ const configDefaultJSONTemplate = `
 	},
 	"ssoConfig": {
 		"maxDurationMinutes": 5
+	},
+	"requiresNoAuthConfig": {
+		"remove": [],
+		"add": []
 	}
 }
 `

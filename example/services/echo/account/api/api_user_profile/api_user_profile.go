@@ -6,6 +6,7 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
+	pkg_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_external_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/models"
@@ -233,7 +234,7 @@ func (s *service) DoGet(c echo.Context) error {
 	log.Info().Interface("acrClaims", acrClaims).Int("count", len(acrClaims)).Msg("Checking ACR claims for claimed domain")
 
 	for _, claim := range acrClaims {
-		if claim.Value == "urn:rage:claimed-domain" {
+		if claim.Value == pkg_models.ACRClaimedDomain {
 			isClaimedDomain = true
 			log.Info().Msg("Found claimed domain ACR")
 			break

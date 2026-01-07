@@ -10,12 +10,13 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_OIDCFlowAppConfig "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/OIDCFlowAppConfig"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
-	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
+	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/eko_gocache"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	services_AuthorizationCodeClaimsAugmentor "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/AuthorizationCodeClaimsAugmentor"
 	services_EventSink "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/EventSink"
+	services_auth_RequiresNoAuth "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/auth/RequiresNoAuth"
 	services_client_inmemory "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/client/inmemory"
 	services_codeexchanges_genericoidc "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/codeexchanges/genericoidc"
 	services_codeexchanges_github "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/codeexchanges/github"
@@ -58,6 +59,7 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	services_oauth2factory.AddSingletonIOAuth2Factory(builder)
 	services_tokenservice.AddSingletonITokenService(builder)
 	services_AuthorizationCodeClaimsAugmentor.AddSingletonIClaimsAugmentor(builder)
+	services_auth_RequiresNoAuth.AddSingletonIRequiresNoAuth(builder)
 	services_EventSink.AddSingletonIEventSink(builder)
 	services_codeexchanges_github.AddSingletonIGithubCodeExchange(builder)
 	services_codeexchanges_genericoidc.AddSingletonIGenericOIDCCodeExchange(builder)
@@ -144,7 +146,7 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	fluffycore_echo_services_cookies_insecure.AddCookies(builder)
 	fluffycore_echo_services_cookies_secure.AddSecureCookies(builder, config.Echo.SecureCookies)
 	services_cookies.AddSingletonIWellknownCookies(builder,
-		&cookies.WellknownCookieNamesConfig{
+		&contracts_cookies.WellknownCookieNamesConfig{
 			CookiePrefix: config.Echo.CookiePrefix,
 		})
 
