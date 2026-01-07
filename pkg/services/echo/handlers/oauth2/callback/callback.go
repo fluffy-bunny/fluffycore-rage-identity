@@ -36,6 +36,7 @@ import (
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type (
@@ -423,33 +424,70 @@ func (s *service) Do(c echo.Context) error {
 				Str("idpSlug", externalOauth2State.Request.IdpHint).
 				Msg("Updating LastUsedOn timestamps for external login")
 
-			_, err := s.RageUserService().UpdateRageUser(ctx, &proto_oidc_user.UpdateRageUserRequest{
-				User: &proto_oidc_models.RageUserUpdate{
-					RootIdentity: &proto_oidc_models.IdentityUpdate{
-						Subject:    user.RootIdentity.Subject,
-						LastUsedOn: timestamppb.Now(),
-					},
-					LinkedIdentities: &proto_oidc_models.LinkedIdentitiesUpdate{
-						Update: &proto_oidc_models.LinkedIdentitiesUpdate_Granular_{
-							Granular: &proto_oidc_models.LinkedIdentitiesUpdate_Granular{
-								Add: []*proto_oidc_models.Identity{
-									{
-										Subject:    externalIdentity.Subject,
-										IdpSlug:    externalOauth2State.Request.IdpHint,
-										LastUsedOn: timestamppb.Now(),
+			_, err := s.RageUserService().UpdateRageUser(ctx,
+				&proto_oidc_user.UpdateRageUserRequest{
+					User: &proto_oidc_models.RageUserUpdate{
+						RootIdentity: &proto_oidc_models.IdentityUpdate{
+							Subject:    user.RootIdentity.Subject,
+							LastUsedOn: timestamppb.Now(),
+						},
+						LinkedIdentities: &proto_oidc_models.LinkedIdentitiesUpdate{
+							Update: &proto_oidc_models.LinkedIdentitiesUpdate_Granular_{
+								Granular: &proto_oidc_models.LinkedIdentitiesUpdate_Granular{
+									Add: []*proto_oidc_models.Identity{
+										{
+											Subject:    externalIdentity.Subject,
+											IdpSlug:    externalOauth2State.Request.IdpHint,
+											LastUsedOn: timestamppb.Now(),
+										},
 									},
 								},
 							},
 						},
 					},
-				},
-			})
+				})
 			if err != nil {
 				log.Error().Err(err).Msg("Failed to update identity LastUsedOn")
 				// Don't fail login, just log the error
 			} else {
 				log.Info().Msg("Successfully updated LastUsedOn timestamps")
 			}
+
+			// check if we are a claimed domain.
+			// -----------------------------------------------------------------
+			emailParts := strings.Split(user.RootIdentity.Email, "@")
+			domainPart := ""
+			if len(emailParts) == 2 {
+				domainPart = strings.ToLower(emailParts[1])
+			}
+			isClaimedDomain := false
+			// chcck in domainpart is in idp claimed domains.
+			for _, claimedDomain := range idp.ClaimedDomains {
+				if strings.ToLower(claimedDomain) == domainPart {
+					// domain is claimed, skip email verification
+					isClaimedDomain = true
+				}
+			}
+			if isClaimedDomain && !user.RootIdentity.EmailVerified {
+				// we need to update this.
+				_, err := s.RageUserService().UpdateRageUser(ctx,
+					&proto_oidc_user.UpdateRageUserRequest{
+						User: &proto_oidc_models.RageUserUpdate{
+							RootIdentity: &proto_oidc_models.IdentityUpdate{
+								Subject: user.RootIdentity.Subject,
+								EmailVerified: &wrapperspb.BoolValue{
+									Value: true,
+								},
+							},
+						},
+					})
+				if err != nil {
+					log.Error().Err(err).Msg("Failed to update identity EmailVerified")
+					return s.TeleportBackToLoginWithError(c, InternalError_Callback_010, InternalError_Callback_010)
+				}
+				user.RootIdentity.EmailVerified = true
+			}
+
 			if idp.MultiFactorRequired || !user.RootIdentity.EmailVerified {
 				if user.RootIdentity.EmailVerified {
 					return doEmailVerification(user, directive, contracts_cookies.VerifyCode_Challenge)
