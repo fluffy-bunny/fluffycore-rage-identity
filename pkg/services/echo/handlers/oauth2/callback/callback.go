@@ -163,7 +163,6 @@ func (s *service) Do(c echo.Context) error {
 			log.Error().Err(err).Msg("GenerateHashedVerificationCode")
 			return s.TeleportBackToLoginWithError(c, InternalError_Callback_099, InternalError_Callback_099)
 		}
-		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
 		err = s.wellknownCookies.SetVerificationCodeCookie(c,
 			&contracts_cookies.SetVerificationCodeCookieRequest{
 				VerificationCode: &contracts_cookies.VerificationCode{
@@ -185,7 +184,7 @@ func (s *service) Do(c echo.Context) error {
 				SubjectId: "email.verification.subject",
 				BodyId:    "email.verification.message",
 				Data: map[string]string{
-					"code": verificationCode,
+					"code": codeResult.PlainCode,
 				},
 			})
 		if err != nil {
