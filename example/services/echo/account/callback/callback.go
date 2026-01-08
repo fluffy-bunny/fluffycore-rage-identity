@@ -123,7 +123,10 @@ func (s *service) Do(c echo.Context) error {
 	s.wellknownCookies.DeleteAccountStateCookie(c)
 
 	if model.State != state {
-		log.Error().Msg("State did not match")
+		log.Error().
+			Str("expected_state", state).
+			Str("received_state", model.State).
+			Msg("State did not match")
 		return c.Redirect(http.StatusFound, "/error")
 	}
 

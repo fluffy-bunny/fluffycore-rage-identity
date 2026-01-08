@@ -91,9 +91,10 @@ import (
 type (
 	startup struct {
 		services_startup.StartupBase
-		config *contracts_config.Config
-		log    zerolog.Logger
-		ext    pkg_types.ConfigureServices
+		config               *contracts_config.Config
+		log                  zerolog.Logger
+		ext                  pkg_types.ConfigureServices
+		managementMiddleware pkg_types.ConfigureManagementMiddleware
 	}
 )
 
@@ -104,6 +105,11 @@ type WithOption func(startup *startup)
 func WithConfigureServices(ext pkg_types.ConfigureServices) WithOption {
 	return func(startup *startup) {
 		startup.ext = ext
+	}
+}
+func WithConfigureManagementMiddleware(middleware pkg_types.ConfigureManagementMiddleware) WithOption {
+	return func(startup *startup) {
+		startup.managementMiddleware = middleware
 	}
 }
 
@@ -408,7 +414,11 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 	if s.config.URLRewritesConfig != nil && s.config.URLRewritesConfig.Enabled {
 		e.Use(urlRewriteMiddleware(s.config.URLRewritesConfig))
 	}
+
 	e.Use(EnsureAuth(root))
+	if s.managementMiddleware != nil {
+		e.Use(s.managementMiddleware(root))
+	}
 	if s.config.NoCacheConfig != nil && s.config.NoCacheConfig.Enabled {
 		e.Use(noCacheMiddleware(s.config.NoCacheConfig))
 	}
