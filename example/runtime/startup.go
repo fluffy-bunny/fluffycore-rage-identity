@@ -43,11 +43,13 @@ import (
 	services_cookies_WellknownCookieNames "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/cookies/WellknownCookieNames"
 	services_handlers_cache_busting_static_html "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/cache_busting_static_html"
 	services_session_with_options "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/session_with_options"
+	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
 	fluffycore_async "github.com/fluffy-bunny/fluffycore/async"
 	fluffycore_cobracore_cmd "github.com/fluffy-bunny/fluffycore/cobracore/cmd"
+	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_contracts_ddprofiler "github.com/fluffy-bunny/fluffycore/contracts/ddprofiler"
 	fluffycore_contracts_middleware_auth_jwt "github.com/fluffy-bunny/fluffycore/contracts/middleware/auth/jwt"
 	fluffycore_contracts_runtime "github.com/fluffy-bunny/fluffycore/contracts/runtime"
@@ -56,6 +58,7 @@ import (
 	fluffycore_echo_services_sessions_memory_session "github.com/fluffy-bunny/fluffycore/echo/services/sessions/memory_session"
 	fluffycore_echo_services_sessions_memory_session_store "github.com/fluffy-bunny/fluffycore/echo/services/sessions/memory_session_store"
 	fluffycore_echo_services_sessions_session_factory "github.com/fluffy-bunny/fluffycore/echo/services/sessions/session_factory"
+	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	fluffycore_middleware_auth_jwt "github.com/fluffy-bunny/fluffycore/middleware/auth/jwt"
 	fluffycore_middleware_claimsprincipal "github.com/fluffy-bunny/fluffycore/middleware/claimsprincipal"
 	fluffycore_middleware_correlation "github.com/fluffy-bunny/fluffycore/middleware/correlation"
@@ -95,9 +98,85 @@ func NewStartup() fluffycore_contracts_runtime.IStartup {
 	appStartup := &startup{}
 	appStartup.rageStartup = rage_runtime.NewStartup(
 		rage_runtime.WithConfigureServices(appStartup.MyConfigServices),
+		rage_runtime.WithConfigureManagementMiddleware(appStartup.EnsureManagementAuth),
 	)
 	return appStartup
 }
+
+func (s *startup) EnsureManagementAuth(ctn di.Container) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			path := c.Path()
+
+			// Only apply to /management/ paths
+			if !strings.HasPrefix(path, wellknown_echo.ManagementPath) {
+				return next(c)
+			}
+			ctx := c.Request().Context()
+			log := zerolog.Ctx(ctx).With().Logger()
+
+			subContainer, ok := c.Get(fluffycore_echo_wellknown.SCOPED_CONTAINER_KEY).(di.Container)
+			if !ok {
+				log.Warn().Msg("No scoped container found")
+				return next(c)
+			}
+			claimsPrincipal := di.Get[fluffycore_contracts_common.IClaimsPrincipal](subContainer)
+			isAuthenticated := claimsPrincipal.HasClaim(fluffycore_contracts_common.Claim{
+				Type:  fluffycore_echo_wellknown.ClaimTypeAuthenticated,
+				Value: "true",
+			})
+
+			if isAuthenticated {
+				return next(c)
+			}
+
+			// Use actual request path, not the route pattern
+			returnURL := c.Request().URL.Path
+			if returnURL == "" {
+				returnURL = "/"
+			}
+
+			// Return HTML that will POST to the login API and then redirect
+			html := `<!DOCTYPE html>
+<html>
+<head>
+    <title>Redirecting to Login...</title>
+</head>
+<body>
+    <p>Redirecting to login...</p>
+    <form id="loginForm" method="POST" action="/api/login">
+        <input type="hidden" name="returnUrl" value="` + returnURL + `" />
+    </form>
+    <script>
+        fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ returnUrl: '` + returnURL + `' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.redirectUrl) {
+                window.location.href = data.redirectUrl;
+            } else {
+                window.location.href = '/error';
+            }
+        })
+        .catch(error => {
+            console.error('Login error:', error);
+            window.location.href = '/error';
+        });
+    </script>
+</body>
+</html>`
+
+			return c.HTML(http.StatusOK, html)
+		}
+
+	}
+}
+
 func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBuilder) {
 	log := zerolog.Ctx(ctx).With().Str("method", "Configure").Logger()
 	dst, err := fluffycore_utils_redact.CloneAndRedact(s.configOptions.Destination)

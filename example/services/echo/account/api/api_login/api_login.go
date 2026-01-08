@@ -11,6 +11,7 @@ import (
 	oidc "github.com/coreos/go-oidc/v3/oidc"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	shared "github.com/fluffy-bunny/fluffycore-rage-identity/cmd/oidc-client/shared"
+	contracts_echo_login_handler "github.com/fluffy-bunny/fluffycore-rage-identity/example/contracts/echo/login_handler"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_session_with_options "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/session_with_options"
@@ -19,9 +20,11 @@ import (
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
+	status "github.com/gogo/status"
 	echo "github.com/labstack/echo/v4"
 	zerolog "github.com/rs/zerolog"
 	oauth2 "golang.org/x/oauth2"
+	codes "google.golang.org/grpc/codes"
 )
 
 type (
@@ -36,6 +39,7 @@ type (
 var stemService = (*service)(nil)
 
 var _ contracts_handler.IHandler = stemService
+var _ contracts_echo_login_handler.ILoginHandler = stemService
 
 func (s *service) Ctor(
 	config *contracts_config.Config,
@@ -49,8 +53,6 @@ func (s *service) Ctor(
 	}, nil
 }
 
-// 	API_Logout             = "/api/logout"
-
 // AddScopedIHandler registers the *service as a singleton.
 func AddScopedIHandler(builder di.ContainerBuilder) {
 	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
@@ -60,6 +62,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 		},
 		wellknown_echo.API_Login,
 	)
+	di.AddScoped[contracts_echo_login_handler.ILoginHandler](builder, stemService.Ctor)
 
 }
 
@@ -70,6 +73,98 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 var (
 	callbackPath = wellknown_echo.AccountCallbackPath
 )
+
+func (s *service) HandleLogin(c echo.Context, loginRequest *login_models.LoginRequest) (*login_models.LoginResponse, error) {
+	ctx := c.Request().Context()
+	log := zerolog.Ctx(ctx).With().Logger()
+
+	r := c.Request()
+
+	// Validate LoginRequest
+	if loginRequest.ReturnURL == "" {
+		log.Error().Msg("ReturnUrl is empty")
+		return nil, status.Error(codes.InvalidArgument, "returnUrl is required")
+	}
+	s.WellknownCookies().DeleteAuthCompletedCookie(c)
+	s.WellknownCookies().DeleteAuthCookie(c)
+
+	ss, err := s.session.GetSession()
+	if err != nil {
+		log.Error().Err(err).Msg("s.session.GetSession")
+		return nil, err
+	}
+	err = ss.New()
+	if err != nil {
+		log.Error().Err(err).Msg("ss.New")
+		return nil, err
+	}
+	state, err := randString(16)
+	if err != nil {
+		log.Error().Err(err).Msg("randString")
+		return nil, err
+	}
+	nonce, err := randString(16)
+	if err != nil {
+		log.Error().Err(err).Msg("randString")
+		return nil, err
+	}
+
+	// Store the LoginRequest in a cookie for the callback
+	err = s.WellknownCookies().SetInsecureCookie(c,
+		s.WellknownCookieNames().GetCookieName(contracts_cookies.CookieName_LoginRequest),
+		&models.LoginGetRequest{
+			ReturnUrl: loginRequest.ReturnURL,
+		})
+	if err != nil {
+		log.Error().Err(err).Msg("SetInsecureCookie LoginRequest")
+		return nil, err
+	}
+
+	// Store state and nonce in AccountStateCookie
+	err = s.WellknownCookies().SetAccountStateCookie(c, &contracts_cookies.SetAccountStateCookieRequest{
+		AccountStateCookie: &contracts_cookies.AccountStateCookie{
+			State: state,
+			Nonce: nonce,
+		},
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("SetAccountStateCookie")
+		return nil, err
+	}
+
+	authCodeOptions := []oauth2.AuthCodeOption{
+		oidc.Nonce(nonce),
+	}
+	if len(shared.AppConfig.ACRValues) > 0 {
+		authCodeOptions = append(authCodeOptions, AcrValues(shared.AppConfig.ACRValues...))
+	}
+
+	provider, err := oidc.NewProvider(ctx, s.config.OIDCConfig.BaseUrl)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to query provider.")
+		return nil, err
+	}
+
+	// Build redirect URL from the request itself
+	scheme := "http"
+	if r.TLS != nil {
+		scheme = "https"
+	}
+	redirectUrl := fmt.Sprintf("%s://%s%s", scheme, r.Host, callbackPath)
+
+	config := oauth2.Config{
+		ClientID:     shared.AppConfig.ClientId,
+		ClientSecret: shared.AppConfig.ClientSecret,
+		Endpoint:     provider.Endpoint(),
+		RedirectURL:  redirectUrl,
+		Scopes:       []string{oidc.ScopeOpenID, "profile", "email", oidc.ScopeOfflineAccess},
+	}
+
+	authRequestURL := config.AuthCodeURL(state, authCodeOptions...)
+	return &login_models.LoginResponse{
+		RedirectURL: authRequestURL,
+	}, nil
+}
 
 type LoginRequest struct {
 	ReturnUrl string `param:"returnUrl" query:"returnUrl" form:"returnUrl" json:"returnUrl" xml:"returnUrl"`
@@ -91,8 +186,6 @@ func (s *service) Do(c echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
-	r := c.Request()
-
 	// Bind the LoginRequest
 	loginRequest := &LoginRequest{}
 	if err := c.Bind(loginRequest); err != nil {
@@ -100,93 +193,24 @@ func (s *service) Do(c echo.Context) error {
 		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 
-	// Validate LoginRequest
-	if loginRequest.ReturnUrl == "" {
-		log.Error().Msg("ReturnUrl is empty")
-		return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: "returnUrl is required"}, "  ")
-	}
-
-	s.WellknownCookies().DeleteAuthCompletedCookie(c)
-	s.WellknownCookies().DeleteAuthCookie(c)
-	//s.WellknownCookies().DeleteSSOCookie(c)
-
-	ss, err := s.session.GetSession()
-	if err != nil {
-		log.Error().Err(err).Msg("s.session.GetSession")
-		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
-	}
-	err = ss.New()
-	if err != nil {
-		log.Error().Err(err).Msg("ss.New")
-		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
-	}
-	state, err := randString(16)
-	if err != nil {
-		log.Error().Err(err).Msg("randString")
-		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
-	}
-	nonce, err := randString(16)
-	if err != nil {
-		log.Error().Err(err).Msg("randString")
-		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
-	}
-
-	// Store the LoginRequest in a cookie for the callback
-	err = s.WellknownCookies().SetInsecureCookie(c,
-		s.WellknownCookieNames().GetCookieName(contracts_cookies.CookieName_LoginRequest),
-		&models.LoginGetRequest{
-			ReturnUrl: loginRequest.ReturnUrl,
+	loginResponse, err := s.HandleLogin(c,
+		&login_models.LoginRequest{
+			ReturnURL: loginRequest.ReturnUrl,
 		})
 	if err != nil {
-		log.Error().Err(err).Msg("SetInsecureCookie LoginRequest")
+		st, ok := status.FromError(err)
+		if ok {
+			switch st.Code() {
+			case codes.InvalidArgument:
+				return c.JSONPretty(http.StatusBadRequest, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+			default:
+				return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+			}
+		}
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 
-	// Store state and nonce in AccountStateCookie
-	err = s.WellknownCookies().SetAccountStateCookie(c, &contracts_cookies.SetAccountStateCookieRequest{
-		AccountStateCookie: &contracts_cookies.AccountStateCookie{
-			State: state,
-			Nonce: nonce,
-		},
-	})
-	if err != nil {
-		log.Error().Err(err).Msg("SetAccountStateCookie")
-		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
-	}
-
-	authCodeOptions := []oauth2.AuthCodeOption{
-		oidc.Nonce(nonce),
-	}
-	if len(shared.AppConfig.ACRValues) > 0 {
-		authCodeOptions = append(authCodeOptions, AcrValues(shared.AppConfig.ACRValues...))
-	}
-
-	provider, err := oidc.NewProvider(ctx, s.config.OIDCConfig.BaseUrl)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to query provider.")
-		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
-	}
-
-	// Build redirect URL from the request itself
-	scheme := "http"
-	if r.TLS != nil {
-		scheme = "https"
-	}
-	redirectUrl := fmt.Sprintf("%s://%s%s", scheme, r.Host, callbackPath)
-
-	config := oauth2.Config{
-		ClientID:     shared.AppConfig.ClientId,
-		ClientSecret: shared.AppConfig.ClientSecret,
-		Endpoint:     provider.Endpoint(),
-		RedirectURL:  redirectUrl,
-		Scopes:       []string{oidc.ScopeOpenID, "profile", "email", oidc.ScopeOfflineAccess},
-	}
-
-	authRequestURL := config.AuthCodeURL(state, authCodeOptions...)
-
-	return c.JSONPretty(http.StatusOK, &login_models.LoginResponse{
-		RedirectURL: authRequestURL,
-	}, "  ")
+	return c.JSONPretty(http.StatusOK, loginResponse, "  ")
 }
 func randString(nByte int) (string, error) {
 	b := make([]byte, nByte)

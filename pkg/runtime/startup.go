@@ -49,7 +49,8 @@ type (
 		oidcserverFuture  async.Future[*fluffycore_async.AsyncResponse]
 		oidcserverRuntime *core_echo_runtime.Runtime
 
-		ext pkg_types.ConfigureServices
+		ext                  pkg_types.ConfigureServices
+		managementMiddleware pkg_types.ConfigureManagementMiddleware
 	}
 )
 type WithOption func(startup *startup)
@@ -57,6 +58,11 @@ type WithOption func(startup *startup)
 func WithConfigureServices(ext pkg_types.ConfigureServices) WithOption {
 	return func(startup *startup) {
 		startup.ext = ext
+	}
+}
+func WithConfigureManagementMiddleware(middleware pkg_types.ConfigureManagementMiddleware) WithOption {
+	return func(startup *startup) {
+		startup.managementMiddleware = middleware
 	}
 }
 func emptyEntrypointConfigs() map[string]contracts_common.IEntryPointConfig {
@@ -233,6 +239,7 @@ func (s *startup) OnPreServerStartup(ctx context.Context) error {
 	s.oidcserverRuntime = core_echo_runtime.New(
 		oidcserver.NewStartup(
 			oidcserver.WithConfigureServices(s.ext),
+			oidcserver.WithConfigureManagementMiddleware(s.managementMiddleware),
 		))
 	s.oidcserverFuture = fluffycore_async.ExecuteWithPromiseAsync(
 		func(promise async.Promise[*fluffycore_async.AsyncResponse]) {
