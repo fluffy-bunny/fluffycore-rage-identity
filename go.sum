@@ -299,8 +299,8 @@ github.com/mattn/go-runewidth v0.0.13/go.mod h1:Jdepj2loyihRzMpdS35Xk/zdY8IAYHsh
 github.com/mattn/go-runewidth v0.0.16 h1:E5ScNMtiwvlvB5paMFdw9p4kSQzbXFikJ5SQO6TULQc=
 github.com/mattn/go-runewidth v0.0.16/go.mod h1:Jdepj2loyihRzMpdS35Xk/zdY8IAYHsh153qUoGf23w=
 github.com/mattn/goveralls v0.0.9/go.mod h1:FRbM1PS8oVsOe9JtdzAAXM+DsvDMMHcM1C7drGJD8HY=
-github.com/maxence-charriere/go-app/v10 v10.1.8 h1:n1dNvMATqjGIqmBcHNxPx6ZU/P9zKOrTn02m/ebbtV4=
-github.com/maxence-charriere/go-app/v10 v10.1.8/go.mod h1:FqUW4on4nJewVfBnSkuxQd3fvtK2RdKS/z76OOUDAAY=
+github.com/maxence-charriere/go-app/v10 v10.1.9 h1:FZBXf6bXfJDVdxRMaDStxQTDSpZyO/J8TTKSAWLa1SA=
+github.com/maxence-charriere/go-app/v10 v10.1.9/go.mod h1:FqUW4on4nJewVfBnSkuxQd3fvtK2RdKS/z76OOUDAAY=
 github.com/mdaverde/jsonpath v0.2.1 h1:D/p5PAjMgNAw0BHciKyIiPxz8RbPr0qkeFC8UZc3jF0=
 github.com/mdaverde/jsonpath v0.2.1/go.mod h1:CPqQH8FPN4tjMnyjzuKWZvVyJsTzckI0gYAqAcXEyGo=
 github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=

@@ -24,7 +24,7 @@ require (
 	github.com/imroc/req/v3 v3.57.0
 	github.com/labstack/echo/v4 v4.15.0
 	github.com/lestrrat-go/jwx/v2 v2.1.6
-	github.com/maxence-charriere/go-app/v10 v10.1.8
+	github.com/maxence-charriere/go-app/v10 v10.1.9
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
 	github.com/reugn/async v0.10.0
 	github.com/rs/xid v1.6.0
