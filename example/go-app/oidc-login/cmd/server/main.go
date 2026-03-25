@@ -10,8 +10,8 @@ import (
 
 	oidc_login_contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/contracts/config"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/internal/contracts/config"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 	"github.com/rs/zerolog"
 )
 
@@ -46,7 +46,7 @@ func main() {
 
 	e := echo.New()
 
-	e.Use(middleware.Logger())
+	e.Use(middleware.RequestLogger())
 	e.Use(middleware.Recover())
 
 	// API endpoints for the wizard
@@ -54,7 +54,7 @@ func main() {
 	e.GET("/config/app.json", appConfigHandler)
 
 	// Root page with selector to the base path
-	e.GET("/", func(c echo.Context) error {
+	e.GET("/", func(c *echo.Context) error {
 		html := fmt.Sprintf(`<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -138,7 +138,7 @@ func main() {
 
 	// Middleware to set cache headers and Content-Type AFTER static file handler
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			err := next(c)
 
 			path := c.Request().URL.Path
@@ -164,7 +164,7 @@ func main() {
 
 	// SPA fallback for non-file routes (must come after Static)
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			err := next(c)
 			if err != nil {
 				httpErr, ok := err.(*echo.HTTPError)
@@ -177,10 +177,10 @@ func main() {
 		}
 	})
 
-	e.Logger.Fatal(e.Start(":" + *port))
+	log.Fatal().Err(e.Start(":" + *port)).Msg("server stopped")
 }
 
-func appConfigHandler(c echo.Context) error {
+func appConfigHandler(c *echo.Context) error {
 	log := zerolog.Ctx(appContext).With().Logger()
 
 	config, err := contracts_config.LoadConfigFromFile[oidc_login_contracts_config.AppConfig]("static/selfhost/app-config.json")

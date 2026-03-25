@@ -30,7 +30,7 @@ import (
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	jwxt "github.com/lestrrat-go/jwx/v2/jwt"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
@@ -127,7 +127,7 @@ type CallbackRequest struct {
 // @Param       state            		query     string  true  "state requested"
 // @Success 200 {object} string
 // @Router /oauth2/callback [get]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	localizer := s.Localizer().GetLocalizer()
 
 	r := c.Request()

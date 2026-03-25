@@ -12,7 +12,7 @@ import (
 	fluffycore_contracts_otel "github.com/fluffy-bunny/fluffycore/contracts/otel"
 	fluffycore_echo_contracts_cookies "github.com/fluffy-bunny/fluffycore/echo/contracts/cookies"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 )
 
 type (
@@ -114,7 +114,7 @@ type (
 	}
 	// RouteHandler is a function that handles a specific route pattern
 	// Returns (handled bool, error). If handled=true, the request was processed
-	RouteHandler func(c echo.Context, filePath string) (bool, error)
+	RouteHandler func(c *echo.Context, filePath string) (bool, error)
 
 	// RoutePattern defines a pattern matcher and handler for a route
 	RoutePattern struct {

@@ -12,7 +12,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 )
@@ -87,7 +87,7 @@ func (s *service) validateVerifyUsernameRequest(model *verify_username.VerifyUse
 // @Produce json
 // @Success 200 {object} verify_username.VerifyUsernameResponse
 // @Router /api/verify-username [post]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 	model := &verify_username.VerifyUsernameRequest{}

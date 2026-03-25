@@ -6,7 +6,7 @@ fluffycore app based on https://github.com/maxence-charriere/go-app
 
 ### Prerequisites
 
-- Go 1.25 or later
+- Go 1.26 or later
 - Make
 
 ### Building the Application

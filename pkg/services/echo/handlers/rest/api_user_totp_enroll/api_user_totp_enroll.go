@@ -14,7 +14,7 @@ import (
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	qrcode "github.com/skip2/go-qrcode"
 	gotp "github.com/xlzd/gotp"
@@ -79,7 +79,7 @@ type TOTPEnrollResponse struct {
 // @Failure 409 {object} wellknown_echo.RestErrorResponse "TOTP already verified"
 // @Failure 500 {object} wellknown_echo.RestErrorResponse
 // @Router /api/totp/enroll [post]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 

@@ -21,7 +21,7 @@ import (
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	oauth2 "golang.org/x/oauth2"
 	codes "google.golang.org/grpc/codes"
@@ -74,7 +74,7 @@ var (
 	callbackPath = wellknown_echo.AccountCallbackPath
 )
 
-func (s *service) HandleLogin(c echo.Context, loginRequest *login_models.LoginRequest) (*login_models.LoginResponse, error) {
+func (s *service) HandleLogin(c *echo.Context, loginRequest *login_models.LoginRequest) (*login_models.LoginResponse, error) {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
@@ -181,7 +181,7 @@ type LoginRequest struct {
 // @Failure 400 {object} wellknown_echo.RestErrorResponse
 // @Failure 500 {object} wellknown_echo.RestErrorResponse
 // @Router /api/login [post]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()

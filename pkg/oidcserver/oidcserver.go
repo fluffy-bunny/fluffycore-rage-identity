@@ -80,8 +80,8 @@ import (
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
-	echo_middleware "github.com/labstack/echo/v4/middleware"
+	echo "github.com/labstack/echo/v5"
+	echo_middleware "github.com/labstack/echo/v5/middleware"
 	zerolog "github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
 	codes "google.golang.org/grpc/codes"
@@ -306,7 +306,7 @@ func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 
 func noCacheMiddleware(config *contracts_config.NoCacheConfig) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			requestUrlPath := c.Request().URL.Path
 			noCacheIt := false
 
@@ -350,7 +350,7 @@ func noCacheMiddleware(config *contracts_config.NoCacheConfig) echo.MiddlewareFu
 
 func urlRewriteMiddleware(config *contracts_config.URLRewritesConfig) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			requestPath := c.Request().URL.Path
 
 			// Apply rewrite rules in order
@@ -384,7 +384,7 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 		CookieHTTPOnly: httpOnly,
 		CookieSameSite: sameSite,
 		CookieDomain:   s.config.CookieConfig.Domain,
-		Skipper: func(c echo.Context) bool {
+		Skipper: func(c *echo.Context) bool {
 			if s.config.CSRFConfig.SkipApi {
 				if strings.Contains(c.Request().URL.Path, "/api") {
 					return true
@@ -402,13 +402,12 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 	e.Use(EnsureLocalizer(root))
 	if s.config.CORSConfig.Enabled {
 		e.Use(echo_middleware.CORSWithConfig(echo_middleware.CORSConfig{
-			AllowOrigins:                             s.config.CORSConfig.AllowedOrigins,
-			AllowMethods:                             s.config.CORSConfig.AllowedMethods,
-			AllowHeaders:                             s.config.CORSConfig.AllowedHeaders,
-			AllowCredentials:                         s.config.CORSConfig.AllowCredentials,
-			UnsafeWildcardOriginWithAllowCredentials: s.config.CORSConfig.UnsafeWildcardOriginWithAllowCredentials,
-			ExposeHeaders:                            s.config.CORSConfig.ExposeHeaders,
-			MaxAge:                                   s.config.CORSConfig.MaxAge,
+			AllowOrigins:     s.config.CORSConfig.AllowedOrigins,
+			AllowMethods:     s.config.CORSConfig.AllowedMethods,
+			AllowHeaders:     s.config.CORSConfig.AllowedHeaders,
+			AllowCredentials: s.config.CORSConfig.AllowCredentials,
+			ExposeHeaders:    s.config.CORSConfig.ExposeHeaders,
+			MaxAge:           s.config.CORSConfig.MaxAge,
 		}))
 	}
 	if s.config.URLRewritesConfig != nil && s.config.URLRewritesConfig.Enabled {
@@ -428,7 +427,7 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 
 func EnsureLocalizer(_ di.Container) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			//ctx := c.Request().Context()
 			subContainer, ok := c.Get(fluffycore_echo_wellknown.SCOPED_CONTAINER_KEY).(di.Container)
 			if !ok {
@@ -449,7 +448,7 @@ func EnsureLocalizer(_ di.Container) echo.MiddlewareFunc {
 // EnsureContextLogger ...
 func EnsureCookieClaimsPrincipal(_ di.Container) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			//ctx := c.Request().Context()
 			subContainer, ok := c.Get(fluffycore_echo_wellknown.SCOPED_CONTAINER_KEY).(di.Container)
 			if !ok {

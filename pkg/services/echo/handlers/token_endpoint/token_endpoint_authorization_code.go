@@ -17,7 +17,7 @@ import (
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	oauth2 "github.com/go-oauth2/oauth2/v4"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 )
@@ -80,7 +80,7 @@ func sanitizeArray(input []string) []string {
 	}
 	return output
 }
-func (s *service) handleAuthorizationCode(c echo.Context) error {
+func (s *service) handleAuthorizationCode(c *echo.Context) error {
 	r := c.Request()
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().

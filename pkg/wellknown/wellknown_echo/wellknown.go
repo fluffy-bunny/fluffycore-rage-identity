@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	oauth2 "golang.org/x/oauth2"
 )
 
@@ -142,10 +142,10 @@ const (
 
 var GithubScopes = []string{"user:email"}
 
-func GetMyRootPath(c echo.Context) string {
+func GetMyRootPath(c *echo.Context) string {
 	return fmt.Sprintf("%s://%s", c.Scheme(), c.Request().Host)
 }
-func GetGithubConfig(c echo.Context, protocol *proto_oidc_models.GithubOAuth2Protocol) *oauth2.Config {
+func GetGithubConfig(c *echo.Context, protocol *proto_oidc_models.GithubOAuth2Protocol) *oauth2.Config {
 	rootPath := GetMyRootPath(c)
 	config := oauth2.Config{
 		ClientID:     protocol.ClientId,

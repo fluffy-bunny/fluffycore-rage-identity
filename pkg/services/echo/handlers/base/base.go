@@ -24,7 +24,7 @@ import (
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	core_echo_templates "github.com/fluffy-bunny/fluffycore/echo/templates"
 	core_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
@@ -81,7 +81,7 @@ func NewBaseHandler(container di.Container, config *contracts_config.Config) *Ba
 
 }
 
-func (b *BaseHandler) GetManifest(c echo.Context) (*models_api_manifest.Manifest, error) {
+func (b *BaseHandler) GetManifest(c *echo.Context) (*models_api_manifest.Manifest, error) {
 	ctx := c.Request().Context()
 
 	idps, err := b.GetIDPs(ctx)
@@ -219,7 +219,7 @@ func (b *BaseHandler) getOIDCFlowStore() proto_oidc_flows.IFluffyCoreAuthorizati
 	return b.authorizationRequestStateStore
 }
 
-func (b *BaseHandler) RenderAutoPost(c echo.Context, action string, formData []models.FormParam) error {
+func (b *BaseHandler) RenderAutoPost(c *echo.Context, action string, formData []models.FormParam) error {
 	data := map[string]interface{}{
 		"form_params": formData,
 		"action":      action,
@@ -227,7 +227,7 @@ func (b *BaseHandler) RenderAutoPost(c echo.Context, action string, formData []m
 	return b.Render(c, http.StatusFound, "oidc/autopost/index", data)
 }
 
-func (b *BaseHandler) Render(c echo.Context, code int, name string, data map[string]interface{}) error {
+func (b *BaseHandler) Render(c *echo.Context, code int, name string, data map[string]interface{}) error {
 	localizer := b.Localizer().GetLocalizer()
 	data["LocalizeMessage"] = func(key string) string {
 		message, _ := localizer.LocalizeMessage(&i18n.Message{ID: key})
@@ -307,7 +307,7 @@ type ProcessFinalAuthenticationStateResponse struct {
 // ProcessFinalAuthenticationState handles the final state after successful authentication
 func (b *BaseHandler) ProcessFinalAuthenticationState(
 	ctx context.Context,
-	c echo.Context,
+	c *echo.Context,
 	request *ProcessFinalAuthenticationStateRequest,
 ) (*ProcessFinalAuthenticationStateResponse, error) {
 	// Set the auth cookie
@@ -375,7 +375,7 @@ func (b *BaseHandler) ProcessFinalAuthenticationState(
 	}, nil
 }
 
-func (b *BaseHandler) TeleportBackToLoginWithError(c echo.Context, code, msg string) error {
+func (b *BaseHandler) TeleportBackToLoginWithError(c *echo.Context, code, msg string) error {
 	formParams := []models.FormParam{
 		{
 			Name:  "error_code",
@@ -389,7 +389,7 @@ func (b *BaseHandler) TeleportBackToLoginWithError(c echo.Context, code, msg str
 	return b.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
 
 }
-func (b *BaseHandler) TeleportToPath(c echo.Context, path string) error {
+func (b *BaseHandler) TeleportToPath(c *echo.Context, path string) error {
 	formParams := []models.FormParam{}
 	return b.RenderAutoPost(c, path, formParams)
 

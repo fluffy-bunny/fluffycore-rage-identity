@@ -18,7 +18,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
@@ -95,7 +95,7 @@ func (s *service) validatePersonalInformationGetRequest(model *PersonalInformati
 	return nil
 }
 
-func (s *service) getUser(c echo.Context) (*proto_external_models.ExampleUser, error) {
+func (s *service) getUser(c *echo.Context) (*proto_external_models.ExampleUser, error) {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 	memCache := s.ScopedMemoryCache()
@@ -125,7 +125,7 @@ func (s *service) getUser(c echo.Context) (*proto_external_models.ExampleUser, e
 	return getUserResponse.User, nil
 
 }
-func (s *service) DoGet(c echo.Context) error {
+func (s *service) DoGet(c *echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 
@@ -183,7 +183,7 @@ func (s *service) validatePersonalInformationPostRequest(request *PersonalInform
 	return nil, nil
 }
 
-func (s *service) DoPost(c echo.Context) error {
+func (s *service) DoPost(c *echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 	ctx := r.Context()
@@ -268,7 +268,7 @@ func (s *service) DoPost(c echo.Context) error {
 
 }
 
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 
 	r := c.Request()
 	// is the request get or post?

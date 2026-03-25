@@ -13,7 +13,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 )
@@ -82,7 +82,7 @@ func (s *service) validateLogoutRequest(model *models_api_login_models.LogoutReq
 // @Failure 400 {object} wellknown_echo.RestErrorResponse
 // @Failure 500 {object} wellknown_echo.RestErrorResponse
 // @Router /api/logout [post]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()

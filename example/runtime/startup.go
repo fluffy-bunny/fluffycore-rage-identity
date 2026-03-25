@@ -69,7 +69,7 @@ import (
 	services_health "github.com/fluffy-bunny/fluffycore/services/health"
 	fluffycore_utils_redact "github.com/fluffy-bunny/fluffycore/utils/redact"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	async "github.com/reugn/async"
 	xid "github.com/rs/xid"
 	zerolog "github.com/rs/zerolog"
@@ -105,7 +105,7 @@ func NewStartup() fluffycore_contracts_runtime.IStartup {
 
 func (s *startup) EnsureManagementAuth(ctn di.Container) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			path := c.Path()
 
 			// Only apply to /management/ paths
@@ -302,7 +302,7 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 		RoutePatterns: []*rage_contracts_config.RoutePattern{
 			{
 				Pattern: "/web/app.wasm",
-				Handler: func(c echo.Context, filePath string) (bool, error) {
+				Handler: func(c *echo.Context, filePath string) (bool, error) {
 					// Get file info to set Content-Length
 					fileInfo, err := os.Stat(filePath)
 					if err != nil {
@@ -316,7 +316,7 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 			},
 			{
 				Pattern: "web/app.json",
-				Handler: func(c echo.Context, filePath string) (bool, error) {
+				Handler: func(c *echo.Context, filePath string) (bool, error) {
 					jsonB, err := json.Marshal(s.config.ManagementAppConfig)
 					if err != nil {
 						return false, err
@@ -360,7 +360,7 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 		RoutePatterns: []*rage_contracts_config.RoutePattern{
 			{
 				Pattern: "/web/app.wasm",
-				Handler: func(c echo.Context, filePath string) (bool, error) {
+				Handler: func(c *echo.Context, filePath string) (bool, error) {
 					// Get file info to set Content-Length
 					fileInfo, err := os.Stat(filePath)
 					if err != nil {
@@ -374,7 +374,7 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 			},
 			{
 				Pattern: "web/app.json",
-				Handler: func(c echo.Context, filePath string) (bool, error) {
+				Handler: func(c *echo.Context, filePath string) (bool, error) {
 					jsonB, err := json.Marshal(s.config.OIDCLoginAppConfig)
 					if err != nil {
 						return false, err

@@ -19,7 +19,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	qrcode "github.com/skip2/go-qrcode"
 	gotp "github.com/xlzd/gotp"
@@ -92,7 +92,7 @@ func (s *service) validateTOTPManagementGetRequest(model *TOTPManagmentGetReques
 	}
 	return nil
 }
-func (s *service) getUser(c echo.Context) (*proto_external_models.ExampleUser, error) {
+func (s *service) getUser(c *echo.Context) (*proto_external_models.ExampleUser, error) {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 	memCache := s.ScopedMemoryCache()
@@ -153,7 +153,7 @@ func (s *service) validateTOTPManagmentPostRequest(model *TOTPManagmentPostReque
 
 	return nil
 }
-func (s *service) DoPost(c echo.Context) error {
+func (s *service) DoPost(c *echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 
@@ -238,7 +238,7 @@ func (s *service) DoPost(c echo.Context) error {
 	return c.Redirect(http.StatusFound, model.ReturnUrl)
 }
 
-func (s *service) DoGet(c echo.Context) error {
+func (s *service) DoGet(c *echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 
@@ -283,7 +283,7 @@ func (s *service) DoGet(c echo.Context) error {
 	return err
 }
 
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 
 	r := c.Request()
 	// is the request get or post?
