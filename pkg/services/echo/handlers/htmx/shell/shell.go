@@ -47,5 +47,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 func (s *service) Do(c *echo.Context) error {
-	return s.Render(c, http.StatusOK, "oidc/htmx/shell", map[string]interface{}{})
+	return s.Render(c, http.StatusOK, "oidc/htmx/shell", map[string]interface{}{
+		"brandTitle": "MAPPED Identity",
+	})
 }
