@@ -60,5 +60,13 @@
   "FlowError_EmailSendFailed": "We could not send the verification email. Please try again later.",
   "FlowError_LinkAccountFailed": "We could not link your accounts. Please try again.",
   "FlowError_CreateAccountFailed": "We could not create your account. Please try again.",
-  "FlowError_InternalError": "An unexpected error occurred. Please try again later."
+  "FlowError_InternalError": "An unexpected error occurred. Please try again later.",
+  "keep_signed_in": "Stay Signed In",
+  "keep_me_signed_in": "Keep me signed in on this device",
+  "continue": "Continue",
+  "code": "Code",
+  "start_over": "Start Over",
+  "enter_email_for_reset": "Enter your email address to reset your password",
+  "new_password": "New Password",
+  "error_occurred": "An Error Occurred"
 }

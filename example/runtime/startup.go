@@ -42,6 +42,16 @@ import (
 	services_ScopedMemoryCache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/ScopedMemoryCache"
 	services_cookies_WellknownCookieNames "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/cookies/WellknownCookieNames"
 	services_handlers_cache_busting_static_html "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/cache_busting_static_html"
+	services_htmx_error "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx/error"
+	services_htmx_forgotpassword "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx/forgotpassword"
+	services_htmx_home "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx/home"
+	services_htmx_keepsignedin "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx/keepsignedin"
+	services_htmx_password "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx/password"
+	services_htmx_resetpassword "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx/resetpassword"
+	services_htmx_shell "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx/shell"
+	services_htmx_signup "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx/signup"
+	services_htmx_startover "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx/startover"
+	services_htmx_verifycode "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx/verifycode"
 	services_session_with_options "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/session_with_options"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
@@ -256,6 +266,19 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	services_handlers_account_passkey_management.AddScopedIHandler(builder)
 	services_handlers_account_profile.AddScopedIHandler(builder)
 	services_handlers_account_totp_management.AddScopedIHandler(builder)
+
+	// HTMX OIDC Login Handlers
+	//--------------------------------------------------------
+	services_htmx_shell.AddScopedIHandler(builder)
+	services_htmx_home.AddScopedIHandler(builder)
+	services_htmx_password.AddScopedIHandler(builder)
+	services_htmx_verifycode.AddScopedIHandler(builder)
+	services_htmx_keepsignedin.AddScopedIHandler(builder)
+	services_htmx_signup.AddScopedIHandler(builder)
+	services_htmx_forgotpassword.AddScopedIHandler(builder)
+	services_htmx_resetpassword.AddScopedIHandler(builder)
+	services_htmx_error.AddScopedIHandler(builder)
+	services_htmx_startover.AddScopedIHandler(builder)
 
 	// Sync WebAuthN config to app configs for frontend
 	if config.WebAuthNConfig != nil {

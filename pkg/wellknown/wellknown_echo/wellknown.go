@@ -85,6 +85,18 @@ var (
 	API_UserTOTPEnroll         = "/api/totp/enroll"
 	API_UserTOTPVerify         = "/api/totp/verify"
 	API_PasskeyCredentialId    = "/api/passkeys/:credentialId"
+
+	// HTMX OIDC Login paths
+	HTMXOIDCLoginPath      = "/oidc-login-htmx/"
+	HTMXHomePath           = "/oidc-login-htmx/home"
+	HTMXPasswordPath       = "/oidc-login-htmx/password"
+	HTMXVerifyCodePath     = "/oidc-login-htmx/verify-code"
+	HTMXKeepSignedInPath   = "/oidc-login-htmx/keep-signed-in"
+	HTMXSignupPath         = "/oidc-login-htmx/signup"
+	HTMXForgotPasswordPath = "/oidc-login-htmx/forgot-password"
+	HTMXResetPasswordPath  = "/oidc-login-htmx/reset-password"
+	HTMXErrorPath          = "/oidc-login-htmx/error"
+	HTMXStartOverPath      = "/oidc-login-htmx/start-over"
 )
 
 type Paths struct {
@@ -106,6 +118,18 @@ type Paths struct {
 	ForgotPassword      string
 	VerifyCode          string
 	PasswordReset       string
+
+	// HTMX paths
+	HTMXOIDCLogin      string
+	HTMXHome           string
+	HTMXPassword       string
+	HTMXVerifyCode     string
+	HTMXKeepSignedIn   string
+	HTMXSignup         string
+	HTMXForgotPassword string
+	HTMXResetPassword  string
+	HTMXError          string
+	HTMXStartOver      string
 }
 
 func NewPaths() *Paths {
@@ -128,6 +152,17 @@ func NewPaths() *Paths {
 		ForgotPassword:      ForgotPasswordPath,
 		VerifyCode:          VerifyCodePath,
 		PasswordReset:       PasswordResetPath,
+
+		HTMXOIDCLogin:      HTMXOIDCLoginPath,
+		HTMXHome:           HTMXHomePath,
+		HTMXPassword:       HTMXPasswordPath,
+		HTMXVerifyCode:     HTMXVerifyCodePath,
+		HTMXKeepSignedIn:   HTMXKeepSignedInPath,
+		HTMXSignup:         HTMXSignupPath,
+		HTMXForgotPassword: HTMXForgotPasswordPath,
+		HTMXResetPassword:  HTMXResetPasswordPath,
+		HTMXError:          HTMXErrorPath,
+		HTMXStartOver:      HTMXStartOverPath,
 	}
 }
 
