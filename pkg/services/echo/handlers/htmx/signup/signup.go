@@ -11,6 +11,7 @@ import (
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
+	components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx/components"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
@@ -93,19 +94,25 @@ func (s *service) Do(c *echo.Context) error {
 
 func (s *service) renderSignup(c *echo.Context, code int, errors []string, email string) error {
 	ctx := c.Request().Context()
+	localizer := s.Localizer().GetLocalizer()
+	rc := components.NewRenderContext(c, localizer)
 	idps, _ := s.GetIDPs(ctx)
-	return s.Render(c, code, "oidc/htmx/_partials/signup", map[string]interface{}{
-		"errors":     errors,
-		"email":      email,
-		"socialIdps": idps,
-	})
+	return components.RenderNode(c, code, components.SignupPartial(components.SignupData{
+		RenderContext: rc,
+		Errors:        errors,
+		Email:         email,
+		SocialIdps:    idps,
+	}))
 }
 
 func (s *service) renderError(c *echo.Context, errorCode, errorMessage string) error {
-	return s.Render(c, http.StatusOK, "oidc/htmx/_partials/error", map[string]interface{}{
-		"errorCode":    errorCode,
-		"errorMessage": errorMessage,
-	})
+	localizer := s.Localizer().GetLocalizer()
+	rc := components.NewRenderContext(c, localizer)
+	return components.RenderNode(c, http.StatusOK, components.ErrorPartial(components.ErrorData{
+		RenderContext: rc,
+		ErrorCode:     errorCode,
+		ErrorMessage:  errorMessage,
+	}))
 }
 
 func (s *service) DoGet(c *echo.Context) error {
@@ -263,17 +270,22 @@ func (s *service) DoPost(c *echo.Context) error {
 		if s.config.SystemConfig.DeveloperMode {
 			code = codeResult.PlainCode
 		}
-		return s.Render(c, http.StatusOK, "oidc/htmx/_partials/verify-code", map[string]interface{}{
-			"email":     model.Email,
-			"directive": "verifyEmailDirective",
-			"code":      code,
-			"errors":    []string{},
-		})
+		localizer := s.Localizer().GetLocalizer()
+		rc := components.NewRenderContext(c, localizer)
+		return components.RenderNode(c, http.StatusOK, components.VerifyCodePartial(components.VerifyCodeData{
+			RenderContext: rc,
+			Email:         model.Email,
+			Directive:     "verifyEmailDirective",
+			Code:          code,
+			Errors:        []string{},
+		}))
 	}
 
 	// No email verification - go back to login
-	return s.Render(c, http.StatusOK, "oidc/htmx/_partials/home", map[string]interface{}{
-		"errors": []string{},
-		"email":  model.Email,
-	})
+	rc2 := components.NewRenderContext(c, localizer)
+	return components.RenderNode(c, http.StatusOK, components.HomePartial(components.HomeData{
+		RenderContext: rc2,
+		Errors:        []string{},
+		Email:         model.Email,
+	}))
 }

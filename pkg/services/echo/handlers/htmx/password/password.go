@@ -12,6 +12,7 @@ import (
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
+	components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx/components"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
@@ -88,17 +89,23 @@ func (s *service) Do(c *echo.Context) error {
 }
 
 func (s *service) renderPassword(c *echo.Context, code int, errors []string, email string) error {
-	return s.Render(c, code, "oidc/htmx/_partials/password", map[string]interface{}{
-		"errors": errors,
-		"email":  email,
-	})
+	localizer := s.Localizer().GetLocalizer()
+	rc := components.NewRenderContext(c, localizer)
+	return components.RenderNode(c, code, components.PasswordPartial(components.PasswordData{
+		RenderContext: rc,
+		Errors:        errors,
+		Email:         email,
+	}))
 }
 
 func (s *service) renderError(c *echo.Context, errorCode, errorMessage string) error {
-	return s.Render(c, http.StatusOK, "oidc/htmx/_partials/error", map[string]interface{}{
-		"errorCode":    errorCode,
-		"errorMessage": errorMessage,
-	})
+	localizer := s.Localizer().GetLocalizer()
+	rc := components.NewRenderContext(c, localizer)
+	return components.RenderNode(c, http.StatusOK, components.ErrorPartial(components.ErrorData{
+		RenderContext: rc,
+		ErrorCode:     errorCode,
+		ErrorMessage:  errorMessage,
+	}))
 }
 
 func (s *service) DoGet(c *echo.Context) error {
@@ -262,10 +269,13 @@ func (s *service) handleEmailVerification(c *echo.Context, ctx interface{ Value(
 		code = codeResult.PlainCode
 	}
 
-	return s.Render(c, http.StatusOK, "oidc/htmx/_partials/verify-code", map[string]interface{}{
-		"email":     email,
-		"directive": directive,
-		"code":      code,
-		"errors":    []string{},
-	})
+	localizer := s.Localizer().GetLocalizer()
+	rc := components.NewRenderContext(c, localizer)
+	return components.RenderNode(c, http.StatusOK, components.VerifyCodePartial(components.VerifyCodeData{
+		RenderContext: rc,
+		Email:         email,
+		Directive:     directive,
+		Code:          code,
+		Errors:        []string{},
+	}))
 }

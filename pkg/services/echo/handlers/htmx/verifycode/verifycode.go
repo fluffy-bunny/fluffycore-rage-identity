@@ -10,6 +10,7 @@ import (
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
+	components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx/components"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
@@ -84,19 +85,25 @@ func (s *service) Do(c *echo.Context) error {
 }
 
 func (s *service) renderVerifyCode(c *echo.Context, code int, errors []string, email, directive, codeVal string) error {
-	return s.Render(c, code, "oidc/htmx/_partials/verify-code", map[string]interface{}{
-		"errors":    errors,
-		"email":     email,
-		"directive": directive,
-		"code":      codeVal,
-	})
+	localizer := s.Localizer().GetLocalizer()
+	rc := components.NewRenderContext(c, localizer)
+	return components.RenderNode(c, code, components.VerifyCodePartial(components.VerifyCodeData{
+		RenderContext: rc,
+		Errors:        errors,
+		Email:         email,
+		Directive:     directive,
+		Code:          codeVal,
+	}))
 }
 
 func (s *service) renderError(c *echo.Context, errorCode, errorMessage string) error {
-	return s.Render(c, http.StatusOK, "oidc/htmx/_partials/error", map[string]interface{}{
-		"errorCode":    errorCode,
-		"errorMessage": errorMessage,
-	})
+	localizer := s.Localizer().GetLocalizer()
+	rc := components.NewRenderContext(c, localizer)
+	return components.RenderNode(c, http.StatusOK, components.ErrorPartial(components.ErrorData{
+		RenderContext: rc,
+		ErrorCode:     errorCode,
+		ErrorMessage:  errorMessage,
+	}))
 }
 
 func (s *service) DoGet(c *echo.Context) error {
@@ -130,10 +137,13 @@ func (s *service) DoPost(c *echo.Context) error {
 	if err != nil {
 		log.Error().Err(err).Msg("GetVerificationCodeCookie")
 		// Session expired, start over
-		return s.Render(c, http.StatusOK, "oidc/htmx/_partials/home", map[string]interface{}{
-			"errors": []string{"Verification session expired. Please start over."},
-			"email":  model.Email,
-		})
+		localizer := s.Localizer().GetLocalizer()
+		rc := components.NewRenderContext(c, localizer)
+		return components.RenderNode(c, http.StatusOK, components.HomePartial(components.HomeData{
+			RenderContext: rc,
+			Errors:        []string{"Verification session expired. Please start over."},
+			Email:         model.Email,
+		}))
 	}
 	verificationCode := getVerificationCodeCookieResponse.VerificationCode
 
@@ -178,10 +188,13 @@ func (s *service) DoPost(c *echo.Context) error {
 	switch verificationCode.VerifyCodePurpose {
 	case contracts_cookies.VerifyCode_EmailVerification:
 		// Go back to login
-		return s.Render(c, http.StatusOK, "oidc/htmx/_partials/home", map[string]interface{}{
-			"errors": []string{},
-			"email":  verificationCode.Email,
-		})
+		localizer := s.Localizer().GetLocalizer()
+		rc := components.NewRenderContext(c, localizer)
+		return components.RenderNode(c, http.StatusOK, components.HomePartial(components.HomeData{
+			RenderContext: rc,
+			Errors:        []string{},
+			Email:         verificationCode.Email,
+		}))
 
 	case contracts_cookies.VerifyCode_PasswordReset:
 		err = s.wellknownCookies.SetPasswordResetCookie(c,
@@ -194,10 +207,13 @@ func (s *service) DoPost(c *echo.Context) error {
 			log.Error().Err(err).Msg("SetPasswordResetCookie")
 			return s.renderError(c, "htmx-verify-004", err.Error())
 		}
-		return s.Render(c, http.StatusOK, "oidc/htmx/_partials/reset-password", map[string]interface{}{
-			"email":  verificationCode.Email,
-			"errors": []string{},
-		})
+		localizer := s.Localizer().GetLocalizer()
+		rc := components.NewRenderContext(c, localizer)
+		return components.RenderNode(c, http.StatusOK, components.ResetPasswordPartial(components.ResetPasswordData{
+			RenderContext: rc,
+			Email:         verificationCode.Email,
+			Errors:        []string{},
+		}))
 
 	case contracts_cookies.VerifyCode_Challenge:
 		// MFA challenge passed - set auth cookies
@@ -265,7 +281,11 @@ func (s *service) DoPost(c *echo.Context) error {
 		}
 
 		// Show keep-signed-in page
-		return s.Render(c, http.StatusOK, "oidc/htmx/_partials/keep-signed-in", map[string]interface{}{})
+		localizer := s.Localizer().GetLocalizer()
+		rc := components.NewRenderContext(c, localizer)
+		return components.RenderNode(c, http.StatusOK, components.KeepSignedInPartial(components.KeepSignedInData{
+			RenderContext: rc,
+		}))
 	}
 
 	return s.renderError(c, "htmx-verify-099", "Unknown verification purpose")

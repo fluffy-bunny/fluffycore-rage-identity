@@ -8,6 +8,7 @@ import (
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
+	components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx/components"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
@@ -71,14 +72,21 @@ func (s *service) Do(c *echo.Context) error {
 }
 
 func (s *service) renderError(c *echo.Context, errorCode, errorMessage string) error {
-	return s.Render(c, http.StatusOK, "oidc/htmx/_partials/error", map[string]interface{}{
-		"errorCode":    errorCode,
-		"errorMessage": errorMessage,
-	})
+	localizer := s.Localizer().GetLocalizer()
+	rc := components.NewRenderContext(c, localizer)
+	return components.RenderNode(c, http.StatusOK, components.ErrorPartial(components.ErrorData{
+		RenderContext: rc,
+		ErrorCode:     errorCode,
+		ErrorMessage:  errorMessage,
+	}))
 }
 
 func (s *service) DoGet(c *echo.Context) error {
-	return s.Render(c, http.StatusOK, "oidc/htmx/_partials/keep-signed-in", map[string]interface{}{})
+	localizer := s.Localizer().GetLocalizer()
+	rc := components.NewRenderContext(c, localizer)
+	return components.RenderNode(c, http.StatusOK, components.KeepSignedInPartial(components.KeepSignedInData{
+		RenderContext: rc,
+	}))
 }
 
 func (s *service) DoPost(c *echo.Context) error {

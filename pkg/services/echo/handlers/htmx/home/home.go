@@ -12,6 +12,7 @@ import (
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
 	models_api_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
+	components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx/components"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
@@ -88,6 +89,8 @@ func (s *service) Do(c *echo.Context) error {
 
 func (s *service) renderHome(c *echo.Context, code int, errors []string, email string) error {
 	ctx := c.Request().Context()
+	localizer := s.Localizer().GetLocalizer()
+	rc := components.NewRenderContext(c, localizer)
 	manifest, _ := s.GetManifest(c)
 	idps, _ := s.GetIDPs(ctx)
 
@@ -96,12 +99,13 @@ func (s *service) renderHome(c *echo.Context, code int, errors []string, email s
 		disableSignup = manifest.DisableLocalAccountCreation
 	}
 
-	return s.Render(c, code, "oidc/htmx/_partials/home", map[string]interface{}{
-		"errors":        errors,
-		"email":         email,
-		"socialIdps":    idps,
-		"disableSignup": disableSignup,
-	})
+	return components.RenderNode(c, code, components.HomePartial(components.HomeData{
+		RenderContext: rc,
+		Errors:        errors,
+		Email:         email,
+		SocialIdps:    idps,
+		DisableSignup: disableSignup,
+	}))
 }
 
 func (s *service) DoGet(c *echo.Context) error {
@@ -215,8 +219,10 @@ func (s *service) DoPost(c *echo.Context) error {
 	}
 
 	// Render password partial
-	return s.Render(c, http.StatusOK, "oidc/htmx/_partials/password", map[string]interface{}{
-		"email":  model.Email,
-		"errors": []string{},
-	})
+	rc := components.NewRenderContext(c, localizer)
+	return components.RenderNode(c, http.StatusOK, components.PasswordPartial(components.PasswordData{
+		RenderContext: rc,
+		Email:         model.Email,
+		Errors:        []string{},
+	}))
 }

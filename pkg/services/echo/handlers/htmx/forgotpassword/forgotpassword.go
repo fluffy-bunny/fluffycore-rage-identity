@@ -11,6 +11,7 @@ import (
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
+	components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx/components"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
@@ -86,17 +87,23 @@ func (s *service) Do(c *echo.Context) error {
 }
 
 func (s *service) renderForgotPassword(c *echo.Context, code int, errors []string, email string) error {
-	return s.Render(c, code, "oidc/htmx/_partials/forgot-password", map[string]interface{}{
-		"errors": errors,
-		"email":  email,
-	})
+	localizer := s.Localizer().GetLocalizer()
+	rc := components.NewRenderContext(c, localizer)
+	return components.RenderNode(c, code, components.ForgotPasswordPartial(components.ForgotPasswordData{
+		RenderContext: rc,
+		Errors:        errors,
+		Email:         email,
+	}))
 }
 
 func (s *service) renderError(c *echo.Context, errorCode, errorMessage string) error {
-	return s.Render(c, http.StatusOK, "oidc/htmx/_partials/error", map[string]interface{}{
-		"errorCode":    errorCode,
-		"errorMessage": errorMessage,
-	})
+	localizer := s.Localizer().GetLocalizer()
+	rc := components.NewRenderContext(c, localizer)
+	return components.RenderNode(c, http.StatusOK, components.ErrorPartial(components.ErrorData{
+		RenderContext: rc,
+		ErrorCode:     errorCode,
+		ErrorMessage:  errorMessage,
+	}))
 }
 
 func (s *service) DoGet(c *echo.Context) error {
@@ -201,10 +208,13 @@ func (s *service) DoPost(c *echo.Context) error {
 		devCode = codeResult.PlainCode
 	}
 
-	return s.Render(c, http.StatusOK, "oidc/htmx/_partials/verify-code", map[string]interface{}{
-		"email":     model.Email,
-		"directive": "passwordReset",
-		"code":      devCode,
-		"errors":    []string{},
-	})
+	localizer2 := s.Localizer().GetLocalizer()
+	rc := components.NewRenderContext(c, localizer2)
+	return components.RenderNode(c, http.StatusOK, components.VerifyCodePartial(components.VerifyCodeData{
+		RenderContext: rc,
+		Email:         model.Email,
+		Directive:     "passwordReset",
+		Code:          devCode,
+		Errors:        []string{},
+	}))
 }
