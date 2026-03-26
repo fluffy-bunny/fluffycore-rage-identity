@@ -82,8 +82,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
 		stemService.Ctor,
 		[]contracts_handler.HTTPVERB{
-			// do auto post
-			//contracts_handler.GET,
+			contracts_handler.GET,
 			contracts_handler.POST,
 		},
 		wellknown_echo.ExternalIDPPath,

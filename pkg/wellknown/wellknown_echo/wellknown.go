@@ -87,16 +87,16 @@ var (
 	API_PasskeyCredentialId    = "/api/passkeys/:credentialId"
 
 	// HTMX OIDC Login paths
-	HTMXOIDCLoginPath      = "/oidc-login-htmx/"
-	HTMXHomePath           = "/oidc-login-htmx/home"
-	HTMXPasswordPath       = "/oidc-login-htmx/password"
-	HTMXVerifyCodePath     = "/oidc-login-htmx/verify-code"
-	HTMXKeepSignedInPath   = "/oidc-login-htmx/keep-signed-in"
-	HTMXSignupPath         = "/oidc-login-htmx/signup"
-	HTMXForgotPasswordPath = "/oidc-login-htmx/forgot-password"
-	HTMXResetPasswordPath  = "/oidc-login-htmx/reset-password"
-	HTMXErrorPath          = "/oidc-login-htmx/error"
-	HTMXStartOverPath      = "/oidc-login-htmx/start-over"
+	HTMXOIDCLoginPath      = "/oidc-login/"
+	HTMXHomePath           = "/oidc-login/home"
+	HTMXPasswordPath       = "/oidc-login/password"
+	HTMXVerifyCodePath     = "/oidc-login/verify-code"
+	HTMXKeepSignedInPath   = "/oidc-login/keep-signed-in"
+	HTMXSignupPath         = "/oidc-login/signup"
+	HTMXForgotPasswordPath = "/oidc-login/forgot-password"
+	HTMXResetPasswordPath  = "/oidc-login/reset-password"
+	HTMXErrorPath          = "/oidc-login/error"
+	HTMXStartOverPath      = "/oidc-login/start-over"
 )
 
 type Paths struct {

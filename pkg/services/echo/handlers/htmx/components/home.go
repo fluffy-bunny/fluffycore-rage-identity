@@ -25,13 +25,13 @@ func HomePartial(data HomeData) g.Node {
 		HtmxForm(data.Paths.HTMXHome, "home-indicator",
 			CsrfInput(data.CSRF),
 			Div(Class("form-group"),
-				Label(g.Attr("for", "email"), g.Text(data.L("email"))),
+				Label(g.Attr("for", "email"), g.Text(data.L("email_address"))),
 				Input(
 					Type("email"),
 					ID("email"),
 					Name("email"),
 					Value(data.Email),
-					g.Attr("placeholder", data.L("email")),
+					g.Attr("placeholder", data.L("email_address")),
 					g.Attr("required"),
 					g.Attr("autofocus"),
 				),
@@ -42,7 +42,7 @@ func HomePartial(data HomeData) g.Node {
 		),
 		// Passkey login section (conditional)
 		g.If(data.EnabledWebAuthN,
-			PasskeyLoginSection(data.CSRF, data.Paths.HTMXHome, data.L("passkey")),
+			PasskeyLoginSection(data.CSRF, data.Paths.HTMXHome, data.L("signin_with_passkey")),
 		),
 		// Create account + forgot password links
 		g.If(!data.DisableSignup,

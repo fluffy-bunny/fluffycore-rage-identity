@@ -194,7 +194,7 @@ func socialIdpLabel(slug string) string {
 // PasskeyLoginSection renders the passkey login option with divider.
 func PasskeyLoginSection(csrf, postURL, text string) g.Node {
 	return Div(Class("passkey-login-section"),
-		Div(Class("divider"), Span(g.Text("or"))),
+		Div(Class("divider"), Span(g.Text("OR"))),
 		FormEl(
 			g.Attr("hx-post", postURL),
 			g.Attr("hx-target", "#main-content"),

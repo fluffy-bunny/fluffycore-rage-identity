@@ -11,7 +11,7 @@
   "confirm_password": "Confirm Password",
   "password_reset": "Reset Password",
   "phone_number": "Phone Number",
-  "or_signin_with": "Or sign in with:",
+  "or_signin_with": "OR CONTINUE WITH",
   "security_settings": "Security Settings",
   "personal_information": "Personal Information",
   "given_name": "Given Name",
@@ -20,6 +20,7 @@
   "code.is.empty": "The code is empty",
   "code.is.invalid": "The code is invalid",
   "email": "Email",
+  "email_address": "Email Address",
   "email.is.empty": "The email is empty",
   "email.is.not.valid": "The email {email} is not valid",
   "edit": "Edit",
@@ -39,6 +40,7 @@
   "username.does.not.have.password": "The username {username} does not have a password",
   "password.is.invalid": "The password is invalid",
   "username.not.found": "The username {username} was not found",
+  "user.not.found": "The account {username} was not found",
   "username.already.exists": "The username {username} already exists",
   "username.is.empty": "The username is empty",
   "username.not.valid": "The username {username} is not a valid email address",
@@ -76,5 +78,7 @@
   "signing_in": "Signing in...",
   "dont_have_account": "Don't have an account?",
   "create_one": "Create one",
-  "signin_with_passkey": "Sign in with Passkey"
+  "signin_with_passkey": "Sign in with Passkey",
+  "cookie_consent_statement": "This site uses cookies to enhance your experience. By continuing to browse the site, you agree to our use of cookies.",
+  "accept": "Accept"
 }

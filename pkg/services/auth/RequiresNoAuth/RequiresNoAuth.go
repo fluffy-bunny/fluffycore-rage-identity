@@ -105,7 +105,6 @@ func RequiresNoAuth() map[string]bool {
 		wellknown_echo.WebAuthN_Login_Finish: true,
 
 		// HTMX OIDC Login paths
-		"/oidc-login-htmx":                    true,
 		wellknown_echo.HTMXOIDCLoginPath:      true,
 		wellknown_echo.HTMXHomePath:           true,
 		wellknown_echo.HTMXPasswordPath:       true,

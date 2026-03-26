@@ -2,6 +2,7 @@ package verifycode
 
 import (
 	"net/http"
+	"strconv"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
@@ -116,7 +117,7 @@ func (s *service) DoGet(c *echo.Context) error {
 	if s.config.SystemConfig.DeveloperMode {
 		code = vc.PlainCode
 	}
-	return s.renderVerifyCode(c, http.StatusOK, nil, vc.Email, string(vc.VerifyCodePurpose), code)
+	return s.renderVerifyCode(c, http.StatusOK, nil, vc.Email, strconv.Itoa(int(vc.VerifyCodePurpose)), code)
 }
 
 func (s *service) DoPost(c *echo.Context) error {

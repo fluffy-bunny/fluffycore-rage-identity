@@ -132,7 +132,7 @@ func (s *service) DoPost(c *echo.Context) error {
 
 	// If an IDP hint was provided, redirect to external IDP
 	if fluffycore_utils.IsNotEmptyOrNil(model.IDPHint) {
-		c.Response().Header().Set("HX-Redirect", wellknown_echo.ExternalIDPPath+"?idp_hint="+model.IDPHint)
+		c.Response().Header().Set("HX-Redirect", wellknown_echo.ExternalIDPPath+"?idp_hint="+model.IDPHint+"&directive=login")
 		return c.NoContent(http.StatusOK)
 	}
 

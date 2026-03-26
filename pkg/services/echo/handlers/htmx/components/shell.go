@@ -31,6 +31,8 @@ func ShellPage(data ShellData) g.Node {
 .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline-block; }`)),
 		},
 		Body: []g.Node{
+			// Unregister any lingering WASM service workers from previous visits
+			Script(g.Raw(`if("serviceWorker"in navigator){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(reg){reg.unregister()})})}`)),
 			Div(Class("wizard-container"),
 				Div(Class("app-header"),
 					Div(Class("header-content"),
@@ -49,6 +51,7 @@ func ShellPage(data ShellData) g.Node {
 					P(g.Attr("style", "text-align:center;padding:40px 0;"), g.Text("Loading...")),
 				),
 			),
+			CookieBanner(data.RenderContext),
 		},
 	})
 }
