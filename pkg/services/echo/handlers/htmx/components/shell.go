@@ -26,6 +26,7 @@ func ShellPage(data ShellData) g.Node {
 			Script(Src("https://unpkg.com/htmx.org@2.0.4"),
 				g.Attr("integrity", "sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"),
 				g.Attr("crossorigin", "anonymous")),
+			Script(Src("/static/go-app/oidc-login/static_output/web/webauthn.js?v=" + data.CacheBustVersion)),
 			Meta(Name("htmx-config"), g.Attr("content", `{"responseHandling":[{"code":".*", "swap": true}]}`)),
 			StyleEl(g.Raw(`.htmx-indicator { display: none; }
 .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline-block; }`)),

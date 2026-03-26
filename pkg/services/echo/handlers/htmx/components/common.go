@@ -192,20 +192,31 @@ func socialIdpLabel(slug string) string {
 }
 
 // PasskeyLoginSection renders the passkey login option with divider.
-func PasskeyLoginSection(csrf, postURL, text string) g.Node {
+// Uses client-side JavaScript to call the WebAuthn LoginUser() flow.
+func PasskeyLoginSection(csrf, keepSignedInURL, text string) g.Node {
 	return Div(Class("passkey-login-section"),
 		Div(Class("divider"), Span(g.Text("OR"))),
-		FormEl(
-			g.Attr("hx-post", postURL),
-			g.Attr("hx-target", "#main-content"),
-			g.Attr("hx-swap", "innerHTML"),
-			CsrfInput(csrf),
-			Input(Type("hidden"), Name("action"), Value("passkey")),
-			Button(Type("submit"), Class("passkey-btn"),
-				g.Raw(PasskeyIconSVG),
-				Span(g.Text(text)),
-			),
+		Button(Type("button"), Class("passkey-btn"),
+			ID("passkey-login-btn"),
+			g.Raw(PasskeyIconSVG),
+			Span(g.Text(text)),
 		),
+		Script(g.Raw(`document.getElementById("passkey-login-btn").addEventListener("click",function(){
+  this.disabled=true;
+  LoginUser("",false,
+    function(errMsg){
+      document.getElementById("passkey-login-btn").disabled=false;
+      alert("Passkey authentication failed: "+errMsg);
+    },
+    function(data){
+      if(data.directive==="displayKeepSignedInPage"){
+        htmx.ajax("GET","`+keepSignedInURL+`",{target:"#main-content",swap:"innerHTML"});
+      } else if(data.directive==="redirect"&&data.directiveRedirect&&data.directiveRedirect.redirectUri){
+        window.location.href=data.directiveRedirect.redirectUri;
+      }
+    }
+  );
+});`)),
 	)
 }
 

@@ -42,7 +42,7 @@ func HomePartial(data HomeData) g.Node {
 		),
 		// Passkey login section (conditional)
 		g.If(data.EnabledWebAuthN,
-			PasskeyLoginSection(data.CSRF, data.Paths.HTMXHome, data.L("signin_with_passkey")),
+			PasskeyLoginSection(data.CSRF, data.Paths.HTMXKeepSignedIn, data.L("signin_with_passkey")),
 		),
 		// Create account + forgot password links
 		g.If(!data.DisableSignup,
