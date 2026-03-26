@@ -9,7 +9,8 @@ import (
 // ShellData holds data for the full HTML shell page.
 type ShellData struct {
 	*RenderContext
-	BrandTitle string
+	BrandTitle  string
+	InitialPage string // HTMX path loaded on shell mount; defaults to HTMXHome
 }
 
 // ShellPage renders the full HTML document shell with wizard-container and app-header.
@@ -46,7 +47,7 @@ func ShellPage(data ShellData) g.Node {
 					),
 				),
 				Div(ID("main-content"), Class("step-container"),
-					g.Attr("hx-get", data.Paths.HTMXHome),
+					g.Attr("hx-get", data.InitialPage),
 					g.Attr("hx-trigger", "load"),
 					g.Attr("hx-swap", "innerHTML"),
 					P(g.Attr("style", "text-align:center;padding:40px 0;"), g.Text("Loading...")),

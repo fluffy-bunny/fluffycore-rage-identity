@@ -155,16 +155,16 @@ func (s *service) DoGet(c *echo.Context) error {
 	*/
 
 	// Check for errors from cookie (e.g., from OAuth2 callback redirects)
-	// Note: Don't delete the cookie here - let the WASM app read and delete it
+	// Note: Don't delete the cookie here - let the UI app (WASM or HTMX home) read and delete it
 	errorCookieResponse, err := s.wellknownCookies.GetErrorCookie(c)
 	if err == nil && errorCookieResponse != nil && errorCookieResponse.Value != nil {
 		if fluffycore_utils.IsNotEmptyOrNil(errorCookieResponse.Value.Error) {
 			log.Info().
 				Str("error", errorCookieResponse.Value.Error).
 				Str("code", errorCookieResponse.Value.Code).
-				Msg("Found error cookie (will be displayed by WASM app)")
+				Msg("Found error cookie (will be displayed by UI app)")
 			errors = append(errors, errorCookieResponse.Value.Error)
-			// Don't delete the cookie here - the WASM app will read and delete it
+			// Don't delete the cookie here - the UI app will read and delete it
 		}
 	} else if err != nil {
 		log.Debug().Err(err).Msg("No error cookie found")

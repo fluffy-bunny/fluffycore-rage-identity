@@ -113,8 +113,10 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type CallbackRequest struct {
-	Code  string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
-	State string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
+	Code             string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
+	State            string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
+	Error            string `param:"error" query:"error" form:"error" json:"error" xml:"error"`
+	ErrorDescription string `param:"error_description" query:"error_description" form:"error_description" json:"error_description" xml:"error_description"`
 }
 
 // HealthCheck godoc
@@ -139,6 +141,16 @@ func (s *service) Do(c *echo.Context) error {
 		return s.TeleportBackToLoginWithError(c, InternalError_Callback_099, InternalError_Callback_099)
 	}
 	log = log.With().Interface("model", model).Logger()
+
+	// Handle OAuth2 error responses from the IDP (e.g., user denied access, expired code)
+	if model.Error != "" {
+		log.Error().
+			Str("oauth2_error", model.Error).
+			Str("oauth2_error_description", model.ErrorDescription).
+			Msg("IDP returned an error in the OAuth2 callback")
+		return s.TeleportBackToLoginWithError(c, InternalError_Callback_011, model.Error+": "+model.ErrorDescription)
+	}
+
 	var idp *proto_oidc_models.IDP
 	getExternalOauth2CookieResponse, err := s.wellknownCookies.GetExternalOauth2Cookie(c,
 		&contracts_cookies.GetExternalOauth2CookieRequest{
@@ -147,7 +159,7 @@ func (s *service) Do(c *echo.Context) error {
 
 	if err != nil {
 		log.Error().Err(err).Msg("GetExternalOauth2Final")
-		return c.Redirect(http.StatusTemporaryRedirect, "/login?error=invalid_state")
+		return s.TeleportBackToLoginWithError(c, InternalError_Callback_001, InternalError_Callback_001)
 	}
 	externalOauth2State := getExternalOauth2CookieResponse.ExternalOAuth2State
 	parentState := externalOauth2State.Request.ParentState
@@ -268,11 +280,11 @@ func (s *service) Do(c *echo.Context) error {
 					ClientID:     externalOauth2State.Request.ClientId,
 					Nonce:        externalOauth2State.Request.Nonce,
 					Code:         model.Code,
-					CodeVerifier: externalOauth2State.Request.CodeChallenge,
+					CodeVerifier: externalOauth2State.Request.CodeChallengeVerifier,
 				})
 				if err != nil {
 					sublog.Error().Err(err).Msg("ExchangeCode")
-					return c.Redirect(http.StatusTemporaryRedirect, "/login?error=exchange_code")
+					return s.TeleportBackToLoginWithError(c, InternalError_Callback_003, InternalError_Callback_003)
 				}
 			}
 		case *proto_oidc_models.Protocol_Oidc:
@@ -291,7 +303,7 @@ func (s *service) Do(c *echo.Context) error {
 				})
 				if err != nil {
 					sublog.Error().Err(err).Msg("ExchangeCode")
-					return c.Redirect(http.StatusTemporaryRedirect, "/login?error=exchange_code")
+					return s.TeleportBackToLoginWithError(c, InternalError_Callback_003, InternalError_Callback_003)
 				}
 
 			}
@@ -306,12 +318,12 @@ func (s *service) Do(c *echo.Context) error {
 		rawToken, err := jwxt.ParseString(exchangeCodeResponse.IdToken, parseOptions...)
 		if err != nil {
 			log.Error().Err(err).Msg("ParseString")
-			return c.Redirect(http.StatusTemporaryRedirect, "/login?error=parse_id_token")
+			return s.TeleportBackToLoginWithError(c, InternalError_Callback_003, InternalError_Callback_003)
 		}
 		email, ok := rawToken.Get("email")
 		if !ok {
 			log.Error().Msg("email not found")
-			return c.Redirect(http.StatusTemporaryRedirect, "/login?error=email_not_found")
+			return s.TeleportBackToLoginWithError(c, InternalError_Callback_003, InternalError_Callback_003)
 		}
 		emailVerified := false
 		emailVerifiedC, ok := rawToken.Get("email_verified")

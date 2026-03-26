@@ -110,7 +110,23 @@ func (s *service) renderHome(c *echo.Context, code int, errors []string, email s
 }
 
 func (s *service) DoGet(c *echo.Context) error {
-	return s.renderHome(c, http.StatusOK, nil, "")
+	// Check for a transient error cookie (e.g. from social login user-not-found)
+	var errors []string
+	var email string
+	errorCookieResponse, err := s.wellknownCookies.GetErrorCookie(c)
+	if err == nil && errorCookieResponse != nil && errorCookieResponse.Value != nil {
+		if fluffycore_utils.IsNotEmptyOrNil(errorCookieResponse.Value.Error) {
+			errors = append(errors, errorCookieResponse.Value.Error)
+			if errorCookieResponse.Value.Params != nil {
+				if e, ok := errorCookieResponse.Value.Params["email"]; ok {
+					email = e
+				}
+			}
+		}
+		// Delete the cookie so it doesn't show again on refresh
+		s.wellknownCookies.DeleteErrorCookie(c)
+	}
+	return s.renderHome(c, http.StatusOK, errors, email)
 }
 
 type HomePostRequest struct {

@@ -97,6 +97,15 @@ var (
 	HTMXResetPasswordPath  = "/oidc-login/reset-password"
 	HTMXErrorPath          = "/oidc-login/error"
 	HTMXStartOverPath      = "/oidc-login/start-over"
+
+	// HTMX Management paths
+	HTMXManagementPath         = "/management/"
+	HTMXManagementHomePath     = "/management/home"
+	HTMXManagementProfilePath  = "/management/profile"
+	HTMXManagementPasswordPath = "/management/password-manager"
+	HTMXManagementPasskeyPath  = "/management/passkey-manager"
+	HTMXManagementLinkedPath   = "/management/linked-accounts"
+	HTMXManagementPrefsPath    = "/management/preferences"
 )
 
 type Paths struct {
@@ -119,7 +128,7 @@ type Paths struct {
 	VerifyCode          string
 	PasswordReset       string
 
-	// HTMX paths
+	// HTMX OIDC Login paths
 	HTMXOIDCLogin      string
 	HTMXHome           string
 	HTMXPassword       string
@@ -130,6 +139,15 @@ type Paths struct {
 	HTMXResetPassword  string
 	HTMXError          string
 	HTMXStartOver      string
+
+	// HTMX Management paths
+	HTMXManagement         string
+	HTMXManagementHome     string
+	HTMXManagementProfile  string
+	HTMXManagementPassword string
+	HTMXManagementPasskey  string
+	HTMXManagementLinked   string
+	HTMXManagementPrefs    string
 }
 
 func NewPaths() *Paths {
@@ -163,6 +181,14 @@ func NewPaths() *Paths {
 		HTMXResetPassword:  HTMXResetPasswordPath,
 		HTMXError:          HTMXErrorPath,
 		HTMXStartOver:      HTMXStartOverPath,
+
+		HTMXManagement:         HTMXManagementPath,
+		HTMXManagementHome:     HTMXManagementHomePath,
+		HTMXManagementProfile:  HTMXManagementProfilePath,
+		HTMXManagementPassword: HTMXManagementPasswordPath,
+		HTMXManagementPasskey:  HTMXManagementPasskeyPath,
+		HTMXManagementLinked:   HTMXManagementLinkedPath,
+		HTMXManagementPrefs:    HTMXManagementPrefsPath,
 	}
 }
 

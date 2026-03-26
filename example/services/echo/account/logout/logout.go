@@ -81,10 +81,7 @@ func (s *service) DoGet(c *echo.Context) error {
 	}
 	s.wellknownCookies.DeleteAuthCookie(c)
 
-	return s.Render(c, http.StatusOK, "oidc/logout/index",
-		map[string]interface{}{
-			"url": model.RedirectURL,
-		})
+	return c.Redirect(http.StatusFound, model.RedirectURL)
 }
 
 // HealthCheck godoc

@@ -81,6 +81,17 @@ func (s *service) renderError(c *echo.Context, errorCode, errorMessage string) e
 	}))
 }
 
+func (s *service) renderErrorWithReturn(c *echo.Context, errorCode, errorMessage, returnURL string) error {
+	localizer := s.Localizer().GetLocalizer()
+	rc := components.NewRenderContext(c, localizer)
+	return components.RenderNode(c, http.StatusOK, components.ErrorPartial(components.ErrorData{
+		RenderContext: rc,
+		ErrorCode:     errorCode,
+		ErrorMessage:  errorMessage,
+		ReturnURL:     returnURL,
+	}))
+}
+
 func (s *service) DoGet(c *echo.Context) error {
 	localizer := s.Localizer().GetLocalizer()
 	rc := components.NewRenderContext(c, localizer)
@@ -168,7 +179,8 @@ func (s *service) DoPost(c *echo.Context) error {
 		})
 	if err != nil {
 		log.Error().Err(err).Msg("ProcessFinalAuthenticationState")
-		return s.renderError(c, "htmx-ksi-007", err.Error())
+		returnURL := s.GetClientReturnURL(ctx, authorizationRequest.ClientId, authorizationRequest.RedirectUri)
+		return s.renderErrorWithReturn(c, "htmx-ksi-007", err.Error(), returnURL)
 	}
 
 	c.Response().Header().Set("HX-Redirect", result.RedirectURI)
