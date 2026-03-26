@@ -9,37 +9,68 @@ import (
 // HomeData holds data for the home (email entry) partial.
 type HomeData struct {
 	*RenderContext
-	Errors        []string
-	Email         string
-	SocialIdps    []*proto_oidc_models.IDP
-	DisableSignup bool
+	Errors          []string
+	Email           string
+	SocialIdps      []*proto_oidc_models.IDP
+	DisableSignup   bool
+	EnabledWebAuthN bool
 }
 
-// HomePartial renders the email entry step.
+// HomePartial renders the email entry step matching the WASM Home layout.
 func HomePartial(data HomeData) g.Node {
 	return g.Group([]g.Node{
+		// Error banner
 		ErrorMessages(data.Errors),
-		H2(g.Text(data.L("signin"))),
-		P(g.Text("Enter your email to get started")),
+		// Email form
 		HtmxForm(data.Paths.HTMXHome, "home-indicator",
 			CsrfInput(data.CSRF),
-			FormGroupField(data.L("email"), "email", "email", "email", data.Email,
-				g.Attr("required"), g.Attr("autofocus")),
+			Div(Class("form-group"),
+				Label(g.Attr("for", "email"), g.Text(data.L("email"))),
+				Input(
+					Type("email"),
+					ID("email"),
+					Name("email"),
+					Value(data.Email),
+					g.Attr("placeholder", data.L("email")),
+					g.Attr("required"),
+					g.Attr("autofocus"),
+				),
+			),
 			ButtonGroup(
-				PrimaryButton(data.L("next"), "home-indicator"),
+				PrimaryButton(data.L("continue"), "home-indicator"),
 			),
 		),
+		// Passkey login section (conditional)
+		g.If(data.EnabledWebAuthN,
+			PasskeyLoginSection(data.CSRF, data.Paths.HTMXHome, data.L("passkey")),
+		),
+		// Create account + forgot password links
 		g.If(!data.DisableSignup,
-			Div(Class("create-account"),
-				A(Href("#"),
-					g.Attr("hx-get", data.Paths.HTMXSignup),
-					g.Attr("hx-target", "#main-content"),
-					g.Attr("hx-swap", "innerHTML"),
-					g.Attr("hx-push-url", "true"),
-					g.Text(data.L("signup")),
+			Div(
+				Div(Class("create-account"),
+					Span(g.Text(data.L("dont_have_account")+" ")),
+					A(Href("#"),
+						g.Attr("hx-get", data.Paths.HTMXSignup),
+						g.Attr("hx-target", "#main-content"),
+						g.Attr("hx-swap", "innerHTML"),
+						g.Attr("hx-push-url", "true"),
+						g.Text(data.L("create_one")),
+					),
+				),
+				Div(Class("forgot-password"),
+					A(Href("#"),
+						g.Attr("hx-get", data.Paths.HTMXForgotPassword),
+						g.Attr("hx-target", "#main-content"),
+						g.Attr("hx-swap", "innerHTML"),
+						g.Attr("hx-push-url", "true"),
+						g.Text(data.L("forgot_password")),
+					),
 				),
 			),
 		),
-		SocialIdpButtons(data.SocialIdps, data.CSRF, data.Paths.HTMXHome, data.L("or_signin_with")),
+		// Social login buttons
+		g.If(!data.DisableSignup,
+			SocialIdpButtons(data.SocialIdps, data.CSRF, data.Paths.HTMXHome, data.L("or_signin_with")),
+		),
 	})
 }

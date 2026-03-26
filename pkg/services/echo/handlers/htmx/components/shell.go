@@ -22,7 +22,7 @@ func ShellPage(data ShellData) g.Node {
 			Meta(Name("viewport"), g.Attr("content", "width=device-width, initial-scale=1, shrink-to-fit=no")),
 			Meta(Name("description"), g.Attr("content", "OIDC Login")),
 			Link(g.Attr("rel", "icon"), Type("image/x-icon"), Href("/static/assets/favicon.ico")),
-			Link(g.Attr("rel", "stylesheet"), Href("/static/go-app/oidc-login/static_output/web/styles.css")),
+			Link(g.Attr("rel", "stylesheet"), Href("/static/go-app/oidc-login/static_output/web/styles.css?v="+data.CacheBustVersion)),
 			Script(Src("https://unpkg.com/htmx.org@2.0.4"),
 				g.Attr("integrity", "sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"),
 				g.Attr("crossorigin", "anonymous")),

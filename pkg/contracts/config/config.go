@@ -187,6 +187,7 @@ type (
 		ApiAppSettings                 *models_api_appsettings.ApiAppSettings         `json:"apiAppSettings"`
 		OIDCFlowAppConfig              *contracts_OIDCFlowAppConfig.OIDCFlowAppConfig `json:"oidcFlowAppConfig"`
 		RequiresNoAuthConfig           *RequiresNoAuthConfig                          `json:"requiresNoAuthConfig"`
+		CacheBustVersion               string                                         `json:"cacheBustVersion"`
 	}
 )
 

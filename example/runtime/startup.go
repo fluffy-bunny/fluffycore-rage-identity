@@ -301,6 +301,7 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	if example_version.Version() != "dev-build" {
 		guid = example_version.Version()
 	}
+	config.CacheBustVersion = guid
 	managementCacheBustingHTMLConfig := &rage_contracts_config.CacheBustingHTMLConfig{
 		Version:    guid,
 		FilePath:   "./static/go-app/management/static_output/index_template.html",

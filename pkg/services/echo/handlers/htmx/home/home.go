@@ -100,11 +100,12 @@ func (s *service) renderHome(c *echo.Context, code int, errors []string, email s
 	}
 
 	return components.RenderNode(c, code, components.HomePartial(components.HomeData{
-		RenderContext: rc,
-		Errors:        errors,
-		Email:         email,
-		SocialIdps:    idps,
-		DisableSignup: disableSignup,
+		RenderContext:   rc,
+		Errors:          errors,
+		Email:           email,
+		SocialIdps:      idps,
+		DisableSignup:   disableSignup,
+		EnabledWebAuthN: s.webAuthNConfig.Enabled,
 	}))
 }
 
@@ -131,7 +132,8 @@ func (s *service) DoPost(c *echo.Context) error {
 
 	// If an IDP hint was provided, redirect to external IDP
 	if fluffycore_utils.IsNotEmptyOrNil(model.IDPHint) {
-		return s.TeleportToPath(c, wellknown_echo.ExternalIDPPath+"?idp_hint="+model.IDPHint)
+		c.Response().Header().Set("HX-Redirect", wellknown_echo.ExternalIDPPath+"?idp_hint="+model.IDPHint)
+		return c.NoContent(http.StatusOK)
 	}
 
 	if fluffycore_utils.IsEmptyOrNil(model.Email) {

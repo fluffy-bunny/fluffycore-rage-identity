@@ -50,6 +50,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 func (s *service) Do(c *echo.Context) error {
 	localizer := s.Localizer().GetLocalizer()
 	rc := components.NewRenderContext(c, localizer)
+	rc.CacheBustVersion = s.config.CacheBustVersion
 	return components.RenderNode(c, http.StatusOK, components.ShellPage(components.ShellData{
 		RenderContext: rc,
 		BrandTitle:    "MAPPED Identity",

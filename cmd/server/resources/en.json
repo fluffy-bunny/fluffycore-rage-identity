@@ -68,5 +68,13 @@
   "start_over": "Start Over",
   "enter_email_for_reset": "Enter your email address to reset your password",
   "new_password": "New Password",
-  "error_occurred": "An Error Occurred"
+  "error_occurred": "An Error Occurred",
+  "enter_your_password": "Enter your password",
+  "enter_your_password_for": "Enter your password for {email}",
+  "back": "Back",
+  "signin": "Sign In",
+  "signing_in": "Signing in...",
+  "dont_have_account": "Don't have an account?",
+  "create_one": "Create one",
+  "signin_with_passkey": "Sign in with Passkey"
 }
