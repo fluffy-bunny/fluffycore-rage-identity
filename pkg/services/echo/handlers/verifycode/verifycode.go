@@ -19,7 +19,7 @@ import (
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
@@ -110,7 +110,7 @@ func (s *service) validateVerifyCodeGetRequest(model *VerifyCodeGetRequest) erro
 	return nil
 }
 
-func (s *service) DoGet(c echo.Context) error {
+func (s *service) DoGet(c *echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 
@@ -163,7 +163,7 @@ func (s *service) validateVerifyCodePostRequest(request *VerifyCodePostRequest) 
 	return errors, err
 }
 
-func (s *service) DoPost(c echo.Context) error {
+func (s *service) DoPost(c *echo.Context) error {
 	localizer := s.Localizer().GetLocalizer()
 
 	r := c.Request()
@@ -374,7 +374,7 @@ func (s *service) getSession() (contracts_sessions.ISession, error) {
 	return session, nil
 }
 
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 
 	r := c.Request()
 	// is the request get or post?

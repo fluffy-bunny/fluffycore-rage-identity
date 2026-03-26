@@ -3,7 +3,7 @@ package cookies
 import (
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	go_webauthn "github.com/go-webauthn/webauthn/webauthn"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 )
 
 type VerifyCodePurpose int
@@ -175,66 +175,66 @@ type (
 
 		// External OAuth2 Cookie
 		//---------------------------------------------------------------------
-		SetExternalOauth2Cookie(c echo.Context, request *SetExternalOauth2CookieRequest) error
-		DeleteExternalOauth2Cookie(c echo.Context, request *DeleteExternalOauth2CookieRequest) error
-		GetExternalOauth2Cookie(c echo.Context, request *GetExternalOauth2CookieRequest) (*GetExternalOauth2CookieResponse, error)
+		SetExternalOauth2Cookie(c *echo.Context, request *SetExternalOauth2CookieRequest) error
+		DeleteExternalOauth2Cookie(c *echo.Context, request *DeleteExternalOauth2CookieRequest) error
+		GetExternalOauth2Cookie(c *echo.Context, request *GetExternalOauth2CookieRequest) (*GetExternalOauth2CookieResponse, error)
 		// Verification Code Cookie
 		//---------------------------------------------------------------------
-		SetVerificationCodeCookie(c echo.Context, request *SetVerificationCodeCookieRequest) error
-		DeleteVerificationCodeCookie(c echo.Context)
-		GetVerificationCodeCookie(c echo.Context) (*GetVerificationCodeCookieResponse, error)
+		SetVerificationCodeCookie(c *echo.Context, request *SetVerificationCodeCookieRequest) error
+		DeleteVerificationCodeCookie(c *echo.Context)
+		GetVerificationCodeCookie(c *echo.Context) (*GetVerificationCodeCookieResponse, error)
 		// Password Reset Cookie
 		//---------------------------------------------------------------------
-		SetPasswordResetCookie(c echo.Context, request *SetPasswordResetCookieRequest) error
-		DeletePasswordResetCookie(c echo.Context)
-		GetPasswordResetCookie(c echo.Context) (*GetPasswordResetCookieResponse, error)
+		SetPasswordResetCookie(c *echo.Context, request *SetPasswordResetCookieRequest) error
+		DeletePasswordResetCookie(c *echo.Context)
+		GetPasswordResetCookie(c *echo.Context) (*GetPasswordResetCookieResponse, error)
 		// Auth Completed Cookie
 		//---------------------------------------------------------------------
-		SetAuthCompletedCookie(c echo.Context, request *SetAuthCompletedCookieRequest) error
-		DeleteAuthCompletedCookie(c echo.Context)
-		GetAuthCompletedCookie(c echo.Context) (*GetAuthCompletedCookieResponse, error)
+		SetAuthCompletedCookie(c *echo.Context, request *SetAuthCompletedCookieRequest) error
+		DeleteAuthCompletedCookie(c *echo.Context)
+		GetAuthCompletedCookie(c *echo.Context) (*GetAuthCompletedCookieResponse, error)
 		// Account State Cookie
 		//---------------------------------------------------------------------
-		SetAccountStateCookie(c echo.Context, request *SetAccountStateCookieRequest) error
-		DeleteAccountStateCookie(c echo.Context)
-		GetAccountStateCookie(c echo.Context) (*GetAccountStateCookieResponse, error)
+		SetAccountStateCookie(c *echo.Context, request *SetAccountStateCookieRequest) error
+		DeleteAccountStateCookie(c *echo.Context)
+		GetAccountStateCookie(c *echo.Context) (*GetAccountStateCookieResponse, error)
 		// Auth Cookie
 		//---------------------------------------------------------------------
-		SetAuthCookie(c echo.Context, request *SetAuthCookieRequest) error
-		DeleteAuthCookie(c echo.Context)
-		GetAuthCookie(c echo.Context) (*GetAuthCookieResponse, error)
+		SetAuthCookie(c *echo.Context, request *SetAuthCookieRequest) error
+		DeleteAuthCookie(c *echo.Context)
+		GetAuthCookie(c *echo.Context) (*GetAuthCookieResponse, error)
 		// SSO Cookie
 		//---------------------------------------------------------------------
-		SetSSOCookie(c echo.Context, request *SetSSOCookieRequest) error
-		DeleteSSOCookie(c echo.Context)
-		GetSSOCookie(c echo.Context) (*GetSSOCookieResponse, error)
+		SetSSOCookie(c *echo.Context, request *SetSSOCookieRequest) error
+		DeleteSSOCookie(c *echo.Context)
+		GetSSOCookie(c *echo.Context) (*GetSSOCookieResponse, error)
 		// KeepSigninPreferences Cookie
 		//---------------------------------------------------------------------
-		SetKeepSigninPreferencesCookie(c echo.Context, request *SetKeepSigninPreferencesCookieRequest) error
-		DeleteKeepSigninPreferencesCookie(c echo.Context, request *DeleteKeepSigninPreferencesCookieRequest)
-		GetKeepSigninPreferencesCookie(c echo.Context, request *GetKeepSigninPreferencesCookieRequest) (*GetKeepSigninPreferencesCookieResponse, error)
+		SetKeepSigninPreferencesCookie(c *echo.Context, request *SetKeepSigninPreferencesCookieRequest) error
+		DeleteKeepSigninPreferencesCookie(c *echo.Context, request *DeleteKeepSigninPreferencesCookieRequest)
+		GetKeepSigninPreferencesCookie(c *echo.Context, request *GetKeepSigninPreferencesCookieRequest) (*GetKeepSigninPreferencesCookieResponse, error)
 		// Insecure Cookies
 		//---------------------------------------------------------------------
-		SetInsecureCookie(c echo.Context, name string, value interface{}) error
-		DeleteInsecureCookie(c echo.Context, name string)
-		GetInsecureCookie(c echo.Context, name string) (interface{}, error)
+		SetInsecureCookie(c *echo.Context, name string, value interface{}) error
+		DeleteInsecureCookie(c *echo.Context, name string)
+		GetInsecureCookie(c *echo.Context, name string) (interface{}, error)
 		// WebAuthN Cookie
 		//---------------------------------------------------------------------
-		SetWebAuthNCookie(c echo.Context, request *SetWebAuthNCookieRequest) error
-		DeleteWebAuthNCookie(c echo.Context)
-		GetWebAuthNCookie(c echo.Context) (*GetWebAuthNCookieResponse, error)
+		SetWebAuthNCookie(c *echo.Context, request *SetWebAuthNCookieRequest) error
+		DeleteWebAuthNCookie(c *echo.Context)
+		GetWebAuthNCookie(c *echo.Context) (*GetWebAuthNCookieResponse, error)
 
 		// SigninUserName Cookie
 		//---------------------------------------------------------------------
-		SetSigninUserNameCookie(c echo.Context, request *SetSigninUserNameCookieRequest) error
-		DeleteSigninUserNameCookie(c echo.Context)
-		GetSigninUserNameCookie(c echo.Context) (*GetSigninUserNameCookieResponse, error)
+		SetSigninUserNameCookie(c *echo.Context, request *SetSigninUserNameCookieRequest) error
+		DeleteSigninUserNameCookie(c *echo.Context)
+		GetSigninUserNameCookie(c *echo.Context) (*GetSigninUserNameCookieResponse, error)
 
 		// SetErrorCookie Cookie
 		//---------------------------------------------------------------------
-		SetErrorCookie(c echo.Context, request *SetErrorCookieRequest) error
-		DeleteErrorCookie(c echo.Context)
-		GetErrorCookie(c echo.Context) (*GetErrorCookieResponse, error)
+		SetErrorCookie(c *echo.Context, request *SetErrorCookieRequest) error
+		DeleteErrorCookie(c *echo.Context)
+		GetErrorCookie(c *echo.Context) (*GetErrorCookieResponse, error)
 		// Legacy string constants - deprecated, use CookieName enum with GetCookieName() instead
 	}
 )

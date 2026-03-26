@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	qrcode "github.com/skip2/go-qrcode"
 	qrsvg "github.com/wamuir/svg-qr-code"
 	gotp "github.com/xlzd/gotp"
@@ -43,7 +43,7 @@ const (
 `
 )
 
-func generateQRCode(c echo.Context) error {
+func generateQRCode(c *echo.Context) error {
 	// Get the text you want to encode (e.g., a URL)
 	//text := "https://example.org"
 	otp := gotp.NewDefaultTOTP(secret)
@@ -80,7 +80,7 @@ func main() {
 
 	// Route to generate QR code
 	e.GET("/qrcode", generateQRCode)
-	e.GET("/verify", func(c echo.Context) error {
+	e.GET("/verify", func(c *echo.Context) error {
 		input := c.QueryParam("input")
 		// Add your verification logic here
 		otp := gotp.NewDefaultTOTP(secret)

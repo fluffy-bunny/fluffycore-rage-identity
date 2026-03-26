@@ -168,6 +168,7 @@ body {
 
 /* User Dropdown */
 .user-dropdown {
+  display: none;
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
@@ -178,6 +179,11 @@ body {
   box-shadow: var(--shadow-lg);
   overflow: hidden;
   animation: dropdownFadeIn 0.2s ease;
+  z-index: 1001;
+}
+
+.user-dropdown.show {
+  display: block;
 }
 
 @keyframes dropdownFadeIn {
@@ -543,6 +549,50 @@ body {
   color: #34a853;
 }
 
+.passkey-icon {
+  background: #f3e8ff;
+  color: #9333ea;
+}
+
+.icon-blue {
+  background: #e8f0fe;
+  color: #1967d2;
+}
+
+.icon-green {
+  background: #e8f5e9;
+  color: #34a853;
+}
+
+.icon-red {
+  background: #fce8e6;
+  color: #d93025;
+}
+
+.icon-purple {
+  background: #f3e8ff;
+  color: #9333ea;
+}
+
+.icon-google {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+}
+
+.icon-microsoft {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+}
+
+.icon-github {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  color: #24292f;
+}
+
 .card-title-group h2 {
   font-size: 18px;
   font-weight: 500;
@@ -554,6 +604,55 @@ body {
   font-size: 14px;
   color: var(--text-secondary);
   margin: 0;
+}
+
+.card-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.card-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 12px;
+}
+
+.btn-danger {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: #d93025;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-danger:hover {
+  background: #fce8e6;
+  border-color: #d93025;
+}
+
+.resend-link {
+  margin-top: 16px;
+  text-align: center;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0;
+  text-decoration: underline;
+}
+
+.btn-link:hover {
+  color: #1557b0;
 }
 
 .btn-edit {

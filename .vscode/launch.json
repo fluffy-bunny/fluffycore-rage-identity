@@ -13,6 +13,7 @@
             "program": "${workspaceFolder}/cmd/server",
             "envFile": "${workspaceFolder}/.env.secrets",
             "env": {
+                "DEV_BIND_LOCALHOST": "true",
                 "ENABLE_GRPC_SERVER_REFLECTION": "true",
                 "DOMAIN":"localhost:9044",
                 "RPID_DOMAIN":"localhost",

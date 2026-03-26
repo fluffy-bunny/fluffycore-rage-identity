@@ -26,7 +26,7 @@ import (
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 )
@@ -120,7 +120,7 @@ func (s *service) getSession() (contracts_sessions.ISession, error) {
 	}
 	return session, nil
 }
-func (s *service) DoGet(c echo.Context) error {
+func (s *service) DoGet(c *echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 
@@ -155,16 +155,16 @@ func (s *service) DoGet(c echo.Context) error {
 	*/
 
 	// Check for errors from cookie (e.g., from OAuth2 callback redirects)
-	// Note: Don't delete the cookie here - let the WASM app read and delete it
+	// Note: Don't delete the cookie here - let the UI app (WASM or HTMX home) read and delete it
 	errorCookieResponse, err := s.wellknownCookies.GetErrorCookie(c)
 	if err == nil && errorCookieResponse != nil && errorCookieResponse.Value != nil {
 		if fluffycore_utils.IsNotEmptyOrNil(errorCookieResponse.Value.Error) {
 			log.Info().
 				Str("error", errorCookieResponse.Value.Error).
 				Str("code", errorCookieResponse.Value.Code).
-				Msg("Found error cookie (will be displayed by WASM app)")
+				Msg("Found error cookie (will be displayed by UI app)")
 			errors = append(errors, errorCookieResponse.Value.Error)
-			// Don't delete the cookie here - the WASM app will read and delete it
+			// Don't delete the cookie here - the UI app will read and delete it
 		}
 	} else if err != nil {
 		log.Debug().Err(err).Msg("No error cookie found")
@@ -204,7 +204,7 @@ func (s *service) DoGet(c echo.Context) error {
 		})
 }
 
-func (s *service) DoPost(c echo.Context) error {
+func (s *service) DoPost(c *echo.Context) error {
 	localizer := s.Localizer().GetLocalizer()
 	r := c.Request()
 	// is the request get or post?
@@ -508,7 +508,7 @@ func (s *service) DoPost(c echo.Context) error {
 // @Success 200 {object} string
 // @Router /oidc-login [get]
 // @Router /oidc-login [post]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 
 	r := c.Request()
 	// is the request get or post?
@@ -521,7 +521,7 @@ func (s *service) Do(c echo.Context) error {
 	// return not found
 	return c.NoContent(http.StatusNotFound)
 }
-func (s *service) handleIdentityFound(c echo.Context, state string) error {
+func (s *service) handleIdentityFound(c *echo.Context, state string) error {
 	r := c.Request()
 	// is the request get or post?
 	ctx := r.Context()

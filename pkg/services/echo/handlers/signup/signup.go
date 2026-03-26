@@ -21,7 +21,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -105,7 +105,7 @@ type SignupPostRequest struct {
 	Action   string `param:"action" query:"action" form:"action" json:"action" xml:"action"`
 }
 
-func (s *service) DoGet(c echo.Context) error {
+func (s *service) DoGet(c *echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 
@@ -162,7 +162,7 @@ func (s *service) validateSignupPostRequest(request *SignupPostRequest) ([]strin
 	return errors, err
 }
 
-func (s *service) DoPost(c echo.Context) error {
+func (s *service) DoPost(c *echo.Context) error {
 	localizer := s.Localizer().GetLocalizer()
 
 	r := c.Request()
@@ -361,7 +361,7 @@ func (s *service) DoPost(c echo.Context) error {
 
 }
 
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 
 	r := c.Request()
 	// is the request get or post?

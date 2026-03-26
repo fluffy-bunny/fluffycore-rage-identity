@@ -8,7 +8,7 @@ import (
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 )
 
 type (
@@ -51,7 +51,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Produce json
 // @Success 200 {object} string
 // @Router /.well-known/openid-configuration [get]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	rootPath := s.config.OIDCConfig.BaseUrl
 
 	discovery := models.DiscoveryDocument{

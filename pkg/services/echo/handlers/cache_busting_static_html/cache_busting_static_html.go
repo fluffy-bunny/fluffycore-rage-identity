@@ -9,8 +9,8 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
-	echo "github.com/labstack/echo/v4"
-	middleware "github.com/labstack/echo/v4/middleware"
+	echo "github.com/labstack/echo/v5"
+	middleware "github.com/labstack/echo/v5/middleware"
 	zerolog "github.com/rs/zerolog"
 )
 
@@ -38,7 +38,7 @@ cacheBustingHTMLConfig := &contracts_config.CacheBustingHTMLConfig{
     RoutePatterns: []*contracts_config.RoutePattern{
         {
             Pattern: "web/app.json",
-            Handler: func(c echo.Context, filePath string) (bool, error) {
+            Handler: func(c *echo.Context, filePath string) (bool, error) {
                 // Read the file
                 content, err := os.ReadFile(filePath)
                 if err != nil {
@@ -87,7 +87,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
 
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 
 	r := c.Request()
 	ctx := r.Context()
@@ -166,9 +166,9 @@ func (s *service) Do(c echo.Context) error {
 	c.Request().URL.Path = strippedPath
 
 	// Try to serve as a static file first
-	err := s.staticMiddleware(func(c echo.Context) error {
+	err := s.staticMiddleware(func(c *echo.Context) error {
 		// return an echo.HTTPError status not found to indicate file not found
-		return echo.NewHTTPError(http.StatusNotFound)
+		return echo.NewHTTPError(http.StatusNotFound, "not found")
 	})(c)
 
 	if err == nil {

@@ -3,11 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 )
 
 func main() {
@@ -28,11 +29,11 @@ func main() {
 
 	e := echo.New()
 
-	e.Use(middleware.Logger())
+	e.Use(middleware.RequestLogger())
 	e.Use(middleware.Recover())
 
 	// Root page with selector to the base path
-	e.GET("/", func(c echo.Context) error {
+	e.GET("/", func(c *echo.Context) error {
 		html := fmt.Sprintf(`<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -116,7 +117,7 @@ func main() {
 
 	// Middleware to set cache headers and Content-Type AFTER static file handler
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			err := next(c)
 
 			path := c.Request().URL.Path
@@ -142,7 +143,7 @@ func main() {
 
 	// SPA fallback for non-file routes (must come after Static)
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			err := next(c)
 			if err != nil {
 				httpErr, ok := err.(*echo.HTTPError)
@@ -155,5 +156,5 @@ func main() {
 		}
 	})
 
-	e.Logger.Fatal(e.Start(":" + *port))
+	log.Fatal(e.Start(":" + *port))
 }

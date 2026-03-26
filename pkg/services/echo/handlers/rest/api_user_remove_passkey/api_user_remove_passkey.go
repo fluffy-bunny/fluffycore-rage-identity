@@ -16,7 +16,7 @@ import (
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 )
@@ -97,7 +97,7 @@ func (s *service) validateRemovePasskeyRequest(model *api_user_remove_passkey.Re
 // @Failure 404 {object} wellknown_echo.RestErrorResponse
 // @Failure 500 {object} api_user_remove_passkey.RemovePasskeyResonse
 // @Router /api/user-remove-passkey [post]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 	model := &api_user_remove_passkey.RemovePasskeyRequest{}
