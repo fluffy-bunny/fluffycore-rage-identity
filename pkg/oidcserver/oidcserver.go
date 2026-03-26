@@ -301,6 +301,8 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 func (s *startup) RegisterStaticRoutes(e *echo.Echo) error {
 	// i.e. e.Static("/css", "./css")
 	e.Static("/static", "./static")
+	// Serve favicon.ico from static/assets so browsers don't get 401
+	e.File("/favicon.ico", "./static/assets/favicon.ico")
 	return nil
 }
 
