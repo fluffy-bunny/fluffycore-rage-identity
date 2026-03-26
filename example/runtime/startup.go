@@ -15,7 +15,6 @@ import (
 	service_AuthorizationCodeClaimsAugmentor "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/AuthorizationCodeClaimsAugmentor"
 	services_AuthorizationCodeClaimsAugmentor "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/AuthorizationCodeClaimsAugmentor"
 	services_EmailTemplateData "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/EmailTemplateData"
-	services_EventSink "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/EventSink"
 	services_handlers_account_about "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/about"
 	services_handlers_account_api_api_linked_accounts "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/api/api_linked_accounts"
 	services_handlers_account_api_login "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/api/api_login"
@@ -34,11 +33,12 @@ import (
 	rage_contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
-	contracts_events "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/events"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	contracts_session_with_options "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/session_with_options"
 	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/tokenservice"
 	rage_runtime "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/runtime"
+	services_AuditStore_local_file "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/AuditStore/local_file"
+	services_AuditStore_nil "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/AuditStore/nil"
 	services_ScopedMemoryCache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/ScopedMemoryCache"
 	services_cookies_WellknownCookieNames "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/cookies/WellknownCookieNames"
 	services_htmx "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx"
@@ -235,13 +235,18 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	//di.AddSingletonFromContainer[contracts_userservice.ISingletonUserService](builder, rootContainer)
 	di.AddSingletonFromContainer[contracts_identity.IUserIdGenerator](builder, rootContainer)
 	di.AddSingletonFromContainer[contracts_tokenservice.IAuthorizationCodeClaimsAugmentor](builder, rootContainer)
-	di.AddSingletonFromContainer[contracts_events.IEventSink](builder, rootContainer)
 	di.AddSingletonFromContainer[contracts_email.IEmailTemplateData](builder, rootContainer)
+
+	// Always register a no-op audit store, then optionally override with file store.
+	// DI rule: last registration wins.
+	services_AuditStore_nil.AddSingletonIAuditStore(builder)
+	if config.SystemConfig != nil && config.SystemConfig.RegisterFileAuditStore {
+		services_AuditStore_local_file.AddSingletonIAuditStore(builder)
+	}
 
 	services_user_id_generator.AddSingletonIUserIdGenerator(builder)
 	services_oidcflowstore.AddSingletonAuthorizationRequestStateStoreServer(builder)
 	services_AuthorizationCodeClaimsAugmentor.AddSingletonIAuthorizationCodeClaimsAugmentor(builder)
-	services_EventSink.AddSingletonIEventSink(builder)
 	services_EmailTemplateData.AddSingletonIEmailTemplateData(builder)
 	// Account Handlers
 	//--------------------------------------------------------

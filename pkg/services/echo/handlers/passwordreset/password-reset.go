@@ -241,6 +241,14 @@ func (s *service) DoPost(c *echo.Context) error {
 		log.Error().Err(err).Msg("UpdateUser")
 		return s.TeleportBackToLoginWithError(c, InternalError_PasswordReset_009, InternalError_PasswordReset_009)
 	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.password.updated",
+		getPasswordResetCookieResponse.PasswordReset.Subject,
+		map[string]string{"operation": "password_reset"},
+		map[string]string{"mutation": "update_password", "handler": "passwordreset"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
+		return s.TeleportBackToLoginWithError(c, InternalError_PasswordReset_009, InternalError_PasswordReset_009)
+	}
 
 	// send the email
 	_, err = s.EmailService().SendSimpleEmail(ctx,

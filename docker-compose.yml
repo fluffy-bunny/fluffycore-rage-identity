@@ -132,6 +132,7 @@ services:
       - ./cmd/server/config/idps.docker.json:/config/idps.json
       - ./cmd/server/config/signing-keys.json:/config/signing-keys.json
       - ./cmd/server/config/seed-users.json:/config/seed-users.json
+      - ./tmp:/app/tmp
 
     entrypoint: ["/app/server", "serve"]
 

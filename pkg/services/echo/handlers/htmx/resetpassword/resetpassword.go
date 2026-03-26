@@ -194,6 +194,14 @@ func (s *service) DoPost(c *echo.Context) error {
 		log.Error().Err(err).Msg("UpdateRageUser")
 		return s.renderError(c, "htmx-reset-006", "Failed to update password")
 	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.password.updated",
+		getPasswordResetCookieResponse.PasswordReset.Subject,
+		map[string]string{"operation": "password_reset"},
+		map[string]string{"mutation": "update_password", "handler": "htmx.resetpassword"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
+		return s.renderError(c, "htmx-reset-006-audit", "Failed to write audit record")
+	}
 
 	// Send confirmation email
 	s.EmailService().SendSimpleEmail(ctx,

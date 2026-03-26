@@ -188,6 +188,14 @@ func (s *service) Do(c *echo.Context) error {
 		log.Error().Err(err).Msg("UpdateUser")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.password.updated",
+		getPasswordResetCookieResponse.PasswordReset.Subject,
+		map[string]string{"operation": "password_reset"},
+		map[string]string{"mutation": "update_password", "handler": "rest.api_password_reset_finish"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+	}
 
 	// send the email
 	sendSimpleEmailRequest := &contracts_email.SendSimpleEmailRequest{

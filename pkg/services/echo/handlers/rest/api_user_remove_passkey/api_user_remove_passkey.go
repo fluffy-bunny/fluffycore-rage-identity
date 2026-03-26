@@ -165,6 +165,15 @@ func (s *service) Do(c *echo.Context) error {
 		response.Error = InternalError_UserIdentityInfo_002
 		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
 	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.passkey.removed",
+		subject,
+		map[string]string{"aaguid": model.AAGUID},
+		map[string]string{"mutation": "remove_passkey", "handler": "rest.api_user_remove_passkey"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
+		response.Error = InternalError_UserIdentityInfo_002
+		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
+	}
 
 	return c.JSONPretty(http.StatusOK, response, "  ")
 }

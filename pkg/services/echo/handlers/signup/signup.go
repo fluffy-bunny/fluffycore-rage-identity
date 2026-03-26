@@ -301,6 +301,14 @@ func (s *service) DoPost(c *echo.Context) error {
 		log.Error().Err(err).Msg("CreateUser")
 		return s.TeleportBackToLoginWithError(c, InternalError_Signup_005, InternalError_Signup_005)
 	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.created",
+		user.RootIdentity.Subject,
+		map[string]string{"email": user.RootIdentity.Email, "idp_slug": user.RootIdentity.IdpSlug},
+		map[string]string{"mutation": "create_user", "handler": "signup"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
+		return s.TeleportBackToLoginWithError(c, InternalError_Signup_005, InternalError_Signup_005)
+	}
 	if s.config.EmailVerificationRequired {
 		verificationCode := echo_utils.GenerateRandomAlphaNumericString(6)
 		err = s.wellknownCookies.SetVerificationCodeCookie(c,

@@ -168,6 +168,14 @@ func (s *service) handleDelete(c *echo.Context) error {
 		log.Error().Err(err).Msg("UpdateRageUser")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_PasskeyCredential_002}, "  ")
 	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.passkey.removed",
+		subject,
+		map[string]string{"credential_id": req.CredentialID},
+		map[string]string{"mutation": "remove_passkey", "handler": "rest.api_user_passkey_credential"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_PasskeyCredential_002}, "  ")
+	}
 
 	log.Info().Msg("Passkey deleted successfully")
 	return c.JSONPretty(http.StatusOK, wellknown_echo.RestSuccessResponse{Message: "Passkey deleted successfully"}, "  ")
@@ -267,6 +275,14 @@ func (s *service) handleRename(c *echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("UpdateRageUser")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_PasskeyCredential_004}, "  ")
+	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.passkey.renamed",
+		subject,
+		map[string]string{"credential_id": req.CredentialID, "friendly_name": req.FriendlyName},
+		map[string]string{"mutation": "update_passkey", "handler": "rest.api_user_passkey_credential"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_PasskeyCredential_004}, "  ")
 	}
 

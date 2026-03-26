@@ -193,6 +193,14 @@ func (s *service) DoPost(c *echo.Context) error {
 		log.Error().Err(err).Msg("UpdateUser")
 		return s.renderError(c, "htmx-verify-003", err.Error())
 	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.updated",
+		rageUser.RootIdentity.Subject,
+		map[string]string{"operation": "email_verified"},
+		map[string]string{"mutation": "update_user", "handler": "htmx.verifycode"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
+		return s.renderError(c, "htmx-verify-003-audit", "Failed to write audit record")
+	}
 
 	// Delete the one-time code
 	s.wellknownCookies.DeleteVerificationCodeCookie(c)

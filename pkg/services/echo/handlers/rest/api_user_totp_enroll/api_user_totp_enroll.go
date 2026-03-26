@@ -138,6 +138,14 @@ func (s *service) Do(c *echo.Context) error {
 		log.Error().Err(err).Msg("UpdateRageUser")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_TOTPEnroll_002}, "  ")
 	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.totp.enrolled",
+		subject,
+		map[string]string{"operation": "totp_enroll"},
+		map[string]string{"mutation": "update_totp", "handler": "rest.api_user_totp_enroll"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_TOTPEnroll_002}, "  ")
+	}
 
 	// Generate provisioning URI
 	otp := gotp.NewDefaultTOTP(secret)

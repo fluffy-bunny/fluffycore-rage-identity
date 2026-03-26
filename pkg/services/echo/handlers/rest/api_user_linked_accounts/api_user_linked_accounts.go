@@ -207,6 +207,14 @@ func (s *service) DoDelete(c *echo.Context) error {
 		log.Error().Err(err).Msg("UnlinkRageUser")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.unlinked",
+		subject,
+		map[string]string{"idp_slug": foundIdentity.IdpSlug, "external_subject": foundIdentity.Subject},
+		map[string]string{"mutation": "unlink_identity", "handler": "rest.api_user_linked_accounts"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+	}
 	return c.JSONPretty(http.StatusOK, "", "  ")
 }
 

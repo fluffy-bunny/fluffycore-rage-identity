@@ -95,8 +95,9 @@ type (
 		Domain string `json:"domain"`
 	}
 	SystemConfig struct {
-		DeveloperMode bool   `json:"developerMode"`
-		Domain        string `json:"domain"`
+		DeveloperMode          bool   `json:"developerMode"`
+		Domain                 string `json:"domain"`
+		RegisterFileAuditStore bool   `json:"registerFileAuditStore"`
 	}
 	SSOConfig struct {
 		MaxDurationMinutes int `json:"maxDurationMinutes"`
@@ -378,7 +379,8 @@ const configDefaultJSONTemplate = `
     },
     "systemConfig": {
         "domain": "@@CHANGEME@@",
-        "developerMode": false
+        "developerMode": false,
+        "registerFileAuditStore": false
     },
     "totp": {
         "enabled": false,
