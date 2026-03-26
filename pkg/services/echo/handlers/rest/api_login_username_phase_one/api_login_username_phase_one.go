@@ -23,7 +23,7 @@ import (
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 )
@@ -106,7 +106,7 @@ func (s *service) validateLoginPhaseOneRequest(model *login_models.LoginPhaseOne
 // @Failure 404 {object} wellknown_echo.RestErrorResponse
 // @Failure 500 {object} wellknown_echo.RestErrorResponse
 // @Router /api/login-phase-one [post]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	localizer := s.Localizer().GetLocalizer()
 
 	ctx := c.Request().Context()

@@ -24,7 +24,7 @@ import (
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	xid "github.com/rs/xid"
 	zerolog "github.com/rs/zerolog"
 	oauth2 "golang.org/x/oauth2"
@@ -123,7 +123,7 @@ type ErrorResponse struct {
 	InternalCode string `json:"internalCode"`
 }
 
-func (s *service) DoPost(c echo.Context) error {
+func (s *service) DoPost(c *echo.Context) error {
 	r := c.Request()
 	rootPath := echo_utils.GetMyRootPath(c)
 
@@ -385,7 +385,7 @@ func generateCodeChallenge() (string, string) {
 // @Success 	200 				{object} 	external_idp.StartExternalIDPLoginResponse
 // @Failure		400					{object}	ErrorResponse
 // @Router /api/start-external-login [post]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 
 	r := c.Request()
 	// is the request get or post?

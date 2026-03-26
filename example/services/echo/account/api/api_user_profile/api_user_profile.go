@@ -16,7 +16,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
@@ -88,7 +88,7 @@ type Profile struct {
 	IsClaimedDomain bool   `json:"isClaimedDomain"`
 }
 
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 	switch r.Method {
@@ -113,7 +113,7 @@ func (s *service) Do(c echo.Context) error {
 // @Failure 404 {object} wellknown_echo.RestErrorResponse
 // @Failure 500 {object} wellknown_echo.RestErrorResponse
 // @Router /api/user-profile [post]
-func (s *service) DoPost(c echo.Context) error {
+func (s *service) DoPost(c *echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 	memCache := s.ScopedMemoryCache()
@@ -185,7 +185,7 @@ func (s *service) DoPost(c echo.Context) error {
 // @Failure 404 {object} wellknown_echo.RestErrorResponse
 // @Failure 500 {object} wellknown_echo.RestErrorResponse
 // @Router /api/user-profile [get]
-func (s *service) DoGet(c echo.Context) error {
+func (s *service) DoGet(c *echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 

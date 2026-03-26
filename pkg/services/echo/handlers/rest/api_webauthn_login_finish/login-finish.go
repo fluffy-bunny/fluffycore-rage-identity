@@ -23,7 +23,7 @@ import (
 	protocol "github.com/go-webauthn/webauthn/protocol"
 	go_webauthn "github.com/go-webauthn/webauthn/webauthn"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -103,7 +103,7 @@ type SucessResonseJson struct {
 	Credential        *go_webauthn.Credential         `json:"credential"`
 }
 
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	r := c.Request()
 
 	ctx := r.Context()

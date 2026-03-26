@@ -13,7 +13,7 @@ import (
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	oauth2 "github.com/go-oauth2/oauth2/v4"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 )
 
 type (
@@ -85,7 +85,7 @@ type TokenEndpointRequest struct {
 // @Param       redirect_uri     query     string  true  "redirect_uri requested"
 // @Success 200 {object} string
 // @Router /token [post]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	tokenEndpointRequest := &TokenEndpointRequest{}
 	if err := c.Bind(tokenEndpointRequest); err != nil {
 		return c.String(http.StatusBadRequest, "Bad Request")

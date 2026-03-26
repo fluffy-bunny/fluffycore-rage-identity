@@ -1,4 +1,7 @@
-FROM golang:1.25 AS build
+FROM golang:1.26 AS build
+
+# UI_MODE: "htmx" (default, excludes WASM static_output), "wasm" (includes WASM+HTMX)
+ARG UI_MODE=htmx
 
 
 #!!!DO NOT REMOVE THE BELOW 3 LINES!!! Needed for github action to work
@@ -61,6 +64,13 @@ WORKDIR /app
 COPY --from=build /build/${THEBINARY} ./
 RUN mkdir /static
 COPY ./cmd/server/static ./static/
+
+# When UI_MODE=htmx (default), remove WASM static_output directories (~59 MB)
+ARG UI_MODE=htmx
+RUN if [ "$UI_MODE" != "wasm" ]; then \
+      rm -rf /static/go-app/management/static_output \
+             /static/go-app/oidc-login/static_output; \
+    fi
 
 RUN mkdir /resources
 COPY ./cmd/server/resources ./resources/

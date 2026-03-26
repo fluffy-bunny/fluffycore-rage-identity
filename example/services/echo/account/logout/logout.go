@@ -10,7 +10,7 @@ import (
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 )
 
@@ -62,7 +62,7 @@ func (s *service) validateLoginGetRequest(model *LogoutGetRequest) error {
 	return nil
 }
 
-func (s *service) DoGet(c echo.Context) error {
+func (s *service) DoGet(c *echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 
@@ -81,10 +81,7 @@ func (s *service) DoGet(c echo.Context) error {
 	}
 	s.wellknownCookies.DeleteAuthCookie(c)
 
-	return s.Render(c, http.StatusOK, "oidc/logout/index",
-		map[string]interface{}{
-			"url": model.RedirectURL,
-		})
+	return c.Redirect(http.StatusFound, model.RedirectURL)
 }
 
 // HealthCheck godoc
@@ -96,7 +93,7 @@ func (s *service) DoGet(c echo.Context) error {
 // @Param       redirect_url            		query     string  true  "redirect url"
 // @Success 200 {object} string
 // @Router /logout [get,post]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 
 	r := c.Request()
 	// is the request get or post?

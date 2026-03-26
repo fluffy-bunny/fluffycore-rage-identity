@@ -11,14 +11,12 @@
 body {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, sans-serif;
-  background: #0a2540
-    url("https://admin.mapped.com/static/media/bg.a275c26f44059c242b68.jpg")
-    center/cover no-repeat fixed;
+  background: #111827;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #333;
+  color: #f9fafb;
   padding: 20px;
 }
 
@@ -33,9 +31,9 @@ body {
 }
 
 .wizard-container {
-  background: white;
+  background: #1f2937;
   border-radius: 0;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   border: 1px solid #374151;
   padding: 0;
   max-width: 480px;
@@ -53,7 +51,7 @@ body {
 .app-header {
   margin: 0;
   padding: 24px 40px;
-  background: linear-gradient(135deg, #0a2540 0%, #1a365d 100%);
+  background: #111827;
   border-radius: 0;
 }
 
@@ -228,14 +226,14 @@ body {
 }
 
 .step-container h2 {
-  color: #2d3748;
+  color: #f9fafb;
   font-size: 28px;
   font-weight: 600;
   margin-bottom: 8px;
 }
 
 .step-container p {
-  color: #718096;
+  color: #9ca3af;
   font-size: 16px;
   margin-bottom: 32px;
   line-height: 1.5;
@@ -259,7 +257,7 @@ label {
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
-  color: #4a5568;
+  color: #9ca3af;
   font-size: 14px;
 }
 
@@ -267,10 +265,11 @@ input[type="email"],
 input[type="text"] {
   width: 100%;
   padding: 16px 20px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #374151;
   border-radius: 4px;
   font-size: 16px;
-  background: #f8fafc;
+  background: #111827;
+  color: #f9fafb;
   transition: all 0.3s ease;
   outline: none;
 }
@@ -278,25 +277,26 @@ input[type="text"] {
 input[type="password"] {
   width: 100%;
   padding: 16px 20px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #374151;
   border-radius: 4px;
   font-size: 16px;
-  background: #f8fafc;
+  background: #111827;
+  color: #f9fafb;
   transition: all 0.3s ease;
   outline: none;
 }
 
 input[type="email"]:focus,
 input[type="text"]:focus {
-  border-color: #00d4aa;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
+  border-color: #10b981;
+  background: #111827;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
 }
 
 input[type="password"]:focus {
-  border-color: #00d4aa;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(0, 212, 170, 0.1);
+  border-color: #10b981;
+  background: #111827;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
 }
 
 input.error {
@@ -339,6 +339,10 @@ input.error:focus {
   justify-content: center;
 }
 
+.button-group button {
+  width: 100%;
+}
+
 .btn-primary,
 .btn-secondary {
   padding: 16px 32px;
@@ -356,38 +360,45 @@ input.error:focus {
 }
 
 .btn-primary {
-  background: #00d4aa;
+  background: #10b981;
   color: white;
+  border: none;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #00bf99;
+  background: #059669;
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 212, 170, 0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .btn-primary:disabled {
-  background: #a0aec0;
+  background: #6b7280;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
 .btn-secondary {
-  background: #f7fafc;
-  color: #4a5568;
-  border: 2px solid #e2e8f0;
+  background: transparent;
+  color: #10b981;
+  border: 2px solid #374151;
 }
 
-.btn-secondary:hover {
-  background: #edf2f7;
-  border-color: #cbd5e0;
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: #10b981;
   transform: translateY(-1px);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Links */
 .resend-link {
-  color: #00d4aa;
+  color: #10b981;
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
@@ -395,16 +406,16 @@ input.error:focus {
 }
 
 .resend-link:hover {
-  color: #00bf99;
+  color: #059669;
   text-decoration: underline;
 }
 
 /* Success Page Styles */
 .success-container {
-  background: white;
+  background: #1f2937;
   border-radius: 4px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15), 0 0 60px rgba(0, 212, 170, 0.4),
-    0 0 100px rgba(0, 212, 170, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border: 1px solid #374151;
   padding: 60px 40px;
   max-width: 480px;
   width: 90%;
@@ -443,14 +454,14 @@ input.error:focus {
 }
 
 .success-container h1 {
-  color: #2d3748;
+  color: #f9fafb;
   font-size: 32px;
   font-weight: 600;
   margin-bottom: 16px;
 }
 
 .success-container p {
-  color: #718096;
+  color: #9ca3af;
   font-size: 16px;
   margin-bottom: 16px;
   line-height: 1.6;
@@ -601,10 +612,10 @@ input.error:focus {
 .btn-social {
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #374151;
   border-radius: 4px;
-  background: white;
-  color: #334155;
+  background: #1f2937;
+  color: #f9fafb;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -616,10 +627,10 @@ input.error:focus {
 }
 
 .btn-social:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+  background: #111827;
+  border-color: #4b5563;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .btn-social:active {
@@ -646,28 +657,28 @@ input.error:focus {
 
 /* Provider-specific button colors */
 .btn-google:hover {
-  background: #f1f5f9;
-  border-color: #00d4aa;
+  background: #111827;
+  border-color: #10b981;
 }
 
 .btn-microsoft:hover {
-  background: #f1f5f9;
-  border-color: #00d4aa;
+  background: #111827;
+  border-color: #10b981;
 }
 
 .btn-github:hover {
-  background: #f1f5f9;
-  border-color: #24292e;
+  background: #111827;
+  border-color: #4b5563;
 }
 
 .btn-facebook:hover {
-  background: #f1f5f9;
+  background: #111827;
   border-color: #1877f2;
 }
 
 .btn-apple:hover {
-  background: #f1f5f9;
-  border-color: #000000;
+  background: #111827;
+  border-color: #4b5563;
 }
 
 /* Create account link */
@@ -675,18 +686,18 @@ input.error:focus {
   text-align: center;
   margin-top: 20px;
   font-size: 14px;
-  color: #64748b;
+  color: #9ca3af;
 }
 
 .create-account a {
-  color: #00d4aa;
+  color: #10b981;
   text-decoration: none;
   font-weight: 600;
   transition: color 0.2s ease;
 }
 
 .create-account a:hover {
-  color: #00bf99;
+  color: #059669;
   text-decoration: underline;
 }
 
@@ -698,14 +709,14 @@ input.error:focus {
 }
 
 .forgot-password a {
-  color: #00d4aa;
+  color: #10b981;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s ease;
 }
 
 .forgot-password a:hover {
-  color: #00bf99;
+  color: #059669;
   text-decoration: underline;
 }
 
@@ -719,7 +730,7 @@ input.error:focus {
   align-items: center;
   text-align: center;
   margin: 24px 0;
-  color: #94a3b8;
+  color: #9ca3af;
   font-size: 13px;
   font-weight: 500;
   text-transform: uppercase;
@@ -730,11 +741,12 @@ input.error:focus {
 .divider::after {
   content: "";
   flex: 1;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #374151;
 }
 
 .divider span {
   padding: 0 16px;
+  background: #1f2937;
 }
 
 .social-buttons {
@@ -750,21 +762,21 @@ input.error:focus {
   justify-content: center;
   gap: 8px;
   padding: 16px 12px;
-  background: white;
-  border: 2px solid #e2e8f0;
+  background: #1f2937;
+  border: 2px solid #374151;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 13px;
   font-weight: 500;
-  color: #475569;
+  color: #f9fafb;
 }
 
 .social-btn:hover {
-  border-color: #cbd5e0;
-  background: #f8fafc;
+  border-color: #4b5563;
+  background: #111827;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .social-btn:active {
@@ -808,6 +820,10 @@ input.error:focus {
   margin: 20px 0;
 }
 
+.passkey-login-section button {
+  width: 100%;
+}
+
 .passkey-btn {
   width: 100%;
   display: flex;
@@ -815,7 +831,7 @@ input.error:focus {
   justify-content: center;
   gap: 12px;
   padding: 14px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #10b981;
   color: white;
   border: none;
   border-radius: 8px;
@@ -823,13 +839,13 @@ input.error:focus {
   font-size: 15px;
   font-weight: 600;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .passkey-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
-  background: linear-gradient(135deg, #5a67d8 0%, #6b46a3 100%);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+  background: #059669;
 }
 
 .passkey-btn:active {
@@ -1246,5 +1262,5 @@ input.error:focus {
   margin-left: 12px;
   vertical-align: middle;
   font-size: 14px;
-  color: #333;
+  color: var(--text-primary);
 }

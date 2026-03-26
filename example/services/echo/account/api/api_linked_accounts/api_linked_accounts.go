@@ -17,7 +17,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 )
@@ -84,7 +84,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
 
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	r := c.Request()
 	// is the request get or delete?
 	switch r.Method {
@@ -111,7 +111,7 @@ func (s *service) Do(c echo.Context) error {
 // @Failure 500 {object} string "Internal server error"
 // @Security CookieAuth
 // @Router /api/linked-accounts [delete]
-func (s *service) DoDelete(c echo.Context) error {
+func (s *service) DoDelete(c *echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
@@ -206,7 +206,7 @@ func (s *service) DoDelete(c echo.Context) error {
 // @Failure 500 {object} string "Internal server error"
 // @Security CookieAuth
 // @Router /api/linked-accounts [get]
-func (s *service) DoGet(c echo.Context) error {
+func (s *service) DoGet(c *echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 

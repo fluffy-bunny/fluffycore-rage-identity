@@ -15,7 +15,7 @@ import (
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 )
 
@@ -64,7 +64,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
 
-func (s *service) DoGet(c echo.Context) error {
+func (s *service) DoGet(c *echo.Context) error {
 	r := c.Request()
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
@@ -112,25 +112,25 @@ func (s *service) DoGet(c echo.Context) error {
 		})
 }
 
-func (s *service) DoPasskeyManagment(c echo.Context) error {
+func (s *service) DoPasskeyManagment(c *echo.Context) error {
 	redirectUrl := fmt.Sprintf("%s?action=edit&returnUrl=%s",
 		wellknown_echo.PasskeyManagementPath,
 		wellknown_echo.ProfilePath)
 	return c.Redirect(http.StatusFound, redirectUrl)
 }
-func (s *service) DoTOTPManagment(c echo.Context) error {
+func (s *service) DoTOTPManagment(c *echo.Context) error {
 	redirectUrl := fmt.Sprintf("%s?action=edit&returnUrl=%s",
 		wellknown_echo.TOTPPath,
 		wellknown_echo.ProfilePath)
 	return c.Redirect(http.StatusFound, redirectUrl)
 }
-func (s *service) DoPersonalInformationEdit(c echo.Context) error {
+func (s *service) DoPersonalInformationEdit(c *echo.Context) error {
 	redirectUrl := fmt.Sprintf("%s?action=edit&returnUrl=%s",
 		wellknown_echo.PersonalInformationPath,
 		wellknown_echo.ProfilePath)
 	return c.Redirect(http.StatusFound, redirectUrl)
 }
-func (s *service) DoPasswordReset(c echo.Context) error {
+func (s *service) DoPasswordReset(c *echo.Context) error {
 	r := c.Request()
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
@@ -168,7 +168,7 @@ type ProfileActionPost struct {
 	Action string `param:"action" query:"action" form:"action" json:"action" xml:"action"`
 }
 
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	r := c.Request()
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()

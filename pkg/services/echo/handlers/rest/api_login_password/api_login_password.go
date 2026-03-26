@@ -21,7 +21,7 @@ import (
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -112,7 +112,7 @@ func (s *service) validateLoginPasswordRequest(model *login_models.LoginPassword
 // @Failure 401 {object} login_models.LoginPasswordErrorResponse
 // @Failure 500 {object} login_models.LoginPasswordErrorResponse
 // @Router /api/login-password [post]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	rootPath := echo_utils.GetMyRootPath(c)
 
 	ctx := c.Request().Context()
