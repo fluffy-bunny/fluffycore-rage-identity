@@ -12,6 +12,7 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/contracts/config"
 	management_contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/contracts/config"
 	management_htmx "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/htmx"
+	support_htmx "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/support/htmx"
 	service_AuthorizationCodeClaimsAugmentor "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/AuthorizationCodeClaimsAugmentor"
 	services_AuthorizationCodeClaimsAugmentor "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/AuthorizationCodeClaimsAugmentor"
 	services_EmailTemplateData "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/EmailTemplateData"
@@ -107,9 +108,12 @@ func (s *startup) EnsureManagementAuth(ctn di.Container) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c *echo.Context) error {
 			path := c.Path()
+			supportPortalEnabled := true
 
-			// Only apply to /management/ paths
-			if !strings.HasPrefix(path, wellknown_echo.ManagementPath) {
+			isManagementPath := strings.HasPrefix(path, wellknown_echo.ManagementPath)
+			isSupportPath := strings.HasPrefix(path, wellknown_echo.SupportPath)
+			// Only apply to /management/ and /support/ paths
+			if !isManagementPath && !isSupportPath {
 				return next(c)
 			}
 			ctx := c.Request().Context()
@@ -120,6 +124,13 @@ func (s *startup) EnsureManagementAuth(ctn di.Container) echo.MiddlewareFunc {
 				log.Warn().Msg("No scoped container found")
 				return next(c)
 			}
+			if cfg := di.Get[*rage_contracts_config.Config](subContainer); cfg != nil && cfg.SystemConfig != nil {
+				supportPortalEnabled = cfg.SystemConfig.EnableSupportPortal
+			}
+			isSupportPath = supportPortalEnabled && isSupportPath
+			if !isManagementPath && !isSupportPath {
+				return next(c)
+			}
 			claimsPrincipal := di.Get[fluffycore_contracts_common.IClaimsPrincipal](subContainer)
 			isAuthenticated := claimsPrincipal.HasClaim(fluffycore_contracts_common.Claim{
 				Type:  fluffycore_echo_wellknown.ClaimTypeAuthenticated,
@@ -127,6 +138,9 @@ func (s *startup) EnsureManagementAuth(ctn di.Container) echo.MiddlewareFunc {
 			})
 
 			if isAuthenticated {
+				if isSupportPath && !isSupportAdmin(claimsPrincipal) {
+					return c.String(http.StatusForbidden, "Forbidden: support admin access required")
+				}
 				return next(c)
 			}
 
@@ -175,6 +189,30 @@ func (s *startup) EnsureManagementAuth(ctn di.Container) echo.MiddlewareFunc {
 		}
 
 	}
+}
+
+func isSupportAdmin(claimsPrincipal fluffycore_contracts_common.IClaimsPrincipal) bool {
+	allowed := map[string]bool{
+		"support_admin":         true,
+		"support-admin":         true,
+		"super_admin":           true,
+		"super-admin":           true,
+		"backend_support_admin": true,
+		"admin":                 true,
+	}
+	claimTypes := []string{"role", "roles", "group", "groups"}
+	for _, claimType := range claimTypes {
+		claims := claimsPrincipal.GetClaimsByType(claimType)
+		for _, claim := range claims {
+			for _, token := range strings.Split(strings.ToLower(claim.Value), ",") {
+				t := strings.TrimSpace(token)
+				if allowed[t] {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBuilder) {
@@ -296,6 +334,9 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	// To use WASM instead, replace this call with your WASM CacheBustingHTMLConfig registration.
 	//--------------------------------------------------------
 	management_htmx.AddManagementHandlers(builder)
+	if config.SystemConfig == nil || config.SystemConfig.EnableSupportPortal {
+		support_htmx.AddSupportHandlers(builder)
+	}
 
 	//----------------
 	fluffycore_echo_services_sessions_memory_session_store.AddSingletonBackendSessionStore(builder)

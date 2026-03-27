@@ -70,3 +70,46 @@ These are your webapps that will use tis IDP to authenticate.
   ]
 }
 ```
+
+### Email Claim Allow List
+
+You can inject additional claims at login time for specific emails.
+This is useful for temporary/support admin access without changing upstream IDP claims.
+
+Configured under `systemConfig.emailClaimAllowList` in your rage config:
+
+```json
+{
+  "systemConfig": {
+    "emailClaimAllowList": [
+      {
+        "email": "support.admin@localhost.dev",
+        "claims": [
+          { "type": "role", "value": "support_admin" },
+          { "type": "group", "value": "backend_support_admin" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Notes:
+
+- Email match is case-insensitive.
+- Claims are added to the in-request claims principal during cookie-auth processing.
+- Keep this list small and environment-specific.
+
+### Support Portal Toggle
+
+You can enable or disable support portal routes with `systemConfig.enableSupportPortal`.
+
+```json
+{
+  "systemConfig": {
+    "enableSupportPortal": true
+  }
+}
+```
+
+When set to `false`, support handlers are not registered and `/support/` endpoints are unavailable.

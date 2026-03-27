@@ -49,6 +49,8 @@ func RequiresNoAuth() map[string]bool {
 
 		wellknown_echo.ManagementPath:      true,
 		wellknown_echo.ManagementAllPath:   true,
+		wellknown_echo.SupportPath:         true,
+		wellknown_echo.SupportAllPath:      true,
 		wellknown_echo.StaticPath:          true,
 		"/favicon.ico":                     true,
 		wellknown_echo.AboutPath:           true,

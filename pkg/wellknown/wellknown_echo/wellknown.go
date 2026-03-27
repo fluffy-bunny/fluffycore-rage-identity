@@ -19,6 +19,8 @@ var (
 	HomePath            = "/"
 	ManagementPath      = "/management/"
 	ManagementAllPath   = "/management/*"
+	SupportPath         = "/support/"
+	SupportAllPath      = "/support/*"
 
 	LoginPath  = "/login"
 	LogoutPath = "/logout"
@@ -106,6 +108,10 @@ var (
 	HTMXManagementPasskeyPath  = "/management/passkey-manager"
 	HTMXManagementLinkedPath   = "/management/linked-accounts"
 	HTMXManagementPrefsPath    = "/management/preferences"
+
+	// HTMX Support portal paths
+	HTMXSupportPath       = "/support/"
+	HTMXSupportAuditsPath = "/support/audits"
 )
 
 type Paths struct {
@@ -148,6 +154,10 @@ type Paths struct {
 	HTMXManagementPasskey  string
 	HTMXManagementLinked   string
 	HTMXManagementPrefs    string
+
+	// HTMX Support paths
+	HTMXSupport       string
+	HTMXSupportAudits string
 }
 
 func NewPaths() *Paths {
@@ -189,6 +199,9 @@ func NewPaths() *Paths {
 		HTMXManagementPasskey:  HTMXManagementPasskeyPath,
 		HTMXManagementLinked:   HTMXManagementLinkedPath,
 		HTMXManagementPrefs:    HTMXManagementPrefsPath,
+
+		HTMXSupport:       HTMXSupportPath,
+		HTMXSupportAudits: HTMXSupportAuditsPath,
 	}
 }
 
