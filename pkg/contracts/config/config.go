@@ -199,6 +199,8 @@ type (
 		OIDCFlowAppConfig              *contracts_OIDCFlowAppConfig.OIDCFlowAppConfig `json:"oidcFlowAppConfig"`
 		RequiresNoAuthConfig           *RequiresNoAuthConfig                          `json:"requiresNoAuthConfig"`
 		CacheBustVersion               string                                         `json:"cacheBustVersion"`
+		OIDCLoginShowBannerVersion     bool                                           `json:"oidcLoginShowBannerVersion"`
+		OIDCLoginAppVersion            string                                         `json:"oidcLoginAppVersion"`
 	}
 )
 

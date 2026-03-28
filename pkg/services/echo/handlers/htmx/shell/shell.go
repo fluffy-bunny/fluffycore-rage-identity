@@ -84,7 +84,9 @@ func (s *service) Do(c *echo.Context) error {
 
 	return components.RenderNode(c, http.StatusOK, components.ShellPage(components.ShellData{
 		RenderContext: rc,
-		BrandTitle:    "MAPPED Identity",
+		BrandTitle:    "RAGE Identity",
 		InitialPage:   initialPage,
+		AppVersion:    s.config.OIDCLoginAppVersion,
+		ShowVersion:   s.config.OIDCLoginShowBannerVersion,
 	}))
 }

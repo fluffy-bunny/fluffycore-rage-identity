@@ -327,6 +327,8 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 		guid = example_version.Version()
 	}
 	config.CacheBustVersion = guid
+	config.OIDCLoginAppVersion = example_version.Version()
+	config.OIDCLoginShowBannerVersion = s.config.OIDCLoginAppConfig.BannerBranding.ShowBannerVersion
 	// Register the management AppConfig so HTMX management handlers can inject it
 	di.AddInstance[*management_contracts_config.AppConfig](builder, s.config.ManagementAppConfig)
 

@@ -11,6 +11,8 @@ type ShellData struct {
 	*RenderContext
 	BrandTitle  string
 	InitialPage string // HTMX path loaded on shell mount; defaults to HTMXHome
+	AppVersion  string
+	ShowVersion bool
 }
 
 // ShellPage renders the full HTML document shell with wizard-container and app-header.
@@ -22,26 +24,29 @@ func ShellPage(data ShellData) g.Node {
 			Meta(g.Attr("charset", "utf-8")),
 			Meta(Name("viewport"), g.Attr("content", "width=device-width, initial-scale=1, shrink-to-fit=no")),
 			Meta(Name("description"), g.Attr("content", "OIDC Login")),
-			Link(g.Attr("rel", "icon"), Type("image/x-icon"), Href("/static/assets/favicon.ico")),
-			Link(g.Attr("rel", "stylesheet"), Href("/static/go-app/oidc-login/static_output/web/styles.css?v="+data.CacheBustVersion)),
+			Link(g.Attr("rel", "icon"), Type("image/x-icon"), Href("/static/assets/favicon.ico?v="+data.CacheBustVersion)),
+			Link(g.Attr("rel", "stylesheet"), Href("/static/go-app/oidc-login/htmx/styles.css?v="+data.CacheBustVersion)),
 			Script(Src("https://unpkg.com/htmx.org@2.0.4"),
 				g.Attr("integrity", "sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"),
 				g.Attr("crossorigin", "anonymous")),
-			Script(Src("/static/go-app/oidc-login/static_output/web/webauthn.js?v=" + data.CacheBustVersion)),
+			Script(Src("/static/go-app/oidc-login/htmx/webauthn.js?v=" + data.CacheBustVersion)),
 			Meta(Name("htmx-config"), g.Attr("content", `{"responseHandling":[{"code":".*", "swap": true}]}`)),
 			StyleEl(g.Raw(`.htmx-indicator { display: none; }
 .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline-block; }`)),
 		},
 		Body: []g.Node{
-			// Unregister any lingering WASM service workers from previous visits
+			// Unregister stale service workers from prior WASM deployments
 			Script(g.Raw(`if("serviceWorker"in navigator){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(reg){reg.unregister()})})}`)),
 			Div(Class("wizard-container"),
 				Div(Class("app-header"),
 					Div(Class("header-content"),
 						Div(Class("logo-title-group"),
-							Img(Src("/static/go-app/oidc-login/static_output/web/m_logo.svg"), Alt("Logo"), Class("app-logo")),
+							Img(Src("/static/go-app/oidc-login/htmx/m_logo.svg?v="+data.CacheBustVersion), Alt("Logo"), Class("app-logo")),
 							Div(Class("title-version-group"),
 								Div(Class("app-title"), g.Text(data.BrandTitle)),
+								g.If(data.ShowVersion && data.AppVersion != "",
+									Div(Class("app-version"), g.Text("v"+data.AppVersion)),
+								),
 							),
 						),
 					),
