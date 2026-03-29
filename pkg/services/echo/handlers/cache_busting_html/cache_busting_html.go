@@ -8,7 +8,7 @@ import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 )
 
 type (
@@ -59,7 +59,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
 
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 	switch r.Method {

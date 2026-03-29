@@ -18,7 +18,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
@@ -93,7 +93,7 @@ func (s *service) validateVerifyCodeRequest(model *login_models.VerifyCodeReques
 // @Success 200 {object} login_models.VerifyCodeResponse
 // @Failure 401 {object} wellknown_echo.RestErrorResponse
 // @Router /api/verify-code [post]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
@@ -152,6 +152,14 @@ func (s *service) Do(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("UpdateUser")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.updated",
+		rageUser.RootIdentity.Subject,
+		map[string]string{"operation": "email_verified"},
+		map[string]string{"mutation": "update_user", "handler": "rest.api_verify_code"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	// one time only

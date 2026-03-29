@@ -17,7 +17,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
@@ -99,7 +99,7 @@ func (s *service) validatePasswordResetGetRequest(model *PasswordResetGetRequest
 	return nil
 }
 
-func (s *service) DoGet(c echo.Context) error {
+func (s *service) DoGet(c *echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 
@@ -148,7 +148,7 @@ func (s *service) validatePasswordResetPostRequest(request *PasswordResetPostReq
 	return nil, nil
 }
 
-func (s *service) DoPost(c echo.Context) error {
+func (s *service) DoPost(c *echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 	ctx := r.Context()
@@ -241,6 +241,14 @@ func (s *service) DoPost(c echo.Context) error {
 		log.Error().Err(err).Msg("UpdateUser")
 		return s.TeleportBackToLoginWithError(c, InternalError_PasswordReset_009, InternalError_PasswordReset_009)
 	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.password.updated",
+		getPasswordResetCookieResponse.PasswordReset.Subject,
+		map[string]string{"operation": "password_reset"},
+		map[string]string{"mutation": "update_password", "handler": "passwordreset"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
+		return s.TeleportBackToLoginWithError(c, InternalError_PasswordReset_009, InternalError_PasswordReset_009)
+	}
 
 	// send the email
 	_, err = s.EmailService().SendSimpleEmail(ctx,
@@ -267,7 +275,7 @@ func (s *service) DoPost(c echo.Context) error {
 
 }
 
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 
 	r := c.Request()
 	// is the request get or post?

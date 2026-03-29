@@ -15,7 +15,7 @@ import (
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 )
@@ -82,7 +82,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Failure 404 {object} wellknown_echo.RestErrorResponse
 // @Failure 500 {object} wellknown_echo.RestErrorResponse
 // @Router /api/user-linked-accounts [get]
-func (s *service) DoGet(c echo.Context) error {
+func (s *service) DoGet(c *echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
@@ -143,7 +143,7 @@ type DoDeleteRequest struct {
 // @Failure 404 {object} wellknown_echo.RestErrorResponse
 // @Failure 500 {object} wellknown_echo.RestErrorResponse
 // @Router /api/user-linked-accounts/{identity} [delete]
-func (s *service) DoDelete(c echo.Context) error {
+func (s *service) DoDelete(c *echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
@@ -207,10 +207,18 @@ func (s *service) DoDelete(c echo.Context) error {
 		log.Error().Err(err).Msg("UnlinkRageUser")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.unlinked",
+		subject,
+		map[string]string{"idp_slug": foundIdentity.IdpSlug, "external_subject": foundIdentity.Subject},
+		map[string]string{"mutation": "unlink_identity", "handler": "rest.api_user_linked_accounts"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+	}
 	return c.JSONPretty(http.StatusOK, "", "  ")
 }
 
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 	switch r.Method {

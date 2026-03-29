@@ -3,7 +3,7 @@ package localizer
 import (
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/localizer"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
@@ -29,7 +29,7 @@ func AddScopedILocalizer(cb di.ContainerBuilder) {
 func (s *service) GetLocalizer() *i18n.Localizer {
 	return s.localizer
 }
-func (s *service) Initialize(c echo.Context) {
+func (s *service) Initialize(c *echo.Context) {
 	accept := c.Request().Header.Get("Accept-Language")
 	s.localizer = i18n.NewLocalizer(s.bundle.GetBundle(), accept)
 }

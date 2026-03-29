@@ -14,8 +14,9 @@ import (
 	contracts_eko_gocache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/eko_gocache"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_webauthn "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/webauthn"
+	services_AuditStore_local_file "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/AuditStore/local_file"
+	services_AuditStore_nil "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/AuditStore/nil"
 	services_AuthorizationCodeClaimsAugmentor "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/AuthorizationCodeClaimsAugmentor"
-	services_EventSink "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/EventSink"
 	services_auth_RequiresNoAuth "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/auth/RequiresNoAuth"
 	services_client_inmemory "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/client/inmemory"
 	services_codeexchanges_genericoidc "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/codeexchanges/genericoidc"
@@ -60,7 +61,13 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	services_tokenservice.AddSingletonITokenService(builder)
 	services_AuthorizationCodeClaimsAugmentor.AddSingletonIClaimsAugmentor(builder)
 	services_auth_RequiresNoAuth.AddSingletonIRequiresNoAuth(builder)
-	services_EventSink.AddSingletonIEventSink(builder)
+
+	// default audit store is the nil implementation which does nothing, but allows the service to run without configuring an audit store. The file based audit store is also available and can be used by setting SystemConfig.RegisterFileAuditStore to true
+	services_AuditStore_nil.AddSingletonIAuditStore(builder)
+	if config.SystemConfig != nil && config.SystemConfig.RegisterFileAuditStore {
+		services_AuditStore_local_file.AddSingletonIAuditStore(builder)
+	}
+
 	services_codeexchanges_github.AddSingletonIGithubCodeExchange(builder)
 	services_codeexchanges_genericoidc.AddSingletonIGenericOIDCCodeExchange(builder)
 	services_oidcproviderfactory.AddSingletonIOIDCProviderFactory(builder)

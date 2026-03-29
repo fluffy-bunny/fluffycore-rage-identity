@@ -23,7 +23,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 )
@@ -109,7 +109,7 @@ func (s *service) validateSignupRequest(model *models_api_login_models.SignupReq
 // @Failure 400 {string} login_models.SignupResponse
 // @Failure 500 {object} wellknown_echo.RestErrorResponse
 // @Router /api/signup [post]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
@@ -207,6 +207,14 @@ func (s *service) Do(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("CreateUser")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.created",
+		user.RootIdentity.Subject,
+		map[string]string{"email": user.RootIdentity.Email, "idp_slug": user.RootIdentity.IdpSlug},
+		map[string]string{"mutation": "create_user", "handler": "rest.api_signup"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
 	if s.config.EmailVerificationRequired {

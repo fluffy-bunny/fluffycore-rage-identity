@@ -23,7 +23,7 @@ import (
 	protocol "github.com/go-webauthn/webauthn/protocol"
 	go_webauthn "github.com/go-webauthn/webauthn/webauthn"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -103,7 +103,7 @@ type SucessResonseJson struct {
 	Credential        *go_webauthn.Credential         `json:"credential"`
 }
 
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	r := c.Request()
 
 	ctx := r.Context()
@@ -251,6 +251,14 @@ func (s *service) Do(c echo.Context) error {
 		if err != nil {
 			log.Error().Err(err).Msg("UpdateRageUser - LastUsedOn update failed")
 			// Don't fail the login, just log the error
+		} else {
+			if err := s.SubmitAuditEvent(ctx,
+				"com.fluffybunny.identity.user.updated",
+				user.RootIdentity.Subject,
+				map[string]string{"operation": "webauthn_last_used_on"},
+				map[string]string{"mutation": "update_user", "handler": "rest.api_webauthn_login_finish"}); err != nil {
+				log.Error().Err(err).Msg("SubmitAuditEvent")
+			}
 		}
 	}
 

@@ -12,7 +12,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 )
@@ -75,7 +75,7 @@ func (s *service) validateVerifyPasswordStrengthRequest(model *password.VerifyPa
 // @Param		request body		password.VerifyPasswordStrengthRequest	true	"LoginPhaseOneRequest"
 // @Success 200 {object} password.VerifyPasswordStrengthResponse
 // @Router /api/verify-password-strength [post]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 	model := &password.VerifyPasswordStrengthRequest{}

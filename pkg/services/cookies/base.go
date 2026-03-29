@@ -7,7 +7,7 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	fluffycore_contracts_cookies "github.com/fluffy-bunny/fluffycore/echo/contracts/cookies"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	"github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 )
@@ -18,9 +18,9 @@ type (
 	}
 )
 
-func GetCookie[T any](c echo.Context,
+func GetCookie[T any](c *echo.Context,
 	cookies fluffycore_contracts_cookies.ICookies, name string, data *T) error {
-	getCookieResponse, err := cookies.GetCookie(c, name)
+	getCookieResponse, err := cookies.GetCookie(*c, name)
 	if err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ func GetCookie[T any](c echo.Context,
 	err = json.Unmarshal(bb, data)
 	return err
 }
-func SetCookieByRequest[T any](c echo.Context,
+func SetCookieByRequest[T any](c *echo.Context,
 	config *contracts_config.CookieConfig,
 	cookies fluffycore_contracts_cookies.ICookies,
 	request *fluffycore_contracts_cookies.SetCookieRequest,
@@ -63,14 +63,14 @@ func SetCookieByRequest[T any](c echo.Context,
 	request.Expires = time.Now().Add(30 * time.Minute)
 	request.Domain = config.Domain
 	request.Value = value
-	_, err = cookies.SetCookie(c, request)
+	_, err = cookies.SetCookie(*c, request)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func SetCookie[T any](c echo.Context,
+func SetCookie[T any](c *echo.Context,
 	config *contracts_config.CookieConfig,
 	cookies fluffycore_contracts_cookies.ICookies, name string, data T) error {
 

@@ -18,7 +18,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
@@ -96,7 +96,7 @@ func (s *service) validatePasswordResetStartRequest(model *login_models.Password
 // @Param		request body		login_models.PasswordResetStartRequest	true	"PasswordResetStartRequest"
 // @Success 200 {object} login_models.PasswordResetStartResponse
 // @Router /api/password-reset-start [post]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	localizer := s.Localizer().GetLocalizer()
 
 	ctx := c.Request().Context()

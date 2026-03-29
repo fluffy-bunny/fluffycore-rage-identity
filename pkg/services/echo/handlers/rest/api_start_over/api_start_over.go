@@ -14,7 +14,7 @@ import (
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 )
 
 type (
@@ -72,7 +72,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Produce json
 // @Success 200 {object} manifest.Manifest
 // @Router /api/start-over [get]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	ctx := c.Request().Context()
 
 	idps, err := s.GetIDPs(ctx)

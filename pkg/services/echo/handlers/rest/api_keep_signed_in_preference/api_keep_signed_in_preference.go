@@ -13,7 +13,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 )
@@ -76,7 +76,7 @@ func (s *service) validateUpdateRequest(model *models_api_preferences.UpdateKeep
 // @Success 200 {object} models_api_preferences.GetKeepSignedInPreferenceResponse
 // @Failure 500 {object} models_api_preferences.ErrorResponse
 // @Router /api/keep-signed-in-preference [get]
-func (s *service) doGet(c echo.Context) error {
+func (s *service) doGet(c *echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
@@ -123,7 +123,7 @@ func (s *service) doGet(c echo.Context) error {
 // @Success 200 {object} models_api_preferences.UpdateKeepSignedInPreferenceResponse
 // @Failure 500 {object} models_api_preferences.ErrorResponse
 // @Router /api/keep-signed-in-preference [post]
-func (s *service) doPost(c echo.Context) error {
+func (s *service) doPost(c *echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
@@ -202,7 +202,7 @@ func (s *service) doPost(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	if c.Request().Method == http.MethodGet {
 		return s.doGet(c)
 	} else if c.Request().Method == http.MethodPost {

@@ -94,14 +94,20 @@ func (s *service) GetConfig(ctx context.Context, request *contracts_oauth2factor
 		switch v := idp.Protocol.Value.(type) {
 		case *proto_oidc_models.Protocol_Github:
 			// Always create fresh config with current credentials
+			redirectURL := s.config.OIDCConfig.BaseUrl + s.config.OIDCConfig.OAuth2CallbackPath
+			log.Debug().
+				Str("clientID", v.Github.ClientId).
+				Str("redirectURL", redirectURL).
+				Msg("GitHub OAuth2 config")
 			config := oauth2.Config{
 				ClientID:     v.Github.ClientId,
 				ClientSecret: v.Github.ClientSecret,
 				Scopes:       GithubScopes,
-				RedirectURL:  s.config.OIDCConfig.BaseUrl + s.config.OIDCConfig.OAuth2CallbackPath,
+				RedirectURL:  redirectURL,
 				Endpoint: oauth2.Endpoint{
-					AuthURL:  GithubAuthURL,
-					TokenURL: GithubTokenURL,
+					AuthURL:   GithubAuthURL,
+					TokenURL:  GithubTokenURL,
+					AuthStyle: oauth2.AuthStyleInParams,
 				},
 			}
 			return &contracts_oauth2factory.GetConfigResponse{
