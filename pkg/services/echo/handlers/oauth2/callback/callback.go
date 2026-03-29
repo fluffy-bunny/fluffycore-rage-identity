@@ -238,8 +238,22 @@ func (s *service) Do(c *echo.Context) error {
 			State: parentState,
 		})
 	if err != nil {
-		log.Error().Err(err).Msg("GetAuthorizationRequestState")
-		return s.TeleportBackToLoginWithError(c, InternalError_Callback_001, InternalError_Callback_001)
+		// State not found — server may have restarted with in-memory store.
+		// Try to get the client return URL from the cookie session's authorization request.
+		clientReturnURL := ""
+		if session, sErr := s.OIDCSession().GetSession(); sErr == nil {
+			if reqI, gErr := session.Get("request"); gErr == nil && reqI != nil {
+				if authReq, ok := reqI.(*proto_oidc_models.AuthorizationRequest); ok && authReq != nil {
+					clientReturnURL = s.GetClientReturnURL(ctx, authReq.ClientId, authReq.RedirectUri)
+				}
+			}
+		}
+		log.Error().Err(err).Str("state", parentState).Str("clientReturnURL", clientReturnURL).
+			Msg("GetAuthorizationRequestState failed (server may have restarted with in-memory store), redirecting to client for fresh OIDC flow")
+		if clientReturnURL != "" {
+			return c.Redirect(http.StatusFound, clientReturnURL)
+		}
+		return c.Redirect(http.StatusFound, "/")
 	}
 	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 
@@ -411,6 +425,14 @@ func (s *service) Do(c *echo.Context) error {
 				log.Error().Err(err).Msg("CreateUser")
 				return nil, err
 			}
+			if err := s.SubmitAuditEvent(ctx,
+				"com.fluffybunny.identity.user.created",
+				createUserResponse.User.RootIdentity.Subject,
+				map[string]string{"email": createUserResponse.User.RootIdentity.Email, "idp_slug": externalOauth2State.Request.IdpHint},
+				map[string]string{"mutation": "create_user", "handler": "oauth2.callback"}); err != nil {
+				log.Error().Err(err).Msg("SubmitAuditEvent")
+				return nil, err
+			}
 			return createUserResponse.User, nil
 		}
 		/*
@@ -463,6 +485,14 @@ func (s *service) Do(c *echo.Context) error {
 				// Don't fail login, just log the error
 			} else {
 				log.Info().Msg("Successfully updated LastUsedOn timestamps")
+				if err := s.SubmitAuditEvent(ctx,
+					"com.fluffybunny.identity.user.updated",
+					user.RootIdentity.Subject,
+					map[string]string{"operation": "last_used_on", "idp_slug": externalOauth2State.Request.IdpHint},
+					map[string]string{"mutation": "update_user", "handler": "oauth2.callback"}); err != nil {
+					log.Error().Err(err).Msg("SubmitAuditEvent")
+					return s.TeleportBackToLoginWithError(c, InternalError_Callback_010, InternalError_Callback_010)
+				}
 			}
 
 			// check if we are a claimed domain.
@@ -495,6 +525,14 @@ func (s *service) Do(c *echo.Context) error {
 					})
 				if err != nil {
 					log.Error().Err(err).Msg("Failed to update identity EmailVerified")
+					return s.TeleportBackToLoginWithError(c, InternalError_Callback_010, InternalError_Callback_010)
+				}
+				if err := s.SubmitAuditEvent(ctx,
+					"com.fluffybunny.identity.user.updated",
+					user.RootIdentity.Subject,
+					map[string]string{"operation": "email_verified", "idp_slug": externalOauth2State.Request.IdpHint},
+					map[string]string{"mutation": "update_user", "handler": "oauth2.callback"}); err != nil {
+					log.Error().Err(err).Msg("SubmitAuditEvent")
 					return s.TeleportBackToLoginWithError(c, InternalError_Callback_010, InternalError_Callback_010)
 				}
 				user.RootIdentity.EmailVerified = true
@@ -656,6 +694,14 @@ func (s *service) Do(c *echo.Context) error {
 				})
 			if err != nil {
 				log.Error().Err(err).Msg("LinkUsers")
+				return nil, err
+			}
+			if err := s.SubmitAuditEvent(ctx,
+				"com.fluffybunny.identity.user.linked",
+				candidateUserID,
+				map[string]string{"idp_slug": externalOauth2State.Request.IdpHint, "external_subject": externalIdentity.Subject},
+				map[string]string{"mutation": "link_identity", "handler": "oauth2.callback"}); err != nil {
+				log.Error().Err(err).Msg("SubmitAuditEvent")
 				return nil, err
 			}
 			return user, nil

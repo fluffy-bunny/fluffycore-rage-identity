@@ -251,6 +251,14 @@ func (s *service) Do(c *echo.Context) error {
 		if err != nil {
 			log.Error().Err(err).Msg("UpdateRageUser - LastUsedOn update failed")
 			// Don't fail the login, just log the error
+		} else {
+			if err := s.SubmitAuditEvent(ctx,
+				"com.fluffybunny.identity.user.updated",
+				user.RootIdentity.Subject,
+				map[string]string{"operation": "webauthn_last_used_on"},
+				map[string]string{"mutation": "update_user", "handler": "rest.api_webauthn_login_finish"}); err != nil {
+				log.Error().Err(err).Msg("SubmitAuditEvent")
+			}
 		}
 	}
 

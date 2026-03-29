@@ -148,6 +148,14 @@ func (s *service) Do(c *echo.Context) error {
 		log.Error().Err(err).Msg("UpdateRageUser")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_TOTPVerify_002}, "  ")
 	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.totp.verified",
+		subject,
+		map[string]string{"operation": "totp_verify"},
+		map[string]string{"mutation": "update_totp", "handler": "rest.api_user_totp_verify"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_TOTPVerify_002}, "  ")
+	}
 
 	return c.JSONPretty(http.StatusOK, wellknown_echo.RestSuccessResponse{Message: "TOTP verified and enabled successfully"}, "  ")
 }

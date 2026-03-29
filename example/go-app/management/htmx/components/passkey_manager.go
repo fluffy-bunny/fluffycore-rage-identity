@@ -2,6 +2,7 @@ package components
 
 import (
 	"fmt"
+	"time"
 
 	api_passkey "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/api_passkey"
 	g "maragu.dev/gomponents"
@@ -85,12 +86,25 @@ func passkeyCard(d *PasskeyPageData, pk api_passkey.PasskeyItem) g.Node {
 	if d.RenameID == pk.ID {
 		return passkeyRenameCard(d, pk)
 	}
+	var timestampNodes []g.Node
+	if pk.CreatedAt > 0 {
+		timestampNodes = append(timestampNodes,
+			Span(g.Text(d.L("mgmt_registered")+": "+time.Unix(pk.CreatedAt, 0).UTC().Format("Jan 2, 2006"))))
+	}
+	if pk.LastUsedAt > 0 {
+		timestampNodes = append(timestampNodes,
+			Span(g.Text(d.L("mgmt_last_used")+": "+time.Unix(pk.LastUsedAt, 0).UTC().Format("Jan 2, 2006 15:04 UTC"))))
+	}
+
 	return ProfileCard(
 		Div(Class("card-header"),
 			Div(Class("card-header-content"),
 				Div(Class("card-icon passkey-icon"), g.Raw(PasskeyIconSVG)),
 				Div(Class("card-title-group"),
 					H2(g.Text(pk.FriendlyName)),
+					g.If(len(timestampNodes) > 0,
+						Div(Class("card-timestamps"), g.Group(timestampNodes)),
+					),
 				),
 			),
 		),

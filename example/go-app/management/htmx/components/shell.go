@@ -21,18 +21,18 @@ func ShellPage(rc *RenderContext) g.Node {
 			Meta(g.Attr("charset", "utf-8")),
 			Meta(Name("viewport"), g.Attr("content", "width=device-width, initial-scale=1, shrink-to-fit=no")),
 			Meta(Name("description"), g.Attr("content", "Account Management")),
-			Link(g.Attr("rel", "icon"), Type("image/x-icon"), Href("/static/assets/favicon.ico")),
+			Link(g.Attr("rel", "icon"), Type("image/x-icon"), Href("/static/assets/favicon.ico?v="+rc.CacheBustVersion)),
 			Link(g.Attr("rel", "stylesheet"), Href("/static/go-app/management/htmx/styles.css?v="+rc.CacheBustVersion)),
 			Script(Src("https://unpkg.com/htmx.org@2.0.4"),
 				g.Attr("integrity", "sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"),
 				g.Attr("crossorigin", "anonymous")),
-			Script(Src("/static/go-app/oidc-login/static_output/web/webauthn.js?v=" + rc.CacheBustVersion)),
+			Script(Src("/static/go-app/oidc-login/htmx/webauthn.js?v=" + rc.CacheBustVersion)),
 			Meta(Name("htmx-config"), g.Attr("content", `{"responseHandling":[{"code":".*", "swap": true}]}`)),
 			StyleEl(g.Raw(`.htmx-indicator { display: none; }
 .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline-block; }`)),
 		},
 		Body: []g.Node{
-			// Unregister any lingering WASM service workers
+			// Unregister stale service workers from prior WASM deployments
 			Script(g.Raw(`if("serviceWorker"in navigator){navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(reg){reg.unregister()})})}`)),
 			Div(Class("dashboard-layout"),
 				DashboardHeader(rc),

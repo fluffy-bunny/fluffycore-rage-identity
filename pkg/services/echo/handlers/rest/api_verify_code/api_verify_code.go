@@ -154,6 +154,14 @@ func (s *service) Do(c *echo.Context) error {
 		log.Error().Err(err).Msg("UpdateUser")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.updated",
+		rageUser.RootIdentity.Subject,
+		map[string]string{"operation": "email_verified"},
+		map[string]string{"mutation": "update_user", "handler": "rest.api_verify_code"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+	}
 	// one time only
 	s.wellknownCookies.DeleteVerificationCodeCookie(c)
 

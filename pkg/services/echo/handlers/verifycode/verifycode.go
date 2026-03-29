@@ -249,6 +249,14 @@ func (s *service) DoPost(c *echo.Context) error {
 		log.Error().Err(err).Msg("UpdateUser")
 		return s.TeleportBackToLoginWithError(c, InternalError_VerifyCode_004, InternalError_VerifyCode_004)
 	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.updated",
+		rageUser.RootIdentity.Subject,
+		map[string]string{"operation": "email_verified"},
+		map[string]string{"mutation": "update_user", "handler": "verifycode"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
+		return s.TeleportBackToLoginWithError(c, InternalError_VerifyCode_004, InternalError_VerifyCode_004)
+	}
 	// one time only
 	s.wellknownCookies.DeleteVerificationCodeCookie(c)
 

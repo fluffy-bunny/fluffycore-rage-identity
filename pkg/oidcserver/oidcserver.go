@@ -456,6 +456,7 @@ func EnsureCookieClaimsPrincipal(_ di.Container) echo.MiddlewareFunc {
 			if !ok {
 				return next(c)
 			}
+			config := di.Get[*contracts_config.Config](subContainer)
 			wellknownCookies := di.Get[contracts_cookies.IWellknownCookies](subContainer)
 			claimsPrincipal := di.Get[fluffycore_contracts_common.IClaimsPrincipal](subContainer)
 			scopedMemoryCache := di.Get[contracts_cache.IScopedMemoryCache](subContainer)
@@ -499,6 +500,25 @@ func EnsureCookieClaimsPrincipal(_ di.Container) echo.MiddlewareFunc {
 					Type:  "amr",
 					Value: amr,
 				})
+			}
+			for _, entry := range config.SystemConfig.EmailClaimAllowList {
+				if entry == nil || !strings.EqualFold(strings.TrimSpace(entry.Email), rootIdentity.Email) {
+					continue
+				}
+				for _, c := range entry.Claims {
+					if c == nil {
+						continue
+					}
+					claimType := strings.TrimSpace(c.Type)
+					claimValue := strings.TrimSpace(c.Value)
+					if claimType == "" || claimValue == "" {
+						continue
+					}
+					claims = append(claims, fluffycore_contracts_common.Claim{
+						Type:  claimType,
+						Value: claimValue,
+					})
+				}
 			}
 			claimsPrincipal.AddClaim(claims...)
 

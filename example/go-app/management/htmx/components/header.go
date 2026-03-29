@@ -17,15 +17,17 @@ func DashboardHeader(rc *RenderContext) g.Node {
 		displayName = rc.L("mgmt_user")
 	}
 
-	// Branding from AppConfig, with defaults matching WASM
-	logoURL := "/static/go-app/management/static_output/web/m_logo.svg"
+	// Branding from AppConfig
+	logoURL := "/static/go-app/management/htmx/m_logo.svg"
 	title := "Rage Accounts"
 	if rc.AppConfig != nil {
 		if rc.AppConfig.BannerBranding.LogoURL != "" {
 			logoURL = rc.AppConfig.BannerBranding.LogoURL
-			// WASM uses relative URLs resolved from its base; HTMX needs absolute paths
+			// Config may contain legacy relative paths like "web/m_logo.svg"; resolve to htmx static dir
 			if !strings.HasPrefix(logoURL, "/") && !strings.HasPrefix(logoURL, "http") {
-				logoURL = "/static/go-app/management/static_output/" + logoURL
+				// Strip legacy "web/" prefix if present
+				logoURL = strings.TrimPrefix(logoURL, "web/")
+				logoURL = "/static/go-app/management/htmx/" + logoURL
 			}
 		}
 		if rc.AppConfig.BannerBranding.Title != "" {
@@ -50,7 +52,7 @@ func DashboardHeader(rc *RenderContext) g.Node {
 				g.Raw(HamburgerIconSVG),
 			),
 			Div(Class("dashboard-logo-group"),
-				Img(Src(logoURL), Alt(title), Class("dashboard-logo")),
+				Img(Src(logoURL+"?v="+rc.CacheBustVersion), Alt(title), Class("dashboard-logo")),
 				Div(Class("dashboard-title-container"),
 					g.Group(titleChildren),
 				),
@@ -101,17 +103,26 @@ func DashboardHeader(rc *RenderContext) g.Node {
 		Script(g.Raw(`(function(){
   if(window.__dropdownInit) return;
   window.__dropdownInit=true;
+  function closeDropdown(){
+    var dd=document.getElementById("user-dropdown");
+    if(dd) dd.classList.remove("show");
+  }
   document.addEventListener("click",function(e){
     var btn=document.getElementById("user-menu-btn");
     var dd=document.getElementById("user-dropdown");
     if(!btn||!dd) return;
     if(btn.contains(e.target)){
-      e.stopPropagation();
-      dd.classList.toggle("show");
-    } else if(!dd.contains(e.target)){
-      dd.classList.remove("show");
+      var isOpen=dd.classList.contains("show");
+      if(isOpen){dd.classList.remove("show");}
+      else{dd.classList.add("show");}
+      return;
     }
+    dd.classList.remove("show");
   });
+  document.addEventListener("htmx:beforeSwap",closeDropdown);
+  document.addEventListener("htmx:afterSettle",closeDropdown);
+  document.addEventListener("htmx:historyRestore",closeDropdown);
+  document.addEventListener("htmx:pushedIntoHistory",closeDropdown);
 })();`)),
 	)
 }

@@ -121,6 +121,9 @@ func (s *service) getPasskeys(c *echo.Context) ([]api_passkey.PasskeyItem, bool,
 			if cred.CreatedOn != nil {
 				pk.CreatedAt = cred.CreatedOn.AsTime().Unix()
 			}
+			if cred.LastUsedOn != nil {
+				pk.LastUsedAt = cred.LastUsedOn.AsTime().Unix()
+			}
 			passkeys = append(passkeys, pk)
 		}
 	}

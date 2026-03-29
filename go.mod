@@ -7,7 +7,6 @@ go 1.26
 //replace github.com/fluffy-bunny/viperEx => ../ViperEx
 
 require (
-	github.com/BurntSushi/toml v1.6.0
 	github.com/ahmetb/go-linq/v3 v3.2.0
 	github.com/alexedwards/argon2id v1.0.0
 	github.com/coreos/go-oidc/v3 v3.17.0
@@ -24,15 +23,12 @@ require (
 	github.com/imroc/req/v3 v3.57.0
 	github.com/labstack/echo/v5 v5.0.4
 	github.com/lestrrat-go/jwx/v2 v2.1.6
-	github.com/maxence-charriere/go-app/v10 v10.1.11
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
 	github.com/reugn/async v0.10.0
 	github.com/rs/xid v1.6.0
 	github.com/rs/zerolog v1.34.0
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/spf13/cobra v1.10.2
-	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c
-	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
 	github.com/stretchr/testify v1.11.1
 	github.com/sumup/aaguids-go v0.0.0-20240628162135-8d4ff0ce96a0
 	github.com/swaggo/echo-swagger/v2 v2.0.1
@@ -135,6 +131,7 @@ require (
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
+	github.com/maxence-charriere/go-app/v10 v10.1.11 // indirect
 	github.com/mdaverde/jsonpath v0.2.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee // indirect
@@ -219,7 +216,6 @@ require (
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.48.0 // indirect
 	golang.org/x/exp v0.0.0-20251209150349-8475f28825e9 // indirect
-	golang.org/x/image v0.34.0 // indirect
 	golang.org/x/mod v0.33.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect

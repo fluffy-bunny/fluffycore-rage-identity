@@ -22,7 +22,7 @@ type (
 		authorizationRequestStateStore proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer
 		tokenService                   contracts_tokenservice.ITokenService
 		claimsaugmentor                contracts_tokenservice.IAuthorizationCodeClaimsAugmentor
-		eventSink                      contracts_events.IEventSink
+		auditStore                     contracts_events.IAuditStore
 		idpServiceServer               proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer
 	}
 )
@@ -36,7 +36,7 @@ func (s *service) Ctor(
 	authorizationRequestStateStore proto_oidc_flows.IFluffyCoreAuthorizationRequestStateStoreServer,
 	tokenService contracts_tokenservice.ITokenService,
 	claimsaugmentor contracts_tokenservice.IAuthorizationCodeClaimsAugmentor,
-	eventSink contracts_events.IEventSink,
+	auditStore contracts_events.IAuditStore,
 	idpServiceServer proto_oidc_idp.IFluffyCoreSingletonIDPServiceServer,
 ) (*service, error) {
 	return &service{
@@ -44,7 +44,7 @@ func (s *service) Ctor(
 		authorizationRequestStateStore: authorizationRequestStateStore,
 		tokenService:                   tokenService,
 		claimsaugmentor:                claimsaugmentor,
-		eventSink:                      eventSink,
+		auditStore:                     auditStore,
 		idpServiceServer:               idpServiceServer,
 	}, nil
 }

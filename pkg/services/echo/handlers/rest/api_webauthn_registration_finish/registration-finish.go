@@ -195,6 +195,14 @@ func (s *service) Do(c *echo.Context) error {
 		log.Error().Err(err).Msg("UpdateUser")
 		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_RegisterFinish_003)
 	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.passkey.added",
+		subject,
+		map[string]string{"friendly_name": friendlyName, "aaguid": aaguid.String()},
+		map[string]string{"mutation": "add_passkey", "handler": "rest.api_webauthn_registration_finish"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
+		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_RegisterFinish_003)
+	}
 
 	return c.JSON(http.StatusOK, credential)
 
