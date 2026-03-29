@@ -12,10 +12,12 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/contracts/config"
 	management_contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/contracts/config"
 	management_htmx "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/htmx"
+	oidc_login_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/contracts/config"
+	oidc_login_htmx "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/htmx"
+	support_htmx "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/support/htmx"
 	service_AuthorizationCodeClaimsAugmentor "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/AuthorizationCodeClaimsAugmentor"
 	services_AuthorizationCodeClaimsAugmentor "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/AuthorizationCodeClaimsAugmentor"
 	services_EmailTemplateData "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/EmailTemplateData"
-	services_EventSink "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/EventSink"
 	services_handlers_account_about "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/about"
 	services_handlers_account_api_api_linked_accounts "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/api/api_linked_accounts"
 	services_handlers_account_api_login "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/api/api_login"
@@ -34,14 +36,14 @@ import (
 	rage_contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
-	contracts_events "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/events"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	contracts_session_with_options "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/session_with_options"
 	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/tokenservice"
 	rage_runtime "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/runtime"
+	services_AuditStore_local_file "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/AuditStore/local_file"
+	services_AuditStore_nil "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/AuditStore/nil"
 	services_ScopedMemoryCache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/ScopedMemoryCache"
 	services_cookies_WellknownCookieNames "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/cookies/WellknownCookieNames"
-	services_htmx "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx"
 	services_session_with_options "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/session_with_options"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
@@ -107,9 +109,12 @@ func (s *startup) EnsureManagementAuth(ctn di.Container) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c *echo.Context) error {
 			path := c.Path()
+			supportPortalEnabled := true
 
-			// Only apply to /management/ paths
-			if !strings.HasPrefix(path, wellknown_echo.ManagementPath) {
+			isManagementPath := strings.HasPrefix(path, wellknown_echo.ManagementPath)
+			isSupportPath := strings.HasPrefix(path, wellknown_echo.SupportPath)
+			// Only apply to /management/ and /support/ paths
+			if !isManagementPath && !isSupportPath {
 				return next(c)
 			}
 			ctx := c.Request().Context()
@@ -120,6 +125,13 @@ func (s *startup) EnsureManagementAuth(ctn di.Container) echo.MiddlewareFunc {
 				log.Warn().Msg("No scoped container found")
 				return next(c)
 			}
+			if cfg := di.Get[*rage_contracts_config.Config](subContainer); cfg != nil && cfg.SystemConfig != nil {
+				supportPortalEnabled = cfg.SystemConfig.EnableSupportPortal
+			}
+			isSupportPath = supportPortalEnabled && isSupportPath
+			if !isManagementPath && !isSupportPath {
+				return next(c)
+			}
 			claimsPrincipal := di.Get[fluffycore_contracts_common.IClaimsPrincipal](subContainer)
 			isAuthenticated := claimsPrincipal.HasClaim(fluffycore_contracts_common.Claim{
 				Type:  fluffycore_echo_wellknown.ClaimTypeAuthenticated,
@@ -127,6 +139,9 @@ func (s *startup) EnsureManagementAuth(ctn di.Container) echo.MiddlewareFunc {
 			})
 
 			if isAuthenticated {
+				if isSupportPath && !isSupportAdmin(claimsPrincipal) {
+					return c.String(http.StatusForbidden, "Forbidden: support admin access required")
+				}
 				return next(c)
 			}
 
@@ -175,6 +190,30 @@ func (s *startup) EnsureManagementAuth(ctn di.Container) echo.MiddlewareFunc {
 		}
 
 	}
+}
+
+func isSupportAdmin(claimsPrincipal fluffycore_contracts_common.IClaimsPrincipal) bool {
+	allowed := map[string]bool{
+		"support_admin":         true,
+		"support-admin":         true,
+		"super_admin":           true,
+		"super-admin":           true,
+		"backend_support_admin": true,
+		"admin":                 true,
+	}
+	claimTypes := []string{"role", "roles", "group", "groups"}
+	for _, claimType := range claimTypes {
+		claims := claimsPrincipal.GetClaimsByType(claimType)
+		for _, claim := range claims {
+			for _, token := range strings.Split(strings.ToLower(claim.Value), ",") {
+				t := strings.TrimSpace(token)
+				if allowed[t] {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBuilder) {
@@ -235,13 +274,18 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	//di.AddSingletonFromContainer[contracts_userservice.ISingletonUserService](builder, rootContainer)
 	di.AddSingletonFromContainer[contracts_identity.IUserIdGenerator](builder, rootContainer)
 	di.AddSingletonFromContainer[contracts_tokenservice.IAuthorizationCodeClaimsAugmentor](builder, rootContainer)
-	di.AddSingletonFromContainer[contracts_events.IEventSink](builder, rootContainer)
 	di.AddSingletonFromContainer[contracts_email.IEmailTemplateData](builder, rootContainer)
+
+	// Always register a no-op audit store, then optionally override with file store.
+	// DI rule: last registration wins.
+	services_AuditStore_nil.AddSingletonIAuditStore(builder)
+	if config.SystemConfig != nil && config.SystemConfig.RegisterFileAuditStore {
+		services_AuditStore_local_file.AddSingletonIAuditStore(builder)
+	}
 
 	services_user_id_generator.AddSingletonIUserIdGenerator(builder)
 	services_oidcflowstore.AddSingletonAuthorizationRequestStateStoreServer(builder)
 	services_AuthorizationCodeClaimsAugmentor.AddSingletonIAuthorizationCodeClaimsAugmentor(builder)
-	services_EventSink.AddSingletonIEventSink(builder)
 	services_EmailTemplateData.AddSingletonIEmailTemplateData(builder)
 	// Account Handlers
 	//--------------------------------------------------------
@@ -260,7 +304,7 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	// HTMX OIDC Login Handlers (default UI implementation)
 	// To use WASM instead, replace this call with your WASM CacheBustingHTMLConfig registration.
 	//--------------------------------------------------------
-	services_htmx.AddOIDCLoginHandlers(builder)
+	oidc_login_htmx.AddOIDCLoginHandlers(builder)
 
 	// Sync WebAuthN config to app configs for frontend
 	if config.WebAuthNConfig != nil {
@@ -284,6 +328,9 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 		guid = example_version.Version()
 	}
 	config.CacheBustVersion = guid
+	// Register the oidc-login AppConfig so HTMX oidc-login handlers can inject it
+	di.AddInstance[*oidc_login_config.AppConfig](builder, s.config.OIDCLoginAppConfig)
+
 	// Register the management AppConfig so HTMX management handlers can inject it
 	di.AddInstance[*management_contracts_config.AppConfig](builder, s.config.ManagementAppConfig)
 
@@ -291,6 +338,9 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	// To use WASM instead, replace this call with your WASM CacheBustingHTMLConfig registration.
 	//--------------------------------------------------------
 	management_htmx.AddManagementHandlers(builder)
+	if config.SystemConfig == nil || config.SystemConfig.EnableSupportPortal {
+		support_htmx.AddSupportHandlers(builder)
+	}
 
 	//----------------
 	fluffycore_echo_services_sessions_memory_session_store.AddSingletonBackendSessionStore(builder)

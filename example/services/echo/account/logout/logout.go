@@ -81,7 +81,34 @@ func (s *service) DoGet(c *echo.Context) error {
 	}
 	s.wellknownCookies.DeleteAuthCookie(c)
 
-	return c.Redirect(http.StatusFound, model.RedirectURL)
+	// Render a styled interstitial page with spinner, then redirect after 1 second
+	html := `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signing Out...</title>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#111827;display:flex;align-items:center;justify-content:center;min-height:100vh;color:#f9fafb}
+.logout-card{background:#1f2937;border-radius:12px;border:1px solid #374151;box-shadow:0 4px 16px rgba(0,0,0,0.4);padding:48px 40px;text-align:center;max-width:400px;width:90%}
+.spinner{width:40px;height:40px;border:3px solid #374151;border-top-color:#0a5340;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 24px}
+@keyframes spin{to{transform:rotate(360deg)}}
+h1{font-size:20px;font-weight:600;margin-bottom:8px;color:#f9fafb}
+p{font-size:14px;color:#9ca3af}
+</style>
+</head>
+<body>
+<div class="logout-card">
+<div class="spinner"></div>
+<h1>Signing out&hellip;</h1>
+<p>You will be redirected shortly.</p>
+</div>
+<script>setTimeout(function(){window.location.href="` + model.RedirectURL + `"},1000);</script>
+</body>
+</html>`
+	return c.HTML(http.StatusOK, html)
 }
 
 // HealthCheck godoc

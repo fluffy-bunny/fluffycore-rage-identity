@@ -17,6 +17,7 @@ import (
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
+	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
@@ -166,7 +167,29 @@ func (s *service) DoPost(c *echo.Context) error {
 		}
 		return c.JSON(http.StatusBadRequest, response)
 	}
-	dd2 := dd.(*proto_oidc_models.AuthorizationRequest)
+	dd2, ok := dd.(*proto_oidc_models.AuthorizationRequest)
+	if !ok || dd2 == nil {
+		log.Error().Msg("externalidp api: session request is not a valid AuthorizationRequest, redirecting to /")
+		return c.Redirect(http.StatusFound, "/")
+	}
+
+	// Validate that the authorization request state still exists in the backing store.
+	// After a server restart with an in-memory store, the cookie session survives but
+	// the server-side state is gone. Redirect to the client origin to start a fresh OIDC flow.
+	_, err = s.AuthorizationRequestStateStore().GetAuthorizationRequestState(ctx,
+		&proto_oidc_flows.GetAuthorizationRequestStateRequest{
+			State: dd2.State,
+		})
+	if err != nil {
+		clientReturnURL := s.GetClientReturnURL(ctx, dd2.ClientId, dd2.RedirectUri)
+		log.Warn().Err(err).Str("state", dd2.State).Str("clientReturnURL", clientReturnURL).
+			Msg("externalidp api: authorization request state not found in store, redirecting to client for fresh OIDC flow")
+		if clientReturnURL != "" {
+			return c.Redirect(http.StatusFound, clientReturnURL)
+		}
+		return c.Redirect(http.StatusFound, "/")
+	}
+
 	listIDPResponse, err := s.IdpServiceServer().ListIDP(ctx,
 		&proto_oidc_idp.ListIDPRequest{
 

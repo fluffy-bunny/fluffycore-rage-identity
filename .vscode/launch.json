@@ -41,6 +41,7 @@
                 "RAGE_cookieConfig__domain": "localhost",
                 "RAGE_cookieConfig__insecure": "true",
                 "RAGE_systemConfig__developerMode": "true",
+                "RAGE_systemConfig__registerFileAuditStore": "true",
                 "RAGE_sessionConfig__insecure": "true",
                 "RAGE_sessionConfig__domain": "localhost",
                 "RAGE_GITHUB_CLIENT_ID": "bdbe2f2235eb3a02065c",

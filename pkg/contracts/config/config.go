@@ -95,8 +95,19 @@ type (
 		Domain string `json:"domain"`
 	}
 	SystemConfig struct {
-		DeveloperMode bool   `json:"developerMode"`
-		Domain        string `json:"domain"`
+		DeveloperMode          bool                        `json:"developerMode"`
+		Domain                 string                      `json:"domain"`
+		EnableSupportPortal    bool                        `json:"enableSupportPortal"`
+		RegisterFileAuditStore bool                        `json:"registerFileAuditStore"`
+		EmailClaimAllowList    []*EmailClaimAllowListEntry `json:"emailClaimAllowList"`
+	}
+	AllowListClaim struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	}
+	EmailClaimAllowListEntry struct {
+		Email  string            `json:"email"`
+		Claims []*AllowListClaim `json:"claims"`
 	}
 	SSOConfig struct {
 		MaxDurationMinutes int `json:"maxDurationMinutes"`
@@ -378,7 +389,10 @@ const configDefaultJSONTemplate = `
     },
     "systemConfig": {
         "domain": "@@CHANGEME@@",
-        "developerMode": false
+        "developerMode": false,
+		"enableSupportPortal": true,
+		"registerFileAuditStore": false,
+		"emailClaimAllowList": []
     },
     "totp": {
         "enabled": false,

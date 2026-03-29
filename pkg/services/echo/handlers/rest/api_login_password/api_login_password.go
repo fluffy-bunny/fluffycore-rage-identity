@@ -275,6 +275,14 @@ func (s *service) Do(c *echo.Context) error {
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to update root identity LastUsedOn")
 		// Don't fail login, just log the error
+	} else {
+		if err := s.SubmitAuditEvent(ctx,
+			"com.fluffybunny.identity.user.updated",
+			user.RootIdentity.Subject,
+			map[string]string{"operation": "last_used_on"},
+			map[string]string{"mutation": "update_user", "handler": "rest.api_login_password"}); err != nil {
+			log.Error().Err(err).Msg("SubmitAuditEvent")
+		}
 	}
 
 	// Set Auth cookie with identity, ACR, and AMR

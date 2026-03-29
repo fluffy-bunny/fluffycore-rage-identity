@@ -209,6 +209,14 @@ func (s *service) Do(c *echo.Context) error {
 		log.Error().Err(err).Msg("CreateUser")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
 	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.created",
+		user.RootIdentity.Subject,
+		map[string]string{"email": user.RootIdentity.Email, "idp_slug": user.RootIdentity.IdpSlug},
+		map[string]string{"mutation": "create_user", "handler": "rest.api_signup"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: err.Error()}, "  ")
+	}
 	if s.config.EmailVerificationRequired {
 		codeResult, err := echo_utils.GenerateHashedVerificationCode(ctx, s.passwordHasher, 6)
 		if err != nil {

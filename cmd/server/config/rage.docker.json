@@ -29,7 +29,19 @@
   },
   "systemConfig": {
     "domain": "${DOMAIN}",
-    "developerMode": false
+    "developerMode": false,
+    "enableSupportPortal": true,
+    "emailClaimAllowList": [
+      {
+        "email": "support.admin@localhost.dev",
+        "claims": [
+          {
+            "type": "role",
+            "value": "support_admin"
+          }
+        ]
+      }
+    ]
   },
   "sessionConfig": {
     "domain": "${COOKIE_DOMAIN}"

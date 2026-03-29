@@ -294,6 +294,15 @@ func (s *service) DoPost(c *echo.Context) error {
 			errors = append(errors, err.Error())
 			return renderError(rageUser, errors)
 		}
+		if err := s.SubmitAuditEvent(ctx,
+			"com.fluffybunny.identity.user.totp.verified",
+			rageUser.RootIdentity.Subject,
+			map[string]string{"operation": "totp_verify"},
+			map[string]string{"mutation": "update_totp", "handler": "oidclogintotp"}); err != nil {
+			log.Error().Err(err).Msg("SubmitAuditEvent")
+			errors = append(errors, err.Error())
+			return renderError(rageUser, errors)
+		}
 	}
 	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
 		AuthCookie: &contracts_cookies.AuthCookie{
