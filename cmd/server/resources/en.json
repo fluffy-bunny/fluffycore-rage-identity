@@ -143,6 +143,8 @@
   "mgmt_rename": "Rename",
   "mgmt_delete": "Delete",
   "mgmt_confirm_delete_passkey": "Are you sure you want to delete this passkey?",
+  "mgmt_registered": "Registered",
+  "mgmt_last_used": "Last used",
   "mgmt_manage_linked_accounts": "Manage your connected social and authentication accounts",
   "mgmt_linked_on": "Linked on",
   "mgmt_unlink": "Unlink",

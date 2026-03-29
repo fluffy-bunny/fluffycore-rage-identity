@@ -4,10 +4,12 @@ import (
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	oidc_login_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/contracts/config"
+	components "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/htmx/components"
+	example_version "github.com/fluffy-bunny/fluffycore-rage-identity/example/version"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	models_api_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx/components"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v5"
@@ -17,7 +19,8 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
-		config *contracts_config.Config
+		config    *contracts_config.Config
+		appConfig *oidc_login_config.AppConfig
 	}
 )
 
@@ -28,10 +31,12 @@ var _ contracts_handler.IHandler = stemService
 func (s *service) Ctor(
 	container di.Container,
 	config *contracts_config.Config,
+	appConfig *oidc_login_config.AppConfig,
 ) (*service, error) {
 	return &service{
 		BaseHandler: services_echo_handlers_base.NewBaseHandler(container, config),
 		config:      config,
+		appConfig:   appConfig,
 	}, nil
 }
 
@@ -86,7 +91,7 @@ func (s *service) Do(c *echo.Context) error {
 		RenderContext: rc,
 		BrandTitle:    "RAGE Identity",
 		InitialPage:   initialPage,
-		AppVersion:    s.config.OIDCLoginAppVersion,
-		ShowVersion:   s.config.OIDCLoginShowBannerVersion,
+		AppVersion:    example_version.Version(),
+		ShowVersion:   s.appConfig.BannerBranding.ShowBannerVersion,
 	}))
 }

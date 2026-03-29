@@ -12,6 +12,8 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/contracts/config"
 	management_contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/contracts/config"
 	management_htmx "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/htmx"
+	oidc_login_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/contracts/config"
+	oidc_login_htmx "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/htmx"
 	support_htmx "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/support/htmx"
 	service_AuthorizationCodeClaimsAugmentor "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/AuthorizationCodeClaimsAugmentor"
 	services_AuthorizationCodeClaimsAugmentor "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/AuthorizationCodeClaimsAugmentor"
@@ -42,7 +44,6 @@ import (
 	services_AuditStore_nil "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/AuditStore/nil"
 	services_ScopedMemoryCache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/ScopedMemoryCache"
 	services_cookies_WellknownCookieNames "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/cookies/WellknownCookieNames"
-	services_htmx "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx"
 	services_session_with_options "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/session_with_options"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
@@ -303,7 +304,7 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	// HTMX OIDC Login Handlers (default UI implementation)
 	// To use WASM instead, replace this call with your WASM CacheBustingHTMLConfig registration.
 	//--------------------------------------------------------
-	services_htmx.AddOIDCLoginHandlers(builder)
+	oidc_login_htmx.AddOIDCLoginHandlers(builder)
 
 	// Sync WebAuthN config to app configs for frontend
 	if config.WebAuthNConfig != nil {
@@ -327,8 +328,9 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 		guid = example_version.Version()
 	}
 	config.CacheBustVersion = guid
-	config.OIDCLoginAppVersion = example_version.Version()
-	config.OIDCLoginShowBannerVersion = s.config.OIDCLoginAppConfig.BannerBranding.ShowBannerVersion
+	// Register the oidc-login AppConfig so HTMX oidc-login handlers can inject it
+	di.AddInstance[*oidc_login_config.AppConfig](builder, s.config.OIDCLoginAppConfig)
+
 	// Register the management AppConfig so HTMX management handlers can inject it
 	di.AddInstance[*management_contracts_config.AppConfig](builder, s.config.ManagementAppConfig)
 

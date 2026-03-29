@@ -8,7 +8,6 @@ import (
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/htmx/components"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v5"
@@ -74,11 +73,7 @@ func (s *service) Do(c *echo.Context) error {
 		log.Debug().Err(err).Msg("Failed to get session during start-over")
 	}
 
-	localizer := s.Localizer().GetLocalizer()
-	rc := components.NewRenderContext(c, localizer)
-	return components.RenderNode(c, http.StatusOK, components.HomePartial(components.HomeData{
-		RenderContext: rc,
-		Errors:        []string{},
-		Email:         "",
-	}))
+	// Redirect to the application home URL to restart the flow from scratch
+	c.Response().Header().Set("HX-Redirect", "/")
+	return c.NoContent(http.StatusOK)
 }

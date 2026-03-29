@@ -103,20 +103,26 @@ func DashboardHeader(rc *RenderContext) g.Node {
 		Script(g.Raw(`(function(){
   if(window.__dropdownInit) return;
   window.__dropdownInit=true;
+  function closeDropdown(){
+    var dd=document.getElementById("user-dropdown");
+    if(dd) dd.classList.remove("show");
+  }
   document.addEventListener("click",function(e){
     var btn=document.getElementById("user-menu-btn");
     var dd=document.getElementById("user-dropdown");
     if(!btn||!dd) return;
     if(btn.contains(e.target)){
-      dd.classList.toggle("show");
+      var isOpen=dd.classList.contains("show");
+      if(isOpen){dd.classList.remove("show");}
+      else{dd.classList.add("show");}
       return;
     }
     dd.classList.remove("show");
   });
-  document.body.addEventListener("htmx:beforeSwap",function(){
-    var dd=document.getElementById("user-dropdown");
-    if(dd) dd.classList.remove("show");
-  });
+  document.addEventListener("htmx:beforeSwap",closeDropdown);
+  document.addEventListener("htmx:afterSettle",closeDropdown);
+  document.addEventListener("htmx:historyRestore",closeDropdown);
+  document.addEventListener("htmx:pushedIntoHistory",closeDropdown);
 })();`)),
 	)
 }
