@@ -238,8 +238,22 @@ func (s *service) Do(c *echo.Context) error {
 			State: parentState,
 		})
 	if err != nil {
-		log.Error().Err(err).Msg("GetAuthorizationRequestState")
-		return s.TeleportBackToLoginWithError(c, InternalError_Callback_001, InternalError_Callback_001)
+		// State not found — server may have restarted with in-memory store.
+		// Try to get the client return URL from the cookie session's authorization request.
+		clientReturnURL := ""
+		if session, sErr := s.OIDCSession().GetSession(); sErr == nil {
+			if reqI, gErr := session.Get("request"); gErr == nil && reqI != nil {
+				if authReq, ok := reqI.(*proto_oidc_models.AuthorizationRequest); ok && authReq != nil {
+					clientReturnURL = s.GetClientReturnURL(ctx, authReq.ClientId, authReq.RedirectUri)
+				}
+			}
+		}
+		log.Error().Err(err).Str("state", parentState).Str("clientReturnURL", clientReturnURL).
+			Msg("GetAuthorizationRequestState failed (server may have restarted with in-memory store), redirecting to client for fresh OIDC flow")
+		if clientReturnURL != "" {
+			return c.Redirect(http.StatusFound, clientReturnURL)
+		}
+		return c.Redirect(http.StatusFound, "/")
 	}
 	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 

@@ -1,6 +1,7 @@
 package shell
 
 import (
+	"context"
 	"net/http"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
@@ -11,6 +12,8 @@ import (
 	models_api_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
+	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
+	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
@@ -58,6 +61,14 @@ func (s *service) Do(c *echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
+	// Validate that the session's authorization request state still exists in the
+	// backing store. After a server restart with an in-memory store, the cookie
+	// session survives but the server-side state is gone. Detect this early and
+	// redirect back to the client for a fresh OIDC flow.
+	if redirect, ok := s.validateSessionState(ctx, c, &log); ok {
+		return redirect
+	}
+
 	localizer := s.Localizer().GetLocalizer()
 	rc := components.NewRenderContext(c, localizer)
 	rc.CacheBustVersion = s.config.CacheBustVersion
@@ -94,4 +105,62 @@ func (s *service) Do(c *echo.Context) error {
 		AppVersion:    example_version.Version(),
 		ShowVersion:   s.appConfig.BannerBranding.ShowBannerVersion,
 	}))
+}
+
+// validateSessionState checks whether the session's authorization request state
+// still exists in the backing store. Returns (redirect response, true) if the
+// session is stale and the caller should return the redirect. Returns (nil, false)
+// if everything is fine and the caller should continue normally.
+// Wrapped in recover() so that deserialization issues with stale cookies never
+// surface as 500 Internal Server Error.
+func (s *service) validateSessionState(ctx context.Context, c *echo.Context, log *zerolog.Logger) (err error, stale bool) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Error().Interface("panic", r).Msg("shell: panic during session state validation, clearing session and redirecting to /")
+			// Best-effort clear of the session
+			if session, sErr := s.OIDCSession().GetSession(); sErr == nil {
+				session.Set("request", nil)
+				session.Set("session_id", nil)
+				session.Set("landing_page", nil)
+				session.Set("landingPage", nil)
+				session.Save()
+			}
+			err = c.Redirect(http.StatusFound, "/")
+			stale = true
+		}
+	}()
+
+	session, sErr := s.OIDCSession().GetSession()
+	if sErr != nil {
+		return nil, false
+	}
+	requestI, gErr := session.Get("request")
+	if gErr != nil || requestI == nil {
+		return nil, false
+	}
+	authReq, ok := requestI.(*proto_oidc_models.AuthorizationRequest)
+	if !ok || authReq == nil {
+		return nil, false
+	}
+
+	_, gErr = s.AuthorizationRequestStateStore().GetAuthorizationRequestState(ctx,
+		&proto_oidc_flows.GetAuthorizationRequestStateRequest{
+			State: authReq.State,
+		})
+	if gErr != nil {
+		clientReturnURL := s.GetClientReturnURL(ctx, authReq.ClientId, authReq.RedirectUri)
+		log.Warn().Err(gErr).Str("state", authReq.State).Str("clientReturnURL", clientReturnURL).
+			Msg("shell: authorization request state not found in store (server may have restarted), redirecting to client for fresh OIDC flow")
+		// Clear the stale session so the next authorization flow starts clean
+		session.Set("request", nil)
+		session.Set("session_id", nil)
+		session.Set("landing_page", nil)
+		session.Set("landingPage", nil)
+		session.Save()
+		if clientReturnURL != "" {
+			return c.Redirect(http.StatusFound, clientReturnURL), true
+		}
+		return c.Redirect(http.StatusFound, "/"), true
+	}
+	return nil, false
 }

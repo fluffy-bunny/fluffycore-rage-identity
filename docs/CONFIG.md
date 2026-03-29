@@ -113,3 +113,12 @@ You can enable or disable support portal routes with `systemConfig.enableSupport
 ```
 
 When set to `false`, support handlers are not registered and `/support/` endpoints are unavailable.
+
+### Authorization Request State Store (In-Memory)
+
+The default `AuthorizationRequestStateStore` implementation uses an **in-memory cache** (gocache) to hold OIDC authorization request state during the login flow. This means:
+
+- **Server restarts lose all in-flight authorization state.** Any user mid-login will be unable to complete their flow.
+- **Cookie sessions survive restarts** (gorilla CookieStore stores data in the browser cookie itself), so there is a mismatch between what the cookie session says (valid `request`) and what the server knows (nothing).
+- The system detects this mismatch automatically and redirects stale sessions back to the OIDC client's origin (derived from `client_uri` metadata or the `redirect_uri` origin) to start a fresh OIDC flow. Users will see a seamless redirect rather than a broken login page.
+- For production deployments that require session persistence across restarts, implement `IFluffyCoreAuthorizationRequestStateStoreServer` with a durable backing store (e.g., MongoDB, Redis).
