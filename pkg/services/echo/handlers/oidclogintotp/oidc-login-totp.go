@@ -24,7 +24,7 @@ import (
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	qrcode "github.com/skip2/go-qrcode"
 	gotp "github.com/xlzd/gotp"
@@ -131,7 +131,7 @@ func (s *service) generatePNGQRCode(rageUser *proto_oidc_models.RageUser) string
 	pngQRCode := base64.StdEncoding.EncodeToString(pngB)
 	return pngQRCode
 }
-func (s *service) DoGet(c echo.Context) error {
+func (s *service) DoGet(c *echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 
@@ -204,7 +204,7 @@ func (s *service) DoGet(c echo.Context) error {
 		})
 }
 
-func (s *service) DoPost(c echo.Context) error {
+func (s *service) DoPost(c *echo.Context) error {
 	localizer := s.Localizer().GetLocalizer()
 
 	r := c.Request()
@@ -294,6 +294,15 @@ func (s *service) DoPost(c echo.Context) error {
 			errors = append(errors, err.Error())
 			return renderError(rageUser, errors)
 		}
+		if err := s.SubmitAuditEvent(ctx,
+			"com.fluffybunny.identity.user.totp.verified",
+			rageUser.RootIdentity.Subject,
+			map[string]string{"operation": "totp_verify"},
+			map[string]string{"mutation": "update_totp", "handler": "oidclogintotp"}); err != nil {
+			log.Error().Err(err).Msg("SubmitAuditEvent")
+			errors = append(errors, err.Error())
+			return renderError(rageUser, errors)
+		}
 	}
 	err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
 		AuthCookie: &contracts_cookies.AuthCookie{
@@ -373,7 +382,7 @@ func (s *service) DoPost(c echo.Context) error {
 
 }
 
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 
 	r := c.Request()
 	ctx := r.Context()
@@ -395,7 +404,7 @@ func (s *service) Do(c echo.Context) error {
 	// return not found
 	return c.NoContent(http.StatusNotFound)
 }
-func (s *service) handleIdentityFound(c echo.Context, state string) error {
+func (s *service) handleIdentityFound(c *echo.Context, state string) error {
 	r := c.Request()
 	// is the request get or post?
 	rootPath := s.config.OIDCConfig.BaseUrl

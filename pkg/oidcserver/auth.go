@@ -3,6 +3,7 @@ package oidcserver
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_auth "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/auth"
@@ -10,7 +11,7 @@ import (
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 )
 
 var csrfSkipperPaths map[string]bool
@@ -49,7 +50,7 @@ func EnsureAuth(ctn di.Container) echo.MiddlewareFunc {
 	authMap := dd.GetAuthMap()
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			// get path
 			path := c.Path()
 
@@ -60,6 +61,13 @@ func EnsureAuth(ctn di.Container) echo.MiddlewareFunc {
 			}
 
 			if _, ok := authMap[path]; ok {
+				return next(c)
+			}
+
+			// /management/ and /support/ paths have their own auth middleware
+			// (EnsureManagementAuth) — let them pass through here.
+			if strings.HasPrefix(path, wellknown_echo.ManagementPath) ||
+				strings.HasPrefix(path, wellknown_echo.SupportPath) {
 				return next(c)
 			}
 

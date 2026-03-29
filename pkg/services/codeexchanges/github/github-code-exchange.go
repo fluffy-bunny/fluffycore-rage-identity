@@ -18,6 +18,7 @@ import (
 	status "github.com/gogo/status"
 	req "github.com/imroc/req/v3"
 	zerolog "github.com/rs/zerolog"
+	oauth2 "golang.org/x/oauth2"
 	codes "google.golang.org/grpc/codes"
 )
 
@@ -96,8 +97,19 @@ func (s *service) ExchangeCode(ctx context.Context, request *contracts_codeexcha
 		return nil, err
 	}
 	config := getConfigResponse.Config
-	// GitHub OAuth2 does NOT support PKCE, so we don't send the code_verifier
-	token, err := config.Exchange(context.Background(), request.Code)
+	// GitHub now enforces PKCE: if code_challenge was sent, code_verifier is required
+	log.Debug().
+		Str("redirectURL", config.RedirectURL).
+		Str("clientID", config.ClientID).
+		Str("tokenURL", config.Endpoint.TokenURL).
+		Int("codeLen", len(request.Code)).
+		Bool("hasPKCE", fluffycore_utils.IsNotEmptyOrNil(request.CodeVerifier)).
+		Msg("exchanging code with GitHub")
+	var exchangeOpts []oauth2.AuthCodeOption
+	if fluffycore_utils.IsNotEmptyOrNil(request.CodeVerifier) {
+		exchangeOpts = append(exchangeOpts, oauth2.SetAuthURLParam("code_verifier", request.CodeVerifier))
+	}
+	token, err := config.Exchange(context.Background(), request.Code, exchangeOpts...)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to exchange code")
 		return nil, err

@@ -12,7 +12,7 @@ import (
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	"github.com/rs/zerolog"
 )
 
@@ -69,7 +69,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Success 200 {object} verify_code.VerifyCodeBeginResponse
 // @Failure 500 {object} wellknown_echo.RestErrorResponse
 // @Router /api/verify-code-begin [get]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 	response := &verify_code.VerifyCodeBeginResponse{

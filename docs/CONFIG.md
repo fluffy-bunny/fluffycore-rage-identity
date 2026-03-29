@@ -70,3 +70,55 @@ These are your webapps that will use tis IDP to authenticate.
   ]
 }
 ```
+
+### Email Claim Allow List
+
+You can inject additional claims at login time for specific emails.
+This is useful for temporary/support admin access without changing upstream IDP claims.
+
+Configured under `systemConfig.emailClaimAllowList` in your rage config:
+
+```json
+{
+  "systemConfig": {
+    "emailClaimAllowList": [
+      {
+        "email": "support.admin@localhost.dev",
+        "claims": [
+          { "type": "role", "value": "support_admin" },
+          { "type": "group", "value": "backend_support_admin" }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Notes:
+
+- Email match is case-insensitive.
+- Claims are added to the in-request claims principal during cookie-auth processing.
+- Keep this list small and environment-specific.
+
+### Support Portal Toggle
+
+You can enable or disable support portal routes with `systemConfig.enableSupportPortal`.
+
+```json
+{
+  "systemConfig": {
+    "enableSupportPortal": true
+  }
+}
+```
+
+When set to `false`, support handlers are not registered and `/support/` endpoints are unavailable.
+
+### Authorization Request State Store (In-Memory)
+
+The default `AuthorizationRequestStateStore` implementation uses an **in-memory cache** (gocache) to hold OIDC authorization request state during the login flow. This means:
+
+- **Server restarts lose all in-flight authorization state.** Any user mid-login will be unable to complete their flow.
+- **Cookie sessions survive restarts** (gorilla CookieStore stores data in the browser cookie itself), so there is a mismatch between what the cookie session says (valid `request`) and what the server knows (nothing).
+- The system detects this mismatch automatically and redirects stale sessions back to the OIDC client's origin (derived from `client_uri` metadata or the `redirect_uri` origin) to start a fresh OIDC flow. Users will see a seamless redirect rather than a broken login page.
+- For production deployments that require session persistence across restarts, implement `IFluffyCoreAuthorizationRequestStateStoreServer` with a durable backing store (e.g., MongoDB, Redis).

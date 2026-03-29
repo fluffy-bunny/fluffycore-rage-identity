@@ -16,7 +16,7 @@ import (
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 )
@@ -83,7 +83,7 @@ func (s *service) validateKeepSignedInRequest(model *login_models.KeepSignedInRe
 // @Success 200 {object} login_models.KeepSignedInResponse
 // @Failure 500 {object} login_models.KeepSignedInErrorResponse
 // @Router /api/keep-signed-in [post]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 

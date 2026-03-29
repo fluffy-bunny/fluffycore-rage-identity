@@ -7,7 +7,7 @@ import (
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	fluffycore_contracts_jwtminter "github.com/fluffy-bunny/fluffycore/contracts/jwtminter"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 )
 
 type (
@@ -50,7 +50,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Produce json
 // @Success 200 {object} string
 // @Router /.well-known/jwks [get]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	ctx := c.Request().Context()
 	publickKeys, err := s.jwtMinter.PublicKeys(ctx)
 	if err != nil {

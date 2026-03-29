@@ -30,7 +30,7 @@ import (
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	jwxt "github.com/lestrrat-go/jwx/v2/jwt"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
@@ -113,8 +113,10 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 }
 
 type CallbackRequest struct {
-	Code  string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
-	State string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
+	Code             string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
+	State            string `param:"state" query:"state" form:"state" json:"state" xml:"state"`
+	Error            string `param:"error" query:"error" form:"error" json:"error" xml:"error"`
+	ErrorDescription string `param:"error_description" query:"error_description" form:"error_description" json:"error_description" xml:"error_description"`
 }
 
 // HealthCheck godoc
@@ -127,7 +129,7 @@ type CallbackRequest struct {
 // @Param       state            		query     string  true  "state requested"
 // @Success 200 {object} string
 // @Router /oauth2/callback [get]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	localizer := s.Localizer().GetLocalizer()
 
 	r := c.Request()
@@ -139,6 +141,16 @@ func (s *service) Do(c echo.Context) error {
 		return s.TeleportBackToLoginWithError(c, InternalError_Callback_099, InternalError_Callback_099)
 	}
 	log = log.With().Interface("model", model).Logger()
+
+	// Handle OAuth2 error responses from the IDP (e.g., user denied access, expired code)
+	if model.Error != "" {
+		log.Error().
+			Str("oauth2_error", model.Error).
+			Str("oauth2_error_description", model.ErrorDescription).
+			Msg("IDP returned an error in the OAuth2 callback")
+		return s.TeleportBackToLoginWithError(c, InternalError_Callback_011, model.Error+": "+model.ErrorDescription)
+	}
+
 	var idp *proto_oidc_models.IDP
 	getExternalOauth2CookieResponse, err := s.wellknownCookies.GetExternalOauth2Cookie(c,
 		&contracts_cookies.GetExternalOauth2CookieRequest{
@@ -147,7 +159,7 @@ func (s *service) Do(c echo.Context) error {
 
 	if err != nil {
 		log.Error().Err(err).Msg("GetExternalOauth2Final")
-		return c.Redirect(http.StatusTemporaryRedirect, "/login?error=invalid_state")
+		return s.TeleportBackToLoginWithError(c, InternalError_Callback_001, InternalError_Callback_001)
 	}
 	externalOauth2State := getExternalOauth2CookieResponse.ExternalOAuth2State
 	parentState := externalOauth2State.Request.ParentState
@@ -226,8 +238,22 @@ func (s *service) Do(c echo.Context) error {
 			State: parentState,
 		})
 	if err != nil {
-		log.Error().Err(err).Msg("GetAuthorizationRequestState")
-		return s.TeleportBackToLoginWithError(c, InternalError_Callback_001, InternalError_Callback_001)
+		// State not found — server may have restarted with in-memory store.
+		// Try to get the client return URL from the cookie session's authorization request.
+		clientReturnURL := ""
+		if session, sErr := s.OIDCSession().GetSession(); sErr == nil {
+			if reqI, gErr := session.Get("request"); gErr == nil && reqI != nil {
+				if authReq, ok := reqI.(*proto_oidc_models.AuthorizationRequest); ok && authReq != nil {
+					clientReturnURL = s.GetClientReturnURL(ctx, authReq.ClientId, authReq.RedirectUri)
+				}
+			}
+		}
+		log.Error().Err(err).Str("state", parentState).Str("clientReturnURL", clientReturnURL).
+			Msg("GetAuthorizationRequestState failed (server may have restarted with in-memory store), redirecting to client for fresh OIDC flow")
+		if clientReturnURL != "" {
+			return c.Redirect(http.StatusFound, clientReturnURL)
+		}
+		return c.Redirect(http.StatusFound, "/")
 	}
 	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 
@@ -268,11 +294,11 @@ func (s *service) Do(c echo.Context) error {
 					ClientID:     externalOauth2State.Request.ClientId,
 					Nonce:        externalOauth2State.Request.Nonce,
 					Code:         model.Code,
-					CodeVerifier: externalOauth2State.Request.CodeChallenge,
+					CodeVerifier: externalOauth2State.Request.CodeChallengeVerifier,
 				})
 				if err != nil {
 					sublog.Error().Err(err).Msg("ExchangeCode")
-					return c.Redirect(http.StatusTemporaryRedirect, "/login?error=exchange_code")
+					return s.TeleportBackToLoginWithError(c, InternalError_Callback_003, InternalError_Callback_003)
 				}
 			}
 		case *proto_oidc_models.Protocol_Oidc:
@@ -291,7 +317,7 @@ func (s *service) Do(c echo.Context) error {
 				})
 				if err != nil {
 					sublog.Error().Err(err).Msg("ExchangeCode")
-					return c.Redirect(http.StatusTemporaryRedirect, "/login?error=exchange_code")
+					return s.TeleportBackToLoginWithError(c, InternalError_Callback_003, InternalError_Callback_003)
 				}
 
 			}
@@ -306,12 +332,12 @@ func (s *service) Do(c echo.Context) error {
 		rawToken, err := jwxt.ParseString(exchangeCodeResponse.IdToken, parseOptions...)
 		if err != nil {
 			log.Error().Err(err).Msg("ParseString")
-			return c.Redirect(http.StatusTemporaryRedirect, "/login?error=parse_id_token")
+			return s.TeleportBackToLoginWithError(c, InternalError_Callback_003, InternalError_Callback_003)
 		}
 		email, ok := rawToken.Get("email")
 		if !ok {
 			log.Error().Msg("email not found")
-			return c.Redirect(http.StatusTemporaryRedirect, "/login?error=email_not_found")
+			return s.TeleportBackToLoginWithError(c, InternalError_Callback_003, InternalError_Callback_003)
 		}
 		emailVerified := false
 		emailVerifiedC, ok := rawToken.Get("email_verified")
@@ -399,6 +425,14 @@ func (s *service) Do(c echo.Context) error {
 				log.Error().Err(err).Msg("CreateUser")
 				return nil, err
 			}
+			if err := s.SubmitAuditEvent(ctx,
+				"com.fluffybunny.identity.user.created",
+				createUserResponse.User.RootIdentity.Subject,
+				map[string]string{"email": createUserResponse.User.RootIdentity.Email, "idp_slug": externalOauth2State.Request.IdpHint},
+				map[string]string{"mutation": "create_user", "handler": "oauth2.callback"}); err != nil {
+				log.Error().Err(err).Msg("SubmitAuditEvent")
+				return nil, err
+			}
 			return createUserResponse.User, nil
 		}
 		/*
@@ -451,6 +485,14 @@ func (s *service) Do(c echo.Context) error {
 				// Don't fail login, just log the error
 			} else {
 				log.Info().Msg("Successfully updated LastUsedOn timestamps")
+				if err := s.SubmitAuditEvent(ctx,
+					"com.fluffybunny.identity.user.updated",
+					user.RootIdentity.Subject,
+					map[string]string{"operation": "last_used_on", "idp_slug": externalOauth2State.Request.IdpHint},
+					map[string]string{"mutation": "update_user", "handler": "oauth2.callback"}); err != nil {
+					log.Error().Err(err).Msg("SubmitAuditEvent")
+					return s.TeleportBackToLoginWithError(c, InternalError_Callback_010, InternalError_Callback_010)
+				}
 			}
 
 			// check if we are a claimed domain.
@@ -483,6 +525,14 @@ func (s *service) Do(c echo.Context) error {
 					})
 				if err != nil {
 					log.Error().Err(err).Msg("Failed to update identity EmailVerified")
+					return s.TeleportBackToLoginWithError(c, InternalError_Callback_010, InternalError_Callback_010)
+				}
+				if err := s.SubmitAuditEvent(ctx,
+					"com.fluffybunny.identity.user.updated",
+					user.RootIdentity.Subject,
+					map[string]string{"operation": "email_verified", "idp_slug": externalOauth2State.Request.IdpHint},
+					map[string]string{"mutation": "update_user", "handler": "oauth2.callback"}); err != nil {
+					log.Error().Err(err).Msg("SubmitAuditEvent")
 					return s.TeleportBackToLoginWithError(c, InternalError_Callback_010, InternalError_Callback_010)
 				}
 				user.RootIdentity.EmailVerified = true
@@ -644,6 +694,14 @@ func (s *service) Do(c echo.Context) error {
 				})
 			if err != nil {
 				log.Error().Err(err).Msg("LinkUsers")
+				return nil, err
+			}
+			if err := s.SubmitAuditEvent(ctx,
+				"com.fluffybunny.identity.user.linked",
+				candidateUserID,
+				map[string]string{"idp_slug": externalOauth2State.Request.IdpHint, "external_subject": externalIdentity.Subject},
+				map[string]string{"mutation": "link_identity", "handler": "oauth2.callback"}); err != nil {
+				log.Error().Err(err).Msg("SubmitAuditEvent")
 				return nil, err
 			}
 			return user, nil

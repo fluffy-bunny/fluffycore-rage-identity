@@ -15,7 +15,7 @@ import (
 	fluffycore_contracts_cookies "github.com/fluffy-bunny/fluffycore/echo/contracts/cookies"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	codes "google.golang.org/grpc/codes"
 )
 
@@ -84,7 +84,7 @@ func (s *service) validateSetVerificationCodeCookieRequest(request *contracts_co
 	}
 	return nil
 }
-func (s *service) SetVerificationCodeCookie(c echo.Context, request *contracts_cookies.SetVerificationCodeCookieRequest) error {
+func (s *service) SetVerificationCodeCookie(c *echo.Context, request *contracts_cookies.SetVerificationCodeCookieRequest) error {
 	err := s.validateSetVerificationCodeCookieRequest(request)
 	if err != nil {
 		return err
@@ -92,15 +92,15 @@ func (s *service) SetVerificationCodeCookie(c echo.Context, request *contracts_c
 	return SetCookie(c, s.cookieConfig, s.secureCookies, s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_VerificationCode), request.VerificationCode)
 
 }
-func (s *service) DeleteVerificationCodeCookie(c echo.Context) {
-	s.secureCookies.DeleteCookie(c,
+func (s *service) DeleteVerificationCodeCookie(c *echo.Context) {
+	s.secureCookies.DeleteCookie(*c,
 		&fluffycore_contracts_cookies.DeleteCookieRequest{
 			Name:   s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_VerificationCode),
 			Path:   "/",
 			Domain: s.cookieConfig.Domain,
 		})
 }
-func (s *service) GetVerificationCodeCookie(c echo.Context) (*contracts_cookies.GetVerificationCodeCookieResponse, error) {
+func (s *service) GetVerificationCodeCookie(c *echo.Context) (*contracts_cookies.GetVerificationCodeCookieResponse, error) {
 
 	var value contracts_cookies.VerificationCode
 	err := GetCookie(c, s.secureCookies, s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_VerificationCode), &value)
@@ -121,15 +121,15 @@ func (s *service) validateSetPasswordResetCookieRequest(request *contracts_cooki
 	}
 	return nil
 }
-func (s *service) SetPasswordResetCookie(c echo.Context, request *contracts_cookies.SetPasswordResetCookieRequest) error {
+func (s *service) SetPasswordResetCookie(c *echo.Context, request *contracts_cookies.SetPasswordResetCookieRequest) error {
 	err := s.validateSetPasswordResetCookieRequest(request)
 	if err != nil {
 		return err
 	}
 	return SetCookie(c, s.cookieConfig, s.secureCookies, s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_PasswordReset), request.PasswordReset)
 }
-func (s *service) DeletePasswordResetCookie(c echo.Context) {
-	s.secureCookies.DeleteCookie(c,
+func (s *service) DeletePasswordResetCookie(c *echo.Context) {
+	s.secureCookies.DeleteCookie(*c,
 		&fluffycore_contracts_cookies.DeleteCookieRequest{
 			Name:   s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_PasswordReset),
 			Path:   "/",
@@ -137,7 +137,7 @@ func (s *service) DeletePasswordResetCookie(c echo.Context) {
 		})
 
 }
-func (s *service) GetPasswordResetCookie(c echo.Context) (*contracts_cookies.GetPasswordResetCookieResponse, error) {
+func (s *service) GetPasswordResetCookie(c *echo.Context) (*contracts_cookies.GetPasswordResetCookieResponse, error) {
 
 	var value contracts_cookies.PasswordReset
 	err := GetCookie(c, s.secureCookies, s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_PasswordReset), &value)
@@ -164,7 +164,7 @@ func (s *service) validateSetAuthCompletedCookieRequest(request *contracts_cooki
 	return nil
 }
 
-func (s *service) SetAuthCompletedCookie(c echo.Context, request *contracts_cookies.SetAuthCompletedCookieRequest) error {
+func (s *service) SetAuthCompletedCookie(c *echo.Context, request *contracts_cookies.SetAuthCompletedCookieRequest) error {
 	err := s.validateSetAuthCompletedCookieRequest(request)
 	if err != nil {
 		return err
@@ -172,8 +172,8 @@ func (s *service) SetAuthCompletedCookie(c echo.Context, request *contracts_cook
 	return SetCookie(c, s.cookieConfig, s.secureCookies, s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_AuthCompleted), request.AuthCompleted)
 }
 
-func (s *service) DeleteAuthCompletedCookie(c echo.Context) {
-	s.secureCookies.DeleteCookie(c,
+func (s *service) DeleteAuthCompletedCookie(c *echo.Context) {
+	s.secureCookies.DeleteCookie(*c,
 		&fluffycore_contracts_cookies.DeleteCookieRequest{
 			Name:   s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_AuthCompleted),
 			Path:   "/",
@@ -181,7 +181,7 @@ func (s *service) DeleteAuthCompletedCookie(c echo.Context) {
 		})
 }
 
-func (s *service) GetAuthCompletedCookie(c echo.Context) (*contracts_cookies.GetAuthCompletedCookieResponse, error) {
+func (s *service) GetAuthCompletedCookie(c *echo.Context) (*contracts_cookies.GetAuthCompletedCookieResponse, error) {
 	var value contracts_cookies.AuthCompleted
 	err := GetCookie(c, s.secureCookies, s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_AuthCompleted), &value)
 	if err != nil {
@@ -211,7 +211,7 @@ func (s *service) validateSetAccountStateCookieRequest(request *contracts_cookie
 func tPtr[T any](t T) *T {
 	return &t
 }
-func (s *service) SetAccountStateCookie(c echo.Context, request *contracts_cookies.SetAccountStateCookieRequest) error {
+func (s *service) SetAccountStateCookie(c *echo.Context, request *contracts_cookies.SetAccountStateCookieRequest) error {
 	err := s.validateSetAccountStateCookieRequest(request)
 	if err != nil {
 		return err
@@ -227,8 +227,8 @@ func (s *service) SetAccountStateCookie(c echo.Context, request *contracts_cooki
 	return SetCookieByRequest(c, s.cookieConfig, s.secureCookies, setCookieRequest, request.AccountStateCookie)
 
 }
-func (s *service) DeleteAccountStateCookie(c echo.Context) {
-	s.secureCookies.DeleteCookie(c,
+func (s *service) DeleteAccountStateCookie(c *echo.Context) {
+	s.secureCookies.DeleteCookie(*c,
 		&fluffycore_contracts_cookies.DeleteCookieRequest{
 			Name:   s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_AccountState),
 			Path:   "/",
@@ -236,7 +236,7 @@ func (s *service) DeleteAccountStateCookie(c echo.Context) {
 		})
 
 }
-func (s *service) GetAccountStateCookie(c echo.Context) (*contracts_cookies.GetAccountStateCookieResponse, error) {
+func (s *service) GetAccountStateCookie(c *echo.Context) (*contracts_cookies.GetAccountStateCookieResponse, error) {
 	var value contracts_cookies.AccountStateCookie
 	err := GetCookie(c, s.secureCookies, s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_AccountState), &value)
 	if err != nil {
@@ -259,7 +259,7 @@ func (s *service) validateSetAuthCookieRequest(request *contracts_cookies.SetAut
 	}
 	return nil
 }
-func (s *service) SetAuthCookie(c echo.Context, request *contracts_cookies.SetAuthCookieRequest) error {
+func (s *service) SetAuthCookie(c *echo.Context, request *contracts_cookies.SetAuthCookieRequest) error {
 	// TODO: Configurable expiration
 	err := s.validateSetAuthCookieRequest(request)
 	if err != nil {
@@ -276,15 +276,15 @@ func (s *service) SetAuthCookie(c echo.Context, request *contracts_cookies.SetAu
 	return SetCookieByRequest(c, s.cookieConfig, s.secureCookies, setCookieRequest,
 		request.AuthCookie)
 }
-func (s *service) DeleteAuthCookie(c echo.Context) {
-	s.secureCookies.DeleteCookie(c,
+func (s *service) DeleteAuthCookie(c *echo.Context) {
+	s.secureCookies.DeleteCookie(*c,
 		&fluffycore_contracts_cookies.DeleteCookieRequest{
 			Name:   s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_Auth),
 			Path:   "/",
 			Domain: s.cookieConfig.Domain,
 		})
 }
-func (s *service) GetAuthCookie(c echo.Context) (*contracts_cookies.GetAuthCookieResponse, error) {
+func (s *service) GetAuthCookie(c *echo.Context) (*contracts_cookies.GetAuthCookieResponse, error) {
 	var value contracts_cookies.AuthCookie
 	err := GetCookie(c, s.secureCookies, s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_Auth), &value)
 	if err != nil {
@@ -312,7 +312,7 @@ func (s *service) validateSetSSOCookieRequest(request *contracts_cookies.SetSSOC
 	return nil
 }
 
-func (s *service) SetSSOCookie(c echo.Context, request *contracts_cookies.SetSSOCookieRequest) error {
+func (s *service) SetSSOCookie(c *echo.Context, request *contracts_cookies.SetSSOCookieRequest) error {
 	err := s.validateSetSSOCookieRequest(request)
 	if err != nil {
 		return err
@@ -334,8 +334,8 @@ func (s *service) SetSSOCookie(c echo.Context, request *contracts_cookies.SetSSO
 		request.SSOCookie)
 }
 
-func (s *service) DeleteSSOCookie(c echo.Context) {
-	s.secureCookies.DeleteCookie(c,
+func (s *service) DeleteSSOCookie(c *echo.Context) {
+	s.secureCookies.DeleteCookie(*c,
 		&fluffycore_contracts_cookies.DeleteCookieRequest{
 			Name:   s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_SSO),
 			Path:   "/",
@@ -343,7 +343,7 @@ func (s *service) DeleteSSOCookie(c echo.Context) {
 		})
 }
 
-func (s *service) GetSSOCookie(c echo.Context) (*contracts_cookies.GetSSOCookieResponse, error) {
+func (s *service) GetSSOCookie(c *echo.Context) (*contracts_cookies.GetSSOCookieResponse, error) {
 	var value contracts_cookies.SSOCookie
 	err := GetCookie(c, s.secureCookies, s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_SSO), &value)
 	if err != nil {
@@ -367,7 +367,7 @@ func (s *service) getKeepSigninPreferencesCookieName(subject string) string {
 	return prefix + "_" + subjectHash + "_keepSigninPreferences"
 }
 
-func (s *service) SetKeepSigninPreferencesCookie(c echo.Context, request *contracts_cookies.SetKeepSigninPreferencesCookieRequest) error {
+func (s *service) SetKeepSigninPreferencesCookie(c *echo.Context, request *contracts_cookies.SetKeepSigninPreferencesCookieRequest) error {
 	cookieName := s.getKeepSigninPreferencesCookieName(request.Subject)
 	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
 		Name:   cookieName,
@@ -386,9 +386,9 @@ func (s *service) SetKeepSigninPreferencesCookie(c echo.Context, request *contra
 		request.KeepSigninPreferencesCookie)
 }
 
-func (s *service) DeleteKeepSigninPreferencesCookie(c echo.Context, request *contracts_cookies.DeleteKeepSigninPreferencesCookieRequest) {
+func (s *service) DeleteKeepSigninPreferencesCookie(c *echo.Context, request *contracts_cookies.DeleteKeepSigninPreferencesCookieRequest) {
 	cookieName := s.getKeepSigninPreferencesCookieName(request.Subject)
-	s.secureCookies.DeleteCookie(c,
+	s.secureCookies.DeleteCookie(*c,
 		&fluffycore_contracts_cookies.DeleteCookieRequest{
 			Name:   cookieName,
 			Path:   "/",
@@ -396,7 +396,7 @@ func (s *service) DeleteKeepSigninPreferencesCookie(c echo.Context, request *con
 		})
 }
 
-func (s *service) GetKeepSigninPreferencesCookie(c echo.Context, request *contracts_cookies.GetKeepSigninPreferencesCookieRequest) (*contracts_cookies.GetKeepSigninPreferencesCookieResponse, error) {
+func (s *service) GetKeepSigninPreferencesCookie(c *echo.Context, request *contracts_cookies.GetKeepSigninPreferencesCookieRequest) (*contracts_cookies.GetKeepSigninPreferencesCookieResponse, error) {
 	cookieName := s.getKeepSigninPreferencesCookieName(request.Subject)
 	var value contracts_cookies.KeepSigninPreferencesCookie
 	err := GetCookie(c, s.secureCookies, cookieName, &value)
@@ -408,7 +408,7 @@ func (s *service) GetKeepSigninPreferencesCookie(c echo.Context, request *contra
 	}, nil
 }
 
-func (s *service) SetInsecureCookie(c echo.Context, name string, value interface{}) error {
+func (s *service) SetInsecureCookie(c *echo.Context, name string, value interface{}) error {
 
 	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
 		Name: name,
@@ -422,15 +422,15 @@ func (s *service) SetInsecureCookie(c echo.Context, name string, value interface
 		value)
 
 }
-func (s *service) DeleteInsecureCookie(c echo.Context, name string) {
-	s.insecureCookies.DeleteCookie(c,
+func (s *service) DeleteInsecureCookie(c *echo.Context, name string) {
+	s.insecureCookies.DeleteCookie(*c,
 		&fluffycore_contracts_cookies.DeleteCookieRequest{
 			Name:   name,
 			Path:   "/",
 			Domain: s.cookieConfig.Domain,
 		})
 }
-func (s *service) GetInsecureCookie(c echo.Context, name string) (interface{}, error) {
+func (s *service) GetInsecureCookie(c *echo.Context, name string) (interface{}, error) {
 	var value interface{}
 	err := GetCookie(c, s.insecureCookies, name, &value)
 	if err != nil {
@@ -460,7 +460,7 @@ func (s *service) makeExternalOAuth2CookieName(state string) string {
 	result := strings.ReplaceAll(s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_ExternalOauth2StateTemplate), "{state}", state)
 	return result
 }
-func (s *service) SetExternalOauth2Cookie(c echo.Context, request *contracts_cookies.SetExternalOauth2CookieRequest) error {
+func (s *service) SetExternalOauth2Cookie(c *echo.Context, request *contracts_cookies.SetExternalOauth2CookieRequest) error {
 	err := s.validateSetExternalOauth2CookieRequest(request)
 	if err != nil {
 		return err
@@ -488,14 +488,14 @@ func (s *service) validateDeleteExternalOauth2CookieRequest(request *contracts_c
 	}
 	return nil
 }
-func (s *service) DeleteExternalOauth2Cookie(c echo.Context, request *contracts_cookies.DeleteExternalOauth2CookieRequest) error {
+func (s *service) DeleteExternalOauth2Cookie(c *echo.Context, request *contracts_cookies.DeleteExternalOauth2CookieRequest) error {
 	err := s.validateDeleteExternalOauth2CookieRequest(request)
 	if err != nil {
 		return err
 	}
 	cookieName := s.makeExternalOAuth2CookieName(request.State)
 
-	s.secureCookies.DeleteCookie(c,
+	s.secureCookies.DeleteCookie(*c,
 		&fluffycore_contracts_cookies.DeleteCookieRequest{
 			Name:   cookieName,
 			Path:   "/",
@@ -512,7 +512,7 @@ func (s *service) validateGetExternalOauth2CookieRequest(request *contracts_cook
 	}
 	return nil
 }
-func (s *service) GetExternalOauth2Cookie(c echo.Context, request *contracts_cookies.GetExternalOauth2CookieRequest) (*contracts_cookies.GetExternalOauth2CookieResponse, error) {
+func (s *service) GetExternalOauth2Cookie(c *echo.Context, request *contracts_cookies.GetExternalOauth2CookieRequest) (*contracts_cookies.GetExternalOauth2CookieResponse, error) {
 	err := s.validateGetExternalOauth2CookieRequest(request)
 	if err != nil {
 		return nil, err
@@ -541,7 +541,7 @@ func (s *service) validateSetWebAuthNCookieRequest(request *contracts_cookies.Se
 	// In this case, the user will be identified from the credential's UserHandle during finish
 	return nil
 }
-func (s *service) SetWebAuthNCookie(c echo.Context, request *contracts_cookies.SetWebAuthNCookieRequest) error {
+func (s *service) SetWebAuthNCookie(c *echo.Context, request *contracts_cookies.SetWebAuthNCookieRequest) error {
 	// TODO: Configurable expiration
 	err := s.validateSetWebAuthNCookieRequest(request)
 	if err != nil {
@@ -559,15 +559,15 @@ func (s *service) SetWebAuthNCookie(c echo.Context, request *contracts_cookies.S
 		request.Value)
 
 }
-func (s *service) DeleteWebAuthNCookie(c echo.Context) {
-	s.secureCookies.DeleteCookie(c,
+func (s *service) DeleteWebAuthNCookie(c *echo.Context) {
+	s.secureCookies.DeleteCookie(*c,
 		&fluffycore_contracts_cookies.DeleteCookieRequest{
 			Name:   s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_WebAuthN),
 			Path:   "/",
 			Domain: s.cookieConfig.Domain,
 		})
 }
-func (s *service) GetWebAuthNCookie(c echo.Context) (*contracts_cookies.GetWebAuthNCookieResponse, error) {
+func (s *service) GetWebAuthNCookie(c *echo.Context) (*contracts_cookies.GetWebAuthNCookieResponse, error) {
 	var value contracts_cookies.WebAuthNCookie
 	err := GetCookie(c, s.secureCookies, s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_WebAuthN), &value)
 	if err != nil {
@@ -593,7 +593,7 @@ func (s *service) validateSetSigninUserNameCookieRequest(request *contracts_cook
 	}
 	return nil
 }
-func (s *service) SetSigninUserNameCookie(c echo.Context, request *contracts_cookies.SetSigninUserNameCookieRequest) error {
+func (s *service) SetSigninUserNameCookie(c *echo.Context, request *contracts_cookies.SetSigninUserNameCookieRequest) error {
 	// TODO: Configurable expiration
 	err := s.validateSetSigninUserNameCookieRequest(request)
 	if err != nil {
@@ -610,15 +610,15 @@ func (s *service) SetSigninUserNameCookie(c echo.Context, request *contracts_coo
 	return SetCookieByRequest(c, s.cookieConfig, s.secureCookies, setCookieRequest,
 		request.Value)
 }
-func (s *service) DeleteSigninUserNameCookie(c echo.Context) {
-	s.secureCookies.DeleteCookie(c,
+func (s *service) DeleteSigninUserNameCookie(c *echo.Context) {
+	s.secureCookies.DeleteCookie(*c,
 		&fluffycore_contracts_cookies.DeleteCookieRequest{
 			Name:   s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_SigninUserName),
 			Path:   "/",
 			Domain: s.cookieConfig.Domain,
 		})
 }
-func (s *service) GetSigninUserNameCookie(c echo.Context) (*contracts_cookies.GetSigninUserNameCookieResponse, error) {
+func (s *service) GetSigninUserNameCookie(c *echo.Context) (*contracts_cookies.GetSigninUserNameCookieResponse, error) {
 	var value contracts_cookies.SigninUserNameCookie
 	err := GetCookie(c, s.secureCookies, s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_SigninUserName), &value)
 	if err != nil {
@@ -647,7 +647,7 @@ func (s *service) validateSetErrorCookieRequest(request *contracts_cookies.SetEr
 	return nil
 }
 
-func (s *service) SetErrorCookie(c echo.Context, request *contracts_cookies.SetErrorCookieRequest) error {
+func (s *service) SetErrorCookie(c *echo.Context, request *contracts_cookies.SetErrorCookieRequest) error {
 	// TODO: Configurable expiration
 	err := s.validateSetErrorCookieRequest(request)
 	if err != nil {
@@ -678,18 +678,18 @@ func (s *service) SetErrorCookie(c echo.Context, request *contracts_cookies.SetE
 		setCookieRequest.Secure = tPtr(false)
 	}
 
-	_, err = s.insecureCookies.SetCookie(c, setCookieRequest)
+	_, err = s.insecureCookies.SetCookie(*c, setCookieRequest)
 	return err
 }
-func (s *service) DeleteErrorCookie(c echo.Context) {
-	s.insecureCookies.DeleteCookie(c,
+func (s *service) DeleteErrorCookie(c *echo.Context) {
+	s.insecureCookies.DeleteCookie(*c,
 		&fluffycore_contracts_cookies.DeleteCookieRequest{
 			Name:   s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_Error),
 			Path:   "/",
 			Domain: s.cookieConfig.Domain,
 		})
 }
-func (s *service) GetErrorCookie(c echo.Context) (*contracts_cookies.GetErrorCookieResponse, error) {
+func (s *service) GetErrorCookie(c *echo.Context) (*contracts_cookies.GetErrorCookieResponse, error) {
 	var value contracts_cookies.ErrorCookie
 	err := GetCookie(c, s.insecureCookies, s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_Error), &value)
 	if err != nil {

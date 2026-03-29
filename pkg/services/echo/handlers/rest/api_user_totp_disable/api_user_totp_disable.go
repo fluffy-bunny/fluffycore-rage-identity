@@ -12,7 +12,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	wrapperspb "google.golang.org/protobuf/types/known/wrapperspb"
 )
@@ -63,7 +63,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Failure 401 {object} wellknown_echo.RestErrorResponse
 // @Failure 500 {object} wellknown_echo.RestErrorResponse
 // @Router /api/totp [delete]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
@@ -92,6 +92,14 @@ func (s *service) Do(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("UpdateRageUser")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_TOTPDisable_001}, "  ")
+	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.totp.disabled",
+		subject,
+		map[string]string{"operation": "totp_disable"},
+		map[string]string{"mutation": "update_totp", "handler": "rest.api_user_totp_disable"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_TOTPDisable_001}, "  ")
 	}
 

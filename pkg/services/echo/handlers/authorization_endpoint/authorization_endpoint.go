@@ -25,7 +25,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	xid "github.com/rs/xid"
 	zerolog "github.com/rs/zerolog"
 )
@@ -134,7 +134,7 @@ type (
 // @Param       acr_values 				query     string  false  "acr_values requested"
 // @Success 200 {object} string
 // @Router /oidc/v1/auth [get]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	r := c.Request()
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()

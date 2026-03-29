@@ -12,7 +12,7 @@ import (
 	fluffycore_contracts_otel "github.com/fluffy-bunny/fluffycore/contracts/otel"
 	fluffycore_echo_contracts_cookies "github.com/fluffy-bunny/fluffycore/echo/contracts/cookies"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 )
 
 type (
@@ -95,8 +95,19 @@ type (
 		Domain string `json:"domain"`
 	}
 	SystemConfig struct {
-		DeveloperMode bool   `json:"developerMode"`
-		Domain        string `json:"domain"`
+		DeveloperMode          bool                        `json:"developerMode"`
+		Domain                 string                      `json:"domain"`
+		EnableSupportPortal    bool                        `json:"enableSupportPortal"`
+		RegisterFileAuditStore bool                        `json:"registerFileAuditStore"`
+		EmailClaimAllowList    []*EmailClaimAllowListEntry `json:"emailClaimAllowList"`
+	}
+	AllowListClaim struct {
+		Type  string `json:"type"`
+		Value string `json:"value"`
+	}
+	EmailClaimAllowListEntry struct {
+		Email  string            `json:"email"`
+		Claims []*AllowListClaim `json:"claims"`
 	}
 	SSOConfig struct {
 		MaxDurationMinutes int `json:"maxDurationMinutes"`
@@ -114,7 +125,7 @@ type (
 	}
 	// RouteHandler is a function that handles a specific route pattern
 	// Returns (handled bool, error). If handled=true, the request was processed
-	RouteHandler func(c echo.Context, filePath string) (bool, error)
+	RouteHandler func(c *echo.Context, filePath string) (bool, error)
 
 	// RoutePattern defines a pattern matcher and handler for a route
 	RoutePattern struct {
@@ -187,6 +198,7 @@ type (
 		ApiAppSettings                 *models_api_appsettings.ApiAppSettings         `json:"apiAppSettings"`
 		OIDCFlowAppConfig              *contracts_OIDCFlowAppConfig.OIDCFlowAppConfig `json:"oidcFlowAppConfig"`
 		RequiresNoAuthConfig           *RequiresNoAuthConfig                          `json:"requiresNoAuthConfig"`
+		CacheBustVersion               string                                         `json:"cacheBustVersion"`
 	}
 )
 
@@ -377,7 +389,10 @@ const configDefaultJSONTemplate = `
     },
     "systemConfig": {
         "domain": "@@CHANGEME@@",
-        "developerMode": false
+        "developerMode": false,
+		"enableSupportPortal": true,
+		"registerFileAuditStore": false,
+		"emailClaimAllowList": []
     },
     "totp": {
         "enabled": false,

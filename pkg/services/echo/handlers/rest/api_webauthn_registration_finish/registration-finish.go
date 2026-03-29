@@ -18,7 +18,7 @@ import (
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	webauthn_protocol "github.com/go-webauthn/webauthn/protocol"
 	uuid "github.com/gofrs/uuid"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -74,7 +74,7 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
 
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	r := c.Request()
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
@@ -193,6 +193,14 @@ func (s *service) Do(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("UpdateUser")
+		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_RegisterFinish_003)
+	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.passkey.added",
+		subject,
+		map[string]string{"friendly_name": friendlyName, "aaguid": aaguid.String()},
+		map[string]string{"mutation": "add_passkey", "handler": "rest.api_webauthn_registration_finish"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
 		return c.JSON(http.StatusInternalServerError, InternalError_WebAuthN_RegisterFinish_003)
 	}
 

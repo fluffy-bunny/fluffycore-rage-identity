@@ -14,7 +14,7 @@ import (
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -70,7 +70,7 @@ var validReturnUrlPaths = map[string]bool{
 	wellknown_echo.PersonalInformationPath: true,
 }
 
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()

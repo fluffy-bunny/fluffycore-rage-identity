@@ -3,19 +3,21 @@ package runtime
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
-	"os"
 
 	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	example_auth "github.com/fluffy-bunny/fluffycore-rage-identity/example/auth"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/contracts/config"
+	management_contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/contracts/config"
+	management_htmx "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/management/htmx"
+	oidc_login_config "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/contracts/config"
+	oidc_login_htmx "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/htmx"
+	support_htmx "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/support/htmx"
 	service_AuthorizationCodeClaimsAugmentor "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/AuthorizationCodeClaimsAugmentor"
 	services_AuthorizationCodeClaimsAugmentor "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/AuthorizationCodeClaimsAugmentor"
 	services_EmailTemplateData "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/EmailTemplateData"
-	services_EventSink "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/EventSink"
 	services_handlers_account_about "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/about"
 	services_handlers_account_api_api_linked_accounts "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/api/api_linked_accounts"
 	services_handlers_account_api_login "github.com/fluffy-bunny/fluffycore-rage-identity/example/services/echo/account/api/api_login"
@@ -34,14 +36,14 @@ import (
 	rage_contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
-	contracts_events "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/events"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	contracts_session_with_options "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/session_with_options"
 	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/tokenservice"
 	rage_runtime "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/runtime"
+	services_AuditStore_local_file "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/AuditStore/local_file"
+	services_AuditStore_nil "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/AuditStore/nil"
 	services_ScopedMemoryCache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/ScopedMemoryCache"
 	services_cookies_WellknownCookieNames "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/cookies/WellknownCookieNames"
-	services_handlers_cache_busting_static_html "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/cache_busting_static_html"
 	services_session_with_options "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/session_with_options"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
@@ -69,7 +71,7 @@ import (
 	services_health "github.com/fluffy-bunny/fluffycore/services/health"
 	fluffycore_utils_redact "github.com/fluffy-bunny/fluffycore/utils/redact"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	async "github.com/reugn/async"
 	xid "github.com/rs/xid"
 	zerolog "github.com/rs/zerolog"
@@ -105,11 +107,14 @@ func NewStartup() fluffycore_contracts_runtime.IStartup {
 
 func (s *startup) EnsureManagementAuth(ctn di.Container) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			path := c.Path()
+			supportPortalEnabled := true
 
-			// Only apply to /management/ paths
-			if !strings.HasPrefix(path, wellknown_echo.ManagementPath) {
+			isManagementPath := strings.HasPrefix(path, wellknown_echo.ManagementPath)
+			isSupportPath := strings.HasPrefix(path, wellknown_echo.SupportPath)
+			// Only apply to /management/ and /support/ paths
+			if !isManagementPath && !isSupportPath {
 				return next(c)
 			}
 			ctx := c.Request().Context()
@@ -120,6 +125,13 @@ func (s *startup) EnsureManagementAuth(ctn di.Container) echo.MiddlewareFunc {
 				log.Warn().Msg("No scoped container found")
 				return next(c)
 			}
+			if cfg := di.Get[*rage_contracts_config.Config](subContainer); cfg != nil && cfg.SystemConfig != nil {
+				supportPortalEnabled = cfg.SystemConfig.EnableSupportPortal
+			}
+			isSupportPath = supportPortalEnabled && isSupportPath
+			if !isManagementPath && !isSupportPath {
+				return next(c)
+			}
 			claimsPrincipal := di.Get[fluffycore_contracts_common.IClaimsPrincipal](subContainer)
 			isAuthenticated := claimsPrincipal.HasClaim(fluffycore_contracts_common.Claim{
 				Type:  fluffycore_echo_wellknown.ClaimTypeAuthenticated,
@@ -127,6 +139,9 @@ func (s *startup) EnsureManagementAuth(ctn di.Container) echo.MiddlewareFunc {
 			})
 
 			if isAuthenticated {
+				if isSupportPath && !isSupportAdmin(claimsPrincipal) {
+					return c.String(http.StatusForbidden, "Forbidden: support admin access required")
+				}
 				return next(c)
 			}
 
@@ -175,6 +190,30 @@ func (s *startup) EnsureManagementAuth(ctn di.Container) echo.MiddlewareFunc {
 		}
 
 	}
+}
+
+func isSupportAdmin(claimsPrincipal fluffycore_contracts_common.IClaimsPrincipal) bool {
+	allowed := map[string]bool{
+		"support_admin":         true,
+		"support-admin":         true,
+		"super_admin":           true,
+		"super-admin":           true,
+		"backend_support_admin": true,
+		"admin":                 true,
+	}
+	claimTypes := []string{"role", "roles", "group", "groups"}
+	for _, claimType := range claimTypes {
+		claims := claimsPrincipal.GetClaimsByType(claimType)
+		for _, claim := range claims {
+			for _, token := range strings.Split(strings.ToLower(claim.Value), ",") {
+				t := strings.TrimSpace(token)
+				if allowed[t] {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBuilder) {
@@ -235,13 +274,18 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	//di.AddSingletonFromContainer[contracts_userservice.ISingletonUserService](builder, rootContainer)
 	di.AddSingletonFromContainer[contracts_identity.IUserIdGenerator](builder, rootContainer)
 	di.AddSingletonFromContainer[contracts_tokenservice.IAuthorizationCodeClaimsAugmentor](builder, rootContainer)
-	di.AddSingletonFromContainer[contracts_events.IEventSink](builder, rootContainer)
 	di.AddSingletonFromContainer[contracts_email.IEmailTemplateData](builder, rootContainer)
+
+	// Always register a no-op audit store, then optionally override with file store.
+	// DI rule: last registration wins.
+	services_AuditStore_nil.AddSingletonIAuditStore(builder)
+	if config.SystemConfig != nil && config.SystemConfig.RegisterFileAuditStore {
+		services_AuditStore_local_file.AddSingletonIAuditStore(builder)
+	}
 
 	services_user_id_generator.AddSingletonIUserIdGenerator(builder)
 	services_oidcflowstore.AddSingletonAuthorizationRequestStateStoreServer(builder)
 	services_AuthorizationCodeClaimsAugmentor.AddSingletonIAuthorizationCodeClaimsAugmentor(builder)
-	services_EventSink.AddSingletonIEventSink(builder)
 	services_EmailTemplateData.AddSingletonIEmailTemplateData(builder)
 	// Account Handlers
 	//--------------------------------------------------------
@@ -256,6 +300,11 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	services_handlers_account_passkey_management.AddScopedIHandler(builder)
 	services_handlers_account_profile.AddScopedIHandler(builder)
 	services_handlers_account_totp_management.AddScopedIHandler(builder)
+
+	// HTMX OIDC Login Handlers (default UI implementation)
+	// To use WASM instead, replace this call with your WASM CacheBustingHTMLConfig registration.
+	//--------------------------------------------------------
+	oidc_login_htmx.AddOIDCLoginHandlers(builder)
 
 	// Sync WebAuthN config to app configs for frontend
 	if config.WebAuthNConfig != nil {
@@ -278,121 +327,20 @@ func (s *startup) MyConfigServices(ctx context.Context, config *rage_contracts_c
 	if example_version.Version() != "dev-build" {
 		guid = example_version.Version()
 	}
-	managementCacheBustingHTMLConfig := &rage_contracts_config.CacheBustingHTMLConfig{
-		Version:    guid,
-		FilePath:   "./static/go-app/management/static_output/index_template.html",
-		StaticPath: "./static/go-app/management/static_output/",
-		EchoPath:   "/management/*",
-		RootPath:   "/management/",
-		ReplaceParams: []*rage_contracts_config.KeyValuePair{
-			{
-				Key:   "{basehref}",
-				Value: s.config.ManagementAppConfig.BaseHREF,
-			},
-			{
-				Key:   "{title}",
-				Value: s.config.ManagementAppConfig.BannerBranding.Title,
-			},
-			{
-				Key:   "{version}",
-				Value: guid,
-			},
-		},
+	config.CacheBustVersion = guid
+	// Register the oidc-login AppConfig so HTMX oidc-login handlers can inject it
+	di.AddInstance[*oidc_login_config.AppConfig](builder, s.config.OIDCLoginAppConfig)
 
-		RoutePatterns: []*rage_contracts_config.RoutePattern{
-			{
-				Pattern: "/web/app.wasm",
-				Handler: func(c echo.Context, filePath string) (bool, error) {
-					// Get file info to set Content-Length
-					fileInfo, err := os.Stat(filePath)
-					if err != nil {
-						return false, err
-					}
-					// Set correct MIME type and Content-Length for WASM files
-					c.Response().Header().Set("Content-Type", "application/wasm")
-					c.Response().Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
-					return true, c.File(filePath)
-				},
-			},
-			{
-				Pattern: "web/app.json",
-				Handler: func(c echo.Context, filePath string) (bool, error) {
-					jsonB, err := json.Marshal(s.config.ManagementAppConfig)
-					if err != nil {
-						return false, err
-					}
+	// Register the management AppConfig so HTMX management handlers can inject it
+	di.AddInstance[*management_contracts_config.AppConfig](builder, s.config.ManagementAppConfig)
 
-					// Get version from query param
-					version := c.QueryParam("v")
-
-					// Replace {version} placeholder
-					modifiedContent := strings.ReplaceAll(string(jsonB), "{version}", version)
-
-					// Serve with appropriate content type
-					return true, c.JSONBlob(http.StatusOK, []byte(modifiedContent))
-				},
-			},
-		},
+	// HTMX Management Handlers (default UI implementation)
+	// To use WASM instead, replace this call with your WASM CacheBustingHTMLConfig registration.
+	//--------------------------------------------------------
+	management_htmx.AddManagementHandlers(builder)
+	if config.SystemConfig == nil || config.SystemConfig.EnableSupportPortal {
+		support_htmx.AddSupportHandlers(builder)
 	}
-	services_handlers_cache_busting_static_html.AddScopedIHandler(builder, managementCacheBustingHTMLConfig)
-
-	oidcloginCacheBustingHTMLConfig := &rage_contracts_config.CacheBustingHTMLConfig{
-		Version:    guid,
-		FilePath:   "./static/go-app/oidc-login/static_output/index_template.html",
-		StaticPath: "./static/go-app/oidc-login/static_output/",
-		EchoPath:   "/oidc-login/*",
-		RootPath:   "/oidc-login/",
-		ReplaceParams: []*rage_contracts_config.KeyValuePair{
-			{
-				Key:   "{basehref}",
-				Value: s.config.OIDCLoginAppConfig.BaseHREF,
-			},
-			{
-				Key:   "{title}",
-				Value: s.config.OIDCLoginAppConfig.BannerBranding.Title,
-			},
-			{
-				Key:   "{version}",
-				Value: guid,
-			},
-		},
-
-		RoutePatterns: []*rage_contracts_config.RoutePattern{
-			{
-				Pattern: "/web/app.wasm",
-				Handler: func(c echo.Context, filePath string) (bool, error) {
-					// Get file info to set Content-Length
-					fileInfo, err := os.Stat(filePath)
-					if err != nil {
-						return false, err
-					}
-					// Set correct MIME type and Content-Length for WASM files
-					c.Response().Header().Set("Content-Type", "application/wasm")
-					c.Response().Header().Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
-					return true, c.File(filePath)
-				},
-			},
-			{
-				Pattern: "web/app.json",
-				Handler: func(c echo.Context, filePath string) (bool, error) {
-					jsonB, err := json.Marshal(s.config.OIDCLoginAppConfig)
-					if err != nil {
-						return false, err
-					}
-
-					// Get version from query param
-					version := c.QueryParam("v")
-
-					// Replace {version} placeholder
-					modifiedContent := strings.ReplaceAll(string(jsonB), "{version}", version)
-
-					// Serve with appropriate content type
-					return true, c.JSONBlob(http.StatusOK, []byte(modifiedContent))
-				},
-			},
-		},
-	}
-	services_handlers_cache_busting_static_html.AddScopedIHandler(builder, oidcloginCacheBustingHTMLConfig)
 
 	//----------------
 	fluffycore_echo_services_sessions_memory_session_store.AddSingletonBackendSessionStore(builder)
