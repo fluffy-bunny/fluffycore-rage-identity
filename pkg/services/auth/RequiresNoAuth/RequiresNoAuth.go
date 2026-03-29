@@ -49,7 +49,10 @@ func RequiresNoAuth() map[string]bool {
 
 		wellknown_echo.ManagementPath:      true,
 		wellknown_echo.ManagementAllPath:   true,
+		wellknown_echo.SupportPath:         true,
+		wellknown_echo.SupportAllPath:      true,
 		wellknown_echo.StaticPath:          true,
+		"/favicon.ico":                     true,
 		wellknown_echo.AboutPath:           true,
 		wellknown_echo.APIPath:             true,
 		wellknown_echo.AccountCallbackPath: true,
@@ -103,6 +106,18 @@ func RequiresNoAuth() map[string]bool {
 		//----------------------------------------------------
 		wellknown_echo.WebAuthN_Login_Begin:  true,
 		wellknown_echo.WebAuthN_Login_Finish: true,
+
+		// HTMX OIDC Login paths
+		wellknown_echo.HTMXOIDCLoginPath:      true,
+		wellknown_echo.HTMXHomePath:           true,
+		wellknown_echo.HTMXPasswordPath:       true,
+		wellknown_echo.HTMXVerifyCodePath:     true,
+		wellknown_echo.HTMXKeepSignedInPath:   true,
+		wellknown_echo.HTMXSignupPath:         true,
+		wellknown_echo.HTMXForgotPasswordPath: true,
+		wellknown_echo.HTMXResetPasswordPath:  true,
+		wellknown_echo.HTMXErrorPath:          true,
+		wellknown_echo.HTMXStartOverPath:      true,
 	}
 
 }

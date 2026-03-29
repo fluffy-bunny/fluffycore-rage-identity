@@ -13,7 +13,7 @@ import (
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 )
 
@@ -70,7 +70,7 @@ func (s *service) getSession() (contracts_sessions.ISession, error) {
 	}
 	return session, nil
 }
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 	r := c.Request()
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()
@@ -97,7 +97,7 @@ func (s *service) Do(c echo.Context) error {
 		Errors: []string{"unknown request type"},
 	})
 }
-func (s *service) DoInitialPageRequest(c echo.Context) error {
+func (s *service) DoInitialPageRequest(c *echo.Context) error {
 	r := c.Request()
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().Logger()

@@ -21,9 +21,9 @@ on:
 
 env:
   BINARY: "server"
-  GO_VERSION: "1.25"
+  GO_VERSION: "1.26"
   BUILD_PATH: "./cmd/server"
-  IMAGE_NAME: "ghstahl/fluffycore.rage-identity"
+  IMAGE_NAME: "ghcr.io/fluffy-bunny/fluffycore-rage-identity"
   BASE_VERSION: "1.0.0"
 jobs:
   pre_flight:
@@ -64,6 +64,9 @@ jobs:
   build-docker-push-image:
     runs-on: ubuntu-latest
     needs: [pre_flight, build]
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Echo Tags
@@ -98,11 +101,12 @@ jobs:
         id: get_version
         run: echo ::set-output name=VERSION::$(echo $GITHUB_REF | cut -d / -f 3)
 
-      - name: Login to DockerHub
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Establish Versioning, Tags, and Labels
         id: vtl

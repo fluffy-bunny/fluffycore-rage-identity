@@ -1,0 +1,52 @@
+/**
+ * CloudEvent Protobuf Format
+ *
+ * Vendored from: https://github.com/cloudevents/spec/blob/main/cloudevents/formats/cloudevents.proto
+ */
+
+syntax = "proto3";
+
+package proto.types;
+
+option go_package = "github.com/fluffy-bunny/fluffycore-rage-identity/proto/events/types;types";
+option java_multiple_files = true;
+option java_package = "com.fluffybunny.rageoidc.events.types";
+option csharp_namespace = "FluffyBunny.RageOidc.Events.Types";
+
+import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
+
+message CloudEvent {
+
+  // Required attributes
+  string id = 1;
+  string source = 2; // URI-reference
+  string spec_version = 3;
+  string type = 4;
+
+  // Optional and extension attributes
+  map<string, CloudEventAttributeValue> attributes = 5;
+
+  // Data (bytes, text, or protobuf message)
+  oneof data {
+    bytes binary_data = 6;
+    string text_data = 7;
+    google.protobuf.Any proto_data = 8;
+  }
+
+  message CloudEventAttributeValue {
+    oneof attr {
+      bool ce_boolean = 1;
+      int32 ce_integer = 2;
+      string ce_string = 3;
+      bytes ce_bytes = 4;
+      string ce_uri = 5;
+      string ce_uri_ref = 6;
+      google.protobuf.Timestamp ce_timestamp = 7;
+    }
+  }
+}
+
+message CloudEventBatch {
+  repeated CloudEvent events = 1;
+}

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	oauth2 "golang.org/x/oauth2"
 )
 
@@ -19,6 +19,8 @@ var (
 	HomePath            = "/"
 	ManagementPath      = "/management/"
 	ManagementAllPath   = "/management/*"
+	SupportPath         = "/support/"
+	SupportAllPath      = "/support/*"
 
 	LoginPath  = "/login"
 	LogoutPath = "/logout"
@@ -85,6 +87,31 @@ var (
 	API_UserTOTPEnroll         = "/api/totp/enroll"
 	API_UserTOTPVerify         = "/api/totp/verify"
 	API_PasskeyCredentialId    = "/api/passkeys/:credentialId"
+
+	// HTMX OIDC Login paths
+	HTMXOIDCLoginPath      = "/oidc-login/"
+	HTMXHomePath           = "/oidc-login/home"
+	HTMXPasswordPath       = "/oidc-login/password"
+	HTMXVerifyCodePath     = "/oidc-login/verify-code"
+	HTMXKeepSignedInPath   = "/oidc-login/keep-signed-in"
+	HTMXSignupPath         = "/oidc-login/signup"
+	HTMXForgotPasswordPath = "/oidc-login/forgot-password"
+	HTMXResetPasswordPath  = "/oidc-login/reset-password"
+	HTMXErrorPath          = "/oidc-login/error"
+	HTMXStartOverPath      = "/oidc-login/start-over"
+
+	// HTMX Management paths
+	HTMXManagementPath         = "/management/"
+	HTMXManagementHomePath     = "/management/home"
+	HTMXManagementProfilePath  = "/management/profile"
+	HTMXManagementPasswordPath = "/management/password-manager"
+	HTMXManagementPasskeyPath  = "/management/passkey-manager"
+	HTMXManagementLinkedPath   = "/management/linked-accounts"
+	HTMXManagementPrefsPath    = "/management/preferences"
+
+	// HTMX Support portal paths
+	HTMXSupportPath       = "/support/"
+	HTMXSupportAuditsPath = "/support/audits"
 )
 
 type Paths struct {
@@ -106,6 +133,31 @@ type Paths struct {
 	ForgotPassword      string
 	VerifyCode          string
 	PasswordReset       string
+
+	// HTMX OIDC Login paths
+	HTMXOIDCLogin      string
+	HTMXHome           string
+	HTMXPassword       string
+	HTMXVerifyCode     string
+	HTMXKeepSignedIn   string
+	HTMXSignup         string
+	HTMXForgotPassword string
+	HTMXResetPassword  string
+	HTMXError          string
+	HTMXStartOver      string
+
+	// HTMX Management paths
+	HTMXManagement         string
+	HTMXManagementHome     string
+	HTMXManagementProfile  string
+	HTMXManagementPassword string
+	HTMXManagementPasskey  string
+	HTMXManagementLinked   string
+	HTMXManagementPrefs    string
+
+	// HTMX Support paths
+	HTMXSupport       string
+	HTMXSupportAudits string
 }
 
 func NewPaths() *Paths {
@@ -128,6 +180,28 @@ func NewPaths() *Paths {
 		ForgotPassword:      ForgotPasswordPath,
 		VerifyCode:          VerifyCodePath,
 		PasswordReset:       PasswordResetPath,
+
+		HTMXOIDCLogin:      HTMXOIDCLoginPath,
+		HTMXHome:           HTMXHomePath,
+		HTMXPassword:       HTMXPasswordPath,
+		HTMXVerifyCode:     HTMXVerifyCodePath,
+		HTMXKeepSignedIn:   HTMXKeepSignedInPath,
+		HTMXSignup:         HTMXSignupPath,
+		HTMXForgotPassword: HTMXForgotPasswordPath,
+		HTMXResetPassword:  HTMXResetPasswordPath,
+		HTMXError:          HTMXErrorPath,
+		HTMXStartOver:      HTMXStartOverPath,
+
+		HTMXManagement:         HTMXManagementPath,
+		HTMXManagementHome:     HTMXManagementHomePath,
+		HTMXManagementProfile:  HTMXManagementProfilePath,
+		HTMXManagementPassword: HTMXManagementPasswordPath,
+		HTMXManagementPasskey:  HTMXManagementPasskeyPath,
+		HTMXManagementLinked:   HTMXManagementLinkedPath,
+		HTMXManagementPrefs:    HTMXManagementPrefsPath,
+
+		HTMXSupport:       HTMXSupportPath,
+		HTMXSupportAudits: HTMXSupportAuditsPath,
 	}
 }
 
@@ -142,10 +216,10 @@ const (
 
 var GithubScopes = []string{"user:email"}
 
-func GetMyRootPath(c echo.Context) string {
+func GetMyRootPath(c *echo.Context) string {
 	return fmt.Sprintf("%s://%s", c.Scheme(), c.Request().Host)
 }
-func GetGithubConfig(c echo.Context, protocol *proto_oidc_models.GithubOAuth2Protocol) *oauth2.Config {
+func GetGithubConfig(c *echo.Context, protocol *proto_oidc_models.GithubOAuth2Protocol) *oauth2.Config {
 	rootPath := GetMyRootPath(c)
 	config := oauth2.Config{
 		ClientID:     protocol.ClientId,

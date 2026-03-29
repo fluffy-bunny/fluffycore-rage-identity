@@ -25,7 +25,7 @@ services:
     extends:
       file: ./docker-compose-common-rage.yml
       service: micro
-    image: fluffycore.rage.oidc:latest
+    image: ${RAGE_IMAGE:-fluffycore.rage.oidc:latest}
     dns:
       - 8.8.8.8
     ports:
@@ -74,12 +74,8 @@ services:
       RAGE_echoOIDCUI__port: "9045"
       RAGE_echoAccount__port: "9046"
       RAGE_systemConfig__developerMode: "true"
-      # Management App Config (WASM)
-      managementAppConfig__returnUrl: "https://rage.localhost.dev/management/"
-      managementAppConfig__rageBaseUrl: "https://rage.localhost.dev"
-      managementAppConfig__accountManagementBaseUrl: "https://rage.localhost.dev"
-      # OIDC Login App Config (WASM)
-      oidcLoginAppConfig__rageBaseUrl: "https://rage.localhost.dev"
+      managementAppConfig__bannerBranding__showBannerVersion: "true"
+      oidcLoginAppConfig__bannerBranding__showBannerVersion: "true"
       configFiles__myAppPath: "/config/myapp.json"
 
       # Legacy API settings
@@ -130,6 +126,7 @@ services:
       - ./cmd/server/config/idps.docker.json:/config/idps.json
       - ./cmd/server/config/signing-keys.json:/config/signing-keys.json
       - ./cmd/server/config/seed-users.json:/config/seed-users.json
+      - ./tmp:/app/tmp
 
     entrypoint: ["/app/server", "serve"]
 

@@ -16,6 +16,7 @@ import (
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
+	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/types"
@@ -23,7 +24,7 @@ import (
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	xid "github.com/rs/xid"
 	zerolog "github.com/rs/zerolog"
 	oauth2 "golang.org/x/oauth2"
@@ -82,8 +83,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 	contracts_handler.AddScopedIHandleWithMetadata[*service](builder,
 		stemService.Ctor,
 		[]contracts_handler.HTTPVERB{
-			// do auto post
-			//contracts_handler.GET,
+			contracts_handler.GET,
 			contracts_handler.POST,
 		},
 		wellknown_echo.ExternalIDPPath,
@@ -122,7 +122,7 @@ func (s *service) validateLoginGetRequest(model *ExternalIDPAuthRequest) error {
 	return nil
 }
 
-func (s *service) DoPost(c echo.Context) error {
+func (s *service) DoPost(c *echo.Context) error {
 	r := c.Request()
 	rootPath := echo_utils.GetMyRootPath(c)
 
@@ -148,7 +148,29 @@ func (s *service) DoPost(c echo.Context) error {
 	if err != nil {
 		return s.TeleportBackToLoginWithError(c, InternalError_ExternalIDP_004, InternalError_ExternalIDP_004)
 	}
-	dd2 := dd.(*proto_oidc_models.AuthorizationRequest)
+	dd2, ok := dd.(*proto_oidc_models.AuthorizationRequest)
+	if !ok || dd2 == nil {
+		log.Error().Msg("externalidp: session request is not a valid AuthorizationRequest, redirecting to /")
+		return c.Redirect(http.StatusFound, "/")
+	}
+
+	// Validate that the authorization request state still exists in the backing store.
+	// After a server restart with an in-memory store, the cookie session survives but
+	// the server-side state is gone. Redirect to the client origin to start a fresh OIDC flow.
+	_, err = s.AuthorizationRequestStateStore().GetAuthorizationRequestState(ctx,
+		&proto_oidc_flows.GetAuthorizationRequestStateRequest{
+			State: dd2.State,
+		})
+	if err != nil {
+		clientReturnURL := s.GetClientReturnURL(ctx, dd2.ClientId, dd2.RedirectUri)
+		log.Warn().Err(err).Str("state", dd2.State).Str("clientReturnURL", clientReturnURL).
+			Msg("externalidp: authorization request state not found in store, redirecting to client for fresh OIDC flow")
+		if clientReturnURL != "" {
+			return c.Redirect(http.StatusFound, clientReturnURL)
+		}
+		return c.Redirect(http.StatusFound, "/")
+	}
+
 	listIDPResponse, err := s.IdpServiceServer().ListIDP(ctx,
 		&proto_oidc_idp.ListIDPRequest{
 			Filter: &proto_oidc_idp.Filter{
@@ -331,7 +353,7 @@ func generateCodeChallenge() (string, string) {
 // @Param       code            		query     string  true  "code"
 // @Success 200 {object} string
 // @Router /external-idp [post]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 
 	r := c.Request()
 	// is the request get or post?

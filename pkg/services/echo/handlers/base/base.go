@@ -2,18 +2,23 @@ package base
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
+	"net/url"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_cache "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cache"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
+	contracts_events "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/events"
 	contracts_localizer "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/localizer"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	models_api_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
+	proto_events_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/events/types"
+	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/client"
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
 	proto_oidc_idp "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/idp"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
@@ -24,8 +29,10 @@ import (
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	core_echo_templates "github.com/fluffy-bunny/fluffycore/echo/templates"
 	core_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
+	xid "github.com/rs/xid"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type (
@@ -43,6 +50,8 @@ type (
 		OIDCSession                    func() contracts_oidc_session.IOIDCSession
 		WellknownCookies               func() contracts_cookies.IWellknownCookies
 		WellknownCookieNames           func() contracts_cookies.IWellknownCookieNames
+		ClientServiceServer            func() proto_oidc_client.IFluffyCoreClientServiceServer
+		AuditStore                     func() contracts_events.IAuditStore
 
 		localizer                      contracts_localizer.ILocalizer
 		claimsPrincipal                fluffycore_contracts_common.IClaimsPrincipal
@@ -56,6 +65,8 @@ type (
 		oidcSession                    contracts_oidc_session.IOIDCSession
 		wellknownCookies               contracts_cookies.IWellknownCookies
 		wellknownCookieNames           contracts_cookies.IWellknownCookieNames
+		clientServiceServer            proto_oidc_client.IFluffyCoreClientServiceServer
+		auditStore                     contracts_events.IAuditStore
 
 		config *contracts_config.Config
 	}
@@ -76,12 +87,14 @@ func NewBaseHandler(container di.Container, config *contracts_config.Config) *Ba
 	obj.OIDCSession = obj.getOIDCSession
 	obj.WellknownCookies = obj.getWellknownCookies
 	obj.WellknownCookieNames = obj.getWellknownCookieNames
+	obj.ClientServiceServer = obj.getClientServiceServer
+	obj.AuditStore = obj.getAuditStore
 
 	return obj
 
 }
 
-func (b *BaseHandler) GetManifest(c echo.Context) (*models_api_manifest.Manifest, error) {
+func (b *BaseHandler) GetManifest(c *echo.Context) (*models_api_manifest.Manifest, error) {
 	ctx := c.Request().Context()
 
 	idps, err := b.GetIDPs(ctx)
@@ -218,8 +231,82 @@ func (b *BaseHandler) getOIDCFlowStore() proto_oidc_flows.IFluffyCoreAuthorizati
 	}
 	return b.authorizationRequestStateStore
 }
+func (b *BaseHandler) getClientServiceServer() proto_oidc_client.IFluffyCoreClientServiceServer {
+	if b.clientServiceServer == nil {
+		b.clientServiceServer = di.Get[proto_oidc_client.IFluffyCoreClientServiceServer](b.Container)
+	}
+	return b.clientServiceServer
+}
 
-func (b *BaseHandler) RenderAutoPost(c echo.Context, action string, formData []models.FormParam) error {
+func (b *BaseHandler) getAuditStore() contracts_events.IAuditStore {
+	if b.auditStore == nil {
+		b.auditStore = di.Get[contracts_events.IAuditStore](b.Container)
+	}
+	return b.auditStore
+}
+
+func (b *BaseHandler) SubmitAuditEvent(ctx context.Context, eventType, subject string, data any, extraAttributes map[string]string) error {
+	attributes := map[string]*proto_events_types.CloudEvent_CloudEventAttributeValue{
+		"time": {
+			Attr: &proto_events_types.CloudEvent_CloudEventAttributeValue_CeTimestamp{CeTimestamp: timestamppb.Now()},
+		},
+		"datacontenttype": {
+			Attr: &proto_events_types.CloudEvent_CloudEventAttributeValue_CeString{CeString: "application/json"},
+		},
+	}
+	if subject != "" {
+		attributes["subject"] = &proto_events_types.CloudEvent_CloudEventAttributeValue{
+			Attr: &proto_events_types.CloudEvent_CloudEventAttributeValue_CeString{CeString: subject},
+		}
+		attributes["user_subject"] = &proto_events_types.CloudEvent_CloudEventAttributeValue{
+			Attr: &proto_events_types.CloudEvent_CloudEventAttributeValue_CeString{CeString: subject},
+		}
+	}
+	for k, v := range extraAttributes {
+		attributes[k] = &proto_events_types.CloudEvent_CloudEventAttributeValue{
+			Attr: &proto_events_types.CloudEvent_CloudEventAttributeValue_CeString{CeString: v},
+		}
+	}
+	payload, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	_, err = b.AuditStore().Submit(ctx, &contracts_events.SubmitRequest{
+		CloudEvent: &proto_events_types.CloudEvent{
+			SpecVersion: "1.0",
+			Id:          xid.New().String(),
+			Source:      "/rage/mutation",
+			Type:        eventType,
+			Attributes:  attributes,
+			Data:        &proto_events_types.CloudEvent_TextData{TextData: string(payload)},
+		},
+	})
+	return err
+}
+
+// GetClientReturnURL looks up the client's metadata for "client_uri" (RFC 7591).
+// Falls back to extracting the origin from redirectURI if not found.
+func (b *BaseHandler) GetClientReturnURL(ctx context.Context, clientID, redirectURI string) string {
+	if clientID != "" {
+		resp, err := b.ClientServiceServer().GetClient(ctx, &proto_oidc_client.GetClientRequest{
+			ClientId: clientID,
+		})
+		if err == nil && resp.Client != nil && resp.Client.Metadata != nil {
+			if clientURI, ok := resp.Client.Metadata.Value["client_uri"]; ok && clientURI != "" {
+				return clientURI
+			}
+		}
+	}
+	// Fallback: extract origin from redirect_uri
+	if redirectURI != "" {
+		if parsed, err := url.Parse(redirectURI); err == nil && parsed.Host != "" {
+			return parsed.Scheme + "://" + parsed.Host
+		}
+	}
+	return ""
+}
+
+func (b *BaseHandler) RenderAutoPost(c *echo.Context, action string, formData []models.FormParam) error {
 	data := map[string]interface{}{
 		"form_params": formData,
 		"action":      action,
@@ -227,7 +314,7 @@ func (b *BaseHandler) RenderAutoPost(c echo.Context, action string, formData []m
 	return b.Render(c, http.StatusFound, "oidc/autopost/index", data)
 }
 
-func (b *BaseHandler) Render(c echo.Context, code int, name string, data map[string]interface{}) error {
+func (b *BaseHandler) Render(c *echo.Context, code int, name string, data map[string]interface{}) error {
 	localizer := b.Localizer().GetLocalizer()
 	data["LocalizeMessage"] = func(key string) string {
 		message, _ := localizer.LocalizeMessage(&i18n.Message{ID: key})
@@ -307,7 +394,7 @@ type ProcessFinalAuthenticationStateResponse struct {
 // ProcessFinalAuthenticationState handles the final state after successful authentication
 func (b *BaseHandler) ProcessFinalAuthenticationState(
 	ctx context.Context,
-	c echo.Context,
+	c *echo.Context,
 	request *ProcessFinalAuthenticationStateRequest,
 ) (*ProcessFinalAuthenticationStateResponse, error) {
 	// Set the auth cookie
@@ -375,7 +462,7 @@ func (b *BaseHandler) ProcessFinalAuthenticationState(
 	}, nil
 }
 
-func (b *BaseHandler) TeleportBackToLoginWithError(c echo.Context, code, msg string) error {
+func (b *BaseHandler) TeleportBackToLoginWithError(c *echo.Context, code, msg string) error {
 	formParams := []models.FormParam{
 		{
 			Name:  "error_code",
@@ -389,7 +476,7 @@ func (b *BaseHandler) TeleportBackToLoginWithError(c echo.Context, code, msg str
 	return b.RenderAutoPost(c, wellknown_echo.OIDCLoginPath, formParams)
 
 }
-func (b *BaseHandler) TeleportToPath(c echo.Context, path string) error {
+func (b *BaseHandler) TeleportToPath(c *echo.Context, path string) error {
 	formParams := []models.FormParam{}
 	return b.RenderAutoPost(c, path, formParams)
 

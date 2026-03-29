@@ -1,11 +1,13 @@
 package token_endpoint
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
 
+	contracts_events "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/events"
 	contracts_tokenservice "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/tokenservice"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	proto_events_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/events/types"
@@ -17,9 +19,11 @@ import (
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	oauth2 "github.com/go-oauth2/oauth2/v4"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
+	xid "github.com/rs/xid"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type TokenEndpointAuthorizationCodeRequest struct {
@@ -80,7 +84,7 @@ func sanitizeArray(input []string) []string {
 	}
 	return output
 }
-func (s *service) handleAuthorizationCode(c echo.Context) error {
+func (s *service) handleAuthorizationCode(c *echo.Context) error {
 	r := c.Request()
 	ctx := r.Context()
 	log := zerolog.Ctx(ctx).With().
@@ -247,18 +251,62 @@ func (s *service) handleAuthorizationCode(c echo.Context) error {
 			log.Error().Err(err).Msg("DeleteAuthorizationRequestState")
 		}
 	}()
-	s.eventSink.OnEvent(ctx, &proto_events_types.Event{
-		Event: &proto_events_types.Event_LoginEvent{
-			LoginEvent: &proto_events_types.LoginEvent{
-				Subject:        authorizationFinal.Identity.Subject,
-				Email:          authorizationFinal.Identity.Email,
-				ClientId:       client.ClientId,
-				Acr:            acrClaims,
-				Amr:            amrClaims,
-				Idp:            idpClaims,
-				LoginEventType: proto_events_types.LoginEventType_LOGIN_EVENT_TYPE_SUCCESS,
+	contains := func(values []string, target string) bool {
+		for _, v := range values {
+			if v == target {
+				return true
+			}
+		}
+		return false
+	}
+	loginType := "external-idp"
+	if contains(amrClaims, models.AMRPasskey) {
+		loginType = "passkey"
+	} else if contains(amrClaims, models.AMRPassword) {
+		loginType = "password"
+	}
+	loginEvent := &contracts_events.LoginEvent{
+		Subject:   authorizationFinal.Identity.Subject,
+		Email:     authorizationFinal.Identity.Email,
+		ClientID:  client.ClientId,
+		ACR:       acrClaims,
+		AMR:       amrClaims,
+		IDP:       idpClaims,
+		LoginType: loginType,
+		Outcome:   "success",
+	}
+	loginEventJSON, marshalErr := json.Marshal(loginEvent)
+	if marshalErr != nil {
+		log.Error().Err(marshalErr).Msg("failed to marshal login audit event")
+	}
+	_, auditErr := s.auditStore.Submit(ctx, &contracts_events.SubmitRequest{
+		CloudEvent: &proto_events_types.CloudEvent{
+			SpecVersion: "1.0",
+			Id:          xid.New().String(),
+			Source:      "/oidc/token",
+			Type:        "com.fluffybunny.identity.login",
+			Attributes: map[string]*proto_events_types.CloudEvent_CloudEventAttributeValue{
+				"subject": {
+					Attr: &proto_events_types.CloudEvent_CloudEventAttributeValue_CeString{CeString: authorizationFinal.Identity.Subject},
+				},
+				"time": {
+					Attr: &proto_events_types.CloudEvent_CloudEventAttributeValue_CeTimestamp{CeTimestamp: timestamppb.Now()},
+				},
+				"datacontenttype": {
+					Attr: &proto_events_types.CloudEvent_CloudEventAttributeValue_CeString{CeString: "application/json"},
+				},
+				"user_subject": {
+					Attr: &proto_events_types.CloudEvent_CloudEventAttributeValue_CeString{CeString: authorizationFinal.Identity.Subject},
+				},
+				"client_id": {
+					Attr: &proto_events_types.CloudEvent_CloudEventAttributeValue_CeString{CeString: client.ClientId},
+				},
 			},
+			Data: &proto_events_types.CloudEvent_TextData{TextData: string(loginEventJSON)},
 		},
 	})
+	if auditErr != nil {
+		log.Error().Err(auditErr).Msg("audit submit failed")
+	}
 	return c.JSONPretty(http.StatusOK, response, "  ")
 }

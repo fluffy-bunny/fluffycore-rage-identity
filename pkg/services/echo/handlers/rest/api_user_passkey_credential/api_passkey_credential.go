@@ -15,7 +15,7 @@ import (
 	fluffycore_echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -84,7 +84,7 @@ type PasskeyCredentialRequest struct {
 // @Failure 500 {object} wellknown_echo.RestErrorResponse
 // @Router /api/passkeys/{credentialId} [delete]
 // @Router /api/passkeys/{credentialId} [patch]
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 
 	// Switch based on HTTP method
 	switch c.Request().Method {
@@ -97,7 +97,7 @@ func (s *service) Do(c echo.Context) error {
 	}
 }
 
-func (s *service) handleDelete(c echo.Context) error {
+func (s *service) handleDelete(c *echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
@@ -168,12 +168,20 @@ func (s *service) handleDelete(c echo.Context) error {
 		log.Error().Err(err).Msg("UpdateRageUser")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_PasskeyCredential_002}, "  ")
 	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.passkey.removed",
+		subject,
+		map[string]string{"credential_id": req.CredentialID},
+		map[string]string{"mutation": "remove_passkey", "handler": "rest.api_user_passkey_credential"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_PasskeyCredential_002}, "  ")
+	}
 
 	log.Info().Msg("Passkey deleted successfully")
 	return c.JSONPretty(http.StatusOK, wellknown_echo.RestSuccessResponse{Message: "Passkey deleted successfully"}, "  ")
 }
 
-func (s *service) handleRename(c echo.Context) error {
+func (s *service) handleRename(c *echo.Context) error {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
 
@@ -267,6 +275,14 @@ func (s *service) handleRename(c echo.Context) error {
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("UpdateRageUser")
+		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_PasskeyCredential_004}, "  ")
+	}
+	if err := s.SubmitAuditEvent(ctx,
+		"com.fluffybunny.identity.user.passkey.renamed",
+		subject,
+		map[string]string{"credential_id": req.CredentialID, "friendly_name": req.FriendlyName},
+		map[string]string{"mutation": "update_passkey", "handler": "rest.api_user_passkey_credential"}); err != nil {
+		log.Error().Err(err).Msg("SubmitAuditEvent")
 		return c.JSONPretty(http.StatusInternalServerError, wellknown_echo.RestErrorResponse{Error: InternalError_PasskeyCredential_004}, "  ")
 	}
 

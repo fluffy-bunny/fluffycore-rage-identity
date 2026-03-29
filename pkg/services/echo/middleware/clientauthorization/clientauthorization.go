@@ -6,12 +6,12 @@ import (
 	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/client"
 	echo_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	oauth2_server "github.com/go-oauth2/oauth2/v4/server"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 )
 
 func AuthenticateOAuth2Client() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+		return func(c *echo.Context) error {
 			ctx := c.Request().Context()
 			r := c.Request()
 			scopedContainer := c.Get(echo_wellknown.SCOPED_CONTAINER_KEY).(di.Container)

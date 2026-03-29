@@ -12,7 +12,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	echo "github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 )
@@ -76,7 +76,7 @@ func (s *service) validatePasskeyManagementGetRequest(model *PasskeyManagmentGet
 	return nil
 }
 
-func (s *service) DoGet(c echo.Context) error {
+func (s *service) DoGet(c *echo.Context) error {
 	r := c.Request()
 	// is the request get or post?
 
@@ -102,7 +102,7 @@ func (s *service) DoGet(c echo.Context) error {
 	return err
 }
 
-func (s *service) Do(c echo.Context) error {
+func (s *service) Do(c *echo.Context) error {
 
 	r := c.Request()
 	// is the request get or post?
