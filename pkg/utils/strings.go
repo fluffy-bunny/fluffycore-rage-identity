@@ -39,3 +39,15 @@ func LocalizeWithInterperlate(localizer *i18n.Localizer, id string, replace map[
 func LocalizeSimple(localizer *i18n.Localizer, id string) string {
 	return LocalizeWithInterperlate(localizer, id, nil)
 }
+
+// IsDeniedDomain checks if the given domain is in the denied domains list.
+// Comparison is case-insensitive.
+func IsDeniedDomain(domain string, deniedDomains []string) bool {
+	domain = strings.ToLower(domain)
+	for _, d := range deniedDomains {
+		if strings.ToLower(d) == domain {
+			return true
+		}
+	}
+	return false
+}

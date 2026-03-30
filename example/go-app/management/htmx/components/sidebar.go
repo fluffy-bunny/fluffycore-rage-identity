@@ -18,10 +18,14 @@ func Sidebar(rc *RenderContext) g.Node {
 		{HomeIconSVG, rc.L("mgmt_home"), rc.Paths.HTMXManagementHome, "home"},
 		{PersonIconSVG, rc.L("mgmt_profile"), rc.Paths.HTMXManagementProfile, "profile"},
 		{LockIconSVG, rc.L("mgmt_password_manager"), rc.Paths.HTMXManagementPassword, "password"},
-		{PasskeyIconSVG, rc.L("mgmt_passkeys"), rc.Paths.HTMXManagementPasskey, "passkey"},
-		{LinkIconSVG, rc.L("mgmt_linked_accounts"), rc.Paths.HTMXManagementLinked, "linked"},
-		{SettingsIconSVG, rc.L("mgmt_preferences"), rc.Paths.HTMXManagementPrefs, "prefs"},
 	}
+	if rc.AppConfig != nil && rc.AppConfig.EnabledWebAuthN {
+		items = append(items, navItem{PasskeyIconSVG, rc.L("mgmt_passkeys"), rc.Paths.HTMXManagementPasskey, "passkey"})
+	}
+	items = append(items,
+		navItem{LinkIconSVG, rc.L("mgmt_linked_accounts"), rc.Paths.HTMXManagementLinked, "linked"},
+		navItem{SettingsIconSVG, rc.L("mgmt_preferences"), rc.Paths.HTMXManagementPrefs, "prefs"},
+	)
 
 	navLinks := make([]g.Node, len(items))
 	for i, item := range items {

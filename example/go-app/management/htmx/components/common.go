@@ -86,7 +86,7 @@ func ErrorBanner(message string) g.Node {
 	if message == "" {
 		return nil
 	}
-	return Div(Class("error-message"),
+	return Div(Class("error-message"), g.Attr("role", "alert"), g.Attr("aria-live", "assertive"),
 		Span(g.Text(message)),
 	)
 }
@@ -96,7 +96,7 @@ func SuccessBanner(message string) g.Node {
 	if message == "" {
 		return nil
 	}
-	return Div(Class("success-message"),
+	return Div(Class("success-message"), g.Attr("role", "status"), g.Attr("aria-live", "polite"),
 		Span(g.Text(message)),
 	)
 }
@@ -144,6 +144,43 @@ func FormGroup(labelText, inputType, id, name, value string, extraAttrs ...g.Nod
 	)
 }
 
+// FormGroupWithError renders a form-group with label, input, and an inline error slot.
+func FormGroupWithError(labelText, inputType, id, name, value, fieldError string, extraAttrs ...g.Node) g.Node {
+	attrs := []g.Node{
+		Type(inputType),
+		ID(id),
+		Name(name),
+	}
+	if value != "" {
+		attrs = append(attrs, Value(value))
+	}
+	if fieldError != "" {
+		attrs = append(attrs, g.Attr("aria-invalid", "true"), g.Attr("aria-describedby", id+"-error"))
+	}
+	attrs = append(attrs, extraAttrs...)
+	nodes := []g.Node{
+		Label(g.Attr("for", id), g.Text(labelText)),
+		Input(attrs...),
+	}
+	if fieldError != "" {
+		nodes = append(nodes, FieldError(id, fieldError))
+	}
+	return Div(Class("form-group"), g.Group(nodes))
+}
+
+// FieldError renders an inline field-level error message.
+func FieldError(fieldID, message string) g.Node {
+	if message == "" {
+		return nil
+	}
+	return Div(
+		ID(fieldID+"-error"),
+		Class("field-error"),
+		g.Attr("role", "alert"),
+		g.Text(message),
+	)
+}
+
 // ButtonGroup renders a flex button group container.
 func ButtonGroup(children ...g.Node) g.Node {
 	return Div(Class("button-group"), g.Group(children))
@@ -169,8 +206,11 @@ func SecondaryButton(text, hxGetURL string) g.Node {
 }
 
 // HtmxForm renders a form with HTMX post attributes targeting the dashboard main area.
+// Includes action and method for progressive enhancement (no-JS fallback).
 func HtmxForm(postURL, indicatorID string, children ...g.Node) g.Node {
 	return FormEl(
+		Action(postURL),
+		Method("post"),
 		g.Attr("hx-post", postURL),
 		g.Attr("hx-target", "#dashboard-main"),
 		g.Attr("hx-swap", "innerHTML"),

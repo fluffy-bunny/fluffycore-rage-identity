@@ -77,7 +77,7 @@ func ErrorMessages(errors []string) g.Node {
 	for i, e := range errors {
 		children[i] = Span(g.Text(e))
 	}
-	return Div(Class("error-message"), g.Group(children))
+	return Div(Class("error-message"), g.Attr("role", "alert"), g.Attr("aria-live", "assertive"), g.Group(children))
 }
 
 // CsrfInput renders a hidden CSRF token input.
@@ -99,6 +99,43 @@ func FormGroupField(labelText, inputType, id, name, value string, extraAttrs ...
 	return Div(Class("form-group"),
 		Label(g.Attr("for", id), g.Text(labelText)),
 		Input(attrs...),
+	)
+}
+
+// FormGroupFieldWithError renders a form-group with label, input, and an inline error slot.
+func FormGroupFieldWithError(labelText, inputType, id, name, value, fieldError string, extraAttrs ...g.Node) g.Node {
+	attrs := []g.Node{
+		Type(inputType),
+		ID(id),
+		Name(name),
+	}
+	if value != "" {
+		attrs = append(attrs, Value(value))
+	}
+	if fieldError != "" {
+		attrs = append(attrs, g.Attr("aria-invalid", "true"), g.Attr("aria-describedby", id+"-error"))
+	}
+	attrs = append(attrs, extraAttrs...)
+	nodes := []g.Node{
+		Label(g.Attr("for", id), g.Text(labelText)),
+		Input(attrs...),
+	}
+	if fieldError != "" {
+		nodes = append(nodes, FieldError(id, fieldError))
+	}
+	return Div(Class("form-group"), g.Group(nodes))
+}
+
+// FieldError renders an inline field-level error message.
+func FieldError(fieldID, message string) g.Node {
+	if message == "" {
+		return nil
+	}
+	return Div(
+		ID(fieldID+"-error"),
+		Class("field-error"),
+		g.Attr("role", "alert"),
+		g.Text(message),
 	)
 }
 
@@ -126,8 +163,11 @@ func SecondaryButton(text, hxGetURL string) g.Node {
 }
 
 // HtmxForm renders a form with HTMX post attributes.
+// Includes action and method for progressive enhancement (no-JS fallback).
 func HtmxForm(postURL, indicatorID string, children ...g.Node) g.Node {
 	return FormEl(
+		Action(postURL),
+		Method("post"),
 		g.Attr("hx-post", postURL),
 		g.Attr("hx-target", "#main-content"),
 		g.Attr("hx-swap", "innerHTML"),
@@ -145,6 +185,8 @@ func SocialIdpButtons(idps []*proto_oidc_models.IDP, csrf, postURL, orText strin
 	for _, idp := range idps {
 		icon, cssClass := socialIdpBranding(idp.Slug)
 		buttons = append(buttons, FormEl(
+			Action(postURL),
+			Method("post"),
 			g.Attr("style", "display:contents"),
 			g.Attr("hx-post", postURL),
 			g.Attr("hx-target", "#main-content"),
@@ -198,6 +240,7 @@ func PasskeyLoginSection(csrf, keepSignedInURL, text string) g.Node {
 		Div(Class("divider"), Span(g.Text("OR"))),
 		Button(Type("button"), Class("passkey-btn"),
 			ID("passkey-login-btn"),
+			g.Attr("aria-label", "Sign in with passkey"),
 			g.Raw(PasskeyIconSVG),
 			Span(g.Text(text)),
 		),
