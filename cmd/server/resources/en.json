@@ -42,6 +42,7 @@
   "username.not.found": "The username {username} was not found",
   "user.not.found": "The account {username} was not found",
   "username.already.exists": "The username {username} already exists",
+  "domain.not.allowed": "Account creation is not allowed for the domain {domain}",
   "username.is.empty": "The username is empty",
   "username.not.valid": "The username {username} is not a valid email address",
   "model.is.invalid": "[internal] The model is invalid",

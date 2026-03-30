@@ -19,7 +19,7 @@ func DashboardHeader(rc *RenderContext) g.Node {
 
 	// Branding from AppConfig
 	logoURL := "/static/go-app/management/htmx/m_logo.svg"
-	title := "Rage Accounts"
+	title := "Account Management"
 	if rc.AppConfig != nil {
 		if rc.AppConfig.BannerBranding.LogoURL != "" {
 			logoURL = rc.AppConfig.BannerBranding.LogoURL

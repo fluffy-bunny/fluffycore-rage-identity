@@ -14,8 +14,14 @@ func ShellPage(rc *RenderContext) g.Node {
 		initialPage = rc.DeepLinkPath
 	}
 
+	// Derive HTML <title> from config branding
+	pageTitle := "Account Management"
+	if rc.AppConfig != nil && rc.AppConfig.BannerBranding.Title != "" {
+		pageTitle = rc.AppConfig.BannerBranding.Title
+	}
+
 	return c.HTML5(c.HTML5Props{
-		Title:    "RAGE Identity - Account Management",
+		Title:    pageTitle,
 		Language: "en",
 		Head: []g.Node{
 			Meta(g.Attr("charset", "utf-8")),

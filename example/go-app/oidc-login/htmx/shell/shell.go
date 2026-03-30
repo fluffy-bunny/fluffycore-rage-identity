@@ -98,9 +98,15 @@ func (s *service) Do(c *echo.Context) error {
 		}
 	}
 
+	// Derive brand title from config
+	brandTitle := "Identity"
+	if s.appConfig != nil && s.appConfig.BannerBranding.Title != "" {
+		brandTitle = s.appConfig.BannerBranding.Title
+	}
+
 	return components.RenderNode(c, http.StatusOK, components.ShellPage(components.ShellData{
 		RenderContext: rc,
-		BrandTitle:    "RAGE Identity",
+		BrandTitle:    brandTitle,
 		InitialPage:   initialPage,
 		AppVersion:    example_version.Version(),
 		ShowVersion:   s.appConfig.BannerBranding.ShowBannerVersion,
