@@ -14,8 +14,14 @@ func ShellPage(rc *RenderContext) g.Node {
 		initialPage = rc.DeepLinkPath
 	}
 
+	// Derive HTML <title> from config branding
+	pageTitle := "Account Management"
+	if rc.AppConfig != nil && rc.AppConfig.BannerBranding.Title != "" {
+		pageTitle = rc.AppConfig.BannerBranding.Title
+	}
+
 	return c.HTML5(c.HTML5Props{
-		Title:    "RAGE Identity - Account Management",
+		Title:    pageTitle,
 		Language: "en",
 		Head: []g.Node{
 			Meta(g.Attr("charset", "utf-8")),
@@ -29,7 +35,8 @@ func ShellPage(rc *RenderContext) g.Node {
 			Script(Src("/static/go-app/oidc-login/htmx/webauthn.js?v=" + rc.CacheBustVersion)),
 			Meta(Name("htmx-config"), g.Attr("content", `{"responseHandling":[{"code":".*", "swap": true}]}`)),
 			StyleEl(g.Raw(`.htmx-indicator { display: none; }
-.htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline-block; }`)),
+.htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline-block; }
+.field-error { color: #e74c3c; font-size: 0.85rem; margin-top: 0.25rem; }`)),
 		},
 		Body: []g.Node{
 			// Unregister stale service workers from prior WASM deployments

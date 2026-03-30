@@ -762,6 +762,12 @@ func (s *service) Do(c *echo.Context) error {
 
 			// is AUTO-ACCOUNT creation enabled for this IDP?
 			if idp.AutoCreate {
+				// Check if the email domain is denied for account creation
+				emailParts := strings.Split(externalIdentity.Email, "@")
+				if len(emailParts) == 2 && utils.IsDeniedDomain(emailParts[1], s.config.DeniedDomains) {
+					msg := utils.LocalizeWithInterperlate(localizer, "domain.not.allowed", map[string]string{"domain": emailParts[1]})
+					return s.TeleportBackToLoginWithError(c, "domain-denied", msg)
+				}
 				user, err := doAutoCreateUser(externalIdentity)
 				if err != nil {
 					log.Error().Err(err).Msg("doAutoCreateUser")
@@ -787,6 +793,12 @@ func (s *service) Do(c *echo.Context) error {
 			// we bounce the user back to go through a sigunup flow
 			return s.TeleportBackToLoginWithError(c, string(models_errors.FlowError_UserNotFound), msg)
 		case models.SignupDirective:
+			// Check if the email domain is denied for account creation
+			emailParts := strings.Split(externalIdentity.Email, "@")
+			if len(emailParts) == 2 && utils.IsDeniedDomain(emailParts[1], s.config.DeniedDomains) {
+				msg := utils.LocalizeWithInterperlate(localizer, "domain.not.allowed", map[string]string{"domain": emailParts[1]})
+				return s.TeleportBackToLoginWithError(c, "domain-denied", msg)
+			}
 			user, err := doAutoCreateUser(externalIdentity)
 			if err != nil {
 				log.Error().Err(err).Msg("doAutoCreateUser")

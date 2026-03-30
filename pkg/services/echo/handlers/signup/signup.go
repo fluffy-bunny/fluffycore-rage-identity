@@ -208,6 +208,13 @@ func (s *service) DoPost(c *echo.Context) error {
 	// get the domain from the email
 	parts := strings.Split(model.UserName, "@")
 	domainPart := parts[1]
+
+	// check if this domain is denied for account creation
+	if utils.IsDeniedDomain(domainPart, s.config.DeniedDomains) {
+		msg := utils.LocalizeWithInterperlate(localizer, "domain.not.allowed", map[string]string{"domain": domainPart})
+		return doError([]string{msg})
+	}
+
 	// first lets see if this domain has been claimed.
 	listIDPRequest, err := s.IdpServiceServer().ListIDP(ctx, &proto_oidc_idp.ListIDPRequest{
 		Filter: &proto_oidc_idp.Filter{

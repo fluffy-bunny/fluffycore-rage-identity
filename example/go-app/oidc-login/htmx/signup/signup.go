@@ -5,13 +5,13 @@ import (
 	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	components "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/htmx/components"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	components "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/htmx/components"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
@@ -150,9 +150,15 @@ func (s *service) DoPost(c *echo.Context) error {
 
 	model.Email = strings.ToLower(model.Email)
 
-	// Check if domain is claimed
+	// Check if domain is denied
 	parts := strings.Split(model.Email, "@")
 	domainPart := parts[1]
+	if utils.IsDeniedDomain(domainPart, s.config.DeniedDomains) {
+		msg := utils.LocalizeWithInterperlate(localizer, "domain.not.allowed", map[string]string{"domain": domainPart})
+		return s.renderSignup(c, http.StatusBadRequest, []string{msg}, model.Email)
+	}
+
+	// Check if domain is claimed
 	listIDPRequest, err := s.IdpServiceServer().ListIDP(ctx, &proto_oidc_idp.ListIDPRequest{
 		Filter: &proto_oidc_idp.Filter{
 			ClaimedDomains: &proto_types.StringArrayFilterExpression{
