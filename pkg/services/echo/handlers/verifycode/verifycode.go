@@ -315,8 +315,8 @@ func (s *service) DoPost(c *echo.Context) error {
 				State: authorizationRequest.State,
 			})
 		if err != nil {
-			log.Error().Err(err).Msg("GetAuthorizationRequestState")
-			return s.TeleportBackToLoginWithError(c, InternalError_VerifyCode_008, InternalError_VerifyCode_008)
+			log.Error().Err(err).Msg("GetAuthorizationRequestState - authorization state may have expired")
+			return s.RedirectToClientWithError(c, authorizationRequest, "server_error", "Authorization session has expired. Please try again.")
 		}
 		authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 		authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{

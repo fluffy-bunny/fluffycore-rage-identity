@@ -346,9 +346,8 @@ func (s *service) DoPost(c *echo.Context) error {
 				State: authorizationRequest.State,
 			})
 	if err != nil {
-		log.Warn().Err(err).Msg("GetAuthorizationRequestState")
-		errors = append(errors, err.Error())
-		return renderError(errors)
+		log.Warn().Err(err).Msg("GetAuthorizationRequestState - authorization state may have expired")
+		return s.RedirectToClientWithError(c, authorizationRequest, "server_error", "Authorization session has expired. Please try again.")
 	}
 	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 	authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
@@ -443,8 +442,10 @@ func (s *service) handleIdentityFound(c *echo.Context, state string) error {
 		State: state,
 	})
 	if err != nil {
-		log.Error().Err(err).Msg("GetAuthorizationRequestState")
-		// redirect to error page
+		log.Error().Err(err).Msg("GetAuthorizationRequestState - authorization state may have expired")
+		if ar, arErr := s.GetAuthorizationRequestFromSession(); arErr == nil {
+			return s.RedirectToClientWithError(c, ar, "server_error", "Authorization session has expired. Please try again.")
+		}
 		redirectUrl := fmt.Sprintf("%s?state=%s&error=%s", wellknown_echo.OIDCLoginPath, state, models.InternalError)
 		return c.Redirect(http.StatusFound, redirectUrl)
 	}
