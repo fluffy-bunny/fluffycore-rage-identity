@@ -7,6 +7,7 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
+	echo_components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/components"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -94,11 +95,11 @@ func (s *service) DoGet(c *echo.Context) error {
 		return c.Redirect(http.StatusFound, "/error")
 	}
 
-	err = s.Render(c, http.StatusOK, templateName,
-		map[string]interface{}{
-			"action":    model.Action,
-			"returnUrl": model.ReturnUrl,
-		})
+	rc := s.NewRenderContext(c)
+	err = s.RenderComponent(c, http.StatusOK,
+		echo_components.PasskeyManagementPage(rc, echo_components.PasskeyManagementData{
+			ReturnUrl: model.ReturnUrl,
+		}))
 	return err
 }
 

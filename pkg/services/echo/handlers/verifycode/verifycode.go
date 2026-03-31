@@ -8,6 +8,7 @@ import (
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
+	echo_components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/components"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
@@ -128,13 +129,12 @@ func (s *service) DoGet(c *echo.Context) error {
 		return s.TeleportBackToLoginWithError(c, InternalError_VerifyCode_001, InternalError_VerifyCode_001)
 	}
 
-	err = s.Render(c, http.StatusOK, "oidc/verifycode/index",
-		map[string]interface{}{
-			"email":     model.Email,
-			"code":      model.Code,
-			"directive": model.Directive,
-			"errors":    make([]string, 0),
-		})
+	rc := s.NewRenderContext(c)
+	err = s.RenderComponent(c, http.StatusOK, echo_components.VerifyCodePage(rc, echo_components.VerifyCodeData{
+		Email:     model.Email,
+		Code:      model.Code,
+		Directive: model.Directive,
+	}))
 	return err
 }
 
@@ -178,13 +178,13 @@ func (s *service) DoPost(c *echo.Context) error {
 
 	errors, err := s.validateVerifyCodePostRequest(model)
 	if err != nil {
-		return s.Render(c, http.StatusBadRequest, "oidc/verifycode/index",
-			map[string]interface{}{
-				"email":     model.Email,
-				"code":      model.Code,
-				"directive": model.Directive,
-				"errors":    errors,
-			})
+		rc := s.NewRenderContext(c)
+		return s.RenderComponent(c, http.StatusBadRequest, echo_components.VerifyCodePage(rc, echo_components.VerifyCodeData{
+			Email:     model.Email,
+			Code:      model.Code,
+			Directive: model.Directive,
+			Errors:    errors,
+		}))
 	}
 	if model.Type == "GET" {
 		return s.DoGet(c)
@@ -212,15 +212,13 @@ func (s *service) DoPost(c *echo.Context) error {
 	code := verificationCode.CodeHash
 
 	if code != model.Code {
-		return s.Render(c, http.StatusBadRequest, "oidc/verifycode/index",
-			map[string]interface{}{
-				"email":     model.Email,
-				"code":      model.Code,
-				"directive": model.Directive,
-				"errors": []string{
-					utils.LocalizeSimple(localizer, "code.is.invalid"),
-				},
-			})
+		rc := s.NewRenderContext(c)
+		return s.RenderComponent(c, http.StatusBadRequest, echo_components.VerifyCodePage(rc, echo_components.VerifyCodeData{
+			Email:     model.Email,
+			Code:      model.Code,
+			Directive: model.Directive,
+			Errors:    []string{utils.LocalizeSimple(localizer, "code.is.invalid")},
+		}))
 	}
 	userService := s.RageUserService()
 	getRageUserResponse, err := userService.GetRageUser(ctx,
@@ -315,8 +313,8 @@ func (s *service) DoPost(c *echo.Context) error {
 				State: authorizationRequest.State,
 			})
 		if err != nil {
-			log.Error().Err(err).Msg("GetAuthorizationRequestState")
-			return s.TeleportBackToLoginWithError(c, InternalError_VerifyCode_008, InternalError_VerifyCode_008)
+			log.Error().Err(err).Msg("GetAuthorizationRequestState - authorization state may have expired")
+			return s.RedirectToClientWithError(c, authorizationRequest, "server_error", "Authorization session has expired. Please try again.")
 		}
 		authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 		authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{

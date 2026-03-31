@@ -370,7 +370,7 @@ func (s *service) Do(c *echo.Context) error {
 				})
 
 			if err != nil {
-				log.Error().Err(err).Msg("ListUser")
+				log.Warn().Err(err).Msg("ListUser")
 				return nil, err
 			}
 			if getRageUserResponse != nil {
@@ -583,7 +583,7 @@ func (s *service) Do(c *echo.Context) error {
 				Subject: user.RootIdentity.Subject,
 			})
 			if err != nil {
-				log.Error().Err(err).Msg("GetKeepSigninPreferencesCookie")
+				log.Warn().Err(err).Msg("GetKeepSigninPreferencesCookie")
 				// If we can't read the cookie, continue with default flow
 			}
 

@@ -7,6 +7,7 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
+	echo_components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/components"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -86,11 +87,10 @@ func (s *service) DoPost(c *echo.Context) error {
 
 	log.Debug().Msg("OIDCLoginPasskey")
 
-	return s.Render(c, http.StatusOK,
-		"oidc/oidcloginpasskey/index",
-		map[string]interface{}{
-			"returnFailedUrl": wellknown_echo.OIDCLoginPasswordPath,
-		})
+	rc := s.NewRenderContext(c)
+	return s.RenderComponent(c, http.StatusOK, echo_components.OIDCLoginPasskeyPage(rc, echo_components.OIDCLoginPasskeyData{
+		ReturnFailedUrl: wellknown_echo.OIDCLoginPasswordPath,
+	}))
 }
 
 func (s *service) Do(c *echo.Context) error {

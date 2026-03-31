@@ -3,7 +3,7 @@ services:
     extends:
       file: ./docker-compose-common-proxy.yml
       service: micro
-    image: traefik:3.6.4
+    image: traefik:3.6.12
     container_name: traefik
     restart: unless-stopped
     security_opt:
@@ -68,7 +68,8 @@ services:
       RAGE_selfIDPConfig__redirectUrl: "https://rage.localhost.dev/auth/callback"
       RAGE_selfIDPConfig__authority: "https://rage.localhost.dev"
       RAGE_oidcConfig__baseUrl: "https://rage.localhost.dev"
-      RAGE_emailConfig__justLogIt: "true"
+      RAGE_oidcConfig__authorizationStateTTLMinutes: "5"
+      RAGE_emailConfig__justLogIt: "false"
       RAGE_echo__disableSecureCookies: "true"
       RAGE_echo__port: "9044"
       RAGE_echoOIDCUI__port: "9045"
@@ -188,7 +189,7 @@ services:
       #- ServerOptions__NumberOfSessionsToKeep=100
 
       #Specifies the TLS mode to use. None=Off. StartTls=On demand if client supports STARTTLS. ImplicitTls=TLS as soon as connection is established.
-      - ServerOptions__TlsMode=STARTTLS
+      - ServerOptions__TlsMode=None
 
       #Specifies the TLS certificate to use if TLS is enabled/requested. Specify "" to use an auto-generated self-signed certificate (then see console output on first startup)
       #- ServerOptions__TlsCertificate=

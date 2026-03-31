@@ -126,13 +126,16 @@ func (s *service) SendEmail(ctx context.Context, request *contracts_email.SendEm
 			Str("subject", subject).Msg(renderedEmail.Text)
 		return &contracts_email.SendEmailResponse{}, nil
 	}
-	mail := mailyak.New(
-		s.config.Host,
-		smtp.PlainAuth(
+	var auth smtp.Auth
+	if s.config.Auth != nil && s.config.Auth.PlainAuth != nil &&
+		s.config.Auth.PlainAuth.Username != "" {
+		auth = smtp.PlainAuth(
 			s.config.Auth.PlainAuth.Identity,
 			s.config.Auth.PlainAuth.Username,
 			s.config.Auth.PlainAuth.Password,
-			s.config.Auth.PlainAuth.Host))
+			s.config.Auth.PlainAuth.Host)
+	}
+	mail := mailyak.New(s.config.Host, auth)
 
 	mail.To(request.ToEmail)
 	mail.FromName(s.config.FromName)

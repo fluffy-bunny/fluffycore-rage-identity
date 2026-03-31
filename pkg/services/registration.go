@@ -39,7 +39,6 @@ import (
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
 	fluffycore_echo_services_cookies_insecure "github.com/fluffy-bunny/fluffycore/echo/services/cookies/insecure"
 	fluffycore_echo_services_cookies_secure "github.com/fluffy-bunny/fluffycore/echo/services/cookies/secure"
-	fluffycore_echo_templates "github.com/fluffy-bunny/fluffycore/echo/templates"
 	fluffycore_services_eko_gocache_go_cache "github.com/fluffy-bunny/fluffycore/services/eko_gocache/go_cache"
 	fluffycore_services_jwtminter "github.com/fluffy-bunny/fluffycore/services/jwtminter"
 	fluffycore_services_keymaterial "github.com/fluffy-bunny/fluffycore/services/keymaterial"
@@ -139,12 +138,6 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 		fluffycore_services_jwtminter.AddSingletonIJWTMinter(builder)
 	}
 	addJwtMinter()
-	templateEngine, err := fluffycore_echo_templates.FindAndParseTemplates("./static/templates_email", nil)
-	if err != nil {
-		log.Error().Err(err).Msg("failed to parse email templates")
-		return err
-	}
-	config.EmailConfig.TemplateEngine = templateEngine
 
 	services_localizerbundle.AddSingletonILocalizerBundle(builder)
 	services_localizer.AddScopedILocalizer(builder)
