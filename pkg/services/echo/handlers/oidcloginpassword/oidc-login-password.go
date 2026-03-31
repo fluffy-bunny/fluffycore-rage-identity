@@ -12,6 +12,7 @@ import (
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
+	echo_components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/components"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
@@ -105,11 +106,6 @@ type LoginPasswordPostRequest struct {
 	Password string `param:"password" query:"password" form:"password" json:"password" xml:"password"`
 }
 
-type row struct {
-	Key   string
-	Value string
-}
-
 func (s *service) getSession() (contracts_sessions.ISession, error) {
 	session, err := s.oidcSession.GetSession()
 
@@ -130,15 +126,15 @@ func (s *service) DoGet(c *echo.Context) error {
 		return s.TeleportBackToLoginWithError(c, InternalError_OIDCLoginPassword_099, InternalError_OIDCLoginPassword_099)
 	}
 	log.Debug().Interface("model", model).Msg("model")
-	var rows []row
+	var errors []string
 
 	session, err := s.getSession()
 	if err != nil {
-		rows = append(rows, row{Key: "error", Value: err.Error()})
+		errors = append(errors, err.Error())
 	}
 	dd, err := session.Get("request")
 	if err != nil {
-		rows = append(rows, row{Key: "error", Value: err.Error()})
+		errors = append(errors, err.Error())
 	}
 	dd2 := dd.(*proto_oidc_models.AuthorizationRequest)
 
@@ -149,17 +145,17 @@ func (s *service) DoGet(c *echo.Context) error {
 	}
 	idps, err := s.GetIDPs(ctx)
 	if err != nil {
-		rows = append(rows, row{Key: "error", Value: err.Error()})
+		errors = append(errors, err.Error())
 	}
 
-	return s.Render(c, http.StatusOK, "oidc/oidcloginpassword/index",
-		map[string]interface{}{
-			"errors":     rows,
-			"idps":       idps,
-			"email":      s.signinResponse.Value.Email,
-			"directive":  models.LoginDirective,
-			"hasPasskey": s.signinResponse.Value.HasPasskey,
-		})
+	rc := s.NewRenderContext(c)
+	return s.RenderComponent(c, http.StatusOK, echo_components.OIDCLoginPasswordPage(rc, echo_components.OIDCLoginPasswordData{
+		Errors:     errors,
+		Email:      s.signinResponse.Value.Email,
+		Directive:  models.LoginDirective,
+		HasPasskey: s.signinResponse.Value.HasPasskey,
+		IDPs:       idps,
+	}))
 }
 
 func (s *service) DoPost(c *echo.Context) error {
@@ -196,15 +192,14 @@ func (s *service) DoPost(c *echo.Context) error {
 	model.UserName = strings.ToLower(model.UserName)
 
 	renderError := func(errors []string) error {
-		return s.Render(c, http.StatusBadRequest,
-			"oidc/oidcloginpassword/index",
-			map[string]interface{}{
-				"errors":     errors,
-				"email":      s.signinResponse.Value.Email,
-				"idps":       idps,
-				"directive":  models.LoginDirective,
-				"hasPasskey": s.signinResponse.Value.HasPasskey,
-			})
+		rc := s.NewRenderContext(c)
+		return s.RenderComponent(c, http.StatusBadRequest, echo_components.OIDCLoginPasswordPage(rc, echo_components.OIDCLoginPasswordData{
+			Errors:     errors,
+			Email:      s.signinResponse.Value.Email,
+			Directive:  models.LoginDirective,
+			HasPasskey: s.signinResponse.Value.HasPasskey,
+			IDPs:       idps,
+		}))
 	}
 	// does the user exist.
 	getRageUserResponse, err := s.RageUserService().GetRageUser(ctx,
@@ -346,9 +341,8 @@ func (s *service) DoPost(c *echo.Context) error {
 				State: authorizationRequest.State,
 			})
 	if err != nil {
-		log.Warn().Err(err).Msg("GetAuthorizationRequestState")
-		errors = append(errors, err.Error())
-		return renderError(errors)
+		log.Warn().Err(err).Msg("GetAuthorizationRequestState - authorization state may have expired")
+		return s.RedirectToClientWithError(c, authorizationRequest, "server_error", "Authorization session has expired. Please try again.")
 	}
 	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 	authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
@@ -443,8 +437,10 @@ func (s *service) handleIdentityFound(c *echo.Context, state string) error {
 		State: state,
 	})
 	if err != nil {
-		log.Error().Err(err).Msg("GetAuthorizationRequestState")
-		// redirect to error page
+		log.Error().Err(err).Msg("GetAuthorizationRequestState - authorization state may have expired")
+		if ar, arErr := s.GetAuthorizationRequestFromSession(); arErr == nil {
+			return s.RedirectToClientWithError(c, ar, "server_error", "Authorization session has expired. Please try again.")
+		}
 		redirectUrl := fmt.Sprintf("%s?state=%s&error=%s", wellknown_echo.OIDCLoginPath, state, models.InternalError)
 		return c.Redirect(http.StatusFound, redirectUrl)
 	}

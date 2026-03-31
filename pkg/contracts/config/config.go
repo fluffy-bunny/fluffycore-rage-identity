@@ -88,8 +88,10 @@ type (
 	}
 
 	OIDCConfig struct {
-		BaseUrl            string `json:"baseUrl"`
-		OAuth2CallbackPath string `json:"oauth2CallbackPath"`
+		BaseUrl                      string `json:"baseUrl"`
+		OAuth2CallbackPath           string `json:"oauth2CallbackPath"`
+		AuthorizationStateTTLMinutes int    `json:"authorizationStateTTLMinutes"`
+		AuthorizationCodeTTLSeconds  int    `json:"authorizationCodeTTLSeconds"`
 	}
 	CookieConfig struct {
 		Domain string `json:"domain"`
@@ -378,7 +380,9 @@ const configDefaultJSONTemplate = `
     },
     "oidcConfig": {
         "baseUrl": "IN_ENVIRONMENT",
-        "oauth2CallbackPath": "/oauth2/callback"
+        "oauth2CallbackPath": "/oauth2/callback",
+        "authorizationStateTTLMinutes": 10,
+        "authorizationCodeTTLSeconds": 600
     },
     "sessionConfig": {
         "sessionName": "_session",

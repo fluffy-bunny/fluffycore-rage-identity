@@ -3,6 +3,7 @@ package base
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 
@@ -16,6 +17,7 @@ import (
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	models_api_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
+	echo_components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/components"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_events_types "github.com/fluffy-bunny/fluffycore-rage-identity/proto/events/types"
 	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/client"
@@ -33,6 +35,7 @@ import (
 	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
 	xid "github.com/rs/xid"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	g "maragu.dev/gomponents"
 )
 
 type (
@@ -307,11 +310,18 @@ func (b *BaseHandler) GetClientReturnURL(ctx context.Context, clientID, redirect
 }
 
 func (b *BaseHandler) RenderAutoPost(c *echo.Context, action string, formData []models.FormParam) error {
-	data := map[string]interface{}{
-		"form_params": formData,
-		"action":      action,
+	csrfValue := c.Get("csrf")
+	csrfStr := ""
+	if csrfValue != nil {
+		if str, ok := csrfValue.(string); ok {
+			csrfStr = str
+		}
 	}
-	return b.Render(c, http.StatusFound, "oidc/autopost/index", data)
+	return echo_components.RenderAutoPost(c, http.StatusFound, echo_components.AutoPostData{
+		Action:     action,
+		FormParams: formData,
+		CSRF:       csrfStr,
+	})
 }
 
 func (b *BaseHandler) Render(c *echo.Context, code int, name string, data map[string]interface{}) error {
@@ -361,6 +371,39 @@ func (b *BaseHandler) Render(c *echo.Context, code int, name string, data map[st
 
 	return core_echo_templates.Render(c, code, name, data)
 
+}
+
+// NewRenderContext creates an echo_components.RenderContext from the current request.
+func (b *BaseHandler) NewRenderContext(c *echo.Context) *echo_components.RenderContext {
+	localizer := b.Localizer().GetLocalizer()
+	csrfValue := c.Get("csrf")
+	csrfStr := ""
+	if csrfValue != nil {
+		if str, ok := csrfValue.(string); ok {
+			csrfStr = str
+		}
+	}
+	username := "Account"
+	isAuthenticated := false
+	if b.ClaimsPrincipal != nil {
+		isAuthenticated = b.ClaimsPrincipal().HasClaimType(core_wellknown.ClaimTypeAuthenticated)
+		claims := b.ClaimsPrincipal().GetClaimsByType("email")
+		if len(claims) > 0 {
+			username = claims[0].Value
+		}
+	}
+	return &echo_components.RenderContext{
+		Paths:           wellknown_echo.NewPaths(),
+		CSRF:            csrfStr,
+		Localizer:       localizer,
+		IsAuthenticated: isAuthenticated,
+		Username:        username,
+	}
+}
+
+// RenderComponent renders a gomponents Node using the base RenderContext.
+func (b *BaseHandler) RenderComponent(c *echo.Context, code int, node g.Node) error {
+	return echo_components.RenderNode(c, code, node)
 }
 
 func (b *BaseHandler) GetIDPs(ctx context.Context) ([]*proto_oidc_models.IDP, error) {
@@ -480,4 +523,38 @@ func (b *BaseHandler) TeleportToPath(c *echo.Context, path string) error {
 	formParams := []models.FormParam{}
 	return b.RenderAutoPost(c, path, formParams)
 
+}
+
+// GetAuthorizationRequestFromSession retrieves the AuthorizationRequest from the OIDC session.
+func (b *BaseHandler) GetAuthorizationRequestFromSession() (*proto_oidc_models.AuthorizationRequest, error) {
+	session, err := b.getSession()
+	if err != nil {
+		return nil, err
+	}
+	sessionRequest, err := session.Get("request")
+	if err != nil {
+		return nil, err
+	}
+	authorizationRequest, ok := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
+	if !ok || authorizationRequest == nil {
+		return nil, fmt.Errorf("session request is not an AuthorizationRequest")
+	}
+	return authorizationRequest, nil
+}
+
+// RedirectToClientWithError redirects back to the client's redirect_uri with an OAuth2 error response.
+// This handles the case where the authorization state has expired in the cache but we still
+// have the original authorization request (from the session) so we can bounce back to the client.
+func (b *BaseHandler) RedirectToClientWithError(c *echo.Context, authorizationRequest *proto_oidc_models.AuthorizationRequest, oauthError, errorDescription string) error {
+	if authorizationRequest == nil || authorizationRequest.RedirectUri == "" {
+		return c.Redirect(http.StatusFound, "/error?error=authorization_expired")
+	}
+	params := url.Values{}
+	params.Set("error", oauthError)
+	params.Set("error_description", errorDescription)
+	if authorizationRequest.State != "" {
+		params.Set("state", authorizationRequest.State)
+	}
+	redirectUri := authorizationRequest.RedirectUri + "?" + params.Encode()
+	return c.Redirect(http.StatusFound, redirectUri)
 }

@@ -9,6 +9,7 @@ import (
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
+	echo_components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/components"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
@@ -113,11 +114,10 @@ func (s *service) DoGet(c *echo.Context) error {
 		return s.TeleportBackToLoginWithError(c, InternalError_ForgotPassword_002, InternalError_ForgotPassword_002)
 	}
 
-	err = s.Render(c, http.StatusOK, "oidc/forgotpassword/index",
-		map[string]interface{}{
-			"email":  model.Email,
-			"errors": make([]string, 0),
-		})
+	rc := s.NewRenderContext(c)
+	err = s.RenderComponent(c, http.StatusOK, echo_components.ForgotPasswordPage(rc, echo_components.ForgotPasswordData{
+		Email: model.Email,
+	}))
 	return err
 }
 
@@ -153,11 +153,11 @@ func (s *service) DoPost(c *echo.Context) error {
 
 	errors, err := s.validateForgotPasswordPostRequest(model)
 	if err != nil {
-		return s.Render(c, http.StatusBadRequest, "oidc/forgotpassword/index",
-			map[string]interface{}{
-				"email":  model.Email,
-				"errors": errors,
-			})
+		rc := s.NewRenderContext(c)
+		return s.RenderComponent(c, http.StatusBadRequest, echo_components.ForgotPasswordPage(rc, echo_components.ForgotPasswordData{
+			Email:  model.Email,
+			Errors: errors,
+		}))
 	}
 	if model.Type == "GET" {
 		return s.DoGet(c)

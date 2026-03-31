@@ -8,6 +8,7 @@ import (
 	golinq "github.com/ahmetb/go-linq/v3"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
+	echo_components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/components"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -112,9 +113,10 @@ func (s *service) Do(c *echo.Context) error {
 		return i.(row).Path
 	}).ToSlice(&rows)
 
-	return s.Render(c, http.StatusOK, "account/about/index",
-		map[string]interface{}{
-			"errors": rows,
-		})
-
+	rc := s.NewRenderContext(c)
+	componentRows := make([]echo_components.AboutRouteRow, len(rows))
+	for i, r := range rows {
+		componentRows[i] = echo_components.AboutRouteRow{Verbs: r.Verbs, Path: r.Path}
+	}
+	return s.RenderComponent(c, http.StatusOK, echo_components.AboutPage(rc, componentRows))
 }

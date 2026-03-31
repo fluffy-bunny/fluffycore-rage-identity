@@ -9,6 +9,7 @@ import (
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
+	echo_components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/components"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
@@ -117,11 +118,10 @@ func (s *service) DoGet(c *echo.Context) error {
 		return s.TeleportBackToLoginWithError(c, InternalError_PasswordReset_002, InternalError_PasswordReset_002)
 	}
 
-	err = s.Render(c, http.StatusOK, "oidc/passwordreset/index",
-		map[string]interface{}{
-			"returnUrl": model.ReturnUrl,
-			"errors":    []string{},
-		})
+	rc := s.NewRenderContext(c)
+	err = s.RenderComponent(c, http.StatusOK, echo_components.PasswordResetPage(rc, echo_components.PasswordResetData{
+		ReturnUrl: model.ReturnUrl,
+	}))
 	return err
 }
 
@@ -168,11 +168,11 @@ func (s *service) DoPost(c *echo.Context) error {
 	}
 	errors, err := s.validatePasswordResetPostRequest(model)
 	doErrorReturn := func() error {
-		return s.Render(c, http.StatusBadRequest, "oidc/passwordreset/index",
-			map[string]interface{}{
-				"returnUrl": model.ReturnUrl,
-				"errors":    errors,
-			})
+		rc := s.NewRenderContext(c)
+		return s.RenderComponent(c, http.StatusBadRequest, echo_components.PasswordResetPage(rc, echo_components.PasswordResetData{
+			ReturnUrl: model.ReturnUrl,
+			Errors:    errors,
+		}))
 	}
 	if err != nil {
 		return doErrorReturn()

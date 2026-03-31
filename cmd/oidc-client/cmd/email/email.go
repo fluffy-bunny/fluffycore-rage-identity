@@ -4,13 +4,12 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package email
 
 import (
-	"bytes"
 	"fmt"
 	"net/smtp"
 
 	mailyak "github.com/domodwyer/mailyak/v3"
-	shared "github.com/fluffy-bunny/fluffycore-rage-identity/cmd/oidc-client/shared"
 	cobra_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/cobra_utils"
+	components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/components"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	cobra "github.com/spf13/cobra"
 )
@@ -23,41 +22,34 @@ var aboutCmd = &cobra.Command{
 	Long:              `email`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		streamWriter := new(bytes.Buffer)
-		data := map[string]interface{}{
-			"user":         "1234",
-			"organization": "Perfect Corp",
-			"account_url":  "https://accounts.google.com",
-			"LocalizeMessage": func(key string) string {
+		emailData := components.EmailData{
+			AccountURL: "https://accounts.google.com",
+			LocalizeMessage: func(key string) string {
 				return key
 			},
 		}
 
-		err := shared.HtmlTemplate.ExecuteTemplate(streamWriter, "emails/test/index", data)
+		routes := []components.TestEmailRouteRow{} // test data
+		node := components.TestEmailHTML(emailData, routes)
+		htmlStr, err := components.RenderEmailNode(node)
 		if err != nil {
 			return err
 		}
-		bb := streamWriter.Bytes()
-		fmt.Println(string(bb))
+		fmt.Println(htmlStr)
 		fmt.Println(fluffycore_utils.PrettyJSON([]string{}))
 
-		streamWriter = new(bytes.Buffer)
-		err = shared.HtmlTemplate.ExecuteTemplate(streamWriter, "emails/test/txt", data)
-		if err != nil {
-			return err
-		}
-		bbPlain := streamWriter.Bytes()
-		fmt.Println(string(bbPlain))
+		plainStr := components.TestEmailText("1234")
+		fmt.Println(plainStr)
 
 		mail := mailyak.New("localhost:25", smtp.PlainAuth("", "user", "password", "localhost"))
-		mail.To("dom@itsa	llbroken.com")
+		mail.To("dom@itsallbroken.com")
 		mail.From("jsmith@example.com")
 		mail.FromName("Bananas for Friends")
 
 		mail.Subject("Business proposition")
 
-		mail.Plain().Set(string(bbPlain))
-		mail.HTML().Set(string(bb))
+		mail.Plain().Set(plainStr)
+		mail.HTML().Set(htmlStr)
 		err = mail.Send()
 		if err != nil {
 			return err

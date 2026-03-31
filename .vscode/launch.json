@@ -29,6 +29,7 @@
                 "RAGE_customString": "In Flames",
                 "RAGE_someSecret": "1234567890",
                 "RAGE_oidcConfig__baseUrl": "http://localhost:9044",
+                "RAGE_oidcConfig__authorizationStateTTLMinutes": "5",
                 "RAGE_jwtValidators__issuers": "http://localhost:50053,http://host.docker.internal:50053",
                 "RAGE_jwtValidators__jwksUrls": "http://localhost:50053/.well-known/jwks,http://host.docker.internal:50053/.well-known/jwks",
                 "RAGE_emailConfig__fromName": "The Perfect Corp Team",
@@ -94,6 +95,7 @@
             "envFile": "${workspaceFolder}/.env.secrets",
 
             "env": {
+                "DEV_BIND_LOCALHOST": "true",
                 "ENABLE_GRPC_SERVER_REFLECTION": "true",
                 "DOMAIN":"localhost:9044",
                 "COOKIE_DOMAIN":"localhost",                
@@ -108,6 +110,7 @@
                 "RAGE_customString": "In Flames",
                 "RAGE_someSecret": "1234567890",
                 "RAGE_oidcConfig__baseUrl": "http://localhost:9044",
+                "RAGE_oidcConfig__authorizationStateTTLMinutes": "5",
                 "RAGE_jwtValidators__issuers": "http://localhost:50053,http://host.docker.internal:50053",
                 "RAGE_jwtValidators__jwksUrls": "http://localhost:50053/.well-known/jwks,http://host.docker.internal:50053/.well-known/jwks",
                 "RAGE_emailConfig__fromName": "The Perfect Corp Team",

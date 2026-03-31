@@ -11,6 +11,7 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
+	echo_components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/components"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_external_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/models"
@@ -271,15 +272,15 @@ func (s *service) DoGet(c *echo.Context) error {
 	pngB, _ = qrcode.Encode(provisioningUri, qrcode.Medium, 256)
 	base64Str := base64.StdEncoding.EncodeToString(pngB)
 
-	err = s.Render(c, http.StatusOK, templateName,
-		map[string]interface{}{
-			"action":     model.Action,
-			"returnUrl":  model.ReturnUrl,
-			"formAction": wellknown_echo.TOTPPath,
-			"verified":   rageUser.TOTP.Verified,
-			"enabled":    rageUser.TOTP.Enabled,
-			"pngQRCode":  base64Str,
-		})
+	rc := s.NewRenderContext(c)
+	err = s.RenderComponent(c, http.StatusOK,
+		echo_components.TOTPManagementPage(rc, echo_components.TOTPManagementData{
+			ReturnUrl:  model.ReturnUrl,
+			FormAction: wellknown_echo.TOTPPath,
+			Verified:   rageUser.TOTP.Verified,
+			Enabled:    rageUser.TOTP.Enabled,
+			PngQRCode:  base64Str,
+		}))
 	return err
 }
 
