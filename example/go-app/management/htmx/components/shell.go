@@ -64,16 +64,20 @@ func ShellPage(rc *RenderContext) g.Node {
     htmx.ajax("GET",p,{target:"#dashboard-main",swap:"innerHTML"});
   }
 });`)),
-			// Sidebar toggle for mobile (checkbox+CSS approach)
-			Script(g.Raw(`document.addEventListener("DOMContentLoaded",function(){
-  var links=document.querySelectorAll(".sidebar-link");
-  var toggle=document.getElementById("sidebar-toggle");
-  links.forEach(function(link){
-    link.addEventListener("click",function(){
-      if(toggle&&toggle.checked){toggle.checked=false;}
-    });
+			// Sidebar toggle for mobile (checkbox+CSS approach, using delegation for HTMX compat)
+			Script(g.Raw(`(function(){
+  if(window.__sidebarInit) return;
+  window.__sidebarInit=true;
+  document.addEventListener("click",function(e){
+    var toggle=document.getElementById("sidebar-toggle");
+    if(!toggle||!toggle.checked) return;
+    if(e.target.closest&&e.target.closest(".sidebar-link")){toggle.checked=false;}
   });
-});`)),
+  document.addEventListener("htmx:beforeSwap",function(){
+    var toggle=document.getElementById("sidebar-toggle");
+    if(toggle) toggle.checked=false;
+  });
+})();`)),
 		},
 	})
 }

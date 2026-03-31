@@ -349,12 +349,27 @@ body {
 
   .dashboard-sidebar {
     transform: translateX(-100%);
+    z-index: 999;
   }
 
-  .dashboard-sidebar.show {
+  /* Checkbox-driven sidebar reveal */
+  #sidebar-toggle:checked ~ .dashboard-sidebar {
     transform: translateX(0);
     box-shadow: var(--shadow-lg);
-    z-index: 999;
+  }
+
+  /* Overlay behind sidebar — closes on tap */
+  #sidebar-toggle:checked ~ .sidebar-overlay {
+    display: block;
+  }
+
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    top: var(--header-height);
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 998;
   }
 
   .dashboard-main {

@@ -55,5 +55,7 @@ func Sidebar(rc *RenderContext) g.Node {
 				),
 			),
 		),
+		// Overlay — clicking it unchecks the checkbox, closing the sidebar
+		Label(Class("sidebar-overlay"), g.Attr("for", "sidebar-toggle")),
 	})
 }
