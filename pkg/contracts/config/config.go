@@ -88,6 +88,7 @@ type (
 	}
 
 	OIDCConfig struct {
+		FallbackClientUrl            string `json:"fallbackClientUrl"`
 		BaseUrl                      string `json:"baseUrl"`
 		OAuth2CallbackPath           string `json:"oauth2CallbackPath"`
 		AuthorizationStateTTLMinutes int    `json:"authorizationStateTTLMinutes"`
@@ -379,6 +380,7 @@ const configDefaultJSONTemplate = `
         "clients": []
     },
     "oidcConfig": {
+		"fallbackClientUrl": "IN_ENVIRONMENT",
         "baseUrl": "IN_ENVIRONMENT",
         "oauth2CallbackPath": "/oauth2/callback",
         "authorizationStateTTLMinutes": 10,
