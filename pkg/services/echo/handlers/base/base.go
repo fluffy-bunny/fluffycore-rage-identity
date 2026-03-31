@@ -288,7 +288,7 @@ func (b *BaseHandler) SubmitAuditEvent(ctx context.Context, eventType, subject s
 }
 
 // GetClientReturnURL looks up the client's metadata for "client_uri" (RFC 7591).
-// Falls back to extracting the origin from redirectURI if not found.
+// Falls back to extracting the origin from redirectURI, then to OIDCConfig.BaseUrl.
 func (b *BaseHandler) GetClientReturnURL(ctx context.Context, clientID, redirectURI string) string {
 	if clientID != "" {
 		resp, err := b.ClientServiceServer().GetClient(ctx, &proto_oidc_client.GetClientRequest{
@@ -306,7 +306,14 @@ func (b *BaseHandler) GetClientReturnURL(ctx context.Context, clientID, redirect
 			return parsed.Scheme + "://" + parsed.Host
 		}
 	}
-	return ""
+	// Final fallback: the OIDC server's own base URL
+	return b.config.OIDCConfig.BaseUrl
+}
+
+// GetFallbackURL returns the configured OIDC base URL for use when the session
+// is completely gone and no client information is available.
+func (b *BaseHandler) GetFallbackURL() string {
+	return b.config.OIDCConfig.FallbackClientUrl
 }
 
 func (b *BaseHandler) RenderAutoPost(c *echo.Context, action string, formData []models.FormParam) error {
@@ -547,7 +554,7 @@ func (b *BaseHandler) GetAuthorizationRequestFromSession() (*proto_oidc_models.A
 // have the original authorization request (from the session) so we can bounce back to the client.
 func (b *BaseHandler) RedirectToClientWithError(c *echo.Context, authorizationRequest *proto_oidc_models.AuthorizationRequest, oauthError, errorDescription string) error {
 	if authorizationRequest == nil || authorizationRequest.RedirectUri == "" {
-		return c.Redirect(http.StatusFound, "/error?error=authorization_expired")
+		return c.Redirect(http.StatusFound, b.GetFallbackURL())
 	}
 	params := url.Values{}
 	params.Set("error", oauthError)

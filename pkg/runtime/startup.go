@@ -3,6 +3,8 @@ package runtime
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"net/url"
 	"os"
 	"strings"
 
@@ -159,6 +161,12 @@ func (s *startup) ConfigureServices(ctx context.Context, builder di.ContainerBui
 		&fluffycore_contracts_GRPCClientFactory.GRPCClientConfig{
 			OTELTracingEnabled: config.OTELConfig.TracingConfig.Enabled,
 		})
+
+	// Validate FallbackClientUrl — must be a real absolute URL with scheme and host.
+	parsedFallback, err := url.Parse(config.OIDCConfig.FallbackClientUrl)
+	if err != nil || parsedFallback.Scheme == "" || parsedFallback.Host == "" {
+		panic(fmt.Sprintf("FATAL: oidcConfig.fallbackClientUrl must be a valid absolute URL (got %q)", config.OIDCConfig.FallbackClientUrl))
+	}
 
 	wellknown_echo.OAuth2CallbackPath = config.OIDCConfig.OAuth2CallbackPath
 
