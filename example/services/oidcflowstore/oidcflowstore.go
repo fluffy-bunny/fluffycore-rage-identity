@@ -71,7 +71,7 @@ func (s *service) GetAuthorizationRequestState(ctx context.Context, request *pro
 	mm, err := s.oidcFlowCache.Get(ctx, request.State)
 	if err != nil {
 		// redirect to error page
-		log.Error().Err(err).Msg("GetAuthorizationRequestState")
+		log.Warn().Err(err).Msg("GetAuthorizationRequestState")
 		return nil, err
 	}
 	var value *proto_oidc_models.AuthorizationRequestState = new(proto_oidc_models.AuthorizationRequestState)

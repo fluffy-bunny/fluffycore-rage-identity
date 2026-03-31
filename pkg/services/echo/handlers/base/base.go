@@ -35,6 +35,7 @@ import (
 	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
 	xid "github.com/rs/xid"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
+	g "maragu.dev/gomponents"
 )
 
 type (
@@ -370,6 +371,39 @@ func (b *BaseHandler) Render(c *echo.Context, code int, name string, data map[st
 
 	return core_echo_templates.Render(c, code, name, data)
 
+}
+
+// NewRenderContext creates an echo_components.RenderContext from the current request.
+func (b *BaseHandler) NewRenderContext(c *echo.Context) *echo_components.RenderContext {
+	localizer := b.Localizer().GetLocalizer()
+	csrfValue := c.Get("csrf")
+	csrfStr := ""
+	if csrfValue != nil {
+		if str, ok := csrfValue.(string); ok {
+			csrfStr = str
+		}
+	}
+	username := "Account"
+	isAuthenticated := false
+	if b.ClaimsPrincipal != nil {
+		isAuthenticated = b.ClaimsPrincipal().HasClaimType(core_wellknown.ClaimTypeAuthenticated)
+		claims := b.ClaimsPrincipal().GetClaimsByType("email")
+		if len(claims) > 0 {
+			username = claims[0].Value
+		}
+	}
+	return &echo_components.RenderContext{
+		Paths:           wellknown_echo.NewPaths(),
+		CSRF:            csrfStr,
+		Localizer:       localizer,
+		IsAuthenticated: isAuthenticated,
+		Username:        username,
+	}
+}
+
+// RenderComponent renders a gomponents Node using the base RenderContext.
+func (b *BaseHandler) RenderComponent(c *echo.Context, code int, node g.Node) error {
+	return echo_components.RenderNode(c, code, node)
 }
 
 func (b *BaseHandler) GetIDPs(ctx context.Context) ([]*proto_oidc_models.IDP, error) {

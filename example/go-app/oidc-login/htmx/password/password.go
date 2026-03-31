@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
+	components "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/htmx/components"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
@@ -12,7 +13,6 @@ import (
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
-	components "github.com/fluffy-bunny/fluffycore-rage-identity/example/go-app/oidc-login/htmx/components"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	"github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
@@ -226,8 +226,13 @@ func (s *service) DoPost(c *echo.Context) error {
 		RootPath: rootPath,
 	})
 	if err != nil {
-		log.Error().Err(err).Msg("ProcessFinalAuthenticationState")
 		returnURL := s.GetClientReturnURL(ctx, authorizationRequest.ClientId, authorizationRequest.RedirectUri)
+		if strings.Contains(err.Error(), "not found in store") {
+			log.Warn().Err(err).Str("clientReturnURL", returnURL).Msg("ProcessFinalAuthenticationState: authorization state expired, redirecting to client")
+			c.Response().Header().Set("HX-Redirect", returnURL)
+			return c.NoContent(http.StatusOK)
+		}
+		log.Error().Err(err).Msg("ProcessFinalAuthenticationState")
 		return s.renderErrorWithReturn(c, "htmx-password-005", err.Error(), returnURL)
 	}
 

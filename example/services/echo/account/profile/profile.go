@@ -8,13 +8,13 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
+	echo_components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/components"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_external_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/models"
 	proto_external_user "github.com/fluffy-bunny/fluffycore-rage-identity/proto/external/user"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
-	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v5"
 	zerolog "github.com/rs/zerolog"
 )
@@ -30,9 +30,7 @@ type (
 
 var stemService = (*service)(nil)
 
- 
-	var _ contracts_handler.IHandler = stemService
- 
+var _ contracts_handler.IHandler = stemService
 
 func (s *service) Ctor(
 	container di.Container,
@@ -94,22 +92,7 @@ func (s *service) DoGet(c *echo.Context) error {
 	if user.Profile == nil {
 		user.Profile = &proto_external_models.Profile{}
 	}
-	phoneNumber := ""
-	if fluffycore_utils.IsNotEmptyOrNil(user.Profile.PhoneNumbers) {
-		phoneNumber = user.Profile.PhoneNumbers[0].Number
-	}
-	return s.Render(c, http.StatusOK,
-		"account/profile/index",
-		map[string]interface{}{
-			"displayOnly":  true,
-			"formAction":   wellknown_echo.ProfilePath,
-			"action":       "pi-edit",
-			"email":        rootIdentity.Email,
-			"given_name":   user.Profile.GivenName,
-			"family_name":  user.Profile.FamilyName,
-			"phone_number": phoneNumber,
-			"user":         user,
-		})
+	return s.RenderComponent(c, http.StatusOK, echo_components.ProfilePage(s.NewRenderContext(c)))
 }
 
 func (s *service) DoPasskeyManagment(c *echo.Context) error {

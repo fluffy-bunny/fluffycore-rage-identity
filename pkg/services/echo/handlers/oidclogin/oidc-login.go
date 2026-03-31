@@ -13,6 +13,7 @@ import (
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	models_api_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
+	echo_components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/components"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
@@ -186,7 +187,7 @@ func (s *service) DoGet(c *echo.Context) error {
 		return s.handleIdentityFound(c, authorizationRequest.State)
 
 	}
-	idps, err := s.GetIDPs(ctx)
+	_, err = s.GetIDPs(ctx)
 	if err != nil {
 		errors = append(errors, err.Error())
 	}
@@ -195,13 +196,8 @@ func (s *service) DoGet(c *echo.Context) error {
 		// we redirect over to URIEntryPath
 		return c.Redirect(http.StatusFound, s.config.OIDCUIConfig.URIEntryPath)
 	}
-	return s.Render(c, http.StatusOK, "oidc/oidclogin/index",
-		map[string]interface{}{
-			"errors":    errors,
-			"idps":      idps,
-			"email":     model.Email,
-			"directive": models.LoginDirective,
-		})
+	rc := s.NewRenderContext(c)
+	return s.RenderComponent(c, http.StatusOK, echo_components.OIDCLoginPage(rc))
 }
 
 func (s *service) DoPost(c *echo.Context) error {
@@ -290,7 +286,7 @@ func (s *service) DoPost(c *echo.Context) error {
 		session.Save()
 		return s.DoGet(c)
 	}
-	idps, err := s.GetIDPs(ctx)
+	_, err = s.GetIDPs(ctx)
 	if err != nil {
 		errors = append(errors, err.Error())
 	}
@@ -309,12 +305,8 @@ func (s *service) DoPost(c *echo.Context) error {
 			// we redirect over to URIEntryPath
 			return c.Redirect(http.StatusFound, s.config.OIDCUIConfig.URIEntryPath)
 		}
-		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
-			map[string]interface{}{
-				"idps":      idps,
-				"errors":    errors,
-				"directive": models.LoginDirective,
-			})
+		rc := s.NewRenderContext(c)
+		return s.RenderComponent(c, http.StatusBadRequest, echo_components.OIDCLoginPage(rc))
 	}
 	// get the domain from the email
 	parts := strings.Split(email, "@")
@@ -338,13 +330,8 @@ func (s *service) DoPost(c *echo.Context) error {
 			// we redirect over to URIEntryPath
 			return c.Redirect(http.StatusFound, s.config.OIDCUIConfig.URIEntryPath)
 		}
-		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
-			map[string]interface{}{
-				"state":     authorizationRequest.State,
-				"idps":      idps,
-				"errors":    errors,
-				"directive": models.LoginDirective,
-			})
+		rc := s.NewRenderContext(c)
+		return s.RenderComponent(c, http.StatusBadRequest, echo_components.OIDCLoginPage(rc))
 	}
 	if len(listIDPRequest.IDPs) > 0 {
 		// an idp has claimed this domain.
@@ -389,13 +376,8 @@ func (s *service) DoPost(c *echo.Context) error {
 			// we redirect over to URIEntryPath
 			return c.Redirect(http.StatusFound, s.config.OIDCUIConfig.URIEntryPath)
 		}
-		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
-			map[string]interface{}{
-				"state":     authorizationRequest.State,
-				"idps":      idps,
-				"errors":    errors,
-				"directive": models.LoginDirective,
-			})
+		rc := s.NewRenderContext(c)
+		return s.RenderComponent(c, http.StatusBadRequest, echo_components.OIDCLoginPage(rc))
 
 	}
 	if err != nil {
@@ -405,13 +387,8 @@ func (s *service) DoPost(c *echo.Context) error {
 			// we redirect over to URIEntryPath
 			return c.Redirect(http.StatusFound, s.config.OIDCUIConfig.URIEntryPath)
 		}
-		return s.Render(c, http.StatusBadRequest, "oidc/oidclogin/index",
-			map[string]interface{}{
-				"state":     authorizationRequest.State,
-				"idps":      idps,
-				"errors":    errors,
-				"directive": models.LoginDirective,
-			})
+		rc := s.NewRenderContext(c)
+		return s.RenderComponent(c, http.StatusBadRequest, echo_components.OIDCLoginPage(rc))
 	}
 	user := getRageUserResponse.User
 	if s.config.EmailVerificationRequired && !user.RootIdentity.EmailVerified {

@@ -8,6 +8,7 @@ import (
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
+	echo_components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/components"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
@@ -151,17 +152,17 @@ func (s *service) DoGet(c *echo.Context) error {
 		phoneNumber = user.Profile.PhoneNumbers[0].Number
 	}
 
-	err = s.Render(c, http.StatusOK, templateName,
-		map[string]interface{}{
-			"action":       model.Action,
-			"returnUrl":    model.ReturnUrl,
-			"formAction":   wellknown_echo.PersonalInformationPath,
-			"errors":       []string{},
-			"email":        user.RageUser.RootIdentity.Email,
-			"given_name":   user.Profile.GivenName,
-			"family_name":  user.Profile.FamilyName,
-			"phone_number": phoneNumber,
-		})
+	rc := s.NewRenderContext(c)
+	err = s.RenderComponent(c, http.StatusOK,
+		echo_components.PersonalInformationPage(rc, echo_components.PersonalInformationPanelData{
+			FormAction:  wellknown_echo.PersonalInformationPath,
+			Action:      model.Action,
+			ReturnUrl:   model.ReturnUrl,
+			Email:       user.RageUser.RootIdentity.Email,
+			GivenName:   user.Profile.GivenName,
+			FamilyName:  user.Profile.FamilyName,
+			PhoneNumber: phoneNumber,
+		}))
 	return err
 }
 
@@ -203,19 +204,19 @@ func (s *service) DoPost(c *echo.Context) error {
 		phoneNumber = user.Profile.PhoneNumbers[0].Number
 	}
 
-	errors, err := s.validatePersonalInformationPostRequest(model)
+	_, err = s.validatePersonalInformationPostRequest(model)
 	doErrorReturn := func() error {
-		err = s.Render(c, http.StatusOK, templateName,
-			map[string]interface{}{
-				"action":       model.Action,
-				"returnUrl":    model.ReturnUrl,
-				"formAction":   wellknown_echo.PersonalInformationPath,
-				"errors":       errors,
-				"email":        user.RageUser.RootIdentity.Email,
-				"given_name":   user.Profile.GivenName,
-				"family_name":  user.Profile.FamilyName,
-				"phone_number": phoneNumber,
-			})
+		rc := s.NewRenderContext(c)
+		err = s.RenderComponent(c, http.StatusOK,
+			echo_components.PersonalInformationPage(rc, echo_components.PersonalInformationPanelData{
+				FormAction:  wellknown_echo.PersonalInformationPath,
+				Action:      model.Action,
+				ReturnUrl:   model.ReturnUrl,
+				Email:       user.RageUser.RootIdentity.Email,
+				GivenName:   user.Profile.GivenName,
+				FamilyName:  user.Profile.FamilyName,
+				PhoneNumber: phoneNumber,
+			}))
 		return err
 	}
 	if err != nil {

@@ -13,6 +13,7 @@ import (
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
+	echo_components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/components"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
@@ -109,11 +110,6 @@ type LoginTOTPPostRequest struct {
 	Code     string `param:"code" query:"code" form:"code" json:"code" xml:"code"`
 }
 
-type row struct {
-	Key   string
-	Value string
-}
-
 func (s *service) getSession() (contracts_sessions.ISession, error) {
 	session, err := s.oidcSession.GetSession()
 
@@ -143,16 +139,15 @@ func (s *service) DoGet(c *echo.Context) error {
 		return s.TeleportBackToLoginWithError(c, InternalError_OIDCLoginTOTP_099, InternalError_OIDCLoginTOTP_099)
 	}
 	log.Debug().Interface("model", model).Msg("model")
-	var rows []row
 	var errors []string
 
 	session, err := s.getSession()
 	if err != nil {
-		rows = append(rows, row{Key: "error", Value: err.Error()})
+		errors = append(errors, err.Error())
 	}
 	sessionRequest, err := session.Get("request")
 	if err != nil {
-		rows = append(rows, row{Key: "error", Value: err.Error()})
+		errors = append(errors, err.Error())
 	}
 	authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
 
@@ -163,13 +158,11 @@ func (s *service) DoGet(c *echo.Context) error {
 	}
 
 	renderError := func(errors []string) error {
-		return s.Render(c, http.StatusBadRequest,
-			"oidc/oidclogintotp/index",
-			map[string]interface{}{
-				"errors":    errors,
-				"email":     s.signinResponse.Value.Email,
-				"directive": models.LoginDirective,
-			})
+		rc := s.NewRenderContext(c)
+		return s.RenderComponent(c, http.StatusBadRequest, echo_components.OIDCLoginTOTPPage(rc, echo_components.OIDCLoginTOTPData{
+			Errors: errors,
+			Email:  s.signinResponse.Value.Email,
+		}))
 	}
 	// does the user exist.
 	getRageUserResponse, err := s.RageUserService().GetRageUser(ctx,
@@ -194,14 +187,13 @@ func (s *service) DoGet(c *echo.Context) error {
 		pngQRCode = s.generatePNGQRCode(rageUser)
 	}
 
-	return s.Render(c, http.StatusOK, "oidc/oidclogintotp/index",
-		map[string]interface{}{
-			"errors":    rows,
-			"email":     s.signinResponse.Value.Email,
-			"verified":  rageUser.TOTP.Verified,
-			"directive": models.LoginDirective,
-			"pngQRCode": pngQRCode,
-		})
+	rc := s.NewRenderContext(c)
+	return s.RenderComponent(c, http.StatusOK, echo_components.OIDCLoginTOTPPage(rc, echo_components.OIDCLoginTOTPData{
+		Errors:    errors,
+		Email:     s.signinResponse.Value.Email,
+		Verified:  rageUser.TOTP.Verified,
+		PngQRCode: pngQRCode,
+	}))
 }
 
 func (s *service) DoPost(c *echo.Context) error {
@@ -231,24 +223,18 @@ func (s *service) DoPost(c *echo.Context) error {
 	if err != nil {
 		errors = append(errors, err.Error())
 	}
-	idps, _ := s.GetIDPs(ctx)
-
 	authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
 
 	model.UserName = strings.ToLower(model.UserName)
 
 	renderError := func(rageUser *proto_oidc_models.RageUser, errors []string) error {
 		pngQRCode := s.generatePNGQRCode(rageUser)
-		return s.Render(c, http.StatusBadRequest,
-			"oidc/oidclogintotp/index",
-			map[string]interface{}{
-				"errors":     errors,
-				"email":      s.signinResponse.Value.Email,
-				"idps":       idps,
-				"directive":  models.LoginDirective,
-				"hasPasskey": s.signinResponse.Value.HasPasskey,
-				"pngQRCode":  pngQRCode,
-			})
+		rc := s.NewRenderContext(c)
+		return s.RenderComponent(c, http.StatusBadRequest, echo_components.OIDCLoginTOTPPage(rc, echo_components.OIDCLoginTOTPData{
+			Errors:    errors,
+			Email:     s.signinResponse.Value.Email,
+			PngQRCode: pngQRCode,
+		}))
 	}
 	// does the user exist.
 	getRageUserResponse, err := s.RageUserService().GetRageUser(ctx,

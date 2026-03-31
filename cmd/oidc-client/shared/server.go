@@ -1,9 +1,5 @@
 package shared
 
-import (
-	"html/template"
-)
-
 type (
 	Config struct {
 		Port         int
@@ -15,10 +11,5 @@ type (
 )
 
 var (
-	AppConfig    = &Config{}
-	HtmlTemplate *template.Template
+	AppConfig = &Config{}
 )
-
-func Something(){
-	HtmlTemplate.Execute(nil, nil)
-}

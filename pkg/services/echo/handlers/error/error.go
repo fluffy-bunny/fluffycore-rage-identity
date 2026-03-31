@@ -5,6 +5,7 @@ import (
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
+	echo_components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/components"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
@@ -72,8 +73,9 @@ func (s *service) Do(c *echo.Context) error {
 		}
 	}
 
-	return s.Render(c, http.StatusOK, "oidc/error/index", map[string]interface{}{
-		"error":   errorCode,
-		"message": errorMessage,
-	})
+	rc := s.NewRenderContext(c)
+	return s.RenderComponent(c, http.StatusOK, echo_components.ErrorPage(rc, echo_components.ErrorPageData{
+		Message: errorMessage,
+		Error:   errorCode,
+	}))
 }

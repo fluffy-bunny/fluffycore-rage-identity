@@ -10,6 +10,7 @@ import (
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
+	echo_components "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/components"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
@@ -117,25 +118,17 @@ func (s *service) DoGet(c *echo.Context) error {
 	}
 	log.Debug().Interface("model", model).Msg("model")
 
-	type row struct {
-		Key   string
-		Value string
-	}
 	idps, err := s.GetIDPs(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("getIDPs")
 		return s.TeleportBackToLoginWithError(c, InternalError_Signup_001, InternalError_Signup_001)
 	}
 
-	var rows []row
-	//	rows = append(rows, row{Key: "code", Value: model.Code})
-
-	return s.Render(c, http.StatusOK, "oidc/signup/index",
-		map[string]interface{}{
-			"errors":    rows,
-			"idps":      idps,
-			"directive": models.SignupDirective,
-		})
+	rc := s.NewRenderContext(c)
+	return s.RenderComponent(c, http.StatusOK, echo_components.SignupPage(rc, echo_components.SignupData{
+		Directive: models.SignupDirective,
+		IDPs:      idps,
+	}))
 }
 
 func (s *service) validateSignupPostRequest(request *SignupPostRequest) ([]string, error) {
@@ -175,12 +168,12 @@ func (s *service) DoPost(c *echo.Context) error {
 		return s.TeleportBackToLoginWithError(c, InternalError_Signup_002, InternalError_Signup_002)
 	}
 	doError := func(errors []string) error {
-		return s.Render(c, http.StatusBadRequest, "oidc/signup/index",
-			map[string]interface{}{
-				"errors":    errors,
-				"idps":      idps,
-				"directive": models.SignupDirective,
-			})
+		rc := s.NewRenderContext(c)
+		return s.RenderComponent(c, http.StatusBadRequest, echo_components.SignupPage(rc, echo_components.SignupData{
+			Errors:    errors,
+			Directive: models.SignupDirective,
+			IDPs:      idps,
+		}))
 
 	}
 
