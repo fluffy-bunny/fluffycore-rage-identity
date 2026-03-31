@@ -122,7 +122,8 @@ func (s *service) Do(c *echo.Context) error {
 func (s *service) validateSessionState(ctx context.Context, c *echo.Context, log *zerolog.Logger) (err error, stale bool) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Error().Interface("panic", r).Msg("shell: panic during session state validation, clearing session and redirecting to /")
+			fallbackURL := s.GetFallbackURL()
+			log.Error().Interface("panic", r).Str("fallbackURL", fallbackURL).Msg("shell: panic during session state validation, clearing session and redirecting to fallback URL")
 			// Best-effort clear of the session
 			if session, sErr := s.OIDCSession().GetSession(); sErr == nil {
 				session.Set("request", nil)
@@ -131,7 +132,7 @@ func (s *service) validateSessionState(ctx context.Context, c *echo.Context, log
 				session.Set("landingPage", nil)
 				session.Save()
 			}
-			err = c.Redirect(http.StatusFound, "/")
+			err = c.Redirect(http.StatusFound, fallbackURL)
 			stale = true
 		}
 	}()
@@ -163,10 +164,7 @@ func (s *service) validateSessionState(ctx context.Context, c *echo.Context, log
 		session.Set("landing_page", nil)
 		session.Set("landingPage", nil)
 		session.Save()
-		if clientReturnURL != "" {
-			return c.Redirect(http.StatusFound, clientReturnURL), true
-		}
-		return c.Redirect(http.StatusFound, "/"), true
+		return c.Redirect(http.StatusFound, clientReturnURL), true
 	}
 	return nil, false
 }

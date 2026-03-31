@@ -178,7 +178,14 @@ func (s *service) DoGet(c *echo.Context) error {
 	if err != nil {
 		errors = append(errors, err.Error())
 	}
-	authorizationRequest := requestSession.(*proto_oidc_models.AuthorizationRequest)
+	authorizationRequest, _ := requestSession.(*proto_oidc_models.AuthorizationRequest)
+	if authorizationRequest == nil {
+		// Session has expired or is missing the authorization request.
+		// Redirect to the fallback URL so the client can start a fresh OIDC flow.
+		fallbackURL := s.GetFallbackURL()
+		log.Warn().Str("fallbackURL", fallbackURL).Msg("oidc-login DoGet: session has no authorization request (expired?), redirecting to fallback URL")
+		return c.Redirect(http.StatusFound, fallbackURL)
+	}
 
 	log.Debug().Interface("requestSession", requestSession).Msg("requestSession")
 
@@ -290,7 +297,11 @@ func (s *service) DoPost(c *echo.Context) error {
 	if err != nil {
 		errors = append(errors, err.Error())
 	}
-	authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
+	authorizationRequest, _ := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
+	if authorizationRequest == nil {
+		log.Warn().Msg("oidc-login DoPost: session has no authorization request (expired?), redirecting to /")
+		return c.Redirect(http.StatusFound, "/")
+	}
 
 	log.Debug().Interface("sessionRequest", sessionRequest).Msg("sessionRequest")
 

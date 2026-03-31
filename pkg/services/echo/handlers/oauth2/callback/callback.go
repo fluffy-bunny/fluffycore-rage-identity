@@ -248,12 +248,12 @@ func (s *service) Do(c *echo.Context) error {
 				}
 			}
 		}
-		log.Error().Err(err).Str("state", parentState).Str("clientReturnURL", clientReturnURL).
-			Msg("GetAuthorizationRequestState failed (server may have restarted with in-memory store), redirecting to client for fresh OIDC flow")
-		if clientReturnURL != "" {
-			return c.Redirect(http.StatusFound, clientReturnURL)
+		if clientReturnURL == "" {
+			clientReturnURL = s.GetFallbackURL()
 		}
-		return c.Redirect(http.StatusFound, "/")
+		log.Warn().Err(err).Str("state", parentState).Str("clientReturnURL", clientReturnURL).
+			Msg("GetAuthorizationRequestState failed (server may have restarted with in-memory store), redirecting to client for fresh OIDC flow")
+		return c.Redirect(http.StatusFound, clientReturnURL)
 	}
 	authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 

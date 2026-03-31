@@ -68,6 +68,7 @@ services:
       RAGE_selfIDPConfig__redirectUrl: "https://rage.localhost.dev/auth/callback"
       RAGE_selfIDPConfig__authority: "https://rage.localhost.dev"
       RAGE_oidcConfig__baseUrl: "https://rage.localhost.dev"
+      RAGE_oidcConfig__fallbackClientUrl: "https://rage.localhost.dev"
       RAGE_oidcConfig__authorizationStateTTLMinutes: "5"
       RAGE_emailConfig__justLogIt: "false"
       RAGE_echo__disableSecureCookies: "true"

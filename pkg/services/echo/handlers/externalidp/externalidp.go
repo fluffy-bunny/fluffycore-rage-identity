@@ -150,8 +150,9 @@ func (s *service) DoPost(c *echo.Context) error {
 	}
 	dd2, ok := dd.(*proto_oidc_models.AuthorizationRequest)
 	if !ok || dd2 == nil {
-		log.Error().Msg("externalidp: session request is not a valid AuthorizationRequest, redirecting to /")
-		return c.Redirect(http.StatusFound, "/")
+		fallbackURL := s.GetFallbackURL()
+		log.Warn().Str("fallbackURL", fallbackURL).Msg("externalidp: session request is not a valid AuthorizationRequest, redirecting to fallback URL")
+		return c.Redirect(http.StatusFound, fallbackURL)
 	}
 
 	// Validate that the authorization request state still exists in the backing store.
@@ -165,10 +166,7 @@ func (s *service) DoPost(c *echo.Context) error {
 		clientReturnURL := s.GetClientReturnURL(ctx, dd2.ClientId, dd2.RedirectUri)
 		log.Warn().Err(err).Str("state", dd2.State).Str("clientReturnURL", clientReturnURL).
 			Msg("externalidp: authorization request state not found in store, redirecting to client for fresh OIDC flow")
-		if clientReturnURL != "" {
-			return c.Redirect(http.StatusFound, clientReturnURL)
-		}
-		return c.Redirect(http.StatusFound, "/")
+		return c.Redirect(http.StatusFound, clientReturnURL)
 	}
 
 	listIDPResponse, err := s.IdpServiceServer().ListIDP(ctx,
