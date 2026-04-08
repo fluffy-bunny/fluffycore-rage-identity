@@ -4,19 +4,20 @@ This is an example application to demonstrate parsing an ID Token.
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	oidc "github.com/coreos/go-oidc/v3/oidc"
-	req "github.com/imroc/req/v3"
 	zerolog "github.com/rs/zerolog"
-	"golang.org/x/net/context"
 	oauth2 "golang.org/x/oauth2"
 )
 
@@ -131,18 +132,27 @@ func main() {
 
 		//oauth2Token.AccessToken = "*REDACTED*"
 
-		reqClient := req.C()
-		resp2, err := reqClient.R().
-			SetBasicAuth(clientID, clientSecret).
-			SetFormData(map[string]string{
-				"grant_type":    "refresh_token",
-				"refresh_token": oauth2Token.RefreshToken,
-			}).Post(tokenUrl)
+		formData := url.Values{
+			"grant_type":    {"refresh_token"},
+			"refresh_token": {oauth2Token.RefreshToken},
+		}
+		httpReq, err := http.NewRequest(http.MethodPost, tokenUrl, strings.NewReader(formData.Encode()))
+		if err != nil {
+			log.Fatal().Err(err).Msg("")
+		}
+		httpReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		httpReq.SetBasicAuth(clientID, clientSecret)
+		resp2, err := http.DefaultClient.Do(httpReq)
+		if err != nil {
+			log.Fatal().Err(err).Msg("")
+		}
+		defer resp2.Body.Close()
+		body, err := io.ReadAll(resp2.Body)
 		if err != nil {
 			log.Fatal().Err(err).Msg("")
 		}
 		generic := make(map[string]interface{})
-		err = json.Unmarshal(resp2.Bytes(), &generic)
+		err = json.Unmarshal(body, &generic)
 		log.Info().Interface("generic", generic).Msg("")
 
 		resp := struct {

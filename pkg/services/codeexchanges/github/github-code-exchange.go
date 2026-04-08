@@ -8,6 +8,11 @@ import (
 	"context"
 	"strconv"
 
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_codeexchange "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/codeexchange"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
@@ -16,7 +21,6 @@ import (
 	fluffycore_services_claims "github.com/fluffy-bunny/fluffycore/services/claims"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
-	req "github.com/imroc/req/v3"
 	zerolog "github.com/rs/zerolog"
 	oauth2 "golang.org/x/oauth2"
 	codes "google.golang.org/grpc/codes"
@@ -114,32 +118,38 @@ func (s *service) ExchangeCode(ctx context.Context, request *contracts_codeexcha
 		log.Error().Err(err).Msg("failed to exchange code")
 		return nil, err
 	}
-	client := req.C().
-		SetCommonBearerAuthToken(token.AccessToken).
-		SetCommonHeader("Accept", "application/vnd.github.v3+json").
-		SetCommonHeader("X-GitHub-Api-Version", "2022-11-28")
+	doGitHubGet := func(url string, result interface{}) error {
+		req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+		if err != nil {
+			return err
+		}
+		req.Header.Set("Authorization", "Bearer "+token.AccessToken)
+		req.Header.Set("Accept", "application/vnd.github.v3+json")
+		req.Header.Set("X-GitHub-Api-Version", "2022-11-28")
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("unexpected status %d from %s", resp.StatusCode, url)
+		}
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		return json.Unmarshal(body, result)
+	}
 
 	githubUser := &GithubUser{}
-	r, err := client.R().
-		SetSuccessResult(githubUser).Get(GithubUserInfoEndpoint)
-	if err != nil {
-		log.Error().Err(err).Msg("")
-		return nil, err
-	}
-	if r.StatusCode != 200 {
+	if err := doGitHubGet(GithubUserInfoEndpoint, githubUser); err != nil {
 		log.Error().Err(err).Msg("failed to get user info")
 		return nil, status.Error(codes.Internal, "failed to get user info")
 	}
 	githubEmails := make(GithubUserEmails, 0)
-	r, err = client.R().
-		SetSuccessResult(&githubEmails).Get(GitHubEmailsEndpoint)
-	if err != nil {
-		log.Error().Err(err).Msg("")
-		return nil, err
-	}
-	if r.StatusCode != 200 {
-		log.Error().Err(err).Msg("failed to get user info")
-		return nil, status.Error(codes.Internal, "failed to get user info")
+	if err := doGitHubGet(GitHubEmailsEndpoint, &githubEmails); err != nil {
+		log.Error().Err(err).Msg("failed to get user emails")
+		return nil, status.Error(codes.Internal, "failed to get user emails")
 	}
 	var primaryEmail *GitHubEmail
 	for _, e := range githubEmails {
