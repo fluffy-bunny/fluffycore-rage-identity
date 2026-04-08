@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -21,7 +22,6 @@ import (
 	cobra_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/cobra_utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
-	req "github.com/imroc/req/v3"
 	zerolog "github.com/rs/zerolog"
 	cobra "github.com/spf13/cobra"
 	oauth2 "golang.org/x/oauth2"
@@ -159,18 +159,27 @@ func Serve() {
 
 		//oauth2Token.AccessToken = "*REDACTED*"
 
-		reqClient := req.C()
-		resp2, err := reqClient.R().
-			SetBasicAuth(shared.AppConfig.ClientId, shared.AppConfig.ClientSecret).
-			SetFormData(map[string]string{
-				"grant_type":    "refresh_token",
-				"refresh_token": oauth2Token.RefreshToken,
-			}).Post(tokenUrl)
+		formData := url.Values{
+			"grant_type":    {"refresh_token"},
+			"refresh_token": {oauth2Token.RefreshToken},
+		}
+		httpReq, err := http.NewRequest(http.MethodPost, tokenUrl, strings.NewReader(formData.Encode()))
+		if err != nil {
+			log.Fatal().Err(err).Msg("")
+		}
+		httpReq.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		httpReq.SetBasicAuth(shared.AppConfig.ClientId, shared.AppConfig.ClientSecret)
+		resp2, err := http.DefaultClient.Do(httpReq)
+		if err != nil {
+			log.Fatal().Err(err).Msg("")
+		}
+		defer resp2.Body.Close()
+		body, err := io.ReadAll(resp2.Body)
 		if err != nil {
 			log.Fatal().Err(err).Msg("")
 		}
 		generic := make(map[string]interface{})
-		json.Unmarshal(resp2.Bytes(), &generic)
+		json.Unmarshal(body, &generic)
 
 		log.Info().Interface("generic", generic).Msg("")
 
