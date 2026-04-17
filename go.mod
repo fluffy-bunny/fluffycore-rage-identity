@@ -12,7 +12,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.18.0
 	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/eko/gocache/lib/v4 v4.2.3
-	github.com/fluffy-bunny/fluffy-dozm-di v0.0.6
+	github.com/fluffy-bunny/fluffy-dozm-di v0.0.7
 	github.com/fluffy-bunny/fluffycore v1.0.258
 	github.com/go-oauth2/oauth2/v4 v4.5.4
 	github.com/go-webauthn/webauthn v0.16.3
