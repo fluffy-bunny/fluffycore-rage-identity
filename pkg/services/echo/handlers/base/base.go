@@ -447,7 +447,9 @@ func (b *BaseHandler) ProcessFinalAuthenticationState(
 	c *echo.Context,
 	request *ProcessFinalAuthenticationStateRequest,
 ) (*ProcessFinalAuthenticationStateResponse, error) {
-	// Set the auth cookie
+	// Set the auth cookie, preserving IdpSlug/Acr/Amr from the identity so the
+	// non-MFA external IDP path (keepsignedin → ProcessFinalAuthenticationState)
+	// reflects the actual IDP used rather than stripping it to root-only.
 	err := b.WellknownCookies().SetAuthCookie(c,
 		&contracts_cookies.SetAuthCookieRequest{
 			AuthCookie: &contracts_cookies.AuthCookie{
@@ -455,7 +457,10 @@ func (b *BaseHandler) ProcessFinalAuthenticationState(
 					Subject:       request.Identity.Subject,
 					Email:         request.Identity.Email,
 					EmailVerified: request.Identity.EmailVerified,
+					IdpSlug:       request.Identity.IdpSlug,
 				},
+				Acr: request.Identity.Acr,
+				Amr: request.Identity.Amr,
 			},
 		})
 	if err != nil {

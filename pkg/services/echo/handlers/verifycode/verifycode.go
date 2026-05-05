@@ -282,13 +282,35 @@ func (s *service) DoPost(c *echo.Context) error {
 				},
 			})
 	case models.MFA_VerifyEmailDirective:
+		// Detect whether MFA follows an external IDP login or a root/password login.
+		// callback.go's loginLinkedUser sets the auth cookie (with IdpSlug/Acr/Amr) before
+		// triggering email verification for external IDPs. Password logins do not set the
+		// cookie before MFA, so absence of an external IDP cookie means root/password.
+		idpSlug := models.RootIdp
+		acr := []string{models.ACRPassword, models.ACRIdpRoot}
+		amrBase := []string{models.AMRPassword, models.AMRIdp}
+		getAuthCookieResponse, authCookieErr := s.wellknownCookies.GetAuthCookie(c)
+		if authCookieErr == nil &&
+			getAuthCookieResponse.AuthCookie != nil &&
+			getAuthCookieResponse.AuthCookie.Identity != nil &&
+			fluffycore_utils.IsNotEmptyOrNil(getAuthCookieResponse.AuthCookie.Identity.IdpSlug) &&
+			getAuthCookieResponse.AuthCookie.Identity.IdpSlug != models.RootIdp &&
+			len(getAuthCookieResponse.AuthCookie.Acr) > 0 {
+			idpSlug = getAuthCookieResponse.AuthCookie.Identity.IdpSlug
+			acr = getAuthCookieResponse.AuthCookie.Acr
+			amrBase = getAuthCookieResponse.AuthCookie.Amr
+		}
+		amr := append(append([]string{}, amrBase...), models.AMRMFA, models.AMREmailCode)
 		err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
 			AuthCookie: &contracts_cookies.AuthCookie{
 				Identity: &proto_oidc_models.Identity{
 					Subject:       rageUser.RootIdentity.Subject,
 					Email:         rageUser.RootIdentity.Email,
 					EmailVerified: rageUser.RootIdentity.EmailVerified,
+					IdpSlug:       idpSlug,
 				},
+				Acr: acr,
+				Amr: amr,
 			},
 		})
 		if err != nil {
@@ -318,24 +340,13 @@ func (s *service) DoPost(c *echo.Context) error {
 		}
 		authorizationFinal := getAuthorizationRequestStateResponse.AuthorizationRequestState
 		authorizationFinal.Identity = &proto_oidc_models.OIDCIdentity{
-			Subject: rageUser.RootIdentity.Subject,
-			Email:   rageUser.RootIdentity.Email,
-			IdpSlug: models.RootIdp,
-			Acr: []string{
-				models.ACRPassword,
-				models.ACRIdpRoot,
-			},
-			Amr: []string{
-				models.AMRPassword,
-				// always true, as we are the root idp
-				models.AMRIdp,
-				// this is a multifactor
-				models.AMRMFA,
-				models.AMREmailCode,
-			},
+			Subject:       rageUser.RootIdentity.Subject,
+			Email:         rageUser.RootIdentity.Email,
+			EmailVerified: rageUser.RootIdentity.EmailVerified,
+			IdpSlug:       idpSlug,
+			Acr:           acr,
+			Amr:           amr,
 		}
-		// "urn:rage:idp:google", "urn:rage:idp:spacex", "urn:rage:idp:github-enterprise", etc.
-		// "urn:rage:password", "urn:rage:2fa", "urn:rage:email", etc.
 		// we are done with the state now.  Lets map it to the code so it can be looked up by the client.
 		_, err = s.AuthorizationRequestStateStore().StoreAuthorizationRequestState(ctx, &proto_oidc_flows.StoreAuthorizationRequestStateRequest{
 			State:                     authorizationFinal.Request.Code,

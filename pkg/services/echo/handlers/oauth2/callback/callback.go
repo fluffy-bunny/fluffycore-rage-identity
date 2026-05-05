@@ -539,6 +539,28 @@ func (s *service) Do(c *echo.Context) error {
 			}
 
 			if idp.MultiFactorRequired || !user.RootIdentity.EmailVerified {
+				// Set the auth cookie with external IDP context BEFORE triggering MFA so that
+				// the verifycode handler can read the IDP slug/ACR/AMR and carry them through.
+				err = s.wellknownCookies.SetAuthCookie(c, &contracts_cookies.SetAuthCookieRequest{
+					AuthCookie: &contracts_cookies.AuthCookie{
+						Identity: &proto_oidc_models.Identity{
+							Subject:       user.RootIdentity.Subject,
+							Email:         user.RootIdentity.Email,
+							EmailVerified: user.RootIdentity.EmailVerified,
+							IdpSlug:       externalOauth2State.Request.IdpHint,
+						},
+						Acr: []string{
+							fmt.Sprintf("urn:rage:idp:%s", externalOauth2State.Request.IdpHint),
+						},
+						Amr: []string{
+							models.AMRIdp,
+						},
+					},
+				})
+				if err != nil {
+					log.Error().Err(err).Msg("SetAuthCookie before MFA")
+					return s.TeleportBackToLoginWithError(c, InternalError_Callback_002, InternalError_Callback_002)
+				}
 				if user.RootIdentity.EmailVerified {
 					return doEmailVerification(user, directive, contracts_cookies.VerifyCode_Challenge)
 				}
