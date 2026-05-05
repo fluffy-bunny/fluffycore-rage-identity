@@ -13,14 +13,14 @@ require (
 	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/eko/gocache/lib/v4 v4.2.3
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.7
-	github.com/fluffy-bunny/fluffycore v1.0.261
+	github.com/fluffy-bunny/fluffycore v1.0.262
 	github.com/go-oauth2/oauth2/v4 v4.5.4
-	github.com/go-webauthn/webauthn v0.17.0
+	github.com/go-webauthn/webauthn v0.17.2
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/gogo/status v1.1.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.29.0
-	github.com/labstack/echo/v5 v5.1.0
+	github.com/labstack/echo/v5 v5.1.1
 	github.com/lestrrat-go/jwx/v2 v2.1.6
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
 	github.com/reugn/async v0.10.0
@@ -38,7 +38,7 @@ require (
 	golang.org/x/oauth2 v0.36.0
 	golang.org/x/text v0.36.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20260414002931-afd174a4e478
-	google.golang.org/grpc v1.80.0
+	google.golang.org/grpc v1.81.0
 	google.golang.org/protobuf v1.36.11
 	maragu.dev/gomponents v1.3.0
 )
