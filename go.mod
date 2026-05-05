@@ -15,7 +15,7 @@ require (
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.7
 	github.com/fluffy-bunny/fluffycore v1.0.262
 	github.com/go-oauth2/oauth2/v4 v4.5.4
-	github.com/go-webauthn/webauthn v0.17.0
+	github.com/go-webauthn/webauthn v0.17.2
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/gogo/status v1.1.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
