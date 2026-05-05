@@ -237,7 +237,25 @@ func (s *service) DoPost(c *echo.Context) error {
 		}))
 
 	case contracts_cookies.VerifyCode_Challenge:
-		// MFA challenge passed - set auth cookies
+		// MFA challenge passed - preserve the IDP context from the auth cookie set
+		// by loginLinkedUser before triggering MFA (external IDP path), or fall back
+		// to root/password defaults (password login path).
+		challengeIdpSlug := models.RootIdp
+		challengeAcr := []string{models.ACRPassword, models.ACRIdpRoot}
+		challengeAmrBase := []string{models.AMRPassword, models.AMRIdp}
+		getAuthCookieResponse, authCookieErr := s.wellknownCookies.GetAuthCookie(c)
+		if authCookieErr == nil &&
+			getAuthCookieResponse.AuthCookie != nil &&
+			getAuthCookieResponse.AuthCookie.Identity != nil &&
+			fluffycore_utils.IsNotEmptyOrNil(getAuthCookieResponse.AuthCookie.Identity.IdpSlug) &&
+			getAuthCookieResponse.AuthCookie.Identity.IdpSlug != models.RootIdp &&
+			len(getAuthCookieResponse.AuthCookie.Acr) > 0 {
+			challengeIdpSlug = getAuthCookieResponse.AuthCookie.Identity.IdpSlug
+			challengeAcr = getAuthCookieResponse.AuthCookie.Acr
+			challengeAmrBase = getAuthCookieResponse.AuthCookie.Amr
+		}
+		challengeAmr := append(append([]string{}, challengeAmrBase...), models.AMRMFA, models.AMREmailCode)
+		// set auth cookies
 		err = s.wellknownCookies.SetAuthCookie(c,
 			&contracts_cookies.SetAuthCookieRequest{
 				AuthCookie: &contracts_cookies.AuthCookie{
@@ -245,17 +263,10 @@ func (s *service) DoPost(c *echo.Context) error {
 						Subject:       rageUser.RootIdentity.Subject,
 						Email:         rageUser.RootIdentity.Email,
 						EmailVerified: rageUser.RootIdentity.EmailVerified,
+						IdpSlug:       challengeIdpSlug,
 					},
-					Acr: []string{
-						models.ACRPassword,
-						models.ACRIdpRoot,
-					},
-					Amr: []string{
-						models.AMRPassword,
-						models.AMRIdp,
-						models.AMRMFA,
-						models.AMREmailCode,
-					},
+					Acr: challengeAcr,
+					Amr: challengeAmr,
 				},
 			})
 		if err != nil {
@@ -287,10 +298,10 @@ func (s *service) DoPost(c *echo.Context) error {
 							Subject:       rageUser.RootIdentity.Subject,
 							Email:         rageUser.RootIdentity.Email,
 							EmailVerified: rageUser.RootIdentity.EmailVerified,
-							IdpSlug:       models.RootIdp,
+							IdpSlug:       challengeIdpSlug,
 						},
-						Acr: []string{models.ACRPassword, models.ACRIdpRoot},
-						Amr: []string{models.AMRPassword, models.AMRIdp, models.AMRMFA, models.AMREmailCode},
+						Acr: challengeAcr,
+						Amr: challengeAmr,
 					},
 				})
 			if err != nil {
@@ -329,6 +340,20 @@ func (s *service) completeOAuthFlow(c *echo.Context, rageUser *proto_oidc_models
 	authorizationRequest := sessionRequest.(*proto_oidc_models.AuthorizationRequest)
 	rootPath := echo_utils.GetMyRootPath(c)
 
+	// Read the auth cookie set during challenge to carry the correct IDP context.
+	identityAcr := []string{models.ACRPassword, models.ACRIdpRoot}
+	identityAmr := []string{models.AMRPassword, models.AMRIdp, models.AMRMFA, models.AMREmailCode}
+	identityIdpSlug := models.RootIdp
+	if authCookieResp, authCookieRespErr := s.wellknownCookies.GetAuthCookie(c); authCookieRespErr == nil &&
+		authCookieResp.AuthCookie != nil &&
+		authCookieResp.AuthCookie.Identity != nil &&
+		fluffycore_utils.IsNotEmptyOrNil(authCookieResp.AuthCookie.Identity.IdpSlug) &&
+		authCookieResp.AuthCookie.Identity.IdpSlug != models.RootIdp &&
+		len(authCookieResp.AuthCookie.Acr) > 0 {
+		identityIdpSlug = authCookieResp.AuthCookie.Identity.IdpSlug
+		identityAcr = authCookieResp.AuthCookie.Acr
+		identityAmr = authCookieResp.AuthCookie.Amr
+	}
 	result, err := s.ProcessFinalAuthenticationState(ctx, c,
 		&services_echo_handlers_base.ProcessFinalAuthenticationStateRequest{
 			AuthorizationRequest: authorizationRequest,
@@ -336,8 +361,9 @@ func (s *service) completeOAuthFlow(c *echo.Context, rageUser *proto_oidc_models
 				Subject:       rageUser.RootIdentity.Subject,
 				Email:         rageUser.RootIdentity.Email,
 				EmailVerified: rageUser.RootIdentity.EmailVerified,
-				Acr:           []string{models.ACRPassword, models.ACRIdpRoot},
-				Amr:           []string{models.AMRPassword, models.AMRIdp, models.AMRMFA, models.AMREmailCode},
+				IdpSlug:       identityIdpSlug,
+				Acr:           identityAcr,
+				Amr:           identityAmr,
 			},
 			RootPath: rootPath,
 		})
