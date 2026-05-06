@@ -21,6 +21,7 @@ type (
 		Title             string `json:"title,omitempty"`
 		LogoURL           string `json:"logoUrl,omitempty"`
 		ShowBannerVersion bool   `json:"showBannerVersion,omitempty"`
+		BackgroundColor   string `json:"backgroundColor,omitempty"`
 	}
 
 	OIDCLoginAppConfig struct {
@@ -86,6 +87,7 @@ func (s *service) Do(c *echo.Context) error {
 			Title:             s.config.ApplicationName,
 			LogoURL:           "web/apple-touch-icon-192x192.png",
 			ShowBannerVersion: s.config.SystemConfig.DeveloperMode,
+			BackgroundColor:   s.config.BackgroundColor,
 		},
 		EnabledWebAuthN: s.config.WebAuthNConfig.Enabled,
 		EnabledTotp:     s.config.TOTP.Enabled,
