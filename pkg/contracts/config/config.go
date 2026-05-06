@@ -203,6 +203,7 @@ type (
 		OIDCFlowAppConfig              *contracts_OIDCFlowAppConfig.OIDCFlowAppConfig `json:"oidcFlowAppConfig"`
 		RequiresNoAuthConfig           *RequiresNoAuthConfig                          `json:"requiresNoAuthConfig"`
 		CacheBustVersion               string                                         `json:"cacheBustVersion"`
+		BackgroundColor                string                                         `json:"backgroundColor"`
 	}
 )
 
@@ -445,7 +446,8 @@ const configDefaultJSONTemplate = `
 	"requiresNoAuthConfig": {
 		"remove": [],
 		"add": []
-	}
+	},
+	"backgroundColor": "#191f2c"
 }
 `
 

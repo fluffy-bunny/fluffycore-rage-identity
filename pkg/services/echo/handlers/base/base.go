@@ -325,9 +325,10 @@ func (b *BaseHandler) RenderAutoPost(c *echo.Context, action string, formData []
 		}
 	}
 	return echo_components.RenderAutoPost(c, http.StatusFound, echo_components.AutoPostData{
-		Action:     action,
-		FormParams: formData,
-		CSRF:       csrfStr,
+		Action:          action,
+		FormParams:      formData,
+		CSRF:            csrfStr,
+		BackgroundColor: b.config.BackgroundColor,
 	})
 }
 
