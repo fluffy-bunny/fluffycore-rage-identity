@@ -105,11 +105,12 @@ func (s *service) Do(c *echo.Context) error {
 	}
 
 	return components.RenderNode(c, http.StatusOK, components.ShellPage(components.ShellData{
-		RenderContext: rc,
-		BrandTitle:    brandTitle,
-		InitialPage:   initialPage,
-		AppVersion:    example_version.Version(),
-		ShowVersion:   s.appConfig.BannerBranding.ShowBannerVersion,
+		RenderContext:   rc,
+		BrandTitle:      brandTitle,
+		InitialPage:     initialPage,
+		AppVersion:      example_version.Version(),
+		ShowVersion:     s.appConfig.BannerBranding.ShowBannerVersion,
+		BackgroundColor: s.appConfig.BannerBranding.BackgroundColor,
 	}))
 }
 

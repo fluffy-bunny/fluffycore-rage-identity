@@ -70,7 +70,8 @@ var ConfigDefaultJSON = []byte(`
         "bannerBranding": {
             "title": "RAGE Identity Management",
             "logoUrl": "web/m_logo.svg",
-            "showBannerVersion": false
+            "showBannerVersion": false,
+            "backgroundColor": "#191f2c"
         },
         "returnUrl": "http://{environment}/management/",
         "rageBaseUrl": "http://{environment}",
@@ -83,7 +84,8 @@ var ConfigDefaultJSON = []byte(`
         "bannerBranding": {
             "title": "RAGE Identity",
             "logoUrl": "web/m_logo.svg",
-            "showBannerVersion": false
+            "showBannerVersion": false,
+            "backgroundColor": "#191f2c"
         },
         "rageBaseUrl": "http://{environment}",
         "enabledWebAuthN": true,

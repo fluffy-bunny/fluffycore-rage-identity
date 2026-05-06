@@ -2,6 +2,10 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
+:root {
+  --card-bg: #1f2937;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -31,7 +35,7 @@ body {
 }
 
 .wizard-container {
-  background: #1f2937;
+  background: var(--card-bg);
   border-radius: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   border: 1px solid #374151;
@@ -594,11 +598,12 @@ input.error:focus {
 .separator::after {
   content: "";
   flex: 1;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #6b7280;
 }
 
 .separator span {
   padding: 0 12px;
+  background: transparent;
 }
 
 /* Social login styles */
@@ -741,12 +746,12 @@ input.error:focus {
 .divider::after {
   content: "";
   flex: 1;
-  border-bottom: 1px solid #374151;
+  border-bottom: 1px solid #6b7280;
 }
 
 .divider span {
   padding: 0 16px;
-  background: #1f2937;
+  background: transparent;
 }
 
 .social-buttons {

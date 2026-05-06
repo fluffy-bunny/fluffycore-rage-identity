@@ -13,9 +13,10 @@ import (
 
 // AutoPostData holds the data needed to render the auto-posting redirect page.
 type AutoPostData struct {
-	Action     string
-	FormParams []models.FormParam
-	CSRF       string
+	Action          string
+	FormParams      []models.FormParam
+	CSRF            string
+	BackgroundColor string
 }
 
 // AutoPostPage renders a full HTML page that automatically submits a hidden POST form.
@@ -38,9 +39,9 @@ func AutoPostPage(data AutoPostData) g.Node {
 			Meta(g.Attr("charset", "utf-8")),
 			Meta(Name("viewport"), g.Attr("content", "width=device-width, initial-scale=1, shrink-to-fit=no")),
 			StyleEl(g.Raw(`
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#111827;color:#f9fafb;min-height:100vh;display:flex;align-items:center;justify-content:center}
+html,body{background:` + data.BackgroundColor + `}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#f9fafb;min-height:100vh;display:flex;align-items:center;justify-content:center}
 .redirect-container{text-align:center}
 .spinner{width:40px;height:40px;border:3px solid #374151;border-top-color:#10b981;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
 @keyframes spin{to{transform:rotate(360deg)}}
