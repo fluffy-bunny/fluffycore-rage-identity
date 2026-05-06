@@ -9,6 +9,7 @@ type (
 		Title             string `json:"title,omitempty"`
 		LogoURL           string `json:"logoUrl,omitempty"`
 		ShowBannerVersion bool   `json:"showBannerVersion,omitempty"`
+		BackgroundColor   string `json:"backgroundColor,omitempty"`
 	}
 	AppConfig struct {
 		BaseHREF                   string                                        `json:"basehref,omitempty"`

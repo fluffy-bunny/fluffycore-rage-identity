@@ -9,14 +9,19 @@ import (
 // ShellData holds data for the full HTML shell page.
 type ShellData struct {
 	*RenderContext
-	BrandTitle  string
-	InitialPage string // HTMX path loaded on shell mount; defaults to HTMXHome
-	AppVersion  string
-	ShowVersion bool
+	BrandTitle      string
+	InitialPage     string // HTMX path loaded on shell mount; defaults to HTMXHome
+	AppVersion      string
+	ShowVersion     bool
+	BackgroundColor string // CSS background color; defaults to "#191f2c" if empty
 }
 
 // ShellPage renders the full HTML document shell with wizard-container and app-header.
 func ShellPage(data ShellData) g.Node {
+	bgColor := data.BackgroundColor
+	if bgColor == "" {
+		bgColor = "#191f2c"
+	}
 	return c.HTML5(c.HTML5Props{
 		Title:    "Login",
 		Language: "en",
@@ -31,7 +36,7 @@ func ShellPage(data ShellData) g.Node {
 				g.Attr("crossorigin", "anonymous")),
 			Script(Src("/static/go-app/oidc-login/htmx/webauthn.js?v=" + data.CacheBustVersion)),
 			Meta(Name("htmx-config"), g.Attr("content", `{"responseHandling":[{"code":".*", "swap": true}]}`)),
-			StyleEl(g.Raw(`html,body{background:#191f2c}`)),
+			StyleEl(g.Raw(`html,body{background:` + bgColor + `}`)),
 			StyleEl(g.Raw(`.htmx-indicator { display: none; }
 .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline-block; }
 .field-error { color: #e74c3c; font-size: 0.85rem; margin-top: 0.25rem; }`)),

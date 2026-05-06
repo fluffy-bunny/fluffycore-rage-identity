@@ -20,6 +20,12 @@ func ShellPage(rc *RenderContext) g.Node {
 		pageTitle = rc.AppConfig.BannerBranding.Title
 	}
 
+	// Derive background color from config branding
+	bgColor := "#191f2c"
+	if rc.AppConfig != nil && rc.AppConfig.BannerBranding.BackgroundColor != "" {
+		bgColor = rc.AppConfig.BannerBranding.BackgroundColor
+	}
+
 	return c.HTML5(c.HTML5Props{
 		Title:    pageTitle,
 		Language: "en",
@@ -34,7 +40,7 @@ func ShellPage(rc *RenderContext) g.Node {
 				g.Attr("crossorigin", "anonymous")),
 			Script(Src("/static/go-app/oidc-login/htmx/webauthn.js?v=" + rc.CacheBustVersion)),
 			Meta(Name("htmx-config"), g.Attr("content", `{"responseHandling":[{"code":".*", "swap": true}]}`)),
-			StyleEl(g.Raw(`html,body{background:#191f2c}`)),
+			StyleEl(g.Raw(`html,body{background:` + bgColor + `}`)),
 			StyleEl(g.Raw(`.htmx-indicator { display: none; }
 .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline-block; }
 .field-error { color: #e74c3c; font-size: 0.85rem; margin-top: 0.25rem; }`)),
