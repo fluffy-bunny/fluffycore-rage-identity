@@ -16,16 +16,12 @@ type AutoPostData struct {
 	Action          string
 	FormParams      []models.FormParam
 	CSRF            string
-	BackgroundColor string // CSS background color; defaults to "#191f2c" if empty
+	BackgroundColor string
 }
 
 // AutoPostPage renders a full HTML page that automatically submits a hidden POST form.
 // Styled with the same dark theme as the management and OIDC login UIs.
 func AutoPostPage(data AutoPostData) g.Node {
-	bgColor := data.BackgroundColor
-	if bgColor == "" {
-		bgColor = "#191f2c"
-	}
 	hiddenFields := make([]g.Node, 0, len(data.FormParams)+1)
 	for _, fp := range data.FormParams {
 		hiddenFields = append(hiddenFields,
@@ -44,7 +40,7 @@ func AutoPostPage(data AutoPostData) g.Node {
 			Meta(Name("viewport"), g.Attr("content", "width=device-width, initial-scale=1, shrink-to-fit=no")),
 			StyleEl(g.Raw(`
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{background:` + bgColor + `}
+html,body{background:` + data.BackgroundColor + `}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#f9fafb;min-height:100vh;display:flex;align-items:center;justify-content:center}
 .redirect-container{text-align:center}
 .spinner{width:40px;height:40px;border:3px solid #374151;border-top-color:#10b981;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}

@@ -21,10 +21,7 @@ func ShellPage(rc *RenderContext) g.Node {
 	}
 
 	// Derive background color from config branding
-	bgColor := "#191f2c"
-	if rc.AppConfig != nil && rc.AppConfig.BannerBranding.BackgroundColor != "" {
-		bgColor = rc.AppConfig.BannerBranding.BackgroundColor
-	}
+	bgColor := rc.AppConfig.BannerBranding.BackgroundColor
 
 	return c.HTML5(c.HTML5Props{
 		Title:    pageTitle,
