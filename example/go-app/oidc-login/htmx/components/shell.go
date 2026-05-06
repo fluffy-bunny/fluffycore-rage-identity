@@ -31,6 +31,7 @@ func ShellPage(data ShellData) g.Node {
 				g.Attr("crossorigin", "anonymous")),
 			Script(Src("/static/go-app/oidc-login/htmx/webauthn.js?v=" + data.CacheBustVersion)),
 			Meta(Name("htmx-config"), g.Attr("content", `{"responseHandling":[{"code":".*", "swap": true}]}`)),
+			StyleEl(g.Raw(`html,body{background:#191f2c}`)),
 			StyleEl(g.Raw(`.htmx-indicator { display: none; }
 .htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline-block; }
 .field-error { color: #e74c3c; font-size: 0.85rem; margin-top: 0.25rem; }`)),
