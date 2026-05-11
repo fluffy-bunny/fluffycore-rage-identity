@@ -192,14 +192,29 @@ func OnConfigureServicesLoadIDPs(ctx context.Context, config *contracts_config.C
 
 func OnConfigureServicesLoadOIDCClients(ctx context.Context, config *contracts_config.Config, builder di.ContainerBuilder) error {
 	log := zerolog.Ctx(ctx).With().Str("method", "OnConfigureServicesLoadOIDCClients").Logger()
+
+	// Always register *Clients so the in-memory client service Ctor is satisfied,
+	// even when oidcClientPath is empty (clients coming from a DB instead).
+	oidcClients := &proto_oidc_models.Clients{}
+
+	if fluffycore_utils.IsEmptyOrNil(config.ConfigFiles.OIDCClientPath) {
+		log.Info().Msg("oidcClientPath is empty, registering empty Clients (DB-backed mode)")
+		di.AddSingleton[*proto_oidc_models.Clients](builder, func() *proto_oidc_models.Clients {
+			return oidcClients
+		})
+		return nil
+	}
+
 	fileContent, err := os.ReadFile(config.ConfigFiles.OIDCClientPath)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to read OIDCClientPath - may not be a problem if clients are comming from a DB")
+		di.AddSingleton[*proto_oidc_models.Clients](builder, func() *proto_oidc_models.Clients {
+			return oidcClients
+		})
 		return nil
 	}
 	fixedFileContent := fluffycore_utils.ReplaceEnv(string(fileContent), "${%s}")
 
-	var oidcClients *proto_oidc_models.Clients = &proto_oidc_models.Clients{}
 	err = protojson.Unmarshal([]byte(fixedFileContent), oidcClients)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to unmarshal OIDCClientPath")
@@ -207,8 +222,6 @@ func OnConfigureServicesLoadOIDCClients(ctx context.Context, config *contracts_c
 	}
 	di.AddSingleton[*proto_oidc_models.Clients](builder, func() *proto_oidc_models.Clients {
 		return oidcClients
-
 	})
 	return nil
-
 }

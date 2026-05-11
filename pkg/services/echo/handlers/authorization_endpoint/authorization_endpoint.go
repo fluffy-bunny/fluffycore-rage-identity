@@ -15,6 +15,7 @@ import (
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	models_api_manifest "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/manifest"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
+	clientauthorization "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/middleware/clientauthorization"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
 	proto_oidc_client "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/client"
 	proto_oidc_flows "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/flows"
@@ -79,7 +80,7 @@ func AddScopedIHandler(builder di.ContainerBuilder) {
 
 func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{
-		//clientauthorization.AuthenticateOAuth2Client(),
+		clientauthorization.AuthorizeOAuth2Client(),
 	}
 }
 func (s *service) newSession() (contracts_sessions.ISession, error) {

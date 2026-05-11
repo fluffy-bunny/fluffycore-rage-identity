@@ -406,6 +406,7 @@ func (b *BaseHandler) NewRenderContext(c *echo.Context) *echo_components.RenderC
 		Localizer:       localizer,
 		IsAuthenticated: isAuthenticated,
 		Username:        username,
+		BackgroundColor: b.config.BackgroundColor,
 	}
 }
 

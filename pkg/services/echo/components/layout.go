@@ -30,6 +30,31 @@ func PageShell(bodyAttrs []g.Node, children ...g.Node) g.Node {
 	})
 }
 
+// PageShellBare renders a minimal full-page HTML5 shell with the branded background color and
+// no navbar, no back-links.  Use for terminal error pages where there is no safe redirect target.
+func PageShellBare(rc *RenderContext, children ...g.Node) g.Node {
+	bg := rc.BackgroundColor
+	if bg == "" {
+		bg = "#1a1a2e"
+	}
+	return c.HTML5(c.HTML5Props{
+		Title:    "Error",
+		Language: "en",
+		Head: []g.Node{
+			Meta(g.Attr("charset", "utf-8")),
+			Meta(Name("viewport"), g.Attr("content", "width=device-width, initial-scale=1, shrink-to-fit=no")),
+			Link(Href("https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"),
+				g.Attr("rel", "stylesheet"),
+				g.Attr("integrity", "sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"),
+				g.Attr("crossorigin", "anonymous")),
+			StyleEl(g.Raw(`html,body{background:` + bg + `;color:#f9fafb;min-height:100vh;margin:0}`)),
+		},
+		Body: []g.Node{
+			Body(g.Group(children)),
+		},
+	})
+}
+
 // PageShellWithNavbar renders a full HTML5 page with navbar, bootstrap header/footer.
 func PageShellWithNavbar(rc *RenderContext, children ...g.Node) g.Node {
 	return c.HTML5(c.HTML5Props{

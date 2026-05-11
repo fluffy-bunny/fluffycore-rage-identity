@@ -55,10 +55,19 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 // @Router /error [get]
 func (s *service) Do(c *echo.Context) error {
 	errorCode := c.QueryParam("error")
+	errorDescription := c.QueryParam("error_description")
 	errorMessage := "An error occurred"
 
 	// Map error codes to user-friendly messages
 	switch errorCode {
+	case "unauthorized_client":
+		errorMessage = "The client application is not authorized. It may have been removed or misconfigured."
+	case "invalid_request":
+		if errorDescription != "" {
+			errorMessage = "Invalid request: " + errorDescription
+		} else {
+			errorMessage = "The authorization request is invalid."
+		}
 	case "invalid_idp_hint":
 		errorMessage = "Invalid identity provider specified. The requested IDP does not exist or is not enabled."
 	case "invalid_root_candidate":

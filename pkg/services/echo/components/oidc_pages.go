@@ -360,6 +360,9 @@ type ErrorPageData struct {
 }
 
 // ErrorPage renders the OIDC error page.
+// For client-validation errors (invalid client_id, redirect_uri mismatch) we render
+// a dead-end page with no navigation — per RFC 6749 §4.1.2.1, when the redirect_uri
+// cannot be trusted we MUST NOT redirect back to the client.
 func ErrorPage(rc *RenderContext, data ErrorPageData) g.Node {
 	messageNode := Div(Strong(g.Text("An error occurred")))
 	if data.Message != "" {
@@ -370,16 +373,36 @@ func ErrorPage(rc *RenderContext, data ErrorPageData) g.Node {
 		errorNode = Div(Class("mt-2"), Small(g.Textf("Error code: %s", data.Error)))
 	}
 
-	return PageShellWithNavbar(rc,
-		Div(Class("container"),
-			Div(Class("text-center mt-5"),
-				H1(g.Text("Error")),
-				Div(Class("alert alert-danger"), g.Attr("role", "alert"),
+	// Client-auth errors: no redirect target can be trusted — dead-end page only.
+	isClientError := data.Error == "unauthorized_client" ||
+		data.Error == "invalid_request" ||
+		data.Error == "redirect_uri_mismatch"
+
+	body := Div(Class("d-flex align-items-center justify-content-center"),
+		StyleAttr("min-height:100vh"),
+		Div(Class("text-center"),
+			H1(Class("mb-4"), StyleAttr("color:#f9fafb"), g.Text("Authentication Error")),
+			Div(Class("alert alert-danger d-inline-block text-start"), g.Attr("role", "alert"),
+				messageNode,
+				errorNode,
+			),
+		),
+	)
+
+	if isClientError {
+		return PageShellBare(rc, body)
+	}
+	return PageShellBare(rc,
+		Div(Class("d-flex align-items-center justify-content-center"),
+			StyleAttr("min-height:100vh"),
+			Div(Class("text-center"),
+				H1(Class("mb-4"), StyleAttr("color:#f9fafb"), g.Text("Authentication Error")),
+				Div(Class("alert alert-danger d-inline-block text-start"), g.Attr("role", "alert"),
 					messageNode,
 					errorNode,
 				),
 				Div(Class("mt-4"),
-					A(Href("/"), Class("btn btn-primary"), g.Text("Return to Home")),
+					A(Href("/"), Class("btn btn-outline-light btn-sm"), g.Text("Return to Home")),
 				),
 			),
 		),

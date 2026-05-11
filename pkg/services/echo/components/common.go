@@ -18,6 +18,7 @@ type RenderContext struct {
 	Localizer       *i18n.Localizer
 	IsAuthenticated bool
 	Username        string
+	BackgroundColor string
 }
 
 // L localizes a message key.
