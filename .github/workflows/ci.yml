@@ -22,6 +22,7 @@ on:
 env:
   BINARY: "server"
   GO_VERSION: "1.26"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   BUILD_PATH: "./cmd/server"
   IMAGE_NAME: "ghcr.io/fluffy-bunny/fluffycore-rage-identity"
   BASE_VERSION: "1.0.0"
