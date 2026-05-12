@@ -320,7 +320,7 @@ const configDefaultJSONTemplate = `
     "multiFactorRequired": false,
     "multiFactorRequiredByEmailCode": false,
     "identityCreationProtectionConfig": {
-        "enabled": false,
+        "enabled": true,
         "disposableEmailListUrl": "https://raw.githubusercontent.com/disposable-email-domains/disposable-email-domains/main/disposable_email_blocklist.conf",
         "ignoreOnLoadError": true,
         "cacheTtlSeconds": 3600
