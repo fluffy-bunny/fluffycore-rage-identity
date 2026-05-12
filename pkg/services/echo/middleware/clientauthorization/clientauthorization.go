@@ -62,7 +62,11 @@ func AuthorizeOAuth2Client() echo.MiddlewareFunc {
 				}
 			}
 			if !validRedirect {
-				log.Warn().Str("clientId", clientID).Str("redirectUri", redirectURI).Msg("redirect_uri not registered")
+				log.Warn().
+					Str("clientId", clientID).
+					Str("redirectUri", redirectURI).
+					Strs("registeredRedirectUris", client.AllowedRedirectUris).
+					Msg("redirect_uri not registered")
 				return c.Redirect(http.StatusFound, "/error?error=invalid_request&error_description=redirect_uri+mismatch")
 			}
 
