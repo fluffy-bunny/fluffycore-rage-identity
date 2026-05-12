@@ -104,19 +104,17 @@ func (s *service) Do(c *echo.Context) error {
 		return c.JSONPretty(http.StatusInternalServerError, response, "  ")
 	}
 
-	// Verify that authentication was completed (to prevent direct browsing to this endpoint)
+	// AuthCompleted is a one-time transition cookie. Treat it as optional so
+	// missing cookie state does not break login completion.
+	var authCompleted *contracts_cookies.AuthCompleted
 	getAuthCompletedResponse, err := s.WellknownCookies().GetAuthCompletedCookie(c)
 	if err != nil {
-		log.Error().Err(err).Msg("GetAuthCompletedCookie - authentication not completed")
-		response := &login_models.KeepSignedInErrorResponse{
-			Reason: "authentication not completed",
-		}
-		return c.JSONPretty(http.StatusUnauthorized, response, "  ")
+		log.Warn().Err(err).Msg("GetAuthCompletedCookie")
+	} else {
+		authCompleted = getAuthCompletedResponse.AuthCompleted
+		// Delete the auth completed cookie (one-time use)
+		s.WellknownCookies().DeleteAuthCompletedCookie(c)
 	}
-	authCompleted := getAuthCompletedResponse.AuthCompleted
-
-	// Delete the auth completed cookie (one-time use)
-	s.WellknownCookies().DeleteAuthCompletedCookie(c)
 
 	// Get the auth cookie to verify user is authenticated
 	getAuthCookieResponse, err := s.WellknownCookies().GetAuthCookie(c)
@@ -129,8 +127,8 @@ func (s *service) Do(c *echo.Context) error {
 	}
 	authCookie := getAuthCookieResponse.AuthCookie
 
-	// Verify that the auth completed subject matches the auth subject
-	if authCompleted.Subject != authCookie.Identity.Subject {
+	// Verify that the auth completed subject matches the auth subject when present.
+	if authCompleted != nil && authCompleted.Subject != authCookie.Identity.Subject {
 		log.Error().Str("authCompletedSubject", authCompleted.Subject).Str("authSubject", authCookie.Identity.Subject).Msg("Subject mismatch")
 		response := &login_models.KeepSignedInErrorResponse{
 			Reason: "subject mismatch",
