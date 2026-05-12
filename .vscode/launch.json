@@ -85,6 +85,10 @@
                 "managementAppConfig__cookieDomain": "localhost",
                 "RAGE_selfIDPConfig__clientId": "self-client",
                 "RAGE_selfIDPConfig__clientSecret": "secret",
+                "RAGE_identityCreationDenyListConfig__url": "",
+                "RAGE_identityCreationDenyListConfig__filePath": "${workspaceFolder}/config/identity-creation-deny-list.json",
+                "RAGE_identityCreationDenyListConfig__ignoreOnLoadError": "true",
+                "RAGE_identityCreationDenyListConfig__cacheTtlSeconds": "3600",
 
             },
             "args": [ "serve" ]        

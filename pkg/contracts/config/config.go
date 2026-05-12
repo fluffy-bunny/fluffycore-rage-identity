@@ -87,6 +87,17 @@ type (
 		Scopes       []string `json:"scopes"`
 	}
 
+	// IdentityCreationDenyListConfig configures an external deny list for blocking
+	// identity creation from certain email domains (e.g. free/consumer email providers).
+	// Set URL for a CDN/HTTP source or FilePath for a local file. URL takes precedence.
+	// If neither is set, only the static DeniedDomains list is used.
+	IdentityCreationDenyListConfig struct {
+		URL               string `json:"url"`               // HTTP/CDN URL to fetch JSON deny list
+		FilePath          string `json:"filePath"`          // local file path to JSON deny list
+		IgnoreOnLoadError bool   `json:"ignoreOnLoadError"` // if true, fail-open on load errors
+		CacheTTLSeconds   int    `json:"cacheTtlSeconds"`   // how often to refresh (default 3600)
+	}
+
 	OIDCConfig struct {
 		FallbackClientUrl            string `json:"fallbackClientUrl"`
 		BaseUrl                      string `json:"baseUrl"`
@@ -182,6 +193,7 @@ type (
 		DisableLocalAccountCreation    bool                                           `json:"disableLocalAccountCreation"`
 		DisableSocialAccounts          bool                                           `json:"disableSocialAccounts"`
 		DeniedDomains                  []string                                       `json:"deniedDomains"`
+		IdentityCreationDenyListConfig *IdentityCreationDenyListConfig                `json:"identityCreationDenyListConfig"`
 		TOTP                           *TOTPConfig                                    `json:"totp"`
 		EmailConfig                    *contracts_email.EmailConfig                   `json:"emailConfig"`
 		SelfIDPConfig                  *SelfIDPConfig                                 `json:"selfIDPConfig"`
@@ -307,6 +319,12 @@ const configDefaultJSONTemplate = `
     "emailVerificationRequired": true,
     "multiFactorRequired": false,
     "multiFactorRequiredByEmailCode": false,
+    "identityCreationDenyListConfig": {
+        "url": "",
+        "filePath": "",
+        "ignoreOnLoadError": true,
+        "cacheTtlSeconds": 3600
+    },
     "selfIDPConfig": {
         "clientId": "self-client",
         "clientSecret": "secret",
