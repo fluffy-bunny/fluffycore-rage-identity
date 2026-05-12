@@ -10,6 +10,7 @@ import (
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_email "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/email"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
+	contracts_identitycreationprotection "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identitycreationprotection"
 	contracts_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/oidc_session"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	echo_utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/utils"
@@ -31,11 +32,12 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
-		config           *contracts_config.Config
-		wellknownCookies contracts_cookies.IWellknownCookies
-		passwordHasher   contracts_identity.IPasswordHasher
-		oidcSession      contracts_oidc_session.IOIDCSession
-		userIdGenerator  contracts_identity.IUserIdGenerator
+		config                     *contracts_config.Config
+		wellknownCookies           contracts_cookies.IWellknownCookies
+		passwordHasher             contracts_identity.IPasswordHasher
+		oidcSession                contracts_oidc_session.IOIDCSession
+		userIdGenerator            contracts_identity.IUserIdGenerator
+		identityCreationProtection contracts_identitycreationprotection.IIdentityCreationProtection
 	}
 )
 
@@ -50,14 +52,16 @@ func (s *service) Ctor(
 	passwordHasher contracts_identity.IPasswordHasher,
 	oidcSession contracts_oidc_session.IOIDCSession,
 	userIdGenerator contracts_identity.IUserIdGenerator,
+	identityCreationProtection contracts_identitycreationprotection.IIdentityCreationProtection,
 ) (*service, error) {
 	return &service{
-		BaseHandler:      services_echo_handlers_base.NewBaseHandler(container, config),
-		config:           config,
-		wellknownCookies: wellknownCookies,
-		passwordHasher:   passwordHasher,
-		oidcSession:      oidcSession,
-		userIdGenerator:  userIdGenerator,
+		BaseHandler:                services_echo_handlers_base.NewBaseHandler(container, config),
+		config:                     config,
+		wellknownCookies:           wellknownCookies,
+		passwordHasher:             passwordHasher,
+		oidcSession:                oidcSession,
+		userIdGenerator:            userIdGenerator,
+		identityCreationProtection: identityCreationProtection,
 	}, nil
 }
 
@@ -153,7 +157,12 @@ func (s *service) DoPost(c *echo.Context) error {
 	// Check if domain is denied
 	parts := strings.Split(model.Email, "@")
 	domainPart := parts[1]
-	if utils.IsDeniedDomain(domainPart, s.config.DeniedDomains) {
+	denied, denyErr := s.identityCreationProtection.IsDisposableEmailDomain(ctx, domainPart)
+	if denyErr != nil {
+		log.Error().Err(denyErr).Str("domain", domainPart).Msg("identity creation deny list error")
+		return s.renderSignup(c, http.StatusInternalServerError, []string{denyErr.Error()}, model.Email)
+	}
+	if denied {
 		msg := utils.LocalizeWithInterperlate(localizer, "domain.not.allowed", map[string]string{"domain": domainPart})
 		return s.renderSignup(c, http.StatusBadRequest, []string{msg}, model.Email)
 	}
