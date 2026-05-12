@@ -85,6 +85,10 @@
                 "managementAppConfig__cookieDomain": "localhost",
                 "RAGE_selfIDPConfig__clientId": "self-client",
                 "RAGE_selfIDPConfig__clientSecret": "secret",
+                "RAGE_identityCreationProtectionConfig__enabled": "true",
+                "RAGE_identityCreationProtectionConfig__disposableEmailListUrl": "https://raw.githubusercontent.com/disposable-email-domains/disposable-email-domains/main/disposable_email_blocklist.conf",
+                "RAGE_identityCreationProtectionConfig__ignoreOnLoadError": "true",
+                "RAGE_identityCreationProtectionConfig__cacheTtlSeconds": "3600",
 
             },
             "args": [ "serve" ]        
