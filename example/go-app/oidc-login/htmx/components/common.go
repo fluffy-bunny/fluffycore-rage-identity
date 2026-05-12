@@ -238,11 +238,11 @@ func socialIdpLabel(slug string) string {
 func PasskeyLoginSection(csrf, keepSignedInURL, text string) g.Node {
 	return Div(Class("passkey-login-section"),
 		Div(Class("divider"), Span(g.Text("OR"))),
-		Button(Type("button"), Class("passkey-btn"),
+		Button(Type("button"), Class("btn-primary"),
 			ID("passkey-login-btn"),
 			g.Attr("aria-label", "Sign in with passkey"),
-			g.Raw(PasskeyIconSVG),
-			Span(g.Text(text)),
+			g.Raw(`<span style="display:inline-flex;align-items:center;margin-right:0.75rem;">`+PasskeyIconSVG+`</span>`),
+			g.Text(text),
 		),
 		Script(g.Raw(`document.getElementById("passkey-login-btn").addEventListener("click",function(){
   this.disabled=true;
