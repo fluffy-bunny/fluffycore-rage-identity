@@ -83,6 +83,8 @@
                 "oidcLoginAppConfig__bannerBranding__showBannerVersion": "true",
                 "oidcLoginAppConfig__cookieDomain": "localhost",
                 "managementAppConfig__cookieDomain": "localhost",
+                "RAGE_selfIDPConfig__clientId": "self-client",
+                "RAGE_selfIDPConfig__clientSecret": "secret",
 
             },
             "args": [ "serve" ]        

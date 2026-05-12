@@ -3,17 +3,15 @@ package api_login
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"fmt"
 	"io"
 	"net/http"
-	"strings"
 
 	oidc "github.com/coreos/go-oidc/v3/oidc"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
-	shared "github.com/fluffy-bunny/fluffycore-rage-identity/cmd/oidc-client/shared"
 	contracts_echo_login_handler "github.com/fluffy-bunny/fluffycore-rage-identity/example/contracts/echo/login_handler"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
+	contracts_selfoauth2provider "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/selfoauth2provider"
 	contracts_session_with_options "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/session_with_options"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	login_models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models/api/login_models"
@@ -30,9 +28,9 @@ import (
 type (
 	service struct {
 		*services_echo_handlers_base.BaseHandler
-		config *contracts_config.Config
-
-		session contracts_session_with_options.ISessionWithOptions
+		config             *contracts_config.Config
+		selfOAuth2Provider contracts_selfoauth2provider.ISelfOAuth2Provider
+		session            contracts_session_with_options.ISessionWithOptions
 	}
 )
 
@@ -44,12 +42,14 @@ var _ contracts_echo_login_handler.ILoginHandler = stemService
 func (s *service) Ctor(
 	config *contracts_config.Config,
 	container di.Container,
+	selfOAuth2Provider contracts_selfoauth2provider.ISelfOAuth2Provider,
 	session contracts_session_with_options.ISessionWithOptions,
 ) (*service, error) {
 	return &service{
-		BaseHandler: services_echo_handlers_base.NewBaseHandler(container, config),
-		config:      config,
-		session:     session,
+		BaseHandler:        services_echo_handlers_base.NewBaseHandler(container, config),
+		config:             config,
+		selfOAuth2Provider: selfOAuth2Provider,
+		session:            session,
 	}, nil
 }
 
@@ -70,15 +70,9 @@ func (s *service) GetMiddleware() []echo.MiddlewareFunc {
 	return []echo.MiddlewareFunc{}
 }
 
-var (
-	callbackPath = wellknown_echo.AccountCallbackPath
-)
-
 func (s *service) HandleLogin(c *echo.Context, loginRequest *login_models.LoginRequest) (*login_models.LoginResponse, error) {
 	ctx := c.Request().Context()
 	log := zerolog.Ctx(ctx).With().Logger()
-
-	r := c.Request()
 
 	// Validate LoginRequest
 	if loginRequest.ReturnURL == "" {
@@ -135,32 +129,15 @@ func (s *service) HandleLogin(c *echo.Context, loginRequest *login_models.LoginR
 	authCodeOptions := []oauth2.AuthCodeOption{
 		oidc.Nonce(nonce),
 	}
-	if len(shared.AppConfig.ACRValues) > 0 {
-		authCodeOptions = append(authCodeOptions, AcrValues(shared.AppConfig.ACRValues...))
-	}
 
-	provider, err := oidc.NewProvider(ctx, s.config.OIDCConfig.BaseUrl)
+	getConfigResponse, err := s.selfOAuth2Provider.GetConfig(ctx)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to query provider.")
+		log.Error().Err(err).Msg("selfOAuth2Provider.GetConfig")
 		return nil, err
 	}
+	oauth2Config := getConfigResponse.Config
 
-	// Build redirect URL from the request itself
-	scheme := "http"
-	if r.TLS != nil {
-		scheme = "https"
-	}
-	redirectUrl := fmt.Sprintf("%s://%s%s", scheme, r.Host, callbackPath)
-
-	config := oauth2.Config{
-		ClientID:     shared.AppConfig.ClientId,
-		ClientSecret: shared.AppConfig.ClientSecret,
-		Endpoint:     provider.Endpoint(),
-		RedirectURL:  redirectUrl,
-		Scopes:       []string{oidc.ScopeOpenID, "profile", "email", oidc.ScopeOfflineAccess},
-	}
-
-	authRequestURL := config.AuthCodeURL(state, authCodeOptions...)
+	authRequestURL := oauth2Config.AuthCodeURL(state, authCodeOptions...)
 	return &login_models.LoginResponse{
 		RedirectURL: authRequestURL,
 	}, nil
@@ -218,9 +195,4 @@ func randString(nByte int) (string, error) {
 		return "", err
 	}
 	return base64.RawURLEncoding.EncodeToString(b), nil
-}
-
-func AcrValues(acr ...string) oauth2.AuthCodeOption {
-	acrValues := strings.Join(acr, " ")
-	return oauth2.SetAuthURLParam("acr_values", acrValues)
 }
