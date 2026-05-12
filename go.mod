@@ -12,7 +12,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.18.0
 	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/eko/gocache/lib/v4 v4.2.3
-	github.com/fluffy-bunny/fluffy-dozm-di v0.0.7
+	github.com/fluffy-bunny/fluffy-dozm-di v0.0.8
 	github.com/fluffy-bunny/fluffycore v1.0.264
 	github.com/go-oauth2/oauth2/v4 v4.5.4
 	github.com/go-webauthn/webauthn v0.17.3
@@ -107,7 +107,6 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.19.1 // indirect
 	github.com/golang/mock v1.7.0-rc.1 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-tpm v0.9.8 // indirect
 	github.com/google/pprof v0.0.0-20250423184734-337e5dd93bb4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
