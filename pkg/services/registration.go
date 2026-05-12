@@ -26,7 +26,7 @@ import (
 	services_emailrenderer "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/emailrenderer"
 	services_identity_passwordhasher "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/identity/passwordhasher"
 	services_identity_userid "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/identity/userid"
-	services_identitycreationdenylist "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/identitycreationdenylist"
+	services_identitycreationprotection "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/identitycreationprotection"
 	services_idp_inmemory "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/idp/inmemory"
 	services_localizer "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/localizer"
 	services_localizerbundle "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/localizerbundle"
@@ -152,7 +152,7 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 		})
 
 	services_selfoauth2provider.AddSingletonISelfOAuth2Provider(builder)
-	services_identitycreationdenylist.AddSingletonIIdentityCreationDenyListService(builder)
+	services_identitycreationprotection.AddSingletonIIdentityCreationProtection(builder)
 	services_webauthn.AddSingletonIWebAuthN(builder)
 	return nil
 }

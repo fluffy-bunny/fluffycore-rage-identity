@@ -87,15 +87,15 @@ type (
 		Scopes       []string `json:"scopes"`
 	}
 
-	// IdentityCreationDenyListConfig configures an external deny list for blocking
-	// identity creation from certain email domains (e.g. free/consumer email providers).
-	// Set URL for a CDN/HTTP source or FilePath for a local file. URL takes precedence.
-	// If neither is set, only the static DeniedDomains list is used.
-	IdentityCreationDenyListConfig struct {
-		URL               string `json:"url"`               // HTTP/CDN URL to fetch JSON deny list
-		FilePath          string `json:"filePath"`          // local file path to JSON deny list
-		IgnoreOnLoadError bool   `json:"ignoreOnLoadError"` // if true, fail-open on load errors
-		CacheTTLSeconds   int    `json:"cacheTtlSeconds"`   // how often to refresh (default 3600)
+	// IdentityCreationProtectionConfig controls blocking of disposable/throwaway email
+	// domains during account creation. When Enabled is true the service fetches a
+	// plain-text blocklist (one domain per line) from DisposableEmailListURL and merges
+	// it with the static DeniedDomains list.
+	IdentityCreationProtectionConfig struct {
+		Enabled                bool   `json:"enabled"`
+		DisposableEmailListURL string `json:"disposableEmailListUrl"` // URL to plain-text blocklist
+		IgnoreOnLoadError      bool   `json:"ignoreOnLoadError"`      // fail-open on load errors
+		CacheTTLSeconds        int    `json:"cacheTtlSeconds"`        // refresh interval (default 3600)
 	}
 
 	OIDCConfig struct {
@@ -179,43 +179,43 @@ type (
 	Config struct {
 		fluffycore_contracts_config.CoreConfig `mapstructure:",squash"`
 
-		ConfigFiles                    ConfigFiles                                    `json:"configFiles"`
-		Echo                           *EchoConfig                                    `json:"echo"`
-		EchoOIDCUI                     *EchoConfig                                    `json:"echoOIDCUI"`
-		EchoAccount                    *EchoConfig                                    `json:"echoAccount"`
-		InMemoryClients                InMemoryClients                                `json:"inMemoryClients"`
-		OIDCConfig                     *OIDCConfig                                    `json:"oidcConfig"`
-		BackingCache                   *BackingCacheConfig                            `json:"backingCache"`
-		AutolinkOnEmailMatch           bool                                           `json:"autolinkOnEmailMatch"`
-		EmailVerificationRequired      bool                                           `json:"emailVerificationRequired"`
-		MultiFactorRequired            bool                                           `json:"multiFactorRequired"`
-		MultiFactorRequiredByEmailCode bool                                           `json:"multiFactorRequiredByEmailCode"`
-		DisableLocalAccountCreation    bool                                           `json:"disableLocalAccountCreation"`
-		DisableSocialAccounts          bool                                           `json:"disableSocialAccounts"`
-		DeniedDomains                  []string                                       `json:"deniedDomains"`
-		IdentityCreationDenyListConfig *IdentityCreationDenyListConfig                `json:"identityCreationDenyListConfig"`
-		TOTP                           *TOTPConfig                                    `json:"totp"`
-		EmailConfig                    *contracts_email.EmailConfig                   `json:"emailConfig"`
-		SelfIDPConfig                  *SelfIDPConfig                                 `json:"selfIDPConfig"`
-		CookieConfig                   *CookieConfig                                  `json:"cookieConfig"`
-		SystemConfig                   *SystemConfig                                  `json:"systemConfig"`
-		SSOConfig                      *SSOConfig                                     `json:"ssoConfig"`
-		SessionConfig                  *contracts_sessions.SessionConfig              `json:"sessionConfig"`
-		WebAuthNConfig                 *contracts_webauthn.WebAuthNConfig             `json:"webAuthNConfig"`
-		PasswordConfig                 *PasswordConfig                                `json:"passwordConfig"`
-		CORSConfig                     *CORSConfig                                    `json:"corsConfig"`
-		CSRFConfig                     *CSRFConfig                                    `json:"csrfConfig"`
-		NoCacheConfig                  *NoCacheConfig                                 `json:"noCacheConfig"`
-		URLRewritesConfig              *URLRewritesConfig                             `json:"urlRewritesConfig"`
-		OTELConfig                     *fluffycore_contracts_otel.OTELConfig          `json:"otelConfig"`
-		OIDCUIConfig                   *OIDCUIConfig                                  `json:"oidcUIConfig"`
-		AccountUIConfig                *AccountUIConfig                               `json:"accountUIConfig"`
-		AccountAppSettings             *models_api_appsettings.AccountAppSettings     `json:"accountAppSettings"`
-		ApiAppSettings                 *models_api_appsettings.ApiAppSettings         `json:"apiAppSettings"`
-		OIDCFlowAppConfig              *contracts_OIDCFlowAppConfig.OIDCFlowAppConfig `json:"oidcFlowAppConfig"`
-		RequiresNoAuthConfig           *RequiresNoAuthConfig                          `json:"requiresNoAuthConfig"`
-		CacheBustVersion               string                                         `json:"cacheBustVersion"`
-		BackgroundColor                string                                         `json:"backgroundColor"`
+		ConfigFiles                      ConfigFiles                                    `json:"configFiles"`
+		Echo                             *EchoConfig                                    `json:"echo"`
+		EchoOIDCUI                       *EchoConfig                                    `json:"echoOIDCUI"`
+		EchoAccount                      *EchoConfig                                    `json:"echoAccount"`
+		InMemoryClients                  InMemoryClients                                `json:"inMemoryClients"`
+		OIDCConfig                       *OIDCConfig                                    `json:"oidcConfig"`
+		BackingCache                     *BackingCacheConfig                            `json:"backingCache"`
+		AutolinkOnEmailMatch             bool                                           `json:"autolinkOnEmailMatch"`
+		EmailVerificationRequired        bool                                           `json:"emailVerificationRequired"`
+		MultiFactorRequired              bool                                           `json:"multiFactorRequired"`
+		MultiFactorRequiredByEmailCode   bool                                           `json:"multiFactorRequiredByEmailCode"`
+		DisableLocalAccountCreation      bool                                           `json:"disableLocalAccountCreation"`
+		DisableSocialAccounts            bool                                           `json:"disableSocialAccounts"`
+		DeniedDomains                    []string                                       `json:"deniedDomains"`
+		IdentityCreationProtectionConfig *IdentityCreationProtectionConfig              `json:"identityCreationProtectionConfig"`
+		TOTP                             *TOTPConfig                                    `json:"totp"`
+		EmailConfig                      *contracts_email.EmailConfig                   `json:"emailConfig"`
+		SelfIDPConfig                    *SelfIDPConfig                                 `json:"selfIDPConfig"`
+		CookieConfig                     *CookieConfig                                  `json:"cookieConfig"`
+		SystemConfig                     *SystemConfig                                  `json:"systemConfig"`
+		SSOConfig                        *SSOConfig                                     `json:"ssoConfig"`
+		SessionConfig                    *contracts_sessions.SessionConfig              `json:"sessionConfig"`
+		WebAuthNConfig                   *contracts_webauthn.WebAuthNConfig             `json:"webAuthNConfig"`
+		PasswordConfig                   *PasswordConfig                                `json:"passwordConfig"`
+		CORSConfig                       *CORSConfig                                    `json:"corsConfig"`
+		CSRFConfig                       *CSRFConfig                                    `json:"csrfConfig"`
+		NoCacheConfig                    *NoCacheConfig                                 `json:"noCacheConfig"`
+		URLRewritesConfig                *URLRewritesConfig                             `json:"urlRewritesConfig"`
+		OTELConfig                       *fluffycore_contracts_otel.OTELConfig          `json:"otelConfig"`
+		OIDCUIConfig                     *OIDCUIConfig                                  `json:"oidcUIConfig"`
+		AccountUIConfig                  *AccountUIConfig                               `json:"accountUIConfig"`
+		AccountAppSettings               *models_api_appsettings.AccountAppSettings     `json:"accountAppSettings"`
+		ApiAppSettings                   *models_api_appsettings.ApiAppSettings         `json:"apiAppSettings"`
+		OIDCFlowAppConfig                *contracts_OIDCFlowAppConfig.OIDCFlowAppConfig `json:"oidcFlowAppConfig"`
+		RequiresNoAuthConfig             *RequiresNoAuthConfig                          `json:"requiresNoAuthConfig"`
+		CacheBustVersion                 string                                         `json:"cacheBustVersion"`
+		BackgroundColor                  string                                         `json:"backgroundColor"`
 	}
 )
 
@@ -319,9 +319,9 @@ const configDefaultJSONTemplate = `
     "emailVerificationRequired": true,
     "multiFactorRequired": false,
     "multiFactorRequiredByEmailCode": false,
-    "identityCreationDenyListConfig": {
-        "url": "",
-        "filePath": "",
+    "identityCreationProtectionConfig": {
+        "enabled": false,
+        "disposableEmailListUrl": "https://raw.githubusercontent.com/disposable-email-domains/disposable-email-domains/main/disposable_email_blocklist.conf",
         "ignoreOnLoadError": true,
         "cacheTtlSeconds": 3600
     },
