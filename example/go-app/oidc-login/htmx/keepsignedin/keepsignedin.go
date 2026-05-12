@@ -113,14 +113,16 @@ func (s *service) DoPost(c *echo.Context) error {
 
 	keepSignedIn := model.KeepSignedIn == "true"
 
-	// Verify authentication was completed
+	// AuthCompleted is a one-time transition cookie. Treat it as optional so
+	// stale/missing browser cookie state does not break login completion.
+	var authCompleted *contracts_cookies.AuthCompleted
 	getAuthCompletedResponse, err := s.WellknownCookies().GetAuthCompletedCookie(c)
 	if err != nil {
-		log.Error().Err(err).Msg("GetAuthCompletedCookie")
-		return s.renderError(c, "htmx-ksi-001", "Authentication not completed")
+		log.Warn().Err(err).Msg("GetAuthCompletedCookie")
+	} else {
+		authCompleted = getAuthCompletedResponse.AuthCompleted
+		s.WellknownCookies().DeleteAuthCompletedCookie(c)
 	}
-	authCompleted := getAuthCompletedResponse.AuthCompleted
-	s.WellknownCookies().DeleteAuthCompletedCookie(c)
 
 	// Get the auth cookie
 	getAuthCookieResponse, err := s.WellknownCookies().GetAuthCookie(c)
@@ -130,7 +132,7 @@ func (s *service) DoPost(c *echo.Context) error {
 	}
 	authCookie := getAuthCookieResponse.AuthCookie
 
-	if authCompleted.Subject != authCookie.Identity.Subject {
+	if authCompleted != nil && authCompleted.Subject != authCookie.Identity.Subject {
 		return s.renderError(c, "htmx-ksi-003", "Subject mismatch")
 	}
 
