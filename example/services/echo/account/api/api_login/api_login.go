@@ -82,16 +82,6 @@ func (s *service) HandleLogin(c *echo.Context, loginRequest *login_models.LoginR
 	s.WellknownCookies().DeleteAuthCompletedCookie(c)
 	s.WellknownCookies().DeleteAuthCookie(c)
 
-	ss, err := s.session.GetSession()
-	if err != nil {
-		log.Error().Err(err).Msg("s.session.GetSession")
-		return nil, err
-	}
-	err = ss.New()
-	if err != nil {
-		log.Error().Err(err).Msg("ss.New")
-		return nil, err
-	}
 	state, err := randString(16)
 	if err != nil {
 		log.Error().Err(err).Msg("randString")
@@ -129,6 +119,9 @@ func (s *service) HandleLogin(c *echo.Context, loginRequest *login_models.LoginR
 	authCodeOptions := []oauth2.AuthCodeOption{
 		oidc.Nonce(nonce),
 	}
+	if loginRequest.AcrValues != "" {
+		authCodeOptions = append(authCodeOptions, oauth2.SetAuthURLParam("acr_values", loginRequest.AcrValues))
+	}
 
 	getConfigResponse, err := s.selfOAuth2Provider.GetConfig(ctx)
 	if err != nil {
@@ -145,6 +138,7 @@ func (s *service) HandleLogin(c *echo.Context, loginRequest *login_models.LoginR
 
 type LoginRequest struct {
 	ReturnUrl string `param:"returnUrl" query:"returnUrl" form:"returnUrl" json:"returnUrl" xml:"returnUrl"`
+	AcrValues string `param:"acrValues" query:"acrValues" form:"acrValues" json:"acrValues" xml:"acrValues"`
 }
 
 // API Login godoc
@@ -173,6 +167,7 @@ func (s *service) Do(c *echo.Context) error {
 	loginResponse, err := s.HandleLogin(c,
 		&login_models.LoginRequest{
 			ReturnURL: loginRequest.ReturnUrl,
+			AcrValues: loginRequest.AcrValues,
 		})
 	if err != nil {
 		st, ok := status.FromError(err)

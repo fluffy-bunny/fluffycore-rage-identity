@@ -74,6 +74,27 @@ var (
 	API_KeepSignedInPreference = "/api/keep-signed-in-preference"
 	API_KeepSignedIn           = "/api/keep-signed-in"
 	API_ClearSSO               = "/api/clear-sso"
+
+	// OIDCEndSessionEndpointPath is the OIDC RP-Initiated Logout / front-channel
+	// logout endpoint. It supports two call patterns:
+	//
+	// 1. Top-level navigation (full redirect)
+	//    Redirect the browser here with post_logout_redirect_uri=<your-url>.
+	//    The SSO cookie is cleared and the browser is sent back to your URL.
+	//
+	// 2. Hidden iframe (front-channel logout)
+	//    Embed this URL in a hidden iframe on your logout page.
+	//    The identity server clears the SSO cookie and returns a 200 HTML page;
+	//    no navigation occurs. This allows a cross-domain portal to invalidate
+	//    the SSO session without a full-page redirect.
+	//
+	//    ⚠  SameSite requirement: for the browser to send the SSO cookie inside
+	//    a cross-origin iframe the cookie must be set with SameSite=None; Secure.
+	//    The default SameSite=Lax will NOT include the cookie in an iframe request
+	//    from a different origin, so the delete Set-Cookie header will still be
+	//    emitted but there is nothing to delete. Configure the identity server's
+	//    SSO cookie with SameSite=None when this pattern is required.
+	OIDCEndSessionEndpointPath = "/oidc/v1/endsession"
 	API_Signup                 = "/api/signup"
 	API_PasswordResetStart     = "/api/password-reset-start"
 	API_PasswordResetFinish    = "/api/password-reset-finish"

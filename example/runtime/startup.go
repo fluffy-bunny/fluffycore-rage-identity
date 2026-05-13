@@ -137,6 +137,21 @@ func (s *startup) EnsureManagementAuth(ctn di.Container) echo.MiddlewareFunc {
 				Type:  fluffycore_echo_wellknown.ClaimTypeAuthenticated,
 				Value: "true",
 			})
+			if isAuthenticated {
+				// Management/support requires a dedicated app session marker in addition
+				// to the shared auth cookie. This prevents another client app's auth cookie
+				// from implicitly granting access to the management portal.
+				wellknownCookieNames := di.Get[contracts_cookies.IWellknownCookieNames](subContainer)
+				if wellknownCookieNames != nil {
+					managementSessionCookieName := wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_AccountManagementSession)
+					if managementSessionCookieName != "" {
+						if _, err := c.Cookie(managementSessionCookieName); err != nil {
+							log.Info().Str("cookie", managementSessionCookieName).Msg("forcing management login: management session cookie missing")
+							isAuthenticated = false
+						}
+					}
+				}
+			}
 
 			if isAuthenticated {
 				if isSupportPath && !isSupportAdmin(claimsPrincipal) {
@@ -195,7 +210,7 @@ func (s *startup) EnsureManagementAuth(ctn di.Container) echo.MiddlewareFunc {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ returnUrl: '` + returnURL + `' })
+            body: JSON.stringify({ returnUrl: '` + returnURL + `', acrValues: 'urn:rage:no-sso' })
         })
         .then(response => response.json())
         .then(data => {

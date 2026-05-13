@@ -8,6 +8,7 @@ import (
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_cookies "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/cookies"
 	contracts_selfoauth2provider "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/selfoauth2provider"
+	contracts_session_with_options "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/session_with_options"
 	models "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/models"
 	services_echo_handlers_base "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/base"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
@@ -24,6 +25,7 @@ type (
 		*services_echo_handlers_base.BaseHandler
 		wellknownCookies   contracts_cookies.IWellknownCookies
 		selfOAuth2Provider contracts_selfoauth2provider.ISelfOAuth2Provider
+		session            contracts_session_with_options.ISessionWithOptions
 	}
 )
 
@@ -35,12 +37,14 @@ func (s *service) Ctor(
 	container di.Container,
 	wellknownCookies contracts_cookies.IWellknownCookies,
 	selfOAuth2Provider contracts_selfoauth2provider.ISelfOAuth2Provider,
+	session contracts_session_with_options.ISessionWithOptions,
 	config *contracts_config.Config,
 ) (*service, error) {
 	return &service{
 		BaseHandler:        services_echo_handlers_base.NewBaseHandler(container, config),
 		wellknownCookies:   wellknownCookies,
 		selfOAuth2Provider: selfOAuth2Provider,
+		session:            session,
 	}, nil
 }
 
@@ -192,6 +196,21 @@ func (s *service) Do(c *echo.Context) error {
 	if err != nil {
 		log.Error().Err(err).Msg("SetAuthCookie")
 		// redirect to error page
+		return c.Redirect(http.StatusFound, "/error")
+	}
+	// Create management session cookie after successful auth
+	ss, err := s.session.GetSession()
+	if err != nil {
+		log.Error().Err(err).Msg("s.session.GetSession")
+		return c.Redirect(http.StatusFound, "/error")
+	}
+	err = ss.New()
+	if err != nil {
+		log.Error().Err(err).Msg("ss.New")
+		return c.Redirect(http.StatusFound, "/error")
+	}
+	if err = ss.Save(); err != nil {
+		log.Error().Err(err).Msg("ss.Save")
 		return c.Redirect(http.StatusFound, "/error")
 	}
 	return c.Redirect(http.StatusFound, loginRequest.ReturnUrl)

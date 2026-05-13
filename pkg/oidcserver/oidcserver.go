@@ -17,6 +17,7 @@ import (
 	services_handlers_api "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/api"
 	services_handlers_authorization_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/authorization_endpoint"
 	services_handlers_discovery_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/discovery_endpoint"
+	services_handlers_end_session_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/end_session_endpoint"
 	services_handlers_error "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/error"
 	services_handlers_externalidp "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/externalidp"
 	services_handlers_externalidp_api "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/externalidp/api"
@@ -223,6 +224,7 @@ func (s *startup) addAppHandlers(builder di.ContainerBuilder) {
 	services_handlers_rest_api_keep_signed_in.AddScopedIHandler(builder)
 	services_handlers_rest_api_keep_signed_in_preference.AddScopedIHandler(builder)
 	services_handlers_rest_api_clear_sso.AddScopedIHandler(builder)
+	services_handlers_end_session_endpoint.AddScopedIHandler(builder)
 	services_handlers_rest_api_signup.AddScopedIHandler(builder)
 	services_handlers_rest_api_logout.AddScopedIHandler(builder)
 	services_handlers_rest_api_user_identity_info.AddScopedIHandler(builder)
