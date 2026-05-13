@@ -60,6 +60,12 @@ func (s *service) Do(c *echo.Context) error {
 		JwksURI:               rootPath + wellknown_echo.WellKnownJWKS,
 		UserinfoEndpoint:      rootPath + wellknown_echo.UserInfoPath,
 		AuthorizationEndpoint: rootPath + wellknown_echo.OIDCAuthorizationEndpointPath,
+		EndSessionEndpoint:    rootPath + wellknown_echo.OIDCEndSessionEndpointPath,
+		// Front-channel logout is supported: callers may load OIDCEndSessionEndpointPath
+		// in a hidden iframe to clear the SSO cookie without a full-page redirect.
+		// See: https://openid.net/specs/openid-connect-frontchannel-1_0.html
+		FrontchannelLogoutSupported:        true,
+		FrontchannelLogoutSessionSupported: false,
 		//	RevocationEndpoint:    rootPath + wellknown.OAuth2RevokePath,
 		//	IntrospectionEndpoint: rootPath + wellknown.OAuth2IntrospectPath,
 		GrantTypesSupported: []string{

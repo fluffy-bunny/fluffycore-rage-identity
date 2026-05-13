@@ -117,7 +117,7 @@ func (s *service) Do(c *echo.Context) error {
 	s.wellknownCookies.DeleteAuthCookie(c)
 	s.wellknownCookies.DeleteAuthCompletedCookie(c)
 
-	// Clear SSO cookie if requested
+	// Clear SSO cookie if explicitly requested
 	if model.ClearSSOCookie {
 		s.wellknownCookies.DeleteSSOCookie(c)
 		log.Info().Str("subject", subject).Msg("SSO cookie cleared")

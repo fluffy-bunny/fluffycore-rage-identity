@@ -106,6 +106,9 @@ type (
 	}
 	LoginRequest struct {
 		ReturnURL string `json:"returnUrl" validate:"required"`
+		// AcrValues is an optional space-separated list of ACR values forwarded
+		// to the authorization endpoint (e.g. "urn:rage:no-sso").
+		AcrValues string `json:"acrValues,omitempty"`
 	}
 	LoginResponse struct {
 		RedirectURL string `json:"redirectUrl" validate:"required"`
