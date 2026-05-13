@@ -82,20 +82,6 @@ func (s *service) HandleLogin(c *echo.Context, loginRequest *login_models.LoginR
 	s.WellknownCookies().DeleteAuthCompletedCookie(c)
 	s.WellknownCookies().DeleteAuthCookie(c)
 
-	ss, err := s.session.GetSession()
-	if err != nil {
-		log.Error().Err(err).Msg("s.session.GetSession")
-		return nil, err
-	}
-	err = ss.New()
-	if err != nil {
-		log.Error().Err(err).Msg("ss.New")
-		return nil, err
-	}
-	if err = ss.Save(); err != nil {
-		log.Error().Err(err).Msg("ss.Save")
-		return nil, err
-	}
 	state, err := randString(16)
 	if err != nil {
 		log.Error().Err(err).Msg("randString")
