@@ -221,6 +221,15 @@ func (s *service) Do(c *echo.Context) error {
 			model.CandidateUserId = candidateUserID
 			shouldSkipSSO = true // If specific user candidate requested, skip SSO
 		}
+
+		// Check for no-sso ACR value - forces fresh login regardless of domain
+		for _, acrValue := range regexp.MustCompile(`\s+`).Split(model.AcrValues, -1) {
+			if acrValue == "urn:rage:no-sso" {
+				shouldSkipSSO = true
+				log.Info().Msg("ACR no-sso requested: SSO cookie will be skipped")
+				break
+			}
+		}
 	}
 
 	// Check if user has valid SSO cookie - but ONLY if no specific IDP/candidate was requested
