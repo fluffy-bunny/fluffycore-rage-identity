@@ -158,13 +158,23 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 }
 func OnConfigureServicesLoadIDPs(ctx context.Context, config *contracts_config.Config, builder di.ContainerBuilder) error {
 	log := zerolog.Ctx(ctx).With().Str("method", "OnConfigureServicesLoadIDPs").Logger()
+	idps := &proto_oidc_models.IDPs{}
+	if fluffycore_utils.IsEmptyOrNil(config.ConfigFiles.IDPsPath) {
+		log.Info().Msg("idpsPath is empty, registering empty IDPs (DB-backed mode)")
+		di.AddSingleton[*proto_oidc_models.IDPs](builder, func() *proto_oidc_models.IDPs {
+			return idps
+		})
+		return nil
+	}
 	fileContent, err := os.ReadFile(config.ConfigFiles.IDPsPath)
 	if err != nil {
 		log.Warn().Err(err).Msg("failed to read IDPsPath - may not be a problem if idps are comming from a DB")
+		di.AddSingleton[*proto_oidc_models.IDPs](builder, func() *proto_oidc_models.IDPs {
+			return idps
+		})
 		return nil
 	}
 	fixedFileContent := fluffycore_utils.ReplaceEnv(string(fileContent), "${%s}")
-	var idps *proto_oidc_models.IDPs = &proto_oidc_models.IDPs{}
 	err = protojson.Unmarshal([]byte(fixedFileContent), idps)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to unmarshal OIDCClientPath")
