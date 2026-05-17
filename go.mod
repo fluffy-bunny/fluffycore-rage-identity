@@ -13,7 +13,7 @@ require (
 	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/eko/gocache/lib/v4 v4.2.3
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.8
-	github.com/fluffy-bunny/fluffycore v1.0.265
+	github.com/fluffy-bunny/fluffycore v1.0.266
 	github.com/go-oauth2/oauth2/v4 v4.5.4
 	github.com/go-webauthn/webauthn v0.17.3
 	github.com/gofrs/uuid v4.4.0+incompatible
@@ -38,7 +38,7 @@ require (
 	golang.org/x/oauth2 v0.36.0
 	golang.org/x/text v0.37.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20260414002931-afd174a4e478
-	google.golang.org/grpc v1.81.0
+	google.golang.org/grpc v1.81.1
 	google.golang.org/protobuf v1.36.11
 	maragu.dev/gomponents v1.3.0
 )
@@ -84,7 +84,7 @@ require (
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/ebitengine/purego v0.10.0 // indirect
-	github.com/eko/gocache/store/go_cache/v4 v4.2.4 // indirect
+	github.com/eko/gocache/store/go_cache/v4 v4.2.5 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/felixge/fgprof v0.9.5 // indirect
 	github.com/fluffy-bunny/viperEx v0.0.38 // indirect
@@ -107,7 +107,6 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.19.1 // indirect
 	github.com/golang/mock v1.7.0-rc.1 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-tpm v0.9.8 // indirect
 	github.com/google/pprof v0.0.0-20250423184734-337e5dd93bb4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
@@ -128,7 +127,7 @@ require (
 	github.com/lestrrat-go/iter v1.0.2 // indirect
 	github.com/lestrrat-go/option v1.0.1 // indirect
 	github.com/lufia/plan9stats v0.0.0-20260330125221-c963978e514e // indirect
-	github.com/madflojo/tasks v1.2.1 // indirect
+	github.com/madflojo/tasks v1.3.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -138,7 +137,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.3-0.20250322232337-35a7c28c31ee // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
-	github.com/nats-io/nats.go v1.51.0 // indirect
+	github.com/nats-io/nats.go v1.52.0 // indirect
 	github.com/nats-io/nkeys v0.4.15 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/outcaste-io/ristretto v0.2.3 // indirect
