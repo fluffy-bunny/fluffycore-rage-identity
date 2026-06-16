@@ -20,7 +20,7 @@ require (
 	github.com/gogo/status v1.1.1
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.29.0
-	github.com/labstack/echo/v5 v5.1.1
+	github.com/labstack/echo/v5 v5.2.1
 	github.com/lestrrat-go/jwx/v2 v2.1.6
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
 	github.com/reugn/async v0.10.0
