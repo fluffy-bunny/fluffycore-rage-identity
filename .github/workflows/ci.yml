@@ -75,7 +75,7 @@ jobs:
           echo changelog: ${{needs.pre_flight.outputs.changelog}}
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           submodules: true
 
