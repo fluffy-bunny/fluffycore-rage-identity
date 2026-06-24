@@ -12,6 +12,7 @@ import (
 	fluffycore_contracts_otel "github.com/fluffy-bunny/fluffycore/contracts/otel"
 	fluffycore_echo_contracts_cookies "github.com/fluffy-bunny/fluffycore/echo/contracts/cookies"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
+	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v5"
 )
 
@@ -69,6 +70,14 @@ type (
 	}
 	PasswordConfig struct {
 		MinEntropyBits float64 `json:"minEntropyBits"`
+		CacheEnabled   bool    `json:"cacheEnabled"`
+		// CacheTTL is how long a verified comparison result is cached.
+		// JSON accepts any string understood by time.ParseDuration ("60s", "5m", "24h").
+		// Set to "0s" or 0 to disable caching entirely.
+		CacheTTL fluffycore_utils.Duration `json:"cacheTTL"`
+		// MaxCacheSize is the maximum number of entries held in the cache.
+		// Set to 0 for unlimited (infinite) capacity.
+		MaxCacheSize int `json:"maxCacheSize"`
 	}
 	InMemoryCacheConfig struct {
 		DefaultExpirationSeconds int `json:"defaultExpirationSeconds"`
@@ -431,7 +440,11 @@ const configDefaultJSONTemplate = `
         "rpOrigins": []
     },
     "passwordConfig": {
-        "minEntropyBits": 60
+        "minEntropyBits": 60,
+        "cacheEnabled": true,
+        "cacheTTL": "5m",
+		"maxCacheSize": 0
+
     },
     "otelConfig": {
         "serviceName": "in-environment",

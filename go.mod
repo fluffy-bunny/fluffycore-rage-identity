@@ -2,6 +2,8 @@ module github.com/fluffy-bunny/fluffycore-rage-identity
 
 go 1.26
 
+replace github.com/alexedwards/argon2id => github.com/ghstahl/argon2id v0.0.0-20260623181421-c6025230e214
+
 //replace github.com/fluffy-bunny/fluffycore => ../fluffycore
 
 //replace github.com/fluffy-bunny/viperEx => ../ViperEx
@@ -12,8 +14,9 @@ require (
 	github.com/coreos/go-oidc/v3 v3.19.0
 	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/eko/gocache/lib/v4 v4.2.3
+	github.com/eko/gocache/store/go_cache/v4 v4.2.5
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.8
-	github.com/fluffy-bunny/fluffycore v1.0.278
+	github.com/fluffy-bunny/fluffycore v1.0.280
 	github.com/go-oauth2/oauth2/v4 v4.5.4
 	github.com/go-webauthn/webauthn v0.17.4
 	github.com/gofrs/uuid v4.4.0+incompatible
@@ -23,6 +26,7 @@ require (
 	github.com/labstack/echo/v5 v5.2.1
 	github.com/lestrrat-go/jwx/v2 v2.1.6
 	github.com/nicksnyder/go-i18n/v2 v2.6.1
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/reugn/async v0.10.0
 	github.com/rs/xid v1.6.0
 	github.com/rs/zerolog v1.35.1
@@ -84,7 +88,6 @@ require (
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/ebitengine/purego v0.10.1 // indirect
-	github.com/eko/gocache/store/go_cache/v4 v4.2.5 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/felixge/fgprof v0.9.5 // indirect
 	github.com/fluffy-bunny/viperEx v0.0.38 // indirect
@@ -141,7 +144,6 @@ require (
 	github.com/nats-io/nkeys v0.4.15 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/outcaste-io/ristretto v0.2.3 // indirect
-	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pb33f/ordered-map/v2 v2.3.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect

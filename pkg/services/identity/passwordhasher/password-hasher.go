@@ -2,7 +2,14 @@ package passwordhasher
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"errors"
+	"time"
 
+	gocache_lib "github.com/eko/gocache/lib/v4/cache"
+	gocache_store "github.com/eko/gocache/lib/v4/store"
+	gocache_go_cache "github.com/eko/gocache/store/go_cache/v4"
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	contracts_identity "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/identity"
@@ -10,6 +17,7 @@ import (
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	status "github.com/gogo/status"
+	gocache "github.com/patrickmn/go-cache"
 	passwordvalidator "github.com/wagslane/go-password-validator"
 	codes "google.golang.org/grpc/codes"
 )
@@ -17,6 +25,7 @@ import (
 type (
 	service struct {
 		config *contracts_config.PasswordConfig
+		cache  *gocache_lib.Cache[bool]
 	}
 )
 
@@ -24,15 +33,32 @@ var stemService = (*service)(nil)
 var _ contracts_identity.IPasswordHasher = stemService
 
 func (s *service) Ctor(config *contracts_config.PasswordConfig) (contracts_identity.IPasswordHasher, error) {
-	// Compile the regex
-
-	return &service{
+	svc := &service{
 		config: config,
-	}, nil
+	}
+	if config.CacheEnabled && config.CacheTTL > 0 {
+		ttl := time.Duration(config.CacheTTL)
+		client := gocache.New(ttl, ttl*2)
+		store := gocache_go_cache.NewGoCache(client)
+		svc.cache = gocache_lib.New[bool](store)
+	}
+	return svc, nil
 }
 
 func AddSingletonIPasswordHasher(cb di.ContainerBuilder) {
 	di.AddSingleton[contracts_identity.IPasswordHasher](cb, stemService.Ctor)
+}
+
+// cacheKey returns a SHA-256 hex digest of (password \x00 hash).
+// The null-byte separator prevents the key from colliding across different
+// (password, hash) splits that produce the same concatenated bytes.
+// We never store the raw password — only this one-way digest.
+func cacheKey(password, hash string) string {
+	h := sha256.New()
+	h.Write([]byte(password))
+	h.Write([]byte{0})
+	h.Write([]byte(hash))
+	return hex.EncodeToString(h.Sum(nil))
 }
 func (s *service) validateHashPasswordRequest(request *contracts_identity.HashPasswordRequest) error {
 	if request == nil {
@@ -75,10 +101,29 @@ func (s *service) VerifyPassword(ctx context.Context, request *contracts_identit
 	if err := s.validateVerifyPasswordRequest(request); err != nil {
 		return err
 	}
+
+	if s.cache != nil {
+		key := cacheKey(request.Password, request.HashedPassword)
+		if match, err := s.cache.Get(ctx, key); err == nil {
+			if !match {
+				return status.Error(codes.NotFound, "Password does not match")
+			}
+			return nil
+		} else if !errors.Is(err, gocache_store.NotFound{}) {
+			return status.Error(codes.Internal, err.Error())
+		}
+	}
+
 	ok, err := utils.ComparePasswordHash(request.Password, request.HashedPassword)
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())
 	}
+
+	if s.cache != nil {
+		key := cacheKey(request.Password, request.HashedPassword)
+		_ = s.cache.Set(ctx, key, ok, gocache_store.WithExpiration(time.Duration(s.config.CacheTTL)))
+	}
+
 	if !ok {
 		return status.Error(codes.NotFound, "Password does not match")
 	}
