@@ -16,7 +16,7 @@ require (
 	github.com/eko/gocache/lib/v4 v4.2.3
 	github.com/eko/gocache/store/go_cache/v4 v4.2.5
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.8
-	github.com/fluffy-bunny/fluffycore v1.0.280
+	github.com/fluffy-bunny/fluffycore v1.0.284
 	github.com/go-oauth2/oauth2/v4 v4.5.4
 	github.com/go-webauthn/webauthn v0.17.4
 	github.com/gofrs/uuid v4.4.0+incompatible
