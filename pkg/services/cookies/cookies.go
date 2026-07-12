@@ -219,8 +219,8 @@ func (s *service) SetAccountStateCookie(c *echo.Context, request *contracts_cook
 	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
 		Name: s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_AccountState),
 	}
+	setCookieRequest.HttpOnly = true
 	if s.config.DisableSecureCookies {
-		setCookieRequest.HttpOnly = true
 		setCookieRequest.SameSite = 0
 		setCookieRequest.Secure = tPtr(false)
 	}
@@ -268,8 +268,8 @@ func (s *service) SetAuthCookie(c *echo.Context, request *contracts_cookies.SetA
 	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
 		Name: s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_Auth),
 	}
+	setCookieRequest.HttpOnly = true
 	if s.config.DisableSecureCookies {
-		setCookieRequest.HttpOnly = true
 		setCookieRequest.SameSite = 0
 		setCookieRequest.Secure = tPtr(false)
 	}
@@ -325,8 +325,8 @@ func (s *service) SetSSOCookie(c *echo.Context, request *contracts_cookies.SetSS
 		maxAgeSeconds := s.mainConfig.SSOConfig.MaxDurationMinutes * 60
 		setCookieRequest.MaxAge = maxAgeSeconds
 	}
+	setCookieRequest.HttpOnly = true
 	if s.config.DisableSecureCookies {
-		setCookieRequest.HttpOnly = true
 		setCookieRequest.SameSite = 0
 		setCookieRequest.Secure = tPtr(false)
 	}
@@ -377,8 +377,8 @@ func (s *service) SetKeepSigninPreferencesCookie(c *echo.Context, request *contr
 		MaxAge: 365 * 24 * 60 * 60,
 	}
 
+	setCookieRequest.HttpOnly = true
 	if s.config.DisableSecureCookies {
-		setCookieRequest.HttpOnly = true
 		setCookieRequest.SameSite = 0
 		setCookieRequest.Secure = tPtr(false)
 	}
@@ -413,8 +413,8 @@ func (s *service) SetInsecureCookie(c *echo.Context, name string, value interfac
 	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
 		Name: name,
 	}
+	setCookieRequest.HttpOnly = true
 	if s.config.DisableSecureCookies {
-		setCookieRequest.HttpOnly = true
 		setCookieRequest.SameSite = 0
 		setCookieRequest.Secure = tPtr(false)
 	}
@@ -470,8 +470,8 @@ func (s *service) SetExternalOauth2Cookie(c *echo.Context, request *contracts_co
 	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
 		Name: cookieName,
 	}
+	setCookieRequest.HttpOnly = true
 	if s.config.DisableSecureCookies {
-		setCookieRequest.HttpOnly = true
 		setCookieRequest.SameSite = 0
 		setCookieRequest.Secure = tPtr(false)
 	}
@@ -550,8 +550,8 @@ func (s *service) SetWebAuthNCookie(c *echo.Context, request *contracts_cookies.
 	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
 		Name: s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_WebAuthN),
 	}
+	setCookieRequest.HttpOnly = true
 	if s.config.DisableSecureCookies {
-		setCookieRequest.HttpOnly = true
 		setCookieRequest.SameSite = 0
 		setCookieRequest.Secure = tPtr(false)
 	}
@@ -602,8 +602,8 @@ func (s *service) SetSigninUserNameCookie(c *echo.Context, request *contracts_co
 	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
 		Name: s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_SigninUserName),
 	}
+	setCookieRequest.HttpOnly = true
 	if s.config.DisableSecureCookies {
-		setCookieRequest.HttpOnly = true
 		setCookieRequest.SameSite = 0
 		setCookieRequest.Secure = tPtr(false)
 	}
