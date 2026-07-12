@@ -15,8 +15,8 @@ require (
 	github.com/domodwyer/mailyak/v3 v3.6.2
 	github.com/eko/gocache/lib/v4 v4.2.3
 	github.com/eko/gocache/store/go_cache/v4 v4.2.5
-	github.com/fluffy-bunny/fluffy-dozm-di v0.0.8
-	github.com/fluffy-bunny/fluffycore v1.0.284
+	github.com/fluffy-bunny/fluffy-dozm-di v0.0.9
+	github.com/fluffy-bunny/fluffycore v1.0.286
 	github.com/go-oauth2/oauth2/v4 v4.5.4
 	github.com/go-webauthn/webauthn v0.17.4
 	github.com/gofrs/uuid v4.4.0+incompatible
@@ -118,7 +118,7 @@ require (
 	github.com/hashicorp/go-version v1.8.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/invopop/jsonschema v0.14.0 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.8.1 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.8.2 // indirect
 	github.com/jellydator/ttlcache/v2 v2.11.1 // indirect
 	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
