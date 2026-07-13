@@ -126,8 +126,8 @@ github.com/fatih/structs v1.1.0/go.mod h1:9NiDSp5zOcgEDl+j00MP/WkGVPOlPRLejGD8Ga
 github.com/felixge/fgprof v0.9.3/go.mod h1:RdbpDgzqYVh/T9fPELJyV7EYJuHB55UTEULNun8eiPw=
 github.com/felixge/fgprof v0.9.5 h1:8+vR6yu2vvSKn08urWyEuxx75NWPEvybbkBirEpsbVY=
 github.com/felixge/fgprof v0.9.5/go.mod h1:yKl+ERSa++RYOs32d8K6WEXCB4uXdLls4ZaZPpayhMM=
-github.com/fluffy-bunny/fluffy-dozm-di v0.0.8 h1:FDf917Q0X4j3BzG3XT7zrisDTmHwyOAs83pEr5EZH64=
-github.com/fluffy-bunny/fluffy-dozm-di v0.0.8/go.mod h1:BcrHKLAov+9gHzOg/5uzSpsZNhX4p59DP1ZAnwQbQGk=
+github.com/fluffy-bunny/fluffy-dozm-di v0.0.9 h1:hls3nOcb19fXS7JQgzHBduPfrLkOEj83/DQN4Jdch9c=
+github.com/fluffy-bunny/fluffy-dozm-di v0.0.9/go.mod h1:BcrHKLAov+9gHzOg/5uzSpsZNhX4p59DP1ZAnwQbQGk=
 github.com/fluffy-bunny/fluffycore v1.0.280 h1:fwyq/sGCX5Usgn2NXJjBMhcN9WPv3+ZTYh8gDcC8ln8=
 github.com/fluffy-bunny/fluffycore v1.0.280/go.mod h1:jyTKik1Z/G0fvhMhKNYPNtX2wDZd+A+CwArUKbAS4Xs=
 github.com/fluffy-bunny/viperEx v0.0.38 h1:bZRGENST91WkiQ3gsBq28deHQDARF6cxeQMAboXcfPw=
