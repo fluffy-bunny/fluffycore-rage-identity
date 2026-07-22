@@ -165,6 +165,13 @@ func (s *startup) EnsureManagementAuth(ctn di.Container) echo.MiddlewareFunc {
 			if returnURL == "" {
 				returnURL = "/"
 			}
+			// json.Marshal produces a properly quoted, HTML/JS-escaped string literal
+			// (Go's encoding/json escapes <, >, & by default), safe to splice into the
+			// inline <script> below without risking JS/HTML injection from the request path.
+			returnURLJSON, err := json.Marshal(returnURL)
+			if err != nil {
+				returnURLJSON = []byte(`"/"`)
+			}
 
 			// Return HTML that will POST to the login API and then redirect
 			html := `<!DOCTYPE html>
@@ -210,7 +217,7 @@ func (s *startup) EnsureManagementAuth(ctn di.Container) echo.MiddlewareFunc {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ returnUrl: '` + returnURL + `', acrValues: 'urn:rage:no-sso' })
+            body: JSON.stringify({ returnUrl: ` + string(returnURLJSON) + `, acrValues: 'urn:rage:no-sso' })
         })
         .then(response => response.json())
         .then(data => {

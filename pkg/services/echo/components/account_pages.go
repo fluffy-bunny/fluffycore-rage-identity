@@ -137,7 +137,7 @@ func PasskeyManagementPage(rc *RenderContext, data PasskeyManagementData) g.Node
 				),
 			),
 		),
-		Script(Src("/static/js/webauthn.js")),
+		Script(Src("/static/go-app/oidc-login/htmx/webauthn.js")),
 	)
 }
 

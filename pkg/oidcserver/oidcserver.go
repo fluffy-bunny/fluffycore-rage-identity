@@ -378,13 +378,15 @@ func (s *startup) Configure(e *echo.Echo, root di.Container) error {
 
 	var sameSite http.SameSite = http.SameSiteStrictMode
 	httpOnly := false
+	cookieSecure := true
 	if s.config.Echo.DisableSecureCookies {
 		sameSite = 0
+		cookieSecure = false
 	}
 	e.Use(echo_middleware.CSRFWithConfig(echo_middleware.CSRFConfig{
 		TokenLookup:    "header:X-Csrf-Token,form:csrf",
 		CookiePath:     "/",
-		CookieSecure:   false,
+		CookieSecure:   cookieSecure,
 		CookieHTTPOnly: httpOnly,
 		CookieSameSite: sameSite,
 		CookieDomain:   s.config.CookieConfig.Domain,
