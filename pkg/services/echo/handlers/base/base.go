@@ -29,10 +29,8 @@ import (
 	fluffycore_contracts_common "github.com/fluffy-bunny/fluffycore/contracts/common"
 	fluffycore_echo_contracts_contextaccessor "github.com/fluffy-bunny/fluffycore/echo/contracts/contextaccessor"
 	contracts_sessions "github.com/fluffy-bunny/fluffycore/echo/contracts/sessions"
-	core_echo_templates "github.com/fluffy-bunny/fluffycore/echo/templates"
 	core_wellknown "github.com/fluffy-bunny/fluffycore/echo/wellknown"
 	echo "github.com/labstack/echo/v5"
-	i18n "github.com/nicksnyder/go-i18n/v2/i18n"
 	xid "github.com/rs/xid"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	g "maragu.dev/gomponents"
@@ -330,55 +328,6 @@ func (b *BaseHandler) RenderAutoPost(c *echo.Context, action string, formData []
 		CSRF:            csrfStr,
 		BackgroundColor: b.config.BackgroundColor,
 	})
-}
-
-func (b *BaseHandler) Render(c *echo.Context, code int, name string, data map[string]interface{}) error {
-	localizer := b.Localizer().GetLocalizer()
-	data["LocalizeMessage"] = func(key string) string {
-		message, _ := localizer.LocalizeMessage(&i18n.Message{ID: key})
-		return message
-	}
-	data["isAuthenticated"] = func() bool {
-		if b.ClaimsPrincipal == nil {
-			return false
-		}
-		isAuthenticated := b.ClaimsPrincipal().HasClaimType(core_wellknown.ClaimTypeAuthenticated)
-		return isAuthenticated
-	}
-	data["getUsername"] = func() string {
-		claims := b.ClaimsPrincipal().GetClaimsByType("email")
-		if len(claims) > 0 {
-			return claims[0].Value
-		}
-		return "Account"
-	}
-	data["paths"] = wellknown_echo.NewPaths()
-	data["username"] = "Account"
-	if b.ClaimsPrincipal != nil {
-		data["claims"] = b.ClaimsPrincipal().GetClaims()
-		claims := b.ClaimsPrincipal().GetClaimsByType("email")
-		if len(claims) > 0 {
-			data["username"] = claims[0].Value
-		}
-	}
-	type auth struct {
-		CSRF string `param:"csrf" query:"csrf" header:"csrf" form:"csrf" json:"csrf" xml:"csrf"`
-	}
-	csrfValue := c.Get("csrf")
-	csrfStr := ""
-	if csrfValue != nil {
-		if str, ok := csrfValue.(string); ok {
-			csrfStr = str
-		}
-	}
-	authArtifacts := &auth{
-		CSRF: csrfStr,
-	}
-	data["security"] = authArtifacts
-	data["csrf"] = authArtifacts.CSRF
-
-	return core_echo_templates.Render(c, code, name, data)
-
 }
 
 // NewRenderContext creates an echo_components.RenderContext from the current request.

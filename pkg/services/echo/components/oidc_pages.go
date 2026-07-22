@@ -117,7 +117,7 @@ type OIDCLoginPasskeyData struct {
 func OIDCLoginPasskeyPage(rc *RenderContext, data OIDCLoginPasskeyData) g.Node {
 	return PageShell(nil,
 		Script(g.Raw(fmt.Sprintf("window.onload = function() { LoginUser(%s); };", data.ReturnFailedUrl))),
-		Script(Src("/static/js/webauthn.js")),
+		Script(Src("/static/go-app/oidc-login/htmx/webauthn.js")),
 	)
 }
 

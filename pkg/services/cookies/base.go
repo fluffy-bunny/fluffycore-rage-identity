@@ -77,7 +77,7 @@ func SetCookie[T any](c *echo.Context,
 	return SetCookieByRequest(c, config, cookies,
 		&fluffycore_contracts_cookies.SetCookieRequest{
 			Name:     name,
-			HttpOnly: false,
+			HttpOnly: true,
 		},
 		data)
 
