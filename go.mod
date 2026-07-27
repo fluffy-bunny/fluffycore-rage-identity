@@ -13,7 +13,7 @@ require (
 	github.com/alexedwards/argon2id v1.0.0
 	github.com/coreos/go-oidc/v3 v3.19.0
 	github.com/domodwyer/mailyak/v3 v3.6.2
-	github.com/eko/gocache/lib/v4 v4.2.3
+	github.com/eko/gocache/lib/v4 v4.2.4
 	github.com/eko/gocache/store/go_cache/v4 v4.2.5
 	github.com/fluffy-bunny/fluffy-dozm-di v0.0.8
 	github.com/fluffy-bunny/fluffycore v1.0.280
