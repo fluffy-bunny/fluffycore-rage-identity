@@ -31,7 +31,7 @@ import (
 	contracts_handler "github.com/fluffy-bunny/fluffycore/echo/contracts/handler"
 	fluffycore_utils "github.com/fluffy-bunny/fluffycore/utils"
 	echo "github.com/labstack/echo/v5"
-	jwxt "github.com/lestrrat-go/jwx/v2/jwt"
+	jwxt "github.com/lestrrat-go/jwx/v3/jwt"
 	zerolog "github.com/rs/zerolog"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -334,23 +334,19 @@ func (s *service) Do(c *echo.Context) error {
 			log.Error().Err(err).Msg("ParseString")
 			return s.TeleportBackToLoginWithError(c, InternalError_Callback_003, InternalError_Callback_003)
 		}
-		email, ok := rawToken.Get("email")
-		if !ok {
-			log.Error().Msg("email not found")
+		var email string
+		if err := rawToken.Get("email", &email); err != nil {
+			log.Error().Err(err).Msg("email not found")
 			return s.TeleportBackToLoginWithError(c, InternalError_Callback_003, InternalError_Callback_003)
 		}
 		emailVerified := false
-		emailVerifiedC, ok := rawToken.Get("email_verified")
-		if ok {
-			bval, ok := emailVerifiedC.(bool)
-			if ok {
-				emailVerified = bval
-			}
-		}
+		_ = rawToken.Get("email_verified", &emailVerified)
+
+		subject, _ := rawToken.Subject()
 
 		externalIdentity := &proto_oidc_models.OIDCIdentity{
-			Subject: rawToken.Subject(),
-			Email:   email.(string),
+			Subject: subject,
+			Email:   email,
 			Acr: []string{
 				fmt.Sprintf("urn:rage:idp:%s", externalOauth2State.Request.IdpHint),
 			},
