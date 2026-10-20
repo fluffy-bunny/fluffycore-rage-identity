@@ -27,7 +27,7 @@ import (
 	services_identity_passwordhasher "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/identity/passwordhasher"
 	services_identity_userid "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/identity/userid"
 	services_identitycreationprotection "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/identitycreationprotection"
-	services_idp_inmemory "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/idp/inmemory"
+	services_idp_sqlite "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/idp/sqlite"
 	services_localizer "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/localizer"
 	services_localizerbundle "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/localizerbundle"
 	services_oauth2factory "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/oauth2factory"
@@ -56,7 +56,13 @@ func ConfigureServices(ctx context.Context, config *contracts_config.Config, bui
 	// this has to be added FIRST as it sets up the default inmemory version of the IClient stores
 	// it addes an empty *stores_services_client_inmemory.Clients
 	services_client_inmemory.AddSingletonIFluffyCoreClientServiceServer(builder)
-	services_idp_inmemory.AddSingletonIFluffyCoreSingletonIDPServiceServer(builder)
+	services_idp_sqlite.AddSingletonIFluffyCoreSingletonIDPServiceServer(builder)
+	// ExampleIDPStore: a worked example of a richer, full-CRUD IDP
+	// store for library consumers who want more than the minimal ListIDP
+	// contract above — same underlying sqlite-backed instance, exposed under
+	// a second interface. See proto/oidc/idp/idp.proto and
+	// pkg/services/idp/sqlite.
+	services_idp_sqlite.AddSingletonIFluffyCoreExampleIDPStoreServer(builder)
 	services_oauth2factory.AddSingletonIOAuth2Factory(builder)
 	services_tokenservice.AddSingletonITokenService(builder)
 	services_AuthorizationCodeClaimsAugmentor.AddSingletonIClaimsAugmentor(builder)

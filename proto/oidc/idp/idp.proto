@@ -36,3 +36,42 @@ message ListIDPRequest {
 message ListIDPResponse {
    repeated proto.oidc.models.IDP i_d_ps = 1;
 }
+
+// ExampleIDPStore is a full worked example of a richer IDP store
+// backed by a real database — this project backs it with an embedded,
+// pure-Go SQLite store (see pkg/services/idp/sqlite). SingletonIDPService
+// above is intentionally minimal (ListIDP-only): that's the one contract
+// every consumer of this library must implement, however they choose to
+// persist IDPs. This service is not that contract — it's a worked example
+// of what a consumer could build on the same IDP message shape if they want
+// full CRUD, using our own sqlite-backed implementation as the reference.
+service ExampleIDPStore {
+    // List idps
+    rpc ListIDP (ListIDPRequest) returns (ListIDPResponse) {}
+    // Create a new idp
+    rpc CreateIDP (CreateIDPRequest) returns (CreateIDPResponse) {}
+    // Update an existing idp
+    rpc UpdateIDP (UpdateIDPRequest) returns (UpdateIDPResponse) {}
+    // Delete an idp
+    rpc DeleteIDP (DeleteIDPRequest) returns (DeleteIDPResponse) {}
+}
+
+message CreateIDPRequest {
+    proto.oidc.models.IDP idp = 1;
+}
+message CreateIDPResponse {
+    proto.oidc.models.IDP idp = 1;
+}
+message UpdateIDPRequest {
+    // slug identifies which idp to update. idp.slug, if set, must match —
+    // renaming a slug via update is not supported.
+    string slug = 1;
+    proto.oidc.models.IDP idp = 2;
+}
+message UpdateIDPResponse {
+    proto.oidc.models.IDP idp = 1;
+}
+message DeleteIDPRequest {
+    string slug = 1;
+}
+message DeleteIDPResponse {}

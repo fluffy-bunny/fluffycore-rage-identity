@@ -34,6 +34,9 @@ services:
       - "30053:30053"
       - "9044:9044"
       - "9045:9045"
+      # Operator portal (docs/OPERATOR_PORTAL_PLAN.md) — VPN-only in real
+      # deployments; published here only for local dev convenience.
+      - "9046:9046"
     env_file:
       - .env
       - .env.secrets
@@ -62,8 +65,8 @@ services:
       RAGE_configFiles__signingKeyJsonPath: "/config/signing-keys.json"
       RAGE_emailConfig__host: "${RAGE_SMTP_HOST}:25"
       RAGE_emailConfig__auth__plainAuth__host: "${RAGE_SMTP_HOST}"
-      RAGE_emailConfig__auth__plainAuth__username: "${SMTP4DEV_SMTP_CONFIG__USER}"
-      RAGE_emailConfig__auth__plainAuth__password: "${SMTP4DEV_SMTP_CONFIG__PASSWORD}"
+      RAGE_emailConfig__auth__plainAuth__username: "${MAILPIT_SMTP_CONFIG__USER}"
+      RAGE_emailConfig__auth__plainAuth__password: "${MAILPIT_SMTP_CONFIG__PASSWORD}"
       RAGE_emailConfig__auth__plainAuth__identity: "${RAGE_SMTP_HOST}"
       RAGE_selfIDPConfig__redirectUrl: "https://rage.localhost.dev/auth/callback"
       RAGE_selfIDPConfig__authority: "https://rage.localhost.dev"
@@ -152,69 +155,45 @@ services:
       - "traefik.http.routers.whoami.tls=true"
       # If port is different than 80, use the following service:
       # - "traefik.http.services.<service_name>.loadbalancer.server.port=<port>"
-  smtp4dev:
+  mailpit:
     extends:
       file: ./docker-compose-common-rage.yml
       service: micro
-    image: rnwood/smtp4dev:v3
+    image: axllent/mailpit:latest
     restart: always
     ports:
       # Change the number before : to the port the web interface should be accessible on
-      - "${SMTP4DEV_WEB_PORT}:80"
+      - "${MAILPIT_WEB_PORT}:8025"
       # Change the number before : to the port the SMTP server should be accessible on
-      - "25:25"
-      # Change the number before : to the port the IMAP server should be accessible on
-      - "143:143"
+      - "25:1025"
     volumes:
-      # This is where smtp4dev stores the database..
-      - smtp4dev-data:/smtp4dev
+      # This is where mailpit stores its database..
+      - mailpit-data:/data
     environment:
-      # Uncomment to customise these settings
+      # Uncomment to customise these settings. See https://mailpit.axllent.org/docs/configuration/runtime-options/
 
-      #Specifies the virtual path from web server root where SMTP4DEV web interface will be hosted. e.g. "/" or "/smtp4dev"
-      #- ServerOptions__BasePath=/smtp4dev
+      #Persists messages to a database file relative to /data. Specify "" to use an in-memory database.
+      - MP_DATA_FILE=/data/mailpit.db
 
       #Specifies the server hostname. Used in auto-generated TLS certificate if enabled.
-      - ServerOptions__HostName=smtp4dev
+      - MP_SMTP_HOSTNAME=mailpit
 
-      #Locks settings from being changed by user via web interface
-      #- ServerOptions__LockSettings=true
+      #Specifies the maximum number of messages to store. 0 = unlimited.
+      #- MP_MAX_MESSAGES=500
 
-      #Specifies the path where the database will be stored relative to APPDATA env var on Windows or XDG_CONFIG_HOME on non-Windows. Specify "" to use an in memory database.
-      #- ServerOptions__Database=database.db
+      #Enables SMTP auth. If unset, no authentication is required.
+      #- MP_SMTP_AUTH=${MAILPIT_SMTP_CONFIG__USER}:${MAILPIT_SMTP_CONFIG__PASSWORD}
+      #- MP_SMTP_AUTH_ALLOW_INSECURE=true
 
-      #Specifies the number of messages to keep
-      #- ServerOptions__NumberOfMessagesToKeep=100
+      #Enables TLS for the SMTP server. Specify cert/key paths to use your own, otherwise a self-signed certificate is generated.
+      #- MP_SMTP_TLS_CERT=
+      #- MP_SMTP_TLS_KEY=
 
-      #Specifies the number of sessions to keep
-      #- ServerOptions__NumberOfSessionsToKeep=100
+      #Sets the name of the SMTP server that will be used to relay messages, or leave unset if messages should not be relayed.
+      #- MP_SMTP_RELAY_CONFIG=/data/relay.json
 
-      #Specifies the TLS mode to use. None=Off. StartTls=On demand if client supports STARTTLS. ImplicitTls=TLS as soon as connection is established.
-      - ServerOptions__TlsMode=None
-
-      #Specifies the TLS certificate to use if TLS is enabled/requested. Specify "" to use an auto-generated self-signed certificate (then see console output on first startup)
-      #- ServerOptions__TlsCertificate=
-
-      #Sets the name of the SMTP server that will be used to relay messages or "" if messages should not be relayed
-      #- RelayOptions__SmtpServer=
-
-      #Sets the port number for the SMTP server used to relay messages.
-      #- RelayOptions__SmtpPort=25
-
-      #Specifies a comma separated list of recipient addresses for which messages will be relayed. An empty list means that no messages are relayed.
-      #- RelayOptions__AllowedEmailsString=
-
-      #Specifies the address used in MAIL FROM when relaying messages. (Sender address in message headers is left unmodified). The sender of each message is used if not specified.
-      #- RelayOptions__SenderAddress=
-
-      #The username for the SMTP server used to relay messages. If "" no authentication is attempted.
-      #- RelayOptions__Login=
-
-      #The password for the SMTP server used to relay messages
-      #- RelayOptions__Password=
-
-      #Specifies the port the IMAP server will listen on - allows standard email clients to view/retrieve messages
-      #"ServerOptions__ImapPort"=143
+      #Specifies the virtual path from web server root where the Mailpit web interface will be hosted. e.g. "/" or "/mailpit"
+      #- MP_UI_BASE_PATH=/mailpit
 
 #====================================================
 # NETWORKS
@@ -226,4 +205,4 @@ networks:
 # VOLUMES
 #====================================================
 volumes:
-  smtp4dev-data:
+  mailpit-data:

@@ -689,6 +689,53 @@ func (s *service) DeleteErrorCookie(c *echo.Context) {
 			Domain: s.cookieConfig.Domain,
 		})
 }
+func (s *service) validateSetOperatorSessionCookieRequest(request *contracts_cookies.SetOperatorSessionCookieRequest) error {
+	if request == nil {
+		return status.Error(codes.InvalidArgument, "request is nil")
+	}
+	if request.OperatorSessionCookie == nil {
+		return status.Error(codes.InvalidArgument, "request.OperatorSessionCookie is nil")
+	}
+	if fluffycore_utils.IsEmptyOrNil(request.OperatorSessionCookie.Email) {
+		return status.Error(codes.InvalidArgument, "request.OperatorSessionCookie.Email is empty")
+	}
+	return nil
+}
+func (s *service) SetOperatorSessionCookie(c *echo.Context, request *contracts_cookies.SetOperatorSessionCookieRequest) error {
+	err := s.validateSetOperatorSessionCookieRequest(request)
+	if err != nil {
+		return err
+	}
+	setCookieRequest := &fluffycore_contracts_cookies.SetCookieRequest{
+		Name: s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_OperatorSession),
+	}
+	setCookieRequest.HttpOnly = true
+	if s.config.DisableSecureCookies {
+		setCookieRequest.SameSite = 0
+		setCookieRequest.Secure = tPtr(false)
+	}
+	return SetCookieByRequest(c, s.cookieConfig, s.secureCookies, setCookieRequest,
+		request.OperatorSessionCookie)
+}
+func (s *service) DeleteOperatorSessionCookie(c *echo.Context) {
+	s.secureCookies.DeleteCookie(*c,
+		&fluffycore_contracts_cookies.DeleteCookieRequest{
+			Name:   s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_OperatorSession),
+			Path:   "/",
+			Domain: s.cookieConfig.Domain,
+		})
+}
+func (s *service) GetOperatorSessionCookie(c *echo.Context) (*contracts_cookies.GetOperatorSessionCookieResponse, error) {
+	var value contracts_cookies.OperatorSessionCookie
+	err := GetCookie(c, s.secureCookies, s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_OperatorSession), &value)
+	if err != nil {
+		return nil, err
+	}
+	return &contracts_cookies.GetOperatorSessionCookieResponse{
+		OperatorSessionCookie: &value,
+	}, nil
+}
+
 func (s *service) GetErrorCookie(c *echo.Context) (*contracts_cookies.GetErrorCookieResponse, error) {
 	var value contracts_cookies.ErrorCookie
 	err := GetCookie(c, s.insecureCookies, s.wellknownCookieNames.GetCookieName(contracts_cookies.CookieName_Error), &value)

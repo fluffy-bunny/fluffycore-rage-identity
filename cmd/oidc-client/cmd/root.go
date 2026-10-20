@@ -8,6 +8,7 @@ import (
 
 	about "github.com/fluffy-bunny/fluffycore-rage-identity/cmd/oidc-client/cmd/about"
 	email "github.com/fluffy-bunny/fluffycore-rage-identity/cmd/oidc-client/cmd/email"
+	hashpassword "github.com/fluffy-bunny/fluffycore-rage-identity/cmd/oidc-client/cmd/hashpassword"
 	serve "github.com/fluffy-bunny/fluffycore-rage-identity/cmd/oidc-client/cmd/serve"
 	version "github.com/fluffy-bunny/fluffycore-rage-identity/cmd/oidc-client/cmd/version"
 	cobra "github.com/spf13/cobra"
@@ -52,4 +53,5 @@ func init() {
 	version.InitCommand(rootCmd)
 	serve.InitCommand(rootCmd)
 	email.InitCommand(rootCmd)
+	hashpassword.InitCommand(rootCmd)
 }

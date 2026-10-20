@@ -3,16 +3,20 @@ package runtime
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	di "github.com/fluffy-bunny/fluffy-dozm-di"
 	contracts_config "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/contracts/config"
 	oidcserver "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/oidcserver"
 	services "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services"
 	services_health "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/health"
+	operatorportal "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/operatorportal"
 	pkg_types "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/types"
 	utils "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/utils"
 	wellknown_echo "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/wellknown/wellknown_echo"
@@ -50,6 +54,14 @@ type (
 
 		oidcserverFuture  async.Future[*fluffycore_async.AsyncResponse]
 		oidcserverRuntime *core_echo_runtime.Runtime
+
+		// operatorServer/operatorFuture are only set when config.OperatorConfig
+		// is enabled — see OnPreServerStartup. A plain *http.Server (rather than
+		// e.Start, which installs its own SIGINT/SIGTERM handling) so shutdown
+		// here goes through the same explicit Shutdown(ctx) call as everything
+		// else in OnPreServerShutdown.
+		operatorServer *http.Server
+		operatorFuture async.Future[*fluffycore_async.AsyncResponse]
 
 		ext                  pkg_types.ConfigureServices
 		managementMiddleware pkg_types.ConfigureManagementMiddleware
@@ -264,6 +276,41 @@ func (s *startup) OnPreServerStartup(ctx context.Context) error {
 				log.Error().Err(err).Msg("failed to start server")
 			}
 		})
+
+	// Operator portal: a second, VPN-only echo.Echo instance on its own port,
+	// launched the same way (a second async future, same panic-recovery-via-
+	// middleware pattern as the public listener) — see
+	// docs/OPERATOR_PORTAL_PLAN.md. Opt-in: config.OperatorConfig.Enabled
+	// defaults to false, so existing deployments are unaffected until they
+	// set it.
+	if s.config.OperatorConfig != nil && s.config.OperatorConfig.Enabled {
+		port := s.config.OperatorConfig.Port
+		if port == 0 {
+			port = 9046 // next free port after 30051-30053, 9044-9045 — see the plan doc
+		}
+		operatorEcho := operatorportal.NewEcho(s.RootContainer, s.config)
+		s.operatorServer = &http.Server{
+			Addr:    fmt.Sprintf(":%d", port),
+			Handler: operatorEcho,
+		}
+		s.operatorFuture = fluffycore_async.ExecuteWithPromiseAsync(
+			func(promise async.Promise[*fluffycore_async.AsyncResponse]) {
+				var err error
+				defer func() {
+					promise.Success(&fluffycore_async.AsyncResponse{
+						Message: "End Serve - operatorPortal",
+						Error:   err,
+					})
+				}()
+				log.Info().Int("port", port).Msg("operator portal starting up")
+				err = s.operatorServer.ListenAndServe()
+				if err != nil && !errors.Is(err, http.ErrServerClosed) {
+					log.Error().Err(err).Msg("failed to start operator portal server")
+				} else {
+					err = nil
+				}
+			})
+	}
 	/*
 		s.oidcLoginUIServerRuntime = core_echo_runtime.New(
 			oidc_login_ui_server.NewStartup(
@@ -316,6 +363,17 @@ func (s *startup) OnPreServerShutdown(ctx context.Context) {
 	s.oidcserverRuntime.Stop()
 	s.oidcserverFuture.Join()
 	log.Info().Msg("oidcserverRuntime shutdown complete")
+
+	if s.operatorServer != nil {
+		log.Info().Msg("operator portal shutting down")
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := s.operatorServer.Shutdown(shutdownCtx); err != nil {
+			log.Error().Err(err).Msg("operator portal shutdown error")
+		}
+		s.operatorFuture.Join()
+		log.Info().Msg("operator portal shutdown complete")
+	}
 
 	log.Info().Msg("FluffyCoreOTELStartup stopped")
 	s.FluffyCoreOTELStartup.OnPreServerShutdown(ctx)

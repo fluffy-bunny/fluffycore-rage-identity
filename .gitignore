@@ -25,3 +25,5 @@ go.work
 /certs/*.pem
 /node_modules
 .DS_Store
+# local sqlite IdP store (contains secrets)
+cmd/server/data/*.db

@@ -90,6 +90,10 @@
                 "RAGE_identityCreationProtectionConfig__ignoreOnLoadError": "true",
                 "RAGE_identityCreationProtectionConfig__cacheTtlSeconds": "3600",
 
+                "RAGE_operatorConfig__enabled": "true",
+                "RAGE_operatorConfig__port": "9046",
+                "OPERATOR_BOB_PASSWORD_HASH": "$argon2id$v=19$m=65536,t=1,p=16$uir6GAKd9ePELG8SVkjx+Q$NnhwQGhttLqdmjn2fvXFfKYoO6fyTnNIEGr0N+Akwlk"
+
             },
             "args": [ "serve" ]        
         },

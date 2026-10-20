@@ -22,7 +22,7 @@ openssl x509 -outform DER -in .\local-cert.pem -out .\local-cert.crt
 Create networks that will be used by Traefik:
 
 ```bash
-docker network create smtp4dev
+docker network create mailpit
 ```
 
 _Note: you can access to Træfik dashboard at: [traefik.localhost.dev](https://traefik.localhost.dev)_  

@@ -83,6 +83,11 @@ func (s *AppSingletonIDPServiceClientAccessor) GetClient() (SingletonIDPServiceC
 	defer s.rwLock.Unlock()
 	//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
 
+	// Re-check after acquiring write lock (double-checked locking)
+	if s.client != nil {
+		return s.client, nil
+	}
+
 	grpcClient, err := s.grpcClientFactory.NewGrpcClient(
 		grpcclient.WithTarget(s.config.Url),
 		grpcclient.WithTokenSource(tokenSource),
@@ -135,4 +140,151 @@ func (s *SingletonIDPServiceFluffyCoreServer) ListIDP(ctx context.Context, reque
 	requestContainer := dicontext.GetRequestContainer(ctx)
 	downstreamService := fluffy_dozm_di.Get[IFluffyCoreSingletonIDPServiceServer](requestContainer)
 	return downstreamService.ListIDP(ctx, request)
+}
+
+// IAppExampleIDPStoreClientAccessor defines the grpc client
+type IAppExampleIDPStoreClientAccessor interface {
+	GetClient() (ExampleIDPStoreClient, error)
+}
+
+// AppExampleIDPStoreClientAccessorConfig defines the grpc client struct
+type AppExampleIDPStoreClientAccessorConfig struct {
+	Url string
+}
+
+// AppExampleIDPStoreClientAccessor defines the grpc client struct
+type AppExampleIDPStoreClientAccessor struct {
+	rwLock            sync.RWMutex
+	config            *AppExampleIDPStoreClientAccessorConfig
+	appTokenSource    tokensource.IAppTokenSource
+	grpcClientFactory GRPCClientFactory.IGRPCClientFactory
+	client            ExampleIDPStoreClient
+}
+
+var stemAppExampleIDPStoreClientAccessor = (*AppExampleIDPStoreClientAccessor)(nil)
+var _ IAppExampleIDPStoreClientAccessor = stemAppExampleIDPStoreClientAccessor
+
+func (s *AppExampleIDPStoreClientAccessor) Ctor(
+	config *AppExampleIDPStoreClientAccessorConfig,
+	appTokenSource tokensource.IAppTokenSource,
+	grpcClientFactory GRPCClientFactory.IGRPCClientFactory,
+) (IAppExampleIDPStoreClientAccessor, error) {
+	return &AppExampleIDPStoreClientAccessor{
+		config:            config,
+		appTokenSource:    appTokenSource,
+		grpcClientFactory: grpcClientFactory,
+	}, nil
+}
+
+// AddSingletonIAppExampleIDPStoreClientAccessor ...
+func AddSingletonIAppExampleIDPStoreClientAccessor(
+	cb fluffy_dozm_di.ContainerBuilder,
+	config *AppExampleIDPStoreClientAccessorConfig,
+) {
+	fluffy_dozm_di.AddInstance[*AppExampleIDPStoreClientAccessorConfig](cb, config)
+	fluffy_dozm_di.AddSingleton[IAppExampleIDPStoreClientAccessor](cb, stemAppExampleIDPStoreClientAccessor.Ctor)
+}
+
+func (s *AppExampleIDPStoreClientAccessor) GetClient() (ExampleIDPStoreClient, error) {
+	doGetClient := func() ExampleIDPStoreClient {
+		s.rwLock.RLock()
+		defer s.rwLock.RUnlock()
+		if s.client != nil {
+			return s.client
+		}
+		return nil
+	}
+
+	client := doGetClient()
+	if client != nil {
+		return client, nil
+	}
+
+	tokenSource, err := s.appTokenSource.GetTokenSource()
+	if err != nil {
+		return nil, err
+	}
+	//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
+	s.rwLock.Lock()
+	defer s.rwLock.Unlock()
+	//--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--~--
+
+	// Re-check after acquiring write lock (double-checked locking)
+	if s.client != nil {
+		return s.client, nil
+	}
+
+	grpcClient, err := s.grpcClientFactory.NewGrpcClient(
+		grpcclient.WithTarget(s.config.Url),
+		grpcclient.WithTokenSource(tokenSource),
+		grpcclient.WithInsecure(true), // TODO: remove this in production
+	)
+	if err != nil {
+		return nil, err
+	}
+	s.client = NewExampleIDPStoreClient(grpcClient.GetConnection())
+	return s.client, nil
+}
+
+// IFluffyCoreExampleIDPStoreServer defines the grpc server
+type IFluffyCoreExampleIDPStoreServer interface {
+	ExampleIDPStoreServer
+}
+
+type UnimplementedFluffyCoreExampleIDPStoreServerEndpointRegistration struct {
+}
+
+func (UnimplementedFluffyCoreExampleIDPStoreServerEndpointRegistration) RegisterFluffyCoreHandler(gwmux *runtime.ServeMux, conn *grpc.ClientConn) {
+}
+
+// ExampleIDPStoreFluffyCoreServer defines the grpc server truct
+type ExampleIDPStoreFluffyCoreServer struct {
+	UnimplementedExampleIDPStoreServer
+	UnimplementedFluffyCoreExampleIDPStoreServerEndpointRegistration
+}
+
+// RegisterFluffyCoreGRPCService the server with grpc
+func (srv *ExampleIDPStoreFluffyCoreServer) RegisterFluffyCoreGRPCService(s *grpc.Server) {
+	RegisterExampleIDPStoreServer(s, srv)
+}
+
+// AddExampleIDPStoreServerWithExternalRegistration adds the fluffycore aware grpc server and external registration service.  Mainly used for grpc-gateway
+func AddExampleIDPStoreServerWithExternalRegistration(cb fluffy_dozm_di.ContainerBuilder, ctor any, register func() endpoint.IEndpointRegistration) {
+	fluffy_dozm_di.AddSingleton[endpoint.IEndpointRegistration](cb, register)
+	fluffy_dozm_di.AddScoped[IFluffyCoreExampleIDPStoreServer](cb, ctor)
+}
+
+// AddExampleIDPStoreServer adds the fluffycore aware grpc server
+func AddExampleIDPStoreServer(cb fluffy_dozm_di.ContainerBuilder, ctor any) {
+	AddExampleIDPStoreServerWithExternalRegistration(cb, ctor, func() endpoint.IEndpointRegistration {
+		return &ExampleIDPStoreFluffyCoreServer{}
+	})
+}
+
+// ListIDP...
+func (s *ExampleIDPStoreFluffyCoreServer) ListIDP(ctx context.Context, request *ListIDPRequest) (*ListIDPResponse, error) {
+	requestContainer := dicontext.GetRequestContainer(ctx)
+	downstreamService := fluffy_dozm_di.Get[IFluffyCoreExampleIDPStoreServer](requestContainer)
+	return downstreamService.ListIDP(ctx, request)
+}
+
+// CreateIDP...
+func (s *ExampleIDPStoreFluffyCoreServer) CreateIDP(ctx context.Context, request *CreateIDPRequest) (*CreateIDPResponse, error) {
+	requestContainer := dicontext.GetRequestContainer(ctx)
+	downstreamService := fluffy_dozm_di.Get[IFluffyCoreExampleIDPStoreServer](requestContainer)
+	return downstreamService.CreateIDP(ctx, request)
+}
+
+// UpdateIDP...
+func (s *ExampleIDPStoreFluffyCoreServer) UpdateIDP(ctx context.Context, request *UpdateIDPRequest) (*UpdateIDPResponse, error) {
+	requestContainer := dicontext.GetRequestContainer(ctx)
+	downstreamService := fluffy_dozm_di.Get[IFluffyCoreExampleIDPStoreServer](requestContainer)
+	return downstreamService.UpdateIDP(ctx, request)
+}
+
+// DeleteIDP...
+func (s *ExampleIDPStoreFluffyCoreServer) DeleteIDP(ctx context.Context, request *DeleteIDPRequest) (*DeleteIDPResponse, error) {
+	requestContainer := dicontext.GetRequestContainer(ctx)
+	downstreamService := fluffy_dozm_di.Get[IFluffyCoreExampleIDPStoreServer](requestContainer)
+	return downstreamService.DeleteIDP(ctx, request)
 }

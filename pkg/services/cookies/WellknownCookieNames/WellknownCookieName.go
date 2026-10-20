@@ -36,6 +36,7 @@ func (s *service) Ctor(
 		contracts_cookies.CookieName_AuthorizationState:          prefix + "_authorization_state",
 		contracts_cookies.CookieName_AccountManagementSession:    prefix + "_account_management_session",
 		contracts_cookies.CookieName_OIDCSession:                 prefix + "_oidc_session",
+		contracts_cookies.CookieName_OperatorSession:             prefix + "_operator_session",
 	}
 
 	return &service{

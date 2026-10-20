@@ -33,6 +33,7 @@ const (
 	CookieName_AuthorizationState
 	CookieName_AccountManagementSession
 	CookieName_OIDCSession
+	CookieName_OperatorSession
 )
 
 type (
@@ -165,6 +166,19 @@ type (
 	WellknownCookieNamesConfig struct {
 		CookiePrefix string `json:"cookiePrefix"`
 	}
+	// OperatorSessionCookie identifies an authenticated operator-portal session.
+	// Email identifies which statically-configured operator this session belongs
+	// to. This is intentionally NOT an OIDC identity/claims concept — operators
+	// aren't RageUsers and don't go through the OIDC login flow at all.
+	OperatorSessionCookie struct {
+		Email string `json:"email"`
+	}
+	SetOperatorSessionCookieRequest struct {
+		OperatorSessionCookie *OperatorSessionCookie `json:"operatorSessionCookie"`
+	}
+	GetOperatorSessionCookieResponse struct {
+		OperatorSessionCookie *OperatorSessionCookie `json:"operatorSessionCookie"`
+	}
 
 	IWellknownCookieNames interface {
 		// Cookie Name
@@ -235,6 +249,12 @@ type (
 		SetErrorCookie(c *echo.Context, request *SetErrorCookieRequest) error
 		DeleteErrorCookie(c *echo.Context)
 		GetErrorCookie(c *echo.Context) (*GetErrorCookieResponse, error)
+
+		// Operator Session Cookie
+		//---------------------------------------------------------------------
+		SetOperatorSessionCookie(c *echo.Context, request *SetOperatorSessionCookieRequest) error
+		DeleteOperatorSessionCookie(c *echo.Context)
+		GetOperatorSessionCookie(c *echo.Context) (*GetOperatorSessionCookieResponse, error)
 		// Legacy string constants - deprecated, use CookieName enum with GetCookieName() instead
 	}
 )

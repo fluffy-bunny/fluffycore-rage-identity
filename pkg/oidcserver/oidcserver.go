@@ -2,6 +2,7 @@ package oidcserver
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -66,6 +67,7 @@ import (
 	services_handlers_token_endpoint "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/token_endpoint"
 	services_handlers_verifycode "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/echo/handlers/verifycode"
 	services_oidc_session "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/oidc_session"
+	operatorportal "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/services/operatorportal"
 	pkg_types "github.com/fluffy-bunny/fluffycore-rage-identity/pkg/types"
 	proto_oidc_models "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/models"
 	proto_oidcuser "github.com/fluffy-bunny/fluffycore-rage-identity/proto/oidc/user"
@@ -198,7 +200,28 @@ func (s *startup) OnLoadSeedUsers(ctx context.Context,
 func (s *startup) PostBuildHook(container di.Container) error {
 	s.log.Info().Msg("PostBuildHook")
 	s.OnLoadSeedUsers(context.Background(), container)
+	s.startOperatorPortal(container)
 	return nil
+}
+
+// startOperatorPortal launches the VPN-only operator-portal listener as a
+// second, independent echo.Echo instance on its own port, in this same
+// process. `container` here is the fully-built rage/oidcserver container, the
+// one that actually holds IWellknownCookies/IPasswordHasher/IAuditStore — the
+// operator portal deliberately reuses those same singletons rather than
+// building a parallel service layer. See docs/OPERATOR_PORTAL_PLAN.md.
+func (s *startup) startOperatorPortal(container di.Container) {
+	if s.config.OperatorConfig == nil || !s.config.OperatorConfig.Enabled {
+		return
+	}
+	addr := fmt.Sprintf(":%d", s.config.OperatorConfig.Port)
+	go func() {
+		s.log.Info().Str("addr", addr).Msg("operator portal starting up")
+		operatorEcho := operatorportal.NewEcho(container, s.config)
+		if err := operatorEcho.Start(addr); err != nil {
+			s.log.Error().Err(err).Msg("operator portal stopped")
+		}
+	}()
 }
 func (s *startup) PreShutdownHook(echo *echo.Echo) error {
 	s.log.Info().Msg("PreShutdownHook")

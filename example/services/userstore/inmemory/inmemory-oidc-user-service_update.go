@@ -310,6 +310,42 @@ func (s *service) UpdateUser(ctx context.Context, request *proto_external_user.U
 		return nil, err
 	}
 
+	doMetadataUpdate := func() error {
+		metadataUpdate := request.User.Metadata
+		if metadataUpdate == nil {
+			// nothing to do
+			return nil
+		}
+		switch v := metadataUpdate.Update.(type) {
+		case *proto_external_models.MetadataUpdate_Replace:
+			user.Metadata = v.Replace.Values
+		case *proto_external_models.MetadataUpdate_Granular_:
+			mapExisting := make(map[string]*proto_external_models.MetadataRecord)
+			for _, m := range user.Metadata {
+				mapExisting[m.Key] = m
+			}
+			for _, key := range v.Granular.RemoveAll {
+				delete(mapExisting, key)
+			}
+			for _, m := range v.Granular.Remove {
+				delete(mapExisting, m.Key)
+			}
+			for _, m := range v.Granular.Add {
+				mapExisting[m.Key] = m
+			}
+			newMetadata := make([]*proto_external_models.MetadataRecord, 0, len(mapExisting))
+			for _, m := range mapExisting {
+				newMetadata = append(newMetadata, m)
+			}
+			user.Metadata = newMetadata
+		}
+		return nil
+	}
+	err = doMetadataUpdate()
+	if err != nil {
+		return nil, err
+	}
+
 	doProfileUpdate := func() error {
 		if request.User.Profile != nil {
 			if user.Profile == nil {

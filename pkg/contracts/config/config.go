@@ -49,8 +49,14 @@ type (
 		SkipApi bool `json:"skipApi"`
 	}
 	ConfigFiles struct {
-		OIDCClientPath     string `json:"oidcClientPath"`
-		IDPsPath           string `json:"idpsPath"`
+		OIDCClientPath string `json:"oidcClientPath"`
+		IDPsPath       string `json:"idpsPath"`
+		// IDPsDBPath is the writable, persistent IDP store. idps.json (above)
+		// is used only to SEED this database the first time it's empty —
+		// after that, this database is the source of truth, so operator- or
+		// customer-made edits survive restarts. See docs/OPERATOR_PORTAL_PLAN.md
+		// and docs/CUSTOMER_IDP_SELF_SERVICE_PLAN.md.
+		IDPsDBPath         string `json:"idpsDBPath"`
 		SigningKeyJsonPath string `json:"signingKeyJsonPath"`
 		RagePath           string `json:"ragePath"`
 		SeedUsersPath      string `json:"seedUsersPath"`
@@ -135,6 +141,23 @@ type (
 	SSOConfig struct {
 		MaxDurationMinutes int `json:"maxDurationMinutes"`
 	}
+	// OperatorAccount is one statically-configured internal operator identity.
+	// PasswordHashEnvVar names an environment variable (resolved at startup, never
+	// stored in this config) holding the bcrypt/argon2id hash of that operator's
+	// password. There is deliberately no in-app way to change it: rotating an
+	// operator's password means rotating the env var/secret and redeploying.
+	OperatorAccount struct {
+		Email              string `json:"email"`
+		PasswordHashEnvVar string `json:"passwordHashEnvVar"`
+	}
+	// OperatorConfig configures the VPN-only operator portal, served on its own
+	// port from the same process, with its own session cookie and no relation
+	// to the OIDC/RageUser identity model.
+	OperatorConfig struct {
+		Enabled   bool               `json:"enabled"`
+		Port      int                `json:"port"`
+		Operators []*OperatorAccount `json:"operators"`
+	}
 	InitialConfig struct {
 		ConfigFiles ConfigFiles `json:"configFiles"`
 	}
@@ -208,6 +231,7 @@ type (
 		SelfIDPConfig                    *SelfIDPConfig                                 `json:"selfIDPConfig"`
 		CookieConfig                     *CookieConfig                                  `json:"cookieConfig"`
 		SystemConfig                     *SystemConfig                                  `json:"systemConfig"`
+		OperatorConfig                   *OperatorConfig                                `json:"operatorConfig"`
 		SSOConfig                        *SSOConfig                                     `json:"ssoConfig"`
 		SessionConfig                    *contracts_sessions.SessionConfig              `json:"sessionConfig"`
 		WebAuthNConfig                   *contracts_webauthn.WebAuthNConfig             `json:"webAuthNConfig"`
@@ -370,6 +394,7 @@ const configDefaultJSONTemplate = `
         "ragePath": "./config/rage.json",
         "oidcClientPath": "./config/oidc-clients.json",
         "idpsPath": "./config/idps.json",
+        "idpsDBPath": "./data/idps.db",
         "signingKeyJsonPath": "./config/signing-keys.json",
         "seedUsersPath": "./config/seed-users.json"
     },
@@ -432,6 +457,11 @@ const configDefaultJSONTemplate = `
     "totp": {
         "enabled": false,
         "issuerName": "RAGE.IDENTITY"
+    },
+    "operatorConfig": {
+        "enabled": false,
+        "port": 9046,
+        "operators": []
     },
     "webAuthNConfig": {
         "enabled": false,
